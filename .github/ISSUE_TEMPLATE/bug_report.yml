@@ -1,0 +1,58 @@
+name: Bug report
+description: Something behaves incorrectly during a run
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you observe, and what did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The exact commands, plus any non-default parameters.
+      placeholder: |
+        scripts/run_race.sh --headless
+        nav.yaml: max_forward raised to 2.0
+      render: shell
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - s10_perception (simulator, lidar, height map)
+        - s10_auto_nav (waypoint following)
+        - s10_bringup (launch, configuration)
+        - training (observation spec, ONNX export)
+        - integration (SDK bridge, patch scripts)
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: waypoint
+    attributes:
+      label: Waypoint reached
+      description: If the run failed mid-course, which waypoint was it on?
+      placeholder: "18 of 33"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: Ubuntu 24.04, ROS 2 Jazzy, mujoco 3.x, commit abc1234
+    validations:
+      required: true

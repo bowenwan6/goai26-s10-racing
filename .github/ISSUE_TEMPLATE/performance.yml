@@ -1,0 +1,45 @@
+name: Performance work
+description: A change aimed at reducing lap time
+labels: [performance]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Lap time is the metric. Describe the change as a claim about performance, with
+        the evidence that supports it.
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why this should be faster
+      description: Where in the course is the time currently lost?
+    validations:
+      required: true
+
+  - type: input
+    id: baseline
+    attributes:
+      label: Current lap time
+      placeholder: "312 s, headless, commit abc1234"
+
+  - type: input
+    id: target
+    attributes:
+      label: Expected lap time
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risks
+      description: |
+        Does this push the policy outside its trained velocity range? Could it miss a
+        waypoint's 0.2 m radius? Could it trip the 0.5 s torque rule?
+    validations:
+      required: true

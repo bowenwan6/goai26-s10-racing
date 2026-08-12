@@ -1,0 +1,27 @@
+# Waypoint follower tuning.
+#
+# max_forward is the single most important number here: the course is ~224 m, so lap time
+# is dominated by the commanded speed ceiling. It must not exceed the velocity range the
+# locomotion policy was trained on, or the policy will be driven out of distribution and
+# fall. Raise it together with the training command range, never alone.
+
+waypoint_follower:
+  ros__parameters:
+    control_rate: 50.0
+
+    # Advance slightly outside the scorer's 0.2 m radius so the follower commits to the
+    # next leg without braking at every gate.
+    advance_radius: 0.35
+
+    max_forward: 1.6
+    max_lateral: 0.4
+    max_yaw_rate: 1.2
+
+    lookahead: 1.4
+    yaw_gain: 1.8
+
+    # Stall watchdog: the dominant failure on the elevated sections is wedging against a
+    # ledge while the gait keeps cycling, which never trips a fall detector.
+    stall_speed: 0.08
+    stall_timeout: 2.5
+    recovery_duration: 1.0
