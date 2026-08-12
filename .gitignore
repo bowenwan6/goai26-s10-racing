@@ -1,0 +1,35 @@
+# ROS 2 / colcon
+build/
+install/
+log/
+
+# Upstream contest material (cloned by scripts/setup_upstream.sh, not vendored)
+upstream/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Trained artifacts (use Git LFS if these must be tracked)
+*.pt
+*.pth
+*.ckpt
+runs/
+outputs/
+wandb/
+
+# Evaluation output
+results/
+*.mp4
+*.log
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

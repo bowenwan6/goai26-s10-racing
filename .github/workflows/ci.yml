@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Check style
+        run: ruff check .
+      - name: Check formatting
+        run: ruff format --check .
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install pytest numpy pyyaml
+      - name: Navigation and course validation
+        run: pytest -q test
+        working-directory: src/s10_auto_nav
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src/s10_auto_nav
+      - name: Observation contract
+        run: pytest -q tests
+        working-directory: training
+        env:
+          PYTHONPATH: ${{ github.workspace }}/training
+
+  build:
+    name: colcon build
+    runs-on: ubuntu-24.04
+    container: ros:jazzy-ros-base
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        shell: bash
+        run: |
+          apt-get update
+          rosdep update
+          rosdep install --from-paths src --ignore-src -y || true
+      - name: Build our packages
+        shell: bash
+        # The contest SDK is a private repository and is not available in CI, so only our
+        # own packages are built here. The SDK build is covered by scripts/build.sh locally.
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --base-paths src --symlink-install
+      - name: Run package tests
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon test --base-paths src --return-code-on-test-failure
