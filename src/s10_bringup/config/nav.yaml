@@ -4,6 +4,12 @@
 # is dominated by the commanded speed ceiling. It must not exceed the velocity range the
 # locomotion policy was trained on, or the policy will be driven out of distribution and
 # fall. Raise it together with the training command range, never alone.
+#
+# The figures below are the shipped policy's trained envelope, taken from the caps the
+# upstream keyboard interface enforces (max_forward_ 0.7, max_side_ 0.5, max_yaw_ 0.7).
+# Commanding outside it does not merely degrade tracking: at 1.2 rad/s the robot pivoted
+# on the spot at waypoint 0 indefinitely, because the policy simply does not follow a yaw
+# rate it never saw in training. Retrain before raising these.
 
 waypoint_follower:
   ros__parameters:
@@ -13,9 +19,9 @@ waypoint_follower:
     # next leg without braking at every gate.
     advance_radius: 0.35
 
-    max_forward: 1.6
+    max_forward: 0.7
     max_lateral: 0.4
-    max_yaw_rate: 1.2
+    max_yaw_rate: 0.7
 
     lookahead: 1.4
     yaw_gain: 1.8

@@ -23,14 +23,15 @@ import numpy as np
 class PursuitGains:
     """Tuning surface for the follower.
 
-    ``max_forward`` deliberately exceeds the 0.7 m/s ceiling of the upstream keyboard
-    interface: the course is roughly 224 m long, so the command ceiling dominates lap
-    time. It must stay within the velocity range the locomotion policy was trained on.
+    The defaults match the shipped policy's trained envelope, which is the ceiling the
+    upstream keyboard interface enforces. Exceeding it does not trade safety for lap
+    time, it simply stops working: the policy ignores commands it never saw in training.
+    See ``s10_bringup/config/nav.yaml``.
     """
 
-    max_forward: float = 1.6
+    max_forward: float = 0.7
     max_lateral: float = 0.4
-    max_yaw_rate: float = 1.2
+    max_yaw_rate: float = 0.7
 
     #: Carrot distance along the course. Larger is smoother and faster but cuts corners
     #: harder, which can miss a waypoint's 0.2 m scoring radius.
