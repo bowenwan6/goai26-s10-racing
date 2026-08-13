@@ -37,7 +37,9 @@ class HeightmapConfig:
     #: Heights are clipped to this band around the base to bound the observation.
     clip_below: float = -1.0
     clip_above: float = 1.0
-    geom_group: int | None = 1
+    #: See ``LidarConfig.geom_group``: group 0 is the terrain, 1 and 2 are the robot and
+    #: the visual track markers.
+    geom_group: int | None = 0
 
     @property
     def n_cells(self) -> int:

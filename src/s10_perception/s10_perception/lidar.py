@@ -32,7 +32,12 @@ class LidarConfig:
     #: Sensor origin expressed in the base body frame (metres).
     mount_offset: np.ndarray = field(default_factory=lambda: np.array([0.20, 0.0, 0.12]))
     #: Only cast against this MuJoCo geom group; ``None`` casts against all groups.
-    geom_group: int | None = 1
+    #:
+    #: Group 0 is the world: the floor plus the 2185 environment meshes. Group 1 is the
+    #: robot's own collision geoms and group 2 holds both its visual meshes and the 65
+    #: non-colliding track markers -- casting against either would return the robot's own
+    #: body, or phantom hits on the waypoint spheres we are supposed to be racing towards.
+    geom_group: int | None = 0
     #: Exclude the robot's own body so the chassis does not occlude every ray.
     exclude_self: bool = True
 
@@ -112,16 +117,19 @@ class RayCastLidar:
         world = self._directions_local @ rot.T
         self._vec_world[:] = world.reshape(-1)
 
+        # ``normal`` is required by the binding but unused here; passing None skips the
+        # extra per-ray normal computation.
         mujoco.mj_multiRay(
             m=self.model,
             d=data,
             pnt=pnt,
             vec=self._vec_world,
             geomgroup=self._geomgroup,
-            flg_static=1,
+            flg_static=True,
             bodyexclude=self._bodyexclude,
             geomid=self._geomid,
             dist=self._dist,
+            normal=None,
             nray=self.cfg.n_rays,
             cutoff=self.cfg.range_max,
         )
