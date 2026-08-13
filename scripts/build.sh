@@ -22,8 +22,11 @@ if [[ ! -f "${ROS_DISTRO_SETUP}" ]]; then
   exit 1
 fi
 
+# ROS setup scripts read variables that may be unset, so -u is lifted across the source.
+set +u
 # shellcheck disable=SC1090
 source "${ROS_DISTRO_SETUP}"
+set -u
 
 cd "${REPO_ROOT}"
 echo "==> Building for platform: ${BUILD_PLATFORM}"

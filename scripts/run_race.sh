@@ -20,8 +20,11 @@ if [[ ! -f "${REPO_ROOT}/install/setup.bash" ]]; then
   exit 1
 fi
 
+# ROS setup scripts read variables that may be unset, so -u is lifted across the source.
+set +u
 # shellcheck disable=SC1091
 source "${REPO_ROOT}/install/setup.bash"
+set -u
 
 LAUNCH_ARGS=()
 for arg in "$@"; do
