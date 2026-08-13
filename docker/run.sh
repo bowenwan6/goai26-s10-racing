@@ -24,14 +24,24 @@ fi
 tty_flags=(-i)
 [[ -t 0 && -t 1 ]] && tty_flags+=(-t)
 
+# Build output goes to a named volume rather than into the bind-mounted repo. Bind mounts
+# inherit the host filesystem's behaviour, and a checkout under iCloud Drive or Dropbox
+# gets its build tree forked into conflicted copies ("install/drdds 2") mid-build. Sources
+# stay bind-mounted so host edits still apply immediately.
+BUILD_VOLUME="${BUILD_VOLUME:-s10-racing-build}"
+
 # --network host keeps DDS discovery simple; without it the simulator and the controller
 # land in different network namespaces and never find each other.
 exec docker run --rm "${tty_flags[@]}" \
   --name "s10-dev-$$" \
   --network host \
   --volume "${REPO_ROOT}:/ws" \
+  --volume "${BUILD_VOLUME}:/opt/s10-build" \
   --workdir /ws \
   --env "ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-1}" \
   --env "S10_USE_VIEWER=${S10_USE_VIEWER:-0}" \
+  --env "S10_BUILD_BASE=/opt/s10-build/build" \
+  --env "S10_INSTALL_BASE=/opt/s10-build/install" \
+  --env "S10_LOG_BASE=/opt/s10-build/log" \
   "${IMAGE}" \
   "${@:-/bin/bash}"
