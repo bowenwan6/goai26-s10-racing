@@ -15,7 +15,11 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-1}"
 
-if [[ ! -f "${REPO_ROOT}/install/setup.bash" ]]; then
+# Must match whatever scripts/build.sh installed into; see the note there on why this
+# is redirectable.
+S10_INSTALL_BASE="${S10_INSTALL_BASE:-${REPO_ROOT}/install}"
+
+if [[ ! -f "${S10_INSTALL_BASE}/setup.bash" ]]; then
   echo "error: workspace not built. Run scripts/build.sh first." >&2
   exit 1
 fi
@@ -23,7 +27,7 @@ fi
 # ROS setup scripts read variables that may be unset, so -u is lifted across the source.
 set +u
 # shellcheck disable=SC1091
-source "${REPO_ROOT}/install/setup.bash"
+source "${S10_INSTALL_BASE}/setup.bash"
 set -u
 
 LAUNCH_ARGS=()

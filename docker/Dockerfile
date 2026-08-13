@@ -42,9 +42,14 @@ ENV MUJOCO_GL=osmesa
 # Both simulator and controller must share a DDS domain to see each other.
 ENV ROS_DOMAIN_ID=1
 
+# Build artefacts live outside the bind-mounted repo; see docker/run.sh for why.
+ENV S10_BUILD_BASE=/opt/s10-build/build
+ENV S10_INSTALL_BASE=/opt/s10-build/install
+ENV S10_LOG_BASE=/opt/s10-build/log
+
 WORKDIR /ws
 
 RUN echo 'source /opt/ros/jazzy/setup.bash' >> /root/.bashrc \
- && echo '[ -f /ws/install/setup.bash ] && source /ws/install/setup.bash' >> /root/.bashrc
+ && echo '[ -f "${S10_INSTALL_BASE}/setup.bash" ] && source "${S10_INSTALL_BASE}/setup.bash"' >> /root/.bashrc
 
 CMD ["/bin/bash"]
