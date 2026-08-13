@@ -28,10 +28,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # numpy is pinned below 2.0 by the SDK README; MuJoCo is the simulator itself.
+# scipy is imported by the upstream simulator but missing from the README's list.
 # Ubuntu 24.04 marks the system Python as externally managed, hence the override.
 RUN pip3 install --no-cache-dir --break-system-packages \
       "numpy<2.0" \
-      mujoco
+      mujoco \
+      scipy
 
 # Software rasteriser: containers have no GPU, and the race runs headless anyway
 # (S10_USE_VIEWER=0). Set MUJOCO_GL=egl instead when a GPU is passed through.
