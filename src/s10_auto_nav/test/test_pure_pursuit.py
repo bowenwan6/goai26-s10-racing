@@ -3,6 +3,7 @@
 import math
 
 import numpy as np
+import pytest
 
 from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains, wrap_angle
 
@@ -29,7 +30,7 @@ def test_wrap_angle():
 def test_drives_forward_when_aligned():
     controller = PurePursuitController()
     command = settled(controller, [0.0, 0.0], 0.0, [50.0, 0.0])
-    assert command.forward > 1.0
+    assert command.forward == pytest.approx(PursuitGains.max_forward)
     assert abs(command.yaw_rate) < 1e-3
 
 
