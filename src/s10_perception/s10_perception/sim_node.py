@@ -29,6 +29,7 @@ import mujoco
 import numpy as np
 import rclpy
 from nav_msgs.msg import Odometry
+from rclpy.executors import ExternalShutdownException
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 
@@ -198,11 +199,13 @@ def main() -> None:
     )
     try:
         node.start()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
+        # See viz_node.main: SIGTERM has already closed the context by this point.
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":
