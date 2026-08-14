@@ -9,6 +9,10 @@ from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains, wrap_
 
 DT = 0.02
 
+#: 27 degrees off the nose: inside the 75-degree pivot threshold, but far enough to one
+#: side that the cross-track term saturates lateral.
+OFFSET_TARGET = np.array([2.0, 1.0])
+
 
 def settled(controller, position, yaw, target, steps=200):
     """Run long enough for the slew limiter to reach steady state."""
@@ -87,6 +91,28 @@ def test_slew_limits_the_first_step():
     controller = PurePursuitController(gains)
     first = controller.compute(np.array([0.0, 0.0]), 0.0, np.array([50.0, 0.0]), DT)
     assert first.forward <= gains.forward_slew * DT + 1e-9
+
+
+def test_slew_limits_lateral_too():
+    """Lateral was unlimited and could snap to full scale in a single 20 ms step.
+
+    That is an input the policy never saw in training, and it lands hardest where the
+    robot is straddling a ledge: told to move sideways, it scrubs along the edge instead
+    of rolling over it.
+    """
+    gains = PursuitGains(lateral_slew=1.0)
+    controller = PurePursuitController(gains)
+    # Off to one side but still inside the pivot threshold, so the controller actually
+    # asks for lateral. Past that threshold it rotates on the spot and lateral is zero,
+    # which would pass this assertion while testing nothing.
+    first = controller.compute(np.array([0.0, 0.0]), 0.0, OFFSET_TARGET, DT)
+    assert abs(first.lateral) <= gains.lateral_slew * DT + 1e-9
+
+
+def test_lateral_reaches_its_target_over_successive_steps():
+    controller = PurePursuitController(PursuitGains(lateral_slew=2.0))
+    command = settled(controller, [0.0, 0.0], 0.0, OFFSET_TARGET)
+    assert abs(command.lateral) == pytest.approx(controller.gains.max_lateral, abs=1e-6)
 
 
 def test_zero_distance_target_is_safe():
