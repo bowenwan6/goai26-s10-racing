@@ -22,6 +22,7 @@ setup(
     entry_points={
         "console_scripts": [
             "sim_node = s10_perception.sim_node:main",
+            "viz_node = s10_perception.viz_node:main",
         ],
     },
 )
