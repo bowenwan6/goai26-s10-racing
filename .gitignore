@@ -33,3 +33,7 @@ results/
 .vscode/
 .idea/
 .DS_Store
+
+# Runtime artefacts
+MUJOCO_LOG.TXT
+.race.log
