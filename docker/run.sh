@@ -8,6 +8,7 @@
 #   docker/run.sh                    # interactive shell
 #   docker/run.sh scripts/build.sh   # run one command and exit
 #   REBUILD=1 docker/run.sh          # force an image rebuild first
+#   CONTAINER_NAME=s10-race docker/run.sh scripts/run_race.sh   # replaces any prior run
 
 set -euo pipefail
 
@@ -30,10 +31,20 @@ tty_flags=(-i)
 # stay bind-mounted so host edits still apply immediately.
 BUILD_VOLUME="${BUILD_VOLUME:-s10-racing-build}"
 
+# Naming the container makes a run replaceable. Killing the host-side `docker run` client
+# does not stop the container it started, so an abandoned race keeps its simulator, policy
+# and follower alive -- and because every stack shares --network host and one
+# ROS_DOMAIN_ID, the orphan's follower goes on publishing /cmd_vel into the next run's
+# simulator. Two stacks fighting over one robot cost an afternoon of debugging terrain that
+# was never the problem. A fixed name plus this pre-emptive kill makes that unrepeatable;
+# the default stays unique so ordinary shells do not evict each other.
+CONTAINER_NAME="${CONTAINER_NAME:-s10-dev-$$}"
+docker rm --force "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+
 # --network host keeps DDS discovery simple; without it the simulator and the controller
 # land in different network namespaces and never find each other.
 exec docker run --rm "${tty_flags[@]}" \
-  --name "s10-dev-$$" \
+  --name "${CONTAINER_NAME}" \
   --network host \
   --volume "${REPO_ROOT}:/ws" \
   --volume "${BUILD_VOLUME}:/opt/s10-build" \

@@ -9,7 +9,15 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 UPSTREAM_SRC="${REPO_ROOT}/upstream/goai_embodied_future_material/src"
-BUILD_PLATFORM="${BUILD_PLATFORM:-x86}"
+# The SDK vendors ONNX Runtime as prebuilt binaries under third_party/onnxruntime/{x86,arm}
+# and selects between them with BUILD_PLATFORM. Its own default is x86, which links the
+# wrong object format on Apple silicon and fails late, at rl_deploy, with "file in wrong
+# format". Pick from the host instead; override for a cross build.
+case "${BUILD_PLATFORM:-$(uname -m)}" in
+  aarch64|arm64|arm) BUILD_PLATFORM=arm ;;
+  x86_64|amd64|x86)  BUILD_PLATFORM=x86 ;;
+  *) echo "error: unknown build platform '${BUILD_PLATFORM:-$(uname -m)}'" >&2; exit 1 ;;
+esac
 ROS_DISTRO_SETUP="${ROS_DISTRO_SETUP:-/opt/ros/jazzy/setup.bash}"
 
 # Build output defaults to the workspace, but can be redirected. Point it outside the
