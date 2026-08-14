@@ -31,3 +31,74 @@ waypoint_follower:
     stall_speed: 0.08
     stall_timeout: 2.5
     recovery_duration: 1.0
+
+    # Obstacle avoidance. Not optional on this course: 12 of the 32 legs cross terrain
+    # more than 0.35 m above the gate plane, and gate 11 sits 0.34 m from the face of a
+    # 2.6 m block that the line to gate 12 runs straight through.
+    avoidance_enabled: true
+
+    # How far off the bearing to the gate the follower may steer. Ninety degrees is what
+    # the gate 11 block needs -- the only clear route there is square to the goal.
+    max_deviation_deg: 90.0
+
+    # Half-width of the corridor a candidate heading must keep clear. The S10 is about
+    # 0.5 m across; the rest is margin for pose and tracking error.
+    corridor_half_width: 0.45
+
+    probe_distance: 4.0
+    blocked_distance: 0.8
+    clearance_weight: 1.6
+    deviation_weight: 1.0
+
+    # Time with no drivable heading at all before backing off, seconds. Long enough to
+    # let a turn in place bring a gap into view, short enough not to wedge.
+    blocked_timeout: 0.4
+
+    # Terrain the height map may see underfoot before forward speed is cut back. Relief
+    # inside a quarter of these costs nothing at all; see FREE_RELIEF_FRACTION.
+    max_step: 0.35
+    max_drop: 0.5
+
+    # Committing to a step. Between gates 5 and 6 the course is a staircase of four
+    # 0.125 m steps; the robot cleared the two rises at 0.6 m/s and then stopped dead on
+    # the first drop for a minute at a time, pitched 16 degrees, with nothing within 8 m
+    # and forward still commanded. Once the body is on a step, sideways command, turning
+    # and speed scaling all work against getting off it, so lateral is zeroed, yaw is
+    # clamped to a crawl, scaling is dropped and forward is floored.
+    #
+    # 8 degrees is comfortably above the 1-3 degrees of gait pitch seen on the flat, and
+    # well under the 14.5 degrees a 0.125 m step puts under a 0.5 m wheelbase.
+    climb_pitch_deg: 8.0
+
+    # The policy's own ceiling, and the one number the step is actually sensitive to.
+    # Backing the base to a fixed start line and driving the y=20.5 drop repeatedly with
+    # nothing changed but the command: 0.50 wedged for the whole 20 s trial, 0.60 crossed
+    # in 7.1 s, 0.70 crossed in 4.3 s with 0.2 s of struggle. This read 0.5 for the run
+    # above, which is why that run lost fifty seconds -- pure pursuit was asking for 0.69
+    # on the approach and the commit *lowered* it just as the wheels reached the lip.
+    climb_speed: 0.7
+
+    # Enough authority to hold a line, not enough to walk the wheels along the lip. The
+    # thrash that lost the second run had yaw saturated at +/-0.70 alternating every second.
+    climb_yaw_rate: 0.15
+
+    # Pitch alone over-triggers: the approach to gate 1 holds a steady +8 degrees for four
+    # seconds and the robot crosses it at 0.83 m/s wanting no help at all. What marks the
+    # ledge is being pitched and getting nowhere -- at the wedge, 0.01 m/s. Now that
+    # climb_speed is the policy ceiling this no longer protects the robot's speed, only its
+    # steering: a slope taken at pace keeps full yaw and lateral instead of being held to a
+    # straight line it never needed, on a course where 12 of 32 legs cross raised terrain.
+    climb_progress_speed: 0.35
+
+    # Push for this long, then reverse straight for a run-up and try again. It never hands
+    # back to free steering while still pitched: an earlier version did, and the follower
+    # spent the next minute scrabbling sideways along the edge instead of over it.
+    #
+    # This was 40 s, on the reasoning that the escapes seen took twenty-odd seconds of steady
+    # push and cutting one short would repeat the stall watchdog's mistake. Sound reasoning,
+    # artefactual evidence: those escapes were slow only because climb_speed was too low. The
+    # slowest genuine crossing measured is 7.1 s, so this is that with margin -- no real
+    # attempt is interrupted, and a true wedge buys its run-up in seconds not in most of a
+    # minute.
+    climb_timeout: 12.0
+    climb_backup: 3.0

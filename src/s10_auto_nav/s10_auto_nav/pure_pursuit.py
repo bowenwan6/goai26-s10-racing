@@ -52,6 +52,12 @@ class PursuitGains:
     #: Slew limits, applied per control step, to keep commands smooth for the policy.
     forward_slew: float = 3.0
     yaw_slew: float = 6.0
+    #: Lateral was left unlimited and could snap from 0 to the full 0.4 m/s in one 20 ms
+    #: step. The policy never saw that: upstream's keyboard interface ramps its commands,
+    #: so a step input is outside the distribution it was trained on. It also matters most
+    #: where it hurts most -- a robot straddling a ledge that is told to move sideways
+    #: scrubs its wheels along the edge instead of rolling over it.
+    lateral_slew: float = 2.0
 
 
 @dataclass
@@ -128,8 +134,9 @@ class PurePursuitController:
     def _slew(self, target: Command, dt: float) -> Command:
         g = self.gains
         forward = _rate_limit(self._last.forward, target.forward, g.forward_slew * dt)
+        lateral = _rate_limit(self._last.lateral, target.lateral, g.lateral_slew * dt)
         yaw_rate = _rate_limit(self._last.yaw_rate, target.yaw_rate, g.yaw_slew * dt)
-        self._last = Command(forward=forward, lateral=target.lateral, yaw_rate=yaw_rate)
+        self._last = Command(forward=forward, lateral=lateral, yaw_rate=yaw_rate)
         return self._last
 
 
