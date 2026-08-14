@@ -23,6 +23,7 @@ import numpy as np
 import rclpy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 from sensor_msgs.msg import LaserScan
@@ -432,12 +433,18 @@ def main(args=None) -> None:
     node = WaypointFollowerNode()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
+        # See viz_node.main: SIGTERM has already closed the context by this point.
         pass
     finally:
-        node.cmd_pub.publish(Twist())
+        # Only worth attempting while the context is alive. It matters when it is: without
+        # this the robot keeps the last command it was given after the follower exits, and
+        # a stopped follower leaves a driving robot.
+        if rclpy.ok():
+            node.cmd_pub.publish(Twist())
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":

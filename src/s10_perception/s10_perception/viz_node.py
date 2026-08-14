@@ -41,6 +41,7 @@ import numpy as np
 import rclpy
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs_py import point_cloud2
@@ -175,11 +176,16 @@ def main(args=None) -> None:
     node = PerceptionVizNode()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
+        # SIGTERM tears the context down before the exception reaches here, so shutting it
+        # down again below raises on a context that is already gone -- turning an ordinary
+        # teardown into a traceback that reads like a crash. Every node in a stopped stack
+        # printed one, which is noise in exactly the logs a failed run is read from.
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":
