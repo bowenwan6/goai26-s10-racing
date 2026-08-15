@@ -11,6 +11,7 @@ import pytest
 
 from s10_climb.sandbox import (
     JOINT_INIT,
+    SIM_TIMESTEP,
     JOINT_NAMES,
     POLICY_KD,
     POLICY_KP,
@@ -41,6 +42,17 @@ def test_joint_order_is_the_actuator_order():
     ]
     assert len(JOINT_NAMES) == 16
     assert JOINT_NAMES[3::4] == [f"{leg}_wheel_joint" for leg in ("fl", "fr", "hl", "hr")]
+
+
+def test_timestep_is_the_races_and_not_the_scenes():
+    """The simulator overrides the XML, and the coarser step cannot resolve the Gate 16 face.
+
+    Left at the scene's own 0.002 the contact solver lets a wheel arrive at the vertical wall
+    with an unresolvable overlap and answers with an impulse that throws the robot metres up,
+    which looks like a manoeuvre and is not one.
+    """
+    assert SIM_TIMESTEP == 0.001
+    assert Sandbox().model.opt.timestep == pytest.approx(SIM_TIMESTEP)
 
 
 def test_wheels_are_velocity_controlled():

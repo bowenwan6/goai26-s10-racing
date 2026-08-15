@@ -39,6 +39,12 @@ TRACK_XML = Path(
     "S10_description/s10_mjcf/mjcf/S10_track.xml"
 )
 
+#: The race overrides the scene's own timestep. `mujoco_simulation_ros2.py` sets
+#: ``model.opt.timestep = DT`` with ``DT = 0.001``, half of what S10_track.xml declares, and
+#: the difference is not cosmetic: at 0.002 the contact solver cannot resolve a wheel arriving
+#: at the vertical face of the Gate 16 wall, and the robot is thrown metres into the air.
+SIM_TIMESTEP = 0.001
+
 #: Upstream's standing pose, JOINT_INIT["S10"] from mujoco_simulation_ros2.py.
 JOINT_INIT = np.array([-0.438, -1.16, 2.76, 0.0,
                        0.438, -1.16, 2.76, 0.0,
@@ -82,6 +88,7 @@ class Sandbox:
 
     def __init__(self, xml: Path | str | None = None):
         self.model = mujoco.MjModel.from_xml_path(str(xml or find_track_xml()))
+        self.model.opt.timestep = SIM_TIMESTEP
         self.data = mujoco.MjData(self.model)
 
         self.qadr, self.vadr = [], []
