@@ -64,6 +64,61 @@ def test_the_wheel_channels_are_the_ones_the_sdk_treats_as_velocity():
             assert not ROBOT_ORDER[leg * 4 + part].endswith("_wheel_joint")
 
 
+def _straight_course(n: int, spacing: float = 5.0):
+    from s10_auto_nav.waypoints import Course, Waypoint
+
+    return Course(
+        [Waypoint(index=i, position=np.array([i * spacing, 0.0, 0.0])) for i in range(n)]
+    )
+
+
+@pytest.mark.parametrize("n_waypoints", [2, 3])
+def test_the_approach_taper_applies_at_every_gate_not_just_the_last(n_waypoints):
+    """Pinned because a run was misdiagnosed on the assumption that it did not.
+
+    `pure_pursuit` tapers forward speed to `max_forward * distance / lookahead` on the run
+    in to a waypoint. It is tempting to read that as a finish-line brake, and therefore to
+    read a segment runner's terminal stall as an artefact of cutting the course short. It is
+    not: `Course.lookahead_point` deliberately never runs the carrot onto the next leg, so
+    the carrot sits on the gate and the taper fires at *every* waypoint. Adding a waypoint
+    past the segment end changes nothing, which is what the parametrisation asserts.
+
+    The consequence is real and belongs to the race, not the harness: half a metre out the
+    robot is asking for 0.7 * 0.5 / 1.4 = 0.25 m/s, and half a metre out is exactly where a
+    robot cresting a riser still has its rear axle on the step.
+    """
+    from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains
+
+    gains = PursuitGains()
+    course = _straight_course(n_waypoints)
+    course.update(course.waypoints[0].xy)  # consume the spawn waypoint
+    assert course.cursor == 1
+
+    controller = PurePursuitController(gains)
+    position = np.array([course.waypoints[1].position[0] - 0.5, 0.0])
+    for _ in range(50):  # let the slew limiter settle
+        target = course.lookahead_point(position, controller.lookahead_distance())
+        command = controller.compute(position, 0.0, target, 0.02)
+
+    assert command.forward == pytest.approx(gains.max_forward * 0.5 / gains.lookahead, rel=1e-2)
+
+
+def test_the_taper_cannot_stall_the_robot_before_the_gate_is_consumed():
+    """The floor on the taper: the slowest command the robot ever gets on a clean approach.
+
+    `Course` consumes a gate at `advance_radius`, so the command bottoms out at
+    `max_forward * advance_radius / lookahead` and then jumps back up. Worth a number rather
+    than a shrug, because whether 0.175 m/s is enough to carry a rear axle over a 0.109 m
+    riser is the whole question on segment 17->18.
+    """
+    from s10_auto_nav.pure_pursuit import PursuitGains
+
+    gains = PursuitGains()
+    course = _straight_course(3)
+    floor = gains.max_forward * course.advance_radius / gains.lookahead
+    assert floor == pytest.approx(0.175, abs=1e-3)
+
+
 def test_the_png_writer_produces_a_file_a_decoder_accepts(tmp_path):
     """Written by hand because the image has no imageio, PIL, OpenCV or ffmpeg.
 
