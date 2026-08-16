@@ -204,7 +204,11 @@ class RouterOutput:
     source: Source
     #: Only meaningful when ``source`` is ``ROUTER``; ``NAV`` forwards the follower's command
     #: unchanged apart from ``speed_scale``, and ``POLICY`` carries the policy's action.
-    command: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    #: ``None`` means this tick carries no body-velocity opinion at all, which is what a
+    #: 16-joint policy produces. It is distinct from a zero twist, which is an assertion
+    #: that the body should hold still. Deciding what to actually publish for ``None`` is
+    #: the ROS layer's job, not this one's.
+    command: tuple[float, float, float] | None = (0.0, 0.0, 0.0)
     joints: np.ndarray | None = None
     speed_scale: float = 1.0
     reason: str = ""
@@ -594,7 +598,10 @@ class Router:
             return RouterOutput(
                 self.mode, Source.POLICY, command=action.twist or (0.0, 0.0, 0.0), reason="climbing"
             )
-        return RouterOutput(self.mode, Source.POLICY, joints=action.joints, reason="climbing")
+        # No twist: a joint action is not a body velocity and must not be turned into one.
+        return RouterOutput(
+            self.mode, Source.POLICY, command=None, joints=action.joints, reason="climbing"
+        )
 
     def _physically_clear(self, state: RobotState) -> tuple[bool, str]:
         """Did the robot actually get over the thing? Measured, not asked.
