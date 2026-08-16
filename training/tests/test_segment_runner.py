@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-
 from s10_climb.segment_runner import (
     DEFAULT_ROBOT,
     POLICY2ROBOT,
@@ -20,6 +19,7 @@ from s10_climb.segment_runner import (
     SCALE_ROBOT,
     _write_png,
 )
+
 from s10_rl.observation import POLICY_ORDER, ROBOT_ORDER
 
 #: ``dof_default_eigen_robot`` from run_policy/s10_policy_runner.hpp, copied by hand. The
