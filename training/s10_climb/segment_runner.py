@@ -43,10 +43,10 @@ from pathlib import Path
 import mujoco
 import numpy as np
 import onnxruntime as ort
+from s10_climb.sandbox import JOINT_INIT, POLICY_KD, POLICY_KP, Sandbox, find_track_xml
 
 from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains
 from s10_auto_nav.waypoints import Course, Waypoint
-from s10_climb.sandbox import JOINT_INIT, POLICY_KD, POLICY_KP, Sandbox, find_track_xml
 from s10_rl.observation import (
     ACTION_SCALE,
     DEFAULT_JOINT_POS,
