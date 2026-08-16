@@ -219,7 +219,10 @@ def test_joint_policy_actions_reach_the_boundary_as_joints():
     out = router.tick(s, (0.5, 0.0, 0.0), observation_from_state(s))
     assert out.source is Source.POLICY
     assert out.joints is not None and out.joints.shape == (16,)
-    assert out.command == (0.0, 0.0, 0.0)
+    # No twist at all, rather than a zero one. The distinction is the point: a zero twist
+    # asserts "hold the body still", and a joint policy has no body-velocity opinion to
+    # assert. What to publish for that is the ROS layer's decision, not the router's.
+    assert out.command is None
 
 
 # --------------------------------------------------------------- safety
