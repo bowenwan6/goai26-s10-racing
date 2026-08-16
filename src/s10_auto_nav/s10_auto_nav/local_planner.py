@@ -212,6 +212,75 @@ def _wheel_corridor(grid: np.ndarray) -> np.ndarray:
     return grid[:, margin : n_y - margin]
 
 
+#: Longitudinal spacing of the shipped height map, metres: 1.8 m of span over 13 rows.
+#: Only used to turn the fitted plane's per-cell gradient into a slope in degrees.
+DEFAULT_CELL_X = 1.8 / 12
+
+
+@dataclass(frozen=True)
+class Relief:
+    """How the ground under the wheels departs from the plane fitted through it.
+
+    Split into a rise, a drop and the slope of the plane itself because those three ask
+    different questions. A ramp is all slope and almost no residual; a stair edge is all
+    residual and, over a long enough patch, almost no slope. Collapsing them into one
+    "roughness" number is what makes a ramp indistinguishable from a step, and the follower
+    has to treat those two completely differently.
+    """
+
+    #: Metres the corridor rises above the fitted plane, and falls below it. Both positive.
+    rise: float = 0.0
+    drop: float = 0.0
+    #: Pitch of the fitted plane along the direction of travel, degrees, uphill positive.
+    slope_deg: float = 0.0
+    #: False when the patch was too small or too occluded to fit anything to, in which
+    #: case every other field is zero and means "not measured" rather than "flat".
+    valid: bool = False
+
+
+def terrain_relief(heightmap: np.ndarray, cell_x: float = DEFAULT_CELL_X) -> Relief:
+    """Measure the ground under the wheels. See :class:`Relief` for what comes back.
+
+    Shared with :func:`ground_clearance` on purpose: the speed scale and the terrain
+    classifier disagreeing about how high the step ahead is would be its own bug.
+    """
+    grid = _wheel_corridor(np.asarray(heightmap, float))
+    if grid.size == 0:
+        return Relief()
+
+    # Reject ceilings before fitting, not after. A deck occupying a third of the patch tilts
+    # the plane hard enough that the flat ground beneath it comes out as a pit, and the robot
+    # brakes for the hole it just invented.
+    #
+    # The reference comes from the near rows rather than from the whole patch, because the
+    # robot is standing on those: they are ground by definition. Taking the median of
+    # everything fails exactly when it matters, since walking head-on into an arch fills most
+    # of the patch with deck and makes the deck the median.
+    near = grid[: max(1, grid.shape[0] // 3)] if grid.ndim == 2 else grid
+    is_ground = grid <= float(np.median(near)) + CEILING_RESIDUAL
+    if is_ground.sum() < 3:
+        return Relief()
+
+    if grid.ndim == 2:
+        plane = _fitted_plane(grid, is_ground)
+        residual = grid - plane
+        # The plane is evaluated on cell indices, so its x gradient is metres per cell.
+        rows = plane[:, plane.shape[1] // 2]
+        gradient = float(np.polyfit(np.arange(rows.size), rows, 1)[0]) if rows.size > 1 else 0.0
+        slope_deg = math.degrees(math.atan2(gradient, max(cell_x, 1e-6)))
+    else:
+        residual = grid - float(np.median(grid))
+        slope_deg = 0.0
+
+    ground = residual[is_ground]
+    return Relief(
+        rise=float(max(0.0, ground.max())),
+        drop=float(max(0.0, -ground.min())),
+        slope_deg=slope_deg,
+        valid=True,
+    )
+
+
 def ground_clearance(heightmap: np.ndarray, max_step: float, max_drop: float) -> float:
     """Fraction of commanded speed the terrain underfoot allows.
 
@@ -228,30 +297,13 @@ def ground_clearance(heightmap: np.ndarray, max_step: float, max_drop: float) ->
 
     Only the wheel corridor is judged; see WHEEL_CORRIDOR_FRACTION.
     """
-    grid = _wheel_corridor(np.asarray(heightmap, float))
-    if grid.size == 0:
+    relief = terrain_relief(heightmap)
+    if not relief.valid:
         return 1.0
-
-    # Reject ceilings before fitting, not after. A deck occupying a third of the patch
-    # tilts the plane hard enough that the flat ground beneath it comes out as a pit, and
-    # the robot brakes for the hole it just invented.
-    #
-    # The reference comes from the near rows rather than from the whole patch, because the
-    # robot is standing on those: they are ground by definition. Taking the median of
-    # everything fails exactly when it matters, since walking head-on into an arch fills
-    # most of the patch with deck and makes the deck the median.
-    near = grid[: max(1, grid.shape[0] // 3)] if grid.ndim == 2 else grid
-    is_ground = grid <= float(np.median(near)) + CEILING_RESIDUAL
-    if is_ground.sum() < 3:
-        return 1.0
-
-    residual = grid - _fitted_plane(grid, is_ground) if grid.ndim == 2 else grid - np.median(grid)
-    ground = residual[is_ground]
 
     # A step of max_step and a drop of max_drop are equally disqualifying, so each is
     # normalised against its own limit before the worse of the two is taken.
-    worst = max(float(ground.max()) / max(max_step, 1e-6),
-                -float(ground.min()) / max(max_drop, 1e-6))
+    worst = max(relief.rise / max(max_step, 1e-6), relief.drop / max(max_drop, 1e-6))
 
     # Re-scale so the free band costs nothing and the limit still costs everything.
     span = max(1.0 - FREE_RELIEF_FRACTION, 1e-6)
