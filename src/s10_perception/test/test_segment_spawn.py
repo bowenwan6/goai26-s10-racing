@@ -13,7 +13,7 @@ import mujoco
 import numpy as np
 import pytest
 
-from s10_perception.segment_spawn import SpawnOverride, ground_height
+from s10_perception.segment_spawn import SpawnOverride, ground_height, level_ground
 
 #: The scene below has two hinges where the robot has sixteen. The count is irrelevant to
 #: everything this module does -- it copies whatever it is given into ``qpos[7:]`` -- and a
@@ -120,5 +120,40 @@ def test_apply_writes_the_pose_and_clears_the_velocity(scene):
 
 def test_a_spawn_over_nothing_is_refused(scene):
     model, data = scene
-    with pytest.raises(ValueError, match="no ground"):
+    with pytest.raises(ValueError, match="level enough"):
         SpawnOverride(x=500.0, y=500.0, yaw=0.0).pose(model, data, JOINT_INIT)
+
+
+def test_level_ground_rejects_a_footprint_straddling_an_edge(scene):
+    """The block's edge is at x=4. A pose centred there has half its wheels 0.5 m lower."""
+    model, data = scene
+    assert level_ground(model, data, 5.0, 0.0, 0.0) == pytest.approx(0.5, abs=1e-6)
+    assert math.isnan(level_ground(model, data, 4.0, 0.0, 0.0))
+
+
+def test_level_ground_follows_the_heading(scene):
+    """The footprint is longer than it is wide, so which way it points changes the answer.
+
+    The block's edge is at y=1. From y=0.75 the near 0.22 m half-width clears it and the
+    near 0.30 m half-length does not, so the same point is legal facing along the block
+    and not legal facing across it.
+    """
+    model, data = scene
+    assert level_ground(model, data, 5.0, 0.75, 0.0) == pytest.approx(0.5, abs=1e-6)
+    assert math.isnan(level_ground(model, data, 5.0, 0.75, math.pi / 2))
+
+
+def test_a_spawn_against_an_edge_backs_off_along_the_approach(scene):
+    """Waypoint 23's failure mode: the waypoint itself is not a place to stand."""
+    model, data = scene
+    # Facing +x at the block's leading edge. Backing off along -yaw finds the floor.
+    base, _, _ = SpawnOverride(x=4.0, y=0.0, yaw=0.0, height=0.2).pose(model, data, JOINT_INIT)
+    assert base[0] < 4.0, "should have moved back along the approach"
+    assert base[2] == pytest.approx(0.2, abs=1e-6), "and be standing on the floor, not the block"
+
+
+def test_backing_off_does_not_move_a_pose_that_is_already_legal(scene):
+    """Otherwise every spawn drifts backwards and no segment starts where it says."""
+    model, data = scene
+    base, _, _ = SpawnOverride(x=0.0, y=0.0, yaw=0.0).pose(model, data, JOINT_INIT)
+    assert base[:2] == pytest.approx([0.0, 0.0])
