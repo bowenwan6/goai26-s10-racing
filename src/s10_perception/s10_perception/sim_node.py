@@ -23,7 +23,9 @@ downstream nodes need no change.
 from __future__ import annotations
 
 import argparse
+import math
 import os
+from pathlib import Path
 
 import mujoco
 import numpy as np
@@ -35,6 +37,8 @@ from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 
 from s10_perception.heightmap import HeightmapConfig, HeightmapSampler
 from s10_perception.lidar import LidarConfig, RayCastLidar
+from s10_perception.png import write_png
+from s10_perception.segment_spawn import SpawnOverride
 from s10_perception.upstream import load_simulator_module
 
 _upstream = load_simulator_module()
@@ -65,12 +69,16 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         if xml_path is not None:
             kwargs["xml_path"] = xml_path
         super().__init__(**kwargs)
+        self.model_key = model_key or _upstream.MODEL_NAME
 
         self.base_body_id = mujoco.mj_name2id(
             self.model, mujoco.mjtObj.mjOBJ_BODY, _upstream.TRACK_BODY_NAME
         )
         if self.base_body_id < 0:
             raise RuntimeError(f"Body '{_upstream.TRACK_BODY_NAME}' not found in the model")
+
+        self._apply_segment_spawn()
+        self._open_segment_video()
 
         self.lidar = RayCastLidar(self.model, self.base_body_id, lidar_config)
         self.heightmap = HeightmapSampler(self.model, self.base_body_id, heightmap_config)
@@ -85,11 +93,70 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             f"heightmap {self.heightmap.cfg.n_x}x{self.heightmap.cfg.n_y} cells"
         )
 
+    def _apply_segment_spawn(self) -> None:
+        """Move the start pose, for the segment harness only.
+
+        A scored run never gets here: :meth:`SpawnOverride.from_env` returns ``None`` unless
+        ``S10_SPAWN_XY`` is set, and the whole method is then two comparisons and a return.
+        The simulator's own waypoint counter is wound forward to match, so its ``[TRACK]``
+        lines are about the segment under test rather than about a start line the robot is
+        nowhere near -- it stays an independent check on our recorder, which is the reason
+        for not simply ignoring it.
+        """
+        spawn = SpawnOverride.from_env()
+        if spawn is None:
+            return
+
+        base = spawn.apply(self.model, self.data, _upstream.JOINT_INIT[self.model_key])
+        if spawn.waypoint_index is not None and getattr(self, "track_enabled", False):
+            for index in range(min(spawn.waypoint_index + 1, len(self.track_waypoint_positions))):
+                self._hide_track_point(index)
+            self.track_next_index = spawn.waypoint_index + 1
+        self.get_logger().warn(
+            f"[segment] spawn overridden to ({base[0]:.3f}, {base[1]:.3f}, {base[2]:.3f}) "
+            f"yaw={math.degrees(spawn.yaw):.1f} deg seed={spawn.seed}; this is a test run, "
+            f"not a scored one"
+        )
+
+    def _open_segment_video(self) -> None:
+        """Set up offscreen frame capture, for the segment harness only.
+
+        Same rule as the spawn override: unset environment means this costs one dictionary
+        lookup and nothing else. A headless renderer is expensive enough -- roughly a
+        millisecond a frame at this size, against a 1 ms physics step -- that it must not be
+        something a scored run can end up paying for by accident.
+        """
+        self._frames_dir = None
+        self._frame_renderer = None
+        directory = os.environ.get("S10_SEGMENT_VIDEO", "").strip()
+        if not directory:
+            return
+        self._frames_dir = Path(directory)
+        self._frames_dir.mkdir(parents=True, exist_ok=True)
+        self._frame_renderer = mujoco.Renderer(self.model, height=480, width=640)
+        self._frame_camera = mujoco.MjvCamera()
+        self._frame_camera.distance = 4.0
+        self._frame_camera.elevation = -20.0
+        self._frame_camera.azimuth = 90.0
+        self._frame_period = 1.0 / float(os.environ.get("S10_SEGMENT_VIDEO_HZ", "10"))
+        self._frame_next = 0.0
+        self._frame_number = 0
+
+    def _capture_frame(self) -> None:
+        if self._frame_renderer is None or self.timestamp < self._frame_next:
+            return
+        self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
+        self._frame_renderer.update_scene(self.data, self._frame_camera)
+        write_png(self._frames_dir / f"{self._frame_number:05d}.png", self._frame_renderer.render())
+        self._frame_number += 1
+        self._frame_next = self.timestamp + self._frame_period
+
     def _publish_robot_state(self, step: int) -> None:
         """Extend upstream's state publication with our own sensors."""
         super()._publish_robot_state(step)
         if step % PERCEPTION_DECIMATION == 0:
             self._publish_perception()
+            self._capture_frame()
 
     def _publish_perception(self) -> None:
         stamp = self.get_clock().now().to_msg()
