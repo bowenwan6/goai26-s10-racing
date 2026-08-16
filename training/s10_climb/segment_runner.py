@@ -251,6 +251,8 @@ def run_segment(
     out_dir: Path | None = None,
     video: bool = False,
     video_hz: float = 10.0,
+    brake_distance: float | None = None,
+    tag: str = "",
 ) -> RunResult:
     """Spawn at ``start``, follow the course to ``end``, and report what happened."""
     result = RunResult(start=start, end=end, seed=seed)
@@ -318,14 +320,14 @@ def run_segment(
     # A sub-course rather than a seek into the full one, so the follower cannot wander back
     # towards waypoints behind the start.
     course = Course([waypoints[i] for i in range(start, end + 1)])
-    controller = PurePursuitController(PursuitGains())
+    controller = PurePursuitController(PursuitGains(brake_distance=brake_distance))
     policy.reset()
 
     rows: list[dict] = []
     frames_dir = None
     renderer = None
     if video and out_dir is not None:
-        frames_dir = out_dir / f"seg{start:02d}_{end:02d}_seed{seed}_frames"
+        frames_dir = out_dir / f"seg{start:02d}_{end:02d}{tag}_seed{seed}_frames"
         frames_dir.mkdir(parents=True, exist_ok=True)
         renderer = mujoco.Renderer(sb.model, height=480, width=640)
         result.frames = str(frames_dir)
@@ -414,7 +416,7 @@ def run_segment(
 
     if out_dir is not None and rows:
         out_dir.mkdir(parents=True, exist_ok=True)
-        path = out_dir / f"seg{start:02d}_{end:02d}_seed{seed}.csv"
+        path = out_dir / f"seg{start:02d}_{end:02d}{tag}_seed{seed}.csv"
         with path.open("w", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
             writer.writeheader()
@@ -440,12 +442,18 @@ def main(argv: list[str] | None = None) -> int:
                         help="seconds spent standing up before driving")
     parser.add_argument("--out", type=Path, default=None, help="where CSV and JSON go")
     parser.add_argument("--video", action="store_true", help="write PNG frames (slow)")
+    parser.add_argument("--brake-distance", type=float, default=None,
+                        help="override PursuitGains.brake_distance; unset races as shipped")
+    parser.add_argument("--tag", default="", help="suffix for output files, to keep A/B runs apart")
     args = parser.parse_args(argv)
 
     root = repo_root()
     waypoints = Course.from_yaml(root / COURSE_PATH).waypoints
     if not 0 <= args.start < args.end < len(waypoints):
         parser.error(f"need 0 <= start < end < {len(waypoints)}")
+
+    # A tag keeps an A/B pair from overwriting each other's CSVs.
+    tag = f"_{args.tag}" if args.tag else ""
 
     sb = Sandbox()
     policy = Policy(root / POLICY_PATH, sb.model)
@@ -455,7 +463,8 @@ def main(argv: list[str] | None = None) -> int:
         r = run_segment(
             sb, policy, waypoints, args.start, args.end, seed,
             max_time=args.max_time, settle=args.settle, spawn_z=args.spawn_z,
-            out_dir=args.out, video=args.video,
+            out_dir=args.out, video=args.video, brake_distance=args.brake_distance,
+            tag=tag,
         )
         results.append(r)
         print(
@@ -469,7 +478,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.out is not None:
         args.out.mkdir(parents=True, exist_ok=True)
-        path = args.out / f"seg{args.start:02d}_{args.end:02d}.json"
+        path = args.out / f"seg{args.start:02d}_{args.end:02d}{tag}.json"
         path.write_text(json.dumps([asdict(r) for r in results], indent=2))
         print(f"wrote {path}")
 

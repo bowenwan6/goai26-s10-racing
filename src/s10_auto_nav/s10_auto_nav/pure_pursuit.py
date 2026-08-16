@@ -39,6 +39,17 @@ class PursuitGains:
     #: Lookahead grows with speed so fast sections steer gently.
     lookahead_speed_gain: float = 0.5
 
+    #: Distance at which the approach brake begins. ``None`` means "use ``lookahead``",
+    #: which is what the brake used unconditionally before this knob existed, so leaving it
+    #: unset reproduces the raced behaviour exactly.
+    #:
+    #: Worth tuning, on evidence: the segment sweep stalled on three separate climbs --
+    #: 17->18 at 0.55 m short, 25->26 at 0.91 m, 27->28 at 0.84 m -- each with the command
+    #: cut to ``max_forward * distance / lookahead`` and each still asking to go forward. A
+    #: waypoint that sits on or just past an incline is approached at a speed chosen for
+    #: flat ground, and the robot runs out of push with its rear axle still on a riser.
+    brake_distance: float | None = None
+
     yaw_gain: float = 1.8
     lateral_gain: float = 0.9
 
@@ -127,7 +138,8 @@ class PurePursuitController:
         lateral = float(np.clip(g.lateral_gain * cross_track, -g.max_lateral, g.max_lateral))
 
         # Brake into the final approach so the last waypoint is not overshot.
-        forward = min(forward, g.max_forward * min(1.0, distance / max(g.lookahead, 1e-6)))
+        brake = g.lookahead if g.brake_distance is None else g.brake_distance
+        forward = min(forward, g.max_forward * min(1.0, distance / max(brake, 1e-6)))
 
         return self._slew(Command(forward=forward, lateral=lateral, yaw_rate=yaw_rate), dt)
 

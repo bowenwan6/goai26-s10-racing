@@ -120,3 +120,34 @@ def test_zero_distance_target_is_safe():
     command = controller.compute(np.array([1.0, 1.0]), 0.0, np.array([1.0, 1.0]), DT)
     assert command.forward == 0.0
     assert command.yaw_rate == 0.0
+
+
+def test_brake_distance_defaults_to_the_lookahead_it_replaced():
+    """The knob is new; the shipped behaviour is not. Unset, the two must be identical.
+
+    Worth asserting rather than eyeballing, because the default is what races.
+    """
+    unset = PurePursuitController(PursuitGains())
+    explicit = PurePursuitController(PursuitGains(brake_distance=PursuitGains().lookahead))
+    target = np.array([0.6, 0.0])
+    for _ in range(50):
+        a = unset.compute(np.array([0.0, 0.0]), 0.0, target, DT)
+        b = explicit.compute(np.array([0.0, 0.0]), 0.0, target, DT)
+    assert a.as_tuple() == pytest.approx(b.as_tuple())
+
+
+def test_a_shorter_brake_distance_keeps_more_speed_on_the_run_in():
+    """Why the knob exists: three climbs in the segment sweep stalled inside the taper.
+
+    17->18 stopped 0.55 m short of its waypoint with its rear axle on the top riser, still
+    asking to go forward at the 0.275 m/s the taper allowed. Shortening the brake gives the
+    robot its push back without touching how it steers.
+    """
+    gains = PursuitGains()
+    target = np.array([0.6, 0.0])
+    shipped = settled(PurePursuitController(gains), [0.0, 0.0], 0.0, target)
+    braked_late = settled(
+        PurePursuitController(PursuitGains(brake_distance=0.4)), [0.0, 0.0], 0.0, target
+    )
+    assert shipped.forward == pytest.approx(gains.max_forward * 0.6 / gains.lookahead, rel=1e-3)
+    assert braked_late.forward == pytest.approx(gains.max_forward, rel=1e-3)
