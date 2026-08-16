@@ -23,10 +23,21 @@ def generate_launch_description() -> LaunchDescription:
 
     course_file = LaunchConfiguration("course_file")
     nav_params = LaunchConfiguration("nav_params")
+    router_params = LaunchConfiguration("router_params")
     mjcf = LaunchConfiguration("mjcf")
     launch_sim = LaunchConfiguration("launch_sim")
     viz = LaunchConfiguration("viz")
     rviz = LaunchConfiguration("rviz")
+    router = LaunchConfiguration("strategy_router")
+
+    # The follower's output moves rather than being duplicated. With the router on it feeds
+    # /strategy/nav_cmd_vel and the router is the only publisher of /cmd_vel; with the router
+    # off the follower publishes /cmd_vel exactly as before. Expressed as one substitution
+    # instead of two conditional Node blocks so that "who publishes /cmd_vel" has a single
+    # answer visible in one place.
+    follower_cmd_topic = PythonExpression(
+        ["'/strategy/nav_cmd_vel' if '", router, "' == 'true' else '/cmd_vel'"]
+    )
 
     return LaunchDescription(
         [
@@ -39,6 +50,11 @@ def generate_launch_description() -> LaunchDescription:
                 "nav_params",
                 default_value=PathJoinSubstitution([bringup_share, "config", "nav.yaml"]),
                 description="Waypoint follower parameter file.",
+            ),
+            DeclareLaunchArgument(
+                "router_params",
+                default_value=PathJoinSubstitution([bringup_share, "config", "strategy.yaml"]),
+                description="Strategy router parameter file.",
             ),
             DeclareLaunchArgument(
                 "mjcf",
@@ -71,12 +87,36 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="false",
                 description="Also open RViz on the bundled config. Implies viz:=true.",
             ),
+            DeclareLaunchArgument(
+                "strategy_router",
+                default_value="false",
+                description=(
+                    "Insert the strategy router between the follower and /cmd_vel. Off by "
+                    "default: a scored run must behave exactly as it did before this "
+                    "existed. On, the follower publishes /strategy/nav_cmd_vel and the "
+                    "router owns /cmd_vel."
+                ),
+            ),
             Node(
                 package="s10_auto_nav",
                 executable="waypoint_follower",
                 name="waypoint_follower",
                 output="screen",
-                parameters=[nav_params, {"course_file": course_file}],
+                parameters=[
+                    nav_params,
+                    {"course_file": course_file, "cmd_vel_topic": follower_cmd_topic},
+                ],
+            ),
+            Node(
+                package="s10_auto_nav",
+                executable="strategy_router",
+                name="strategy_router",
+                output="screen",
+                parameters=[
+                    router_params,
+                    {"course_file": course_file, "nav_cmd_topic": "/strategy/nav_cmd_vel"},
+                ],
+                condition=IfCondition(router),
             ),
             Node(
                 package="s10_perception",
