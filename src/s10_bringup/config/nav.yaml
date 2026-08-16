@@ -5,11 +5,16 @@
 # locomotion policy was trained on, or the policy will be driven out of distribution and
 # fall. Raise it together with the training command range, never alone.
 #
-# The figures below are the shipped policy's trained envelope, taken from the caps the
-# upstream keyboard interface enforces (max_forward_ 0.7, max_side_ 0.5, max_yaw_ 0.7).
-# Commanding outside it does not merely degrade tracking: at 1.2 rad/s the robot pivoted
-# on the spot at waypoint 0 indefinitely, because the policy simply does not follow a yaw
-# rate it never saw in training. Retrain before raising these.
+# The figures below are inherited from the upstream template's teleop caps. That file is not
+# vendored here, so the numbers cannot be checked against their source from this tree and
+# should be treated as convention rather than as a measured envelope -- the earlier version
+# of this comment cited it as though it were on disk, and quoted a lateral cap of 0.5 that
+# does not match the 0.4 actually set below.
+#
+# What is measured, and what actually constrains these: at 1.2 rad/s the robot pivoted on the
+# spot at waypoint 0 indefinitely, because the policy does not follow a yaw rate it never saw
+# in training. That is the failure mode raising these buys, and it is why the ceiling moves
+# only together with the training command range, never alone.
 
 waypoint_follower:
   ros__parameters:
