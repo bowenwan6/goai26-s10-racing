@@ -27,9 +27,15 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Bool, Float32, Float32MultiArray
+from std_msgs.msg import Bool, Float32, Float32MultiArray, String
 
-from s10_auto_nav.local_planner import AvoidanceConfig, LocalPlanner, ground_clearance
+from s10_auto_nav.local_planner import (
+    AvoidanceConfig,
+    LocalPlanner,
+    Relief,
+    ground_clearance,
+    terrain_relief,
+)
 from s10_auto_nav.pure_pursuit import (
     Command,
     PurePursuitController,
@@ -37,6 +43,12 @@ from s10_auto_nav.pure_pursuit import (
     wrap_angle,
 )
 from s10_auto_nav.step_commit import StepCommit, StepCommitConfig
+from s10_auto_nav.terrain import (
+    TerrainClassifier,
+    TerrainKind,
+    TerrainReading,
+    TerrainVerdict,
+)
 from s10_auto_nav.waypoints import Course
 
 CONTROL_RATE_HZ = 50.0
@@ -50,6 +62,21 @@ SENSOR_TIMEOUT_S = 0.5
 #: second. Braking for an obstacle should be prompt; accelerating out of one should not
 #: undo the slew limiting the controller just applied.
 SCALE_RECOVERY_RATE = 1.5
+
+#: Speed ceiling while the terrain classifier cannot say what is ahead. Not zero: the
+#: height map only changes when the robot moves, so stopping on UNKNOWN keeps it unknown.
+UNKNOWN_TERRAIN_SCALE = 0.5
+
+
+def _optional_positive(value) -> float | None:
+    """Read a ROS float parameter where zero means "unset".
+
+    ROS parameters cannot be None, and the brake distance genuinely has a third state:
+    inherit the lookahead, which is what it did before the knob existed. Zero is not a
+    meaningful braking distance, so it is the sentinel.
+    """
+    number = float(value)
+    return number if number > 0.0 else None
 
 
 def yaw_from_quaternion(x: float, y: float, z: float, w: float) -> float:
@@ -89,6 +116,12 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("max_yaw_rate", PursuitGains.max_yaw_rate)
         self.declare_parameter("lookahead", PursuitGains.lookahead)
         self.declare_parameter("yaw_gain", PursuitGains.yaw_gain)
+        # Approach braking. Zero means "inherit the lookahead", which is what the brake did
+        # before the knob existed, so the shipped default changes nothing. The stair value
+        # is selected automatically by the terrain classifier, not by the operator: see
+        # _brake_distance_for.
+        self.declare_parameter("brake_distance", 0.0)
+        self.declare_parameter("stair_brake_distance", 0.4)
         self.declare_parameter("stall_speed", 0.08)
         self.declare_parameter("stall_timeout", 2.5)
         self.declare_parameter("recovery_duration", 1.0)
@@ -132,7 +165,12 @@ class WaypointFollowerNode(Node):
                 max_yaw_rate=float(self.get_parameter("max_yaw_rate").value),
                 lookahead=float(self.get_parameter("lookahead").value),
                 yaw_gain=float(self.get_parameter("yaw_gain").value),
+                brake_distance=_optional_positive(self.get_parameter("brake_distance").value),
             )
+        )
+        self.flat_brake_distance = self.controller.gains.brake_distance
+        self.stair_brake_distance = _optional_positive(
+            self.get_parameter("stair_brake_distance").value
         )
 
         self.stall_speed = float(self.get_parameter("stall_speed").value)
@@ -184,6 +222,8 @@ class WaypointFollowerNode(Node):
         self._blocked_for = 0.0
         self._speed_scale = 1.0
         self._log_countdown = 0.0
+        self.terrain_classifier = TerrainClassifier()
+        self._last_forward = 0.0
 
         latched = QoSProfile(
             history=QoSHistoryPolicy.KEEP_LAST,
@@ -195,6 +235,7 @@ class WaypointFollowerNode(Node):
         cmd_topic = str(self.get_parameter("cmd_vel_topic").value) or "/cmd_vel"
         self.cmd_pub = self.create_publisher(Twist, cmd_topic, 10)
         self.progress_pub = self.create_publisher(Float32, "/nav/progress", latched)
+        self.terrain_pub = self.create_publisher(String, "/nav/terrain", 10)
         self.finished_pub = self.create_publisher(Bool, "/nav/finished", latched)
         self.create_subscription(Odometry, "/ground_truth/odom", self._odom_callback, 50)
         self.create_subscription(LaserScan, "/scan", self._scan_callback, 10)
@@ -281,7 +322,19 @@ class WaypointFollowerNode(Node):
             return
 
         self._update_stall_watchdog(dt)
-        target, scale = self._avoidance_target(carrot, dt)
+        verdict = self._classify_terrain(dt)
+        self.terrain_pub.publish(String(data=f"{verdict.kind.value}:{verdict.confidence:.2f}"))
+        self.controller.gains.brake_distance = self._brake_distance_for(verdict.kind)
+
+        if verdict.drive_at_it:
+            # The lidar return and the rise underneath it are the same object, so steering
+            # around it only finds another part of it. This is the waypoint 17 case: the
+            # avoidance re-chose a side every tick for a hundred seconds while the height
+            # map reported 0.31 m of stairs dead ahead the whole time.
+            target, scale = carrot, 1.0
+            self._blocked_for = 0.0
+        else:
+            target, scale = self._avoidance_target(carrot, dt)
 
         if self._blocked_for >= self.blocked_timeout:
             self.get_logger().warn(
@@ -295,13 +348,24 @@ class WaypointFollowerNode(Node):
             return
 
         terrain = self._terrain_scale()
+        if verdict.kind is TerrainKind.UNKNOWN:
+            # Not knowing is a reason to go slowly, not a reason to stop: the height map
+            # only changes when the robot moves, so freezing on UNKNOWN is self-sealing.
+            terrain = min(terrain, UNKNOWN_TERRAIN_SCALE)
         command = self.controller.compute(self._pose_xy, self._yaw, target, dt)
         published = self._apply_speed_scale(command, min(scale, terrain), dt)
+        self._last_forward = published.forward
         self._publish(published)
-        self._log_state(published, scale, terrain, climbing, dt)
+        self._log_state(published, scale, terrain, climbing, dt, verdict)
 
     def _log_state(
-        self, command: Command, scale: float, terrain: float, climbing: bool, dt: float
+        self,
+        command: Command,
+        scale: float,
+        terrain: float,
+        climbing: bool,
+        dt: float,
+        verdict: TerrainVerdict | None = None,
     ) -> None:
         """One line a second on what the follower is doing and why.
 
@@ -329,6 +393,7 @@ class WaypointFollowerNode(Node):
             f"terrain={terrain:.2f} relief={relief:.2f} "
             f"pitch={math.degrees(self._pitch):+.0f}deg "
             f"tilt={math.degrees(self._tilt):.0f}deg{mode}"
+            + (f" [{verdict}]" if verdict is not None else "")
         )
 
     def _avoidance_target(self, carrot: np.ndarray, dt: float) -> tuple[np.ndarray, float]:
@@ -361,6 +426,64 @@ class WaypointFollowerNode(Node):
             [math.cos(heading), math.sin(heading)]
         )
         return redirected, steering.speed_scale
+
+    def _classify_terrain(self, dt: float) -> TerrainVerdict:
+        """Assemble one reading from what the follower already has, and ask what is ahead.
+
+        Everything here is a measurement the follower was making anyway; the classifier's
+        contribution is arbitrating between them rather than letting whichever sensor
+        happened to be consulted last decide.
+        """
+        relief = (
+            terrain_relief(self._heightmap)
+            if self._heightmap is not None and self._heightmap_age <= SENSOR_TIMEOUT_S
+            else Relief()
+        )
+        obstacle = math.inf
+        if self._ranges is not None and self._scan_age <= SENSOR_TIMEOUT_S:
+            ahead = np.asarray(self._ranges, float)
+            finite = ahead[np.isfinite(ahead) & (ahead > 0.0)]
+            if finite.size:
+                obstacle = float(finite.min())
+
+        reading = TerrainReading(
+            lidar_clearance=obstacle,
+            obstacle_distance=obstacle,
+            relief_rise=relief.rise,
+            relief_drop=relief.drop,
+            slope_deg=relief.slope_deg,
+            pitch_deg=math.degrees(self._pitch),
+            roll_deg=math.degrees(self._roll_from_tilt()),
+            speed=self._speed,
+            commanded_forward=self._last_forward,
+            sensor_age=max(self._scan_age, self._heightmap_age),
+        )
+        return self.terrain_classifier.update(reading, dt)
+
+    def _roll_from_tilt(self) -> float:
+        """Roll implied by the measured tilt and pitch, radians, unsigned.
+
+        The follower tracks total tilt rather than roll, because a fall is a fall whichever
+        way the robot went over. The classifier wants the pair, and recovers the same total
+        from them, so this inverts ``tilt = acos(cos(pitch) cos(roll))`` rather than reading
+        the quaternion a second time and risking the two disagreeing.
+        """
+        cos_pitch = math.cos(self._pitch)
+        if cos_pitch <= 1e-6:
+            return 0.0
+        return math.acos(max(-1.0, min(1.0, math.cos(self._tilt) / cos_pitch)))
+
+    def _brake_distance_for(self, kind: TerrainKind) -> float | None:
+        """Pick the approach braking profile from the terrain, not from the operator.
+
+        A waypoint sitting on or just past an incline is otherwise approached at a speed
+        chosen for flat ground, and the robot runs out of push with its rear axle still on
+        a riser. The short profile is applied where that happens and nowhere else, so no
+        segment needs its own configuration.
+        """
+        if kind in (TerrainKind.STAIRS, TerrainKind.RAMP, TerrainKind.HIGH_BARRIER):
+            return self.stair_brake_distance or self.flat_brake_distance
+        return self.flat_brake_distance
 
     def _terrain_scale(self) -> float:
         """Speed the terrain underfoot allows; the lidar ring is blind to steps and drops."""

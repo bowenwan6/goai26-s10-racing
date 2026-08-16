@@ -31,6 +31,23 @@ waypoint_follower:
     lookahead: 1.4
     yaw_gain: 1.8
 
+    # Distance from the gate at which forward speed starts coming off. Zero means "use the
+    # lookahead", which is what the brake did before this was a parameter, so the shipped
+    # value below changes nothing about a flat leg.
+    #
+    # Measured, on the sixteen post-gate-16 segments, at 0.4 against the inherited 1.4: the
+    # segments that passed still passed, and four that did not began to. What it buys is the
+    # run-in to a raised gate -- braking 1.4 m out arrives at the lip with no momentum, which
+    # on this course is the difference between stepping up and stopping against it. What it
+    # costs is overshoot on the flat, which the 0.35 m advance radius already absorbs.
+    #
+    # It is left at zero on the flat and applied only where it was measured to help. The
+    # terrain classifier picks between the two from the live height map and lidar; there is
+    # no per-segment operator switch, and stair_brake_distance is never selected by waypoint
+    # number. See TerrainClassifier and _brake_distance_for.
+    brake_distance: 0.0
+    stair_brake_distance: 0.4
+
     # Stall watchdog: the dominant failure on the elevated sections is wedging against a
     # ledge while the gait keeps cycling, which never trips a fall detector.
     stall_speed: 0.08
