@@ -59,6 +59,10 @@ FALL_BELOW_M = 1.5
 STALL_SPEED = 0.05
 STALL_SECONDS = 5.0
 
+#: How long after the grace period the robot has to have reached its spawn height before
+#: the start pose is called illegal. The SDK's stand-up takes about two seconds.
+STAND_SECONDS = 4.0
+
 
 def _yaw_pitch_roll(q) -> tuple[float, float, float]:
     x, y, z, w = q.x, q.y, q.z, q.w
@@ -118,6 +122,7 @@ class SegmentRecorder(Node):
         self._status = ""
         self._transitions: list[str] = []
         self._nav_finished = False
+        self._terrain = "-"
 
         self._rows: list[dict] = []
         self._t0 = None
@@ -128,6 +133,8 @@ class SegmentRecorder(Node):
         self._stalled_for = 0.0
         self._stalls = 0
         self._outcome = "did not start"
+        self._invalid = False
+        self._stood_up = False
         self._finished = False
 
         latched = QoSProfile(
@@ -144,6 +151,7 @@ class SegmentRecorder(Node):
         self.create_subscription(String, "/strategy/source", self._on_source, 10)
         self.create_subscription(String, "/strategy/status", self._on_status, 10)
         self.create_subscription(String, "/strategy/transition", self._on_transition, 20)
+        self.create_subscription(String, "/nav/terrain", self._on_terrain, 10)
 
         self._dt = 1.0 / float(self.get_parameter("record_rate").value)
         self.timer = self.create_timer(self._dt, self._tick)
@@ -157,6 +165,9 @@ class SegmentRecorder(Node):
 
     def _on_cmd(self, msg: Twist) -> None:
         self._cmd = msg
+
+    def _on_terrain(self, msg: String) -> None:
+        self._terrain = msg.data
 
     def _on_scan(self, msg: LaserScan) -> None:
         ranges = np.asarray(msg.ranges, float)
@@ -235,11 +246,24 @@ class SegmentRecorder(Node):
                 "goal_distance": round(distance_to_goal, 3),
                 "mode": self._mode,
                 "source": self._source,
+                "terrain": self._terrain,
             }
         )
 
+        if settled and not self._stood_up and position[2] >= self._start_z:
+            self._stood_up = True
+
         if self._nav_finished or distance_to_goal <= self.reach_radius:
             self._stop("reached the end waypoint", reached=True)
+        elif settled and not self._stood_up and t >= self.grace + STAND_SECONDS:
+            # The robot is placed crouched and the SDK stands it up, so the base can only
+            # go up from where it was put. A base that has settled *below* its own spawn
+            # height left the surface it was placed on -- the waypoint was a point on the
+            # route rather than a place to stand. Waypoint 23 does this: spawned at 0.679
+            # it settles at 0.471, then spends the run wedged 0.37 m from a wall face
+            # reversing at -0.4 m/s without moving. Counting that as the navigation stack
+            # failing the segment would be measuring the harness, not the robot.
+            self._stop("invalid spawn: never stood up at the start pose", invalid=True)
         elif settled and tilt > FALL_TILT_DEG:
             self._stop(f"fell over (tilt {tilt:.0f} deg)")
         elif settled and position[2] < self._start_z - FALL_BELOW_M:
@@ -247,9 +271,10 @@ class SegmentRecorder(Node):
         elif t >= self.max_time:
             self._stop(f"ran out of time after {self.max_time:.0f} s")
 
-    def _stop(self, outcome: str, *, reached: bool = False) -> None:
+    def _stop(self, outcome: str, *, reached: bool = False, invalid: bool = False) -> None:
         self._finished = True
         self._outcome = outcome
+        self._invalid = invalid
         self.write()
         self.get_logger().info(f"[segment] {self.run_name}: {outcome}")
         # Exiting is the signal: the launch file turns this process's exit into a shutdown
@@ -266,6 +291,9 @@ class SegmentRecorder(Node):
             "end": self.end,
             "seed": self.seed,
             "reached": self._outcome == "reached the end waypoint",
+            # A run that never got a legal start pose is not evidence either way, and is
+            # kept separate from a pass and from a failure rather than folded into either.
+            "valid": not self._invalid,
             "outcome": self._outcome,
             "elapsed_s": round(last.get("t", 0.0), 2),
             "distance_m": round(self._travelled, 2),
