@@ -19,6 +19,7 @@ setup(
     entry_points={
         "console_scripts": [
             "waypoint_follower = s10_auto_nav.follower_node:main",
+            "strategy_router = s10_auto_nav.strategy_router_node:main",
         ],
     },
 )

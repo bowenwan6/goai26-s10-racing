@@ -110,6 +110,13 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("max_step", 0.35)
         self.declare_parameter("max_drop", 0.5)
 
+        # Where the follower's command goes. The default keeps the standalone race
+        # behaviour byte for byte: this node publishes /cmd_vel and is the only thing that
+        # does. Under the strategy router it is pointed at /strategy/nav_cmd_vel instead, so
+        # the router -- not the follower -- decides what reaches /cmd_vel, and there is never
+        # a moment when both are writing to it.
+        self.declare_parameter("cmd_vel_topic", "/cmd_vel")
+
         course_file = self.get_parameter("course_file").value
         if not course_file:
             raise RuntimeError("Parameter 'course_file' is required")
@@ -185,7 +192,8 @@ class WaypointFollowerNode(Node):
             durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
         )
 
-        self.cmd_pub = self.create_publisher(Twist, "/cmd_vel", 10)
+        cmd_topic = str(self.get_parameter("cmd_vel_topic").value) or "/cmd_vel"
+        self.cmd_pub = self.create_publisher(Twist, cmd_topic, 10)
         self.progress_pub = self.create_publisher(Float32, "/nav/progress", latched)
         self.finished_pub = self.create_publisher(Bool, "/nav/finished", latched)
         self.create_subscription(Odometry, "/ground_truth/odom", self._odom_callback, 50)
