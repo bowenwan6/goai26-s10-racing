@@ -49,6 +49,47 @@ POSITION_SIGMA = 0.05
 YAW_SIGMA_DEG = 4.0
 JOINT_SIGMA = 0.01
 
+#: Points sampled to decide whether a pose is standing on one surface, in the body frame,
+#: metres. Roughly the wheel rectangle plus its centre. A single downward ray cannot tell
+#: the middle of the floor from the top of a wall the robot is about to fall off.
+FOOTPRINT = (
+    (0.0, 0.0),
+    (0.30, 0.22),
+    (0.30, -0.22),
+    (-0.30, 0.22),
+    (-0.30, -0.22),
+)
+
+#: Ground under the footprint may vary by this much and still be one surface, metres.
+#: Larger than the course's stair risers would allow a spawn straddling an edge.
+FOOTPRINT_TOLERANCE = 0.12
+
+#: How far back along the approach a legal pose is looked for, and in what increments.
+SEARCH_LIMIT = 1.5
+SEARCH_STEP = 0.10
+
+
+def level_ground(model, data, x: float, y: float, yaw: float) -> float:
+    """Ground height at ``(x, y)``, or NaN if the footprint there is not on one surface.
+
+    Waypoint 23 is the case that motivates this. A single ray at the waypoint returns
+    0.479 m, which is the top of a wall beside it; the robot spawned 0.2 m above that,
+    dropped off it, and spent the run wedged at 0.37 m from a wall face reversing at
+    -0.4 m/s without moving. That is not the navigation stack failing the segment, and
+    counting it as such would have been the second wrong conclusion in this file's history.
+    """
+    heights = []
+    for dx, dy in FOOTPRINT:
+        px = x + dx * math.cos(yaw) - dy * math.sin(yaw)
+        py = y + dx * math.sin(yaw) + dy * math.cos(yaw)
+        height = ground_height(model, data, px, py, 0.0)
+        if not math.isfinite(height):
+            return float("nan")
+        heights.append(height)
+    if max(heights) - min(heights) > FOOTPRINT_TOLERANCE:
+        return float("nan")
+    return max(heights)
+
 
 def ground_height(model, data, x: float, y: float, z_ref: float, *, ceiling: float = 14.0) -> float:
     """Height of the surface at ``(x, y)`` that a robot near ``z_ref`` would stand on.
@@ -133,13 +174,26 @@ class SpawnOverride:
         if self.seed:
             joints += rng.normal(0.0, JOINT_SIGMA, joints.size)
 
-        floor = ground_height(model, data, x, y, 0.0)
-        if not math.isfinite(floor):
-            raise ValueError(f"no ground under the spawn at ({x:.3f}, {y:.3f})")
+        # A waypoint is a point on the route, not necessarily a place to stand: several sit
+        # hard against the wall the robot is meant to pass. The robot reaches them from
+        # behind, so the pose it actually occupies on the way in is a little short of the
+        # waypoint, and that is where a legal spawn is looked for. Backing off along -yaw
+        # keeps the robot on the route rather than displacing it sideways off the line.
+        back = 0.0
+        while back <= SEARCH_LIMIT:
+            px = x - back * math.cos(yaw)
+            py = y - back * math.sin(yaw)
+            floor = level_ground(model, data, px, py, yaw)
+            if math.isfinite(floor):
+                half = yaw / 2.0
+                quat = np.array([math.cos(half), 0.0, 0.0, math.sin(half)])
+                return np.array([px, py, floor + self.height]), quat, joints
+            back += SEARCH_STEP
 
-        half = yaw / 2.0
-        quat = np.array([math.cos(half), 0.0, 0.0, math.sin(half)])
-        return np.array([x, y, floor + self.height]), quat, joints
+        raise ValueError(
+            f"no ground level enough to stand on within {SEARCH_LIMIT:.1f}m behind "
+            f"({x:.3f}, {y:.3f}); this spawn is not a segment the robot failed"
+        )
 
     def apply(self, model, data, joint_init: np.ndarray) -> np.ndarray:
         """Write the spawn into ``data.qpos`` and return the base position used.
