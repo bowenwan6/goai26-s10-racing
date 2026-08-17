@@ -128,11 +128,12 @@ def test_the_attempt_becomes_a_straight_run_up_after_the_timeout():
 
 
 def test_the_run_up_is_followed_by_another_attempt():
-    """The cycle repeats; it never hands a still-pitched robot back to free steering.
+    """The cycle repeats; one failure does not hand a still-pitched robot back to steering.
 
-    The version that expired into free steering spent the following minute with lateral and
-    yaw alternating sign every second, scrabbling along the lip -- x drifting 0.4 m while y
-    did not advance at all. Leaning on a wall forever is the cheaper mistake.
+    The version that expired into free steering after a single attempt spent the following
+    minute with lateral and yaw alternating sign every second, scrabbling along the lip -- x
+    drifting 0.4 m while y did not advance at all. Retrying is the part that works; what is
+    bounded is how many times, and that is the next two tests.
     """
     commit = StepCommit(StepCommitConfig(timeout=8.0, backup=1.5))
     # A tick past the 9.5 s cycle, not exactly on it: the accumulator sums 0.02 at a time
@@ -142,6 +143,47 @@ def test_the_run_up_is_followed_by_another_attempt():
     assert not commit.backing, "should be pushing again, not still reversing"
     assert commit.command(Command()).forward > 0.0
 
-    # And round again, indefinitely, for as long as the body stays pitched.
+    # And round again, for as long as the body stays pitched and attempts remain.
     assert hold(commit, WEDGED_PITCH, 8.5)
     assert commit.backing
+
+
+def test_a_wall_is_conceded_rather_than_leant_on_forever():
+    """The 0.544 m rise at (27.8, 29.5) on the leg to waypoint 19.
+
+    Unbounded, the commit held 0.7 m/s against it for 130 s and then reared over at 70
+    degrees of tilt, with a clear route 0.2 m to the left the entire time. Three complete
+    cycles of 9.5 s is 28.5 s, so 30 s of unbroken wedging is comfortably past the limit and
+    the state machine must have handed back by then.
+    """
+    commit = StepCommit(StepCommitConfig(timeout=8.0, backup=1.5, attempts=3))
+    assert not hold(commit, WEDGED_PITCH, 30.0)
+    assert commit.conceded
+    assert commit.failures == 3
+
+
+def test_conceding_stays_conceded_while_the_body_is_still_on_it():
+    """Otherwise the follower alternates between committing and steering every control step.
+
+    Handing back is only useful if it lasts long enough for the planner to pick a side and
+    act on it; a state that re-commits on the next tick is the flip-flop with extra steps.
+    """
+    commit = StepCommit(StepCommitConfig(timeout=8.0, backup=1.5, attempts=3))
+    hold(commit, WEDGED_PITCH, 30.0)
+    assert not hold(commit, WEDGED_PITCH, 20.0)
+    assert commit.failures == 3, "conceding must not keep counting attempts it is not making"
+
+
+def test_getting_over_the_step_clears_the_tally():
+    """Two hard steps in a row are two problems, not one problem with six attempts.
+
+    The staircases on this course are eight and thirteen treads; a count that survived a
+    successful crossing would concede partway up one of them.
+    """
+    commit = StepCommit(StepCommitConfig(timeout=8.0, backup=1.5, attempts=3))
+    assert hold(commit, WEDGED_PITCH, 15.0)
+    assert commit.failures == 1
+    # Over it: still pitched, but now moving at the speed of a slope being driven up.
+    assert not hold(commit, WEDGED_PITCH, 1.0, speed=SLOPE_SPEED)
+    assert commit.failures == 0
+    assert not commit.conceded
