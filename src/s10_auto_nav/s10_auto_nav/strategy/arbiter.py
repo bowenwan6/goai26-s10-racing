@@ -8,10 +8,14 @@ prevented here.
 **What this does and does not guarantee.** ``/JOINTS_CMD`` is written by the contest SDK from
 inside ``rl_deploy``, as a DDS message type, and no external node can take it away or stop the
 official policy writing to it. This arbiter gates the joint stream *this* project emits
-(``/strategy/climb_joints``). Extending the guarantee to the actuators means putting the
-override where ``/JOINTS_CMD`` is written, in ``integration/ros_cmd_interface.hpp``, and that
-is not yet implemented. Claiming otherwise would be the more dangerous kind of wrong, because
-the claim is about a safety property.
+(``/strategy/climb_joints``), which is a real property but a weaker one than it sounds.
+
+The guarantee about the actuators is enforced elsewhere, by
+``integration/joint_command_owner.hpp``, which ``scripts/patch_upstream.py`` installs into the
+SDK and wires into the one call in ``RLControlState`` that turns a policy action into a joint
+command. That gate is what makes single ownership true; this class is what makes sure a
+request the gate would refuse is never sent. Keeping both is not redundancy -- they answer to
+different failures, and only one of them is a safety property.
 
 This is deliberately free of ROS so it can be tested without a node, a simulator or a running
 daemon. The node passes a ``publish`` callable; everything else is bookkeeping and refusal.

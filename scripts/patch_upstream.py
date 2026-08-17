@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
-"""Wire our ROS command bridge into the contest SDK.
+"""Wire our two integration headers into the contest SDK.
 
-The SDK selects its velocity-command source from a fixed enum of input devices. Autonomy
-needs one more option -- a ROS topic -- which is a handful of lines spread across four
-upstream files. Applying them from a script keeps upstream a pristine checkout that can be
-re-cloned or updated at any time, and keeps our actual contribution in one reviewable
-header (integration/ros_cmd_interface.hpp).
+Both are things the SDK has no hook for and that cannot be done from outside the process.
+
+The first is a command source. The SDK selects its velocity command from a fixed enum of
+input devices, all of them an operator holding something; autonomy needs one more option, a
+ROS topic. That is integration/ros_cmd_interface.hpp.
+
+The second is ownership of the actuators. /JOINTS_CMD is created and written by DdsInterface
+inside rl_deploy, so no external node can take it away, and ROS treats a second publisher on
+that topic as a legal silent merge rather than as the collision it is. The gate therefore has
+to live where the writing happens, and the edits below put it there: every joint command
+RLControlState produces passes through integration/joint_command_owner.hpp first.
+
+Applying the edits from a script keeps upstream a pristine checkout that can be re-cloned or
+updated at any time, and keeps our actual contribution in two reviewable headers rather than
+in a diff buried in a vendored tree.
 
 Every edit is idempotent: running this twice is a no-op, and --check reports whether the
 checkout is patched without modifying it.
@@ -13,7 +23,7 @@ checkout is patched without modifying it.
 Usage:
     scripts/patch_upstream.py            # apply
     scripts/patch_upstream.py --check    # report status, exit 1 if unpatched
-    scripts/patch_upstream.py --revert   # undo via git checkout, then remove our header
+    scripts/patch_upstream.py --revert   # undo via git checkout, then remove our headers
 """
 
 from __future__ import annotations
@@ -25,10 +35,18 @@ from dataclasses import dataclass
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-BRIDGE_HEADER = REPO_ROOT / "integration/ros_cmd_interface.hpp"
 DEFAULT_UPSTREAM = REPO_ROOT / "upstream/goai_embodied_future_material"
 
 SDK = Path("src/S10_sdk_deploy")
+
+#: Our headers, and where they are installed in the SDK. Both land in a directory already on
+#: the SDK's include path, so the anchored includes below are plain quoted includes.
+HEADERS = {
+    REPO_ROOT / "integration/ros_cmd_interface.hpp": SDK
+    / "interface/user_command/ros_cmd_interface.hpp",
+    REPO_ROOT / "integration/joint_command_owner.hpp": SDK
+    / "interface/user_command/joint_command_owner.hpp",
+}
 
 
 @dataclass
@@ -119,16 +137,72 @@ EDITS = [
         addition="\n  <depend>geometry_msgs</depend>\n  <depend>std_msgs</depend>",
         marker="<depend>geometry_msgs</depend>",
     ),
+    # 5. Route the one call that produces a joint command through the ownership gate.
+    #
+    # This is the edit that makes single ownership of /JOINTS_CMD a fact rather than a
+    # convention. The topic is created and written by DdsInterface inside this process; an
+    # external node cannot take it away, and two publishers on one topic is a silent merge
+    # rather than an error. RLControlState::PolicyRunner is the only place in the running
+    # stack that turns a policy action into a joint command, so gating it gates everything.
+    #
+    # The reset is not incidental. The policy's observation contains its own previous
+    # action; after a climb policy has been driving, the last action it produced describes a
+    # robot that no longer exists, and feeding it back is how a handover becomes a lurch.
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor='#include "basic_function.hpp"\n',
+        addition='#include "joint_command_owner.hpp"  // added by goai26-s10-racing\n',
+        marker="joint_command_owner.hpp",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor="""                    MatXf res = ra.ConvertToMat();
+
+                    ri_ptr_->SetJointCommand(res);""",
+        addition="""                    MatXf res = ra.ConvertToMat();
+
+                    // added by goai26-s10-racing: one owner of the actuators, always
+                    bool reset_official = false;
+                    MatXf gated = s10::JointCommandOwner::Instance().Arbitrate(
+                            res, rbs_[getrbsReadIndex()].joint_pos, &reset_official);
+                    if (reset_official) policy_ptr_->OnEnter();
+                    ri_ptr_->SetJointCommand(gated);""",
+        marker="JointCommandOwner::Instance().Arbitrate",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor="""            run_policy_thread_ = std::thread(std::bind(&RLControlState::PolicyRunner, this));
+            policy_ptr_->OnEnter();""",
+        addition="""            run_policy_thread_ = std::thread(std::bind(&RLControlState::PolicyRunner, this));
+            s10::JointCommandOwner::Instance().Start();  // added by goai26-s10-racing
+            policy_ptr_->OnEnter();""",
+        marker="JointCommandOwner::Instance().Start()",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor="""        virtual void OnExit() {
+            start_flag_ = false;""",
+        addition="""        virtual void OnExit() {
+            s10::JointCommandOwner::Instance().Stop();  // added by goai26-s10-racing
+            start_flag_ = false;""",
+        marker="JointCommandOwner::Instance().Stop()",
+        mode="replace",
+    ),
 ]
 
 
-def install_header(root: Path) -> bool:
-    destination = root / SDK / "interface/user_command/ros_cmd_interface.hpp"
-    content = BRIDGE_HEADER.read_text()
-    if destination.is_file() and destination.read_text() == content:
-        return False
-    destination.write_text(content)
-    return True
+def install_headers(root: Path) -> bool:
+    changed = False
+    for source, destination in HEADERS.items():
+        target = root / destination
+        content = source.read_text()
+        if target.is_file() and target.read_text() == content:
+            continue
+        target.write_text(content)
+        changed = True
+    return changed
 
 
 def resolve_upstream(path: Path) -> Path:
@@ -150,24 +224,24 @@ def main() -> int:
 
     if args.revert:
         subprocess.run(["git", "-C", str(root), "checkout", "--", "."], check=True)
-        header = root / SDK / "interface/user_command/ros_cmd_interface.hpp"
-        header.unlink(missing_ok=True)
+        for destination in HEADERS.values():
+            (root / destination).unlink(missing_ok=True)
         print(f"Reverted {root} to a pristine checkout")
         return 0
 
     if args.check:
-        header_ok = (root / SDK / "interface/user_command/ros_cmd_interface.hpp").is_file()
+        missing = [d for d in HEADERS.values() if not (root / d).is_file()]
         pending = [e.path for e in EDITS if not e.is_applied(root)]
-        if header_ok and not pending:
+        if not missing and not pending:
             print(f"{root} is patched")
             return 0
-        if not header_ok:
-            print("Missing: interface/user_command/ros_cmd_interface.hpp", file=sys.stderr)
+        for destination in missing:
+            print(f"Missing: {destination}", file=sys.stderr)
         for path in dict.fromkeys(pending):
             print(f"Unpatched: {path}", file=sys.stderr)
         return 1
 
-    changed = install_header(root)
+    changed = install_headers(root)
     for edit in EDITS:
         changed |= edit.apply(root)
 
