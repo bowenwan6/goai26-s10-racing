@@ -94,7 +94,18 @@ class SegmentRecorder(Node):
         # detector both wait it out.
         self.declare_parameter("grace", 3.0)
         self.declare_parameter("record_rate", 20.0)
+        # Two radii, because they answer two different questions and conflating them made
+        # this file report passes it had not measured.
+        #
+        # reach_radius ends the run: it matches the follower's advance_radius, so the recorder
+        # stops when the follower itself has nothing left to chase.
+        #
+        # score_radius decides whether the gate was taken, and is the contest's, from
+        # course.yaml's own metadata. Run 18_19_baseline_seed0 ended "reached the end
+        # waypoint" with its closest approach to waypoint 19 at 0.348 m, which is not a point.
+        # Every "reached" recorded before this was the 0.35 m answer wearing the 0.2 m name.
         self.declare_parameter("reach_radius", 0.35)
+        self.declare_parameter("score_radius", 0.2)
 
         course_file = str(self.get_parameter("course_file").value)
         if not course_file:
@@ -106,6 +117,7 @@ class SegmentRecorder(Node):
         self.max_time = float(self.get_parameter("max_time").value)
         self.grace = float(self.get_parameter("grace").value)
         self.reach_radius = float(self.get_parameter("reach_radius").value)
+        self.score_radius = float(self.get_parameter("score_radius").value)
         self.out_dir = Path(str(self.get_parameter("out_dir").value))
         self.run_name = str(self.get_parameter("run_name").value)
 
@@ -130,6 +142,9 @@ class SegmentRecorder(Node):
         self._travelled = 0.0
         self._last_xy = None
         self._max_tilt = 0.0
+        # Closest the robot ever came to the goal, not where it stopped: it can pass through
+        # the gate and drift out again, and passing through it is what scores.
+        self._closest_goal = float("inf")
         self._stalled_for = 0.0
         self._stalls = 0
         self._outcome = "did not start"
@@ -228,6 +243,9 @@ class SegmentRecorder(Node):
                 self._stalled_for = 0.0
 
         distance_to_goal = float(np.linalg.norm(position[:2] - self.goal[:2]))
+        # Closest approach over the whole run, not the distance at the end: the robot may pass
+        # through the gate and drift out again, and passing through it is what scores.
+        self._closest_goal = min(self._closest_goal, distance_to_goal)
         self._rows.append(
             {
                 "t": round(t, 3),
@@ -290,7 +308,17 @@ class SegmentRecorder(Node):
             "start": self.start,
             "end": self.end,
             "seed": self.seed,
-            "reached": self._outcome == "reached the end waypoint",
+            # Three separate facts that used to be one flag:
+            #
+            # ``reached``  the contest's question -- did the trajectory ever come inside the
+            #              scoring radius of the goal. This is the only one that is a result.
+            # ``arrived``  the harness's stop condition, which fires at ``reach_radius`` or on
+            #              /nav/finished. It says the run ended on purpose, not that it scored.
+            # ``closest_goal_m``  the measurement both of the above are derived from, so a
+            #              near miss can be read off without re-parsing the CSV.
+            "reached": self._closest_goal <= self.score_radius,
+            "arrived": self._outcome == "reached the end waypoint",
+            "closest_goal_m": round(self._closest_goal, 3),
             # A run that never got a legal start pose is not evidence either way, and is
             # kept separate from a pass and from a failure rather than folded into either.
             "valid": not self._invalid,

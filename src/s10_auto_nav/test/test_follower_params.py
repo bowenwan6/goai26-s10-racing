@@ -14,10 +14,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 import yaml
 
-from s10_auto_nav.terrain import TerrainKind
+from s10_auto_nav.terrain import TerrainKind, TerrainVerdict
 
 REPO = Path(__file__).resolve().parents[3]
 NAV_YAML = REPO / "src" / "s10_bringup" / "config" / "nav.yaml"
@@ -117,3 +118,61 @@ def test_terrain_not_the_operator_selects_the_stair_brake(node):
 def test_a_disabled_stair_brake_falls_back_to_the_flat_one(node):
     """Zero is the sentinel for "unset" on both knobs, and must not brake at zero metres."""
     assert node._brake_distance_for(TerrainKind.STAIRS) == pytest.approx(0.6)
+
+
+# ------------------------------------------------- the height map read against the verdict
+
+
+def _verdict(kind: TerrainKind) -> TerrainVerdict:
+    return TerrainVerdict(kind=kind, confidence=1.0, reason="for the test", candidate=kind)
+
+
+def _step_of(rise_m: float, node) -> np.ndarray:
+    """A height map with a hard lip of ``rise_m`` at the far edge of the patch.
+
+    Heights are relative to the base, so flat ground under a standing S10 reads about
+    -0.42 m; the shape is what matters here and the offset only has to be plausible.
+
+    The lip goes in the last two rows rather than across the far half on purpose.
+    ``ground_clearance`` measures relief as the residual from a plane fitted to the patch,
+    so a step spread over half the patch is largely absorbed by the tilt of that plane: the
+    same 0.26 m over rows 7 upward leaves a residual of 0.11 m and scores 0.91, which is not
+    a braked robot and would make the assertions below vacuous. Two rows of 0.5 m leave a
+    residual of 0.27 m, which is the 0.26 m the waypoint-18 log implies.
+    """
+    grid = np.full((13, 9), -0.42)
+    grid[11:, :] += rise_m
+    node._heightmap = grid
+    node._heightmap_age = 0.0
+    return grid
+
+
+@needs_ros
+def test_a_rise_the_robot_should_drive_at_does_not_also_slow_it_down(node):
+    """The defect that pinned a run: one measurement read as both route and hazard.
+
+    Asserted as an inequality against the same map classified the other way, so it fails if
+    the suppression is removed *or* if ``ground_clearance`` stops seeing the step at all --
+    the second would make the first vacuous.
+    """
+    _step_of(0.5, node)
+    braked = node._terrain_scale_for(_verdict(TerrainKind.BLOCKED))
+    assert braked < 0.6, "the height map is not seeing the step; the rest of this proves nothing"
+    for kind in (TerrainKind.STAIRS, TerrainKind.RAMP, TerrainKind.HIGH_BARRIER):
+        assert node._terrain_scale_for(_verdict(kind)) == pytest.approx(1.0)
+
+
+@needs_ros
+def test_ground_that_is_in_the_way_is_still_slowed_for(node):
+    """The suppression is keyed on the verdict, not on the relief, and must stay that way."""
+    _step_of(0.5, node)
+    assert node._terrain_scale_for(_verdict(TerrainKind.BLOCKED)) < 1.0
+    assert node._terrain_scale_for(_verdict(TerrainKind.DROP)) < 1.0
+
+
+@needs_ros
+def test_not_knowing_what_is_ahead_slows_down_without_stopping(node):
+    """Zero would be self-sealing: the height map only changes when the robot moves."""
+    _step_of(0.0, node)
+    scale = node._terrain_scale_for(_verdict(TerrainKind.UNKNOWN))
+    assert 0.0 < scale <= 0.5

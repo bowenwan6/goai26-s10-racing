@@ -108,6 +108,44 @@ def test_ground_falling_away_is_a_drop():
     assert settle(TerrainClassifier(), TerrainReading(relief_drop=0.4)).kind is TerrainKind.DROP
 
 
+#: Reconstructed from ``continuous/16_32_seed0``, which stood at (27.5, 29.6) on the leg from
+#: waypoint 18 to waypoint 19 for the entire 900 s budget. The log gives the fall directly and
+#: the rise through the speed scale it produced: ``terrain=0.35`` inverts through
+#: ``ground_clearance`` to 0.26 m of rise against ``max_step`` 0.35.
+WAYPOINT_18_LEDGE = TerrainReading(
+    relief_rise=0.26, relief_drop=0.21, obstacle_distance=1.0, commanded_forward=0.24
+)
+
+
+def test_an_edge_that_rises_more_than_it_falls_is_a_step_and_not_a_drop():
+    """The plane is fitted across the corridor, so a step up reads as a fall as well.
+
+    This is what pinned the run: a fall of 0.21 m in front of a rise of 0.26 m was called
+    DROP, which is not a kind the follower drives at, so it braked and steered at ground it
+    should have driven straight over.
+    """
+    verdict = settle(TerrainClassifier(), WAYPOINT_18_LEDGE)
+    assert verdict.kind is TerrainKind.STAIRS
+    assert verdict.drive_at_it
+
+
+def test_the_fall_still_wins_when_it_is_the_larger_feature():
+    """The guard is which of the two is bigger, not that falls stopped counting."""
+    edge = TerrainReading(relief_rise=0.10, relief_drop=0.40, obstacle_distance=1.0)
+    assert settle(TerrainClassifier(), edge).kind is TerrainKind.DROP
+
+
+def test_a_drop_held_from_before_does_not_survive_the_ground_starting_to_rise():
+    """Hysteresis is what made this permanent: staying in DROP needs only 0.16 m.
+
+    So the approach is replayed rather than asserted from a standing start -- a fall first,
+    which is what the robot saw coming over the lip, and then the ledge.
+    """
+    classifier = TerrainClassifier()
+    assert settle(classifier, TerrainReading(relief_drop=0.45), 1.0).kind is TerrainKind.DROP
+    assert settle(classifier, WAYPOINT_18_LEDGE).kind is TerrainKind.STAIRS
+
+
 def test_a_hazard_is_believed_on_the_first_tick():
     """DROP and UNSTABLE have no dwell: believing them late is the expensive direction."""
     classifier = TerrainClassifier()

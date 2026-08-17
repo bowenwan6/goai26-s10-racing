@@ -347,11 +347,7 @@ class WaypointFollowerNode(Node):
             self._publish(self._recovery_command())
             return
 
-        terrain = self._terrain_scale()
-        if verdict.kind is TerrainKind.UNKNOWN:
-            # Not knowing is a reason to go slowly, not a reason to stop: the height map
-            # only changes when the robot moves, so freezing on UNKNOWN is self-sealing.
-            terrain = min(terrain, UNKNOWN_TERRAIN_SCALE)
+        terrain = self._terrain_scale_for(verdict)
         command = self.controller.compute(self._pose_xy, self._yaw, target, dt)
         published = self._apply_speed_scale(command, min(scale, terrain), dt)
         self._last_forward = published.forward
@@ -490,6 +486,32 @@ class WaypointFollowerNode(Node):
         if self._heightmap is None or self._heightmap_age > SENSOR_TIMEOUT_S:
             return 1.0
         return ground_clearance(self._heightmap, self.max_step, self.max_drop)
+
+    def _terrain_scale_for(self, verdict: TerrainVerdict) -> float:
+        """The same scale, read in the light of what the classifier decided the ground is.
+
+        The scale and the verdict come from one height map, and without this they were read
+        with opposite intent: the classifier said "this rise is the route, drive at it" and
+        the scale took the same rise as a reason to drive at a third of the speed. Braking
+        for the route is how a run dies on the first edge.
+
+        The numbers are already in nav.yaml, from the y=20.5 drop: 0.50 m/s wedged for a full
+        20 s trial, 0.60 crossed in 7.1 s, 0.70 in 4.3 s. A 0.26 m rise scales to 0.35, which
+        against ``max_forward`` is 0.24 m/s -- less than half of anything ever measured to
+        work. On the leg from waypoint 18 to 19 the robot held exactly that command, at
+        exactly one position, for the whole 900 s run budget.
+
+        This is the decision the pitched-climb branch in ``_tick`` already makes; the
+        difference is that this one fires before the nose is up, which on a lip taken square
+        is the only moment it can still be taken.
+        """
+        if verdict.drive_at_it:
+            return 1.0
+        if verdict.kind is TerrainKind.UNKNOWN:
+            # Not knowing is a reason to go slowly, not a reason to stop: the height map only
+            # changes when the robot moves, so freezing on UNKNOWN keeps it unknown.
+            return min(self._terrain_scale(), UNKNOWN_TERRAIN_SCALE)
+        return self._terrain_scale()
 
     def _apply_speed_scale(self, command: Command, scale: float, dt: float) -> Command:
         """Scale translation only, braking at once but accelerating back gradually."""
