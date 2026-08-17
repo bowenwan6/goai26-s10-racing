@@ -81,12 +81,20 @@ def write_subcourse(waypoints: list[dict], start: int, end: int, path: Path) -> 
 
 
 def spawn_environment(waypoints: list[dict], start: int, seed: int) -> dict[str, str]:
-    """Environment telling the simulator where to start and which way to face."""
+    """Environment telling the simulator where to start, which way to face, and on what.
+
+    The waypoint's z goes out as well as its x and y, and it is not decoration. The course
+    runs over itself -- waypoints 23 to 25 sit on a deck 1.19 m above open floor, 28 to 32 on
+    one 3.27 m above it -- so a ground lookup that is only given (x, y) has several correct
+    answers and picks the lowest. That is how a whole sweep of segment 23 to 24 was collected
+    with the robot underneath the deck it was meant to be crossing.
+    """
     here = waypoints[start]["position"]
     nxt = waypoints[min(start + 1, len(waypoints) - 1)]["position"]
     yaw = math.atan2(nxt[1] - here[1], nxt[0] - here[0])
     return {
         "S10_SPAWN_XY": f"{here[0]},{here[1]}",
+        "S10_SPAWN_Z": f"{here[2]}",
         "S10_SPAWN_YAW": f"{yaw}",
         "S10_SPAWN_SEED": str(seed),
         "S10_SPAWN_INDEX": str(start),

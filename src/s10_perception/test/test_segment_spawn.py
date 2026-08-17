@@ -43,9 +43,32 @@ SCENE = """
 """
 
 
+#: A deck on stilts over open floor, which is the shape the course actually has at waypoints
+#: 23 to 25 and 28 to 32 and the shape that made a whole sweep worthless. Both surfaces are
+#: level, both are free space above, and a downward ray finds whichever the caller asks for.
+#: The deck is 3 m up so that no plausible tolerance can confuse it with the floor.
+TWO_STOREY = """
+<mujoco>
+  <worldbody>
+    <geom name="floor" type="plane" size="20 20 0.1" pos="0 0 0"/>
+    <geom name="deck" type="box" size="4 4 0.1" pos="0 0 3.0"/>
+    <geom name="pillar" type="box" size="0.2 0.2 1.45" pos="3.5 3.5 1.45"/>
+  </worldbody>
+</mujoco>
+"""
+
+
 @pytest.fixture
 def scene():
     model = mujoco.MjModel.from_xml_string(SCENE)
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+    return model, data
+
+
+@pytest.fixture
+def two_storey():
+    model = mujoco.MjModel.from_xml_string(TWO_STOREY)
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)
     return model, data
@@ -69,6 +92,21 @@ def test_the_environment_is_read_in_full():
         }
     )
     assert spawn == SpawnOverride(x=12.5, y=-3.25, yaw=1.5, height=0.3, seed=4, waypoint_index=16)
+
+
+def test_spawn_jitter_components_can_be_controlled_independently():
+    spawn = SpawnOverride.from_env(
+        {
+            "S10_SPAWN_XY": "1,2",
+            "S10_SPAWN_SEED": "7",
+            "S10_SPAWN_POSITION_SIGMA": "0.03",
+            "S10_SPAWN_YAW_SIGMA_DEG": "2.5",
+            "S10_SPAWN_JOINT_SIGMA": "0",
+        }
+    )
+    assert spawn.position_sigma == 0.03
+    assert spawn.yaw_sigma_deg == 2.5
+    assert spawn.joint_sigma == 0.0
 
 
 def test_a_malformed_coordinate_is_refused_rather_than_rounded_to_the_origin():
@@ -157,3 +195,67 @@ def test_backing_off_does_not_move_a_pose_that_is_already_legal(scene):
     model, data = scene
     base, _, _ = SpawnOverride(x=0.0, y=0.0, yaw=0.0).pose(model, data, JOINT_INIT)
     assert base[:2] == pytest.approx([0.0, 0.0])
+
+
+# --------------------------------------------------------------------- storeys
+#
+# The rest of this file is about one bug, because it cost more than any other here: a course
+# that runs over itself has several correct answers to "the ground at (x, y)", the lookup
+# returned the lowest, and thirty-six full-stack runs were collected of a robot boxed in
+# under the deck it was supposed to be driving on. See resources/post_wp16/walls/VOID.md.
+
+
+def test_the_storey_reference_is_read_from_the_environment():
+    spawn = SpawnOverride.from_env({"S10_SPAWN_XY": "1,2", "S10_SPAWN_Z": "1.670"})
+    assert spawn.z_ref == 1.670
+
+
+def test_the_storey_reference_defaults_to_the_ground_floor():
+    """Every fixture in this file and every single-storey scene relies on this."""
+    assert SpawnOverride.from_env({"S10_SPAWN_XY": "1,2"}).z_ref == 0.0
+
+
+def test_the_reference_chooses_between_two_surfaces_at_the_same_point(two_storey):
+    """The whole bug in three lines: same (x, y), two floors, and the caller says which."""
+    model, data = two_storey
+    assert ground_height(model, data, 0.0, 0.0, 0.0) == pytest.approx(0.0, abs=1e-6)
+    assert ground_height(model, data, 0.0, 0.0, 3.1) == pytest.approx(3.1, abs=1e-6)
+    assert level_ground(model, data, 0.0, 0.0, 0.0, 0.0) == pytest.approx(0.0, abs=1e-6)
+    assert level_ground(model, data, 0.0, 0.0, 0.0, 3.1) == pytest.approx(3.1, abs=1e-6)
+
+
+def test_a_reference_with_no_surface_near_it_is_refused_rather_than_approximated(two_storey):
+    """The floor is 1.5 m below and the deck 1.5 m above; neither is the storey asked for.
+
+    Returning the nearer of the two would be the original bug with a smaller error, and it
+    would be silent. NaN reaches the caller, which raises, which is a run that is thrown away
+    rather than a run that is counted.
+    """
+    model, data = two_storey
+    assert math.isnan(ground_height(model, data, 0.0, 0.0, 1.5))
+    assert math.isnan(level_ground(model, data, 0.0, 0.0, 0.0, 1.5))
+
+
+def test_a_waypoint_just_short_of_a_step_still_finds_the_step(two_storey):
+    """Above the reference is the looser side on purpose, and this is why.
+
+    A waypoint is published on the route, and the route crosses steps. Being a few
+    centimetres below the surface the footprint lands on is normal and must not be refused.
+    """
+    model, data = two_storey
+    assert ground_height(model, data, 0.0, 0.0, 2.9) == pytest.approx(3.1, abs=1e-6)
+
+
+def test_the_pose_lands_on_the_storey_it_was_given(two_storey):
+    model, data = two_storey
+    on_deck = SpawnOverride(x=0.0, y=0.0, yaw=0.0, height=0.2, z_ref=3.1)
+    on_floor = SpawnOverride(x=0.0, y=0.0, yaw=0.0, height=0.2, z_ref=0.0)
+    assert on_deck.pose(model, data, JOINT_INIT)[0][2] == pytest.approx(3.3, abs=1e-6)
+    assert on_floor.pose(model, data, JOINT_INIT)[0][2] == pytest.approx(0.2, abs=1e-6)
+
+
+def test_the_refusal_names_the_storey_it_could_not_find(two_storey):
+    """A run that dies has to say which of the several right answers it wanted."""
+    model, data = two_storey
+    with pytest.raises(ValueError, match="storey at z=1.500"):
+        SpawnOverride(x=0.0, y=0.0, yaw=0.0, z_ref=1.5).pose(model, data, JOINT_INIT)
