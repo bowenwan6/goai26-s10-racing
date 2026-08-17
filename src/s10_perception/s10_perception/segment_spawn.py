@@ -22,10 +22,20 @@ Environment:
 
 ``S10_SPAWN_XY``      ``"x,y"`` in world metres. Absent disables everything here.
 ``S10_SPAWN_YAW``     heading in radians, normally towards the next waypoint.
+``S10_SPAWN_Z``       the waypoint's own z, naming the storey to stand on. See below.
 ``S10_SPAWN_HEIGHT``  metres above the sampled ground; defaults to the race's 0.2.
-``S10_SPAWN_SEED``    jitters pose and joints; 0 means the exact nominal pose.
+``S10_SPAWN_SEED``    selects deterministic jitter; 0 means the exact nominal pose.
+``S10_SPAWN_POSITION_SIGMA`` position jitter sigma in metres; defaults to 0.05.
+``S10_SPAWN_YAW_SIGMA_DEG`` heading jitter sigma in degrees; defaults to 4.0.
+``S10_SPAWN_JOINT_SIGMA`` joint-position jitter sigma; defaults to 0.01.
 ``S10_SPAWN_INDEX``   waypoint the spawn corresponds to, so the simulator's own progress
                       counter looks for the right one next instead of the start line's.
+
+**The storey reference is not optional.** This course runs over itself: waypoints 23 to 25
+are on a deck at z = 1.670 and waypoints 28 to 32 on one at 3.750, with open floor at 0.479
+underneath both. "The ground at (x, y)" therefore has several answers and only one of them
+is the right one, so the caller has to say which storey it meant. It is the waypoint's own z
+because that is the one number that is already known to be on the route.
 """
 
 from __future__ import annotations
@@ -68,21 +78,36 @@ FOOTPRINT_TOLERANCE = 0.12
 SEARCH_LIMIT = 1.5
 SEARCH_STEP = 0.10
 
+#: How far a surface may sit below and above the storey reference and still be that storey.
+#: The two are asymmetric on purpose. Below is tight: the reference is a waypoint, waypoints
+#: are published on the surface they are traversed on, and the gap between the two is
+#: centimetres -- while the gap to the storey underneath is metres. Above is looser because a
+#: waypoint just short of a step is legitimately below the surface the footprint lands on.
+STOREY_BELOW = 0.5
+STOREY_ABOVE = 0.9
 
-def level_ground(model, data, x: float, y: float, yaw: float) -> float:
-    """Ground height at ``(x, y)``, or NaN if the footprint there is not on one surface.
 
-    Waypoint 23 is the case that motivates this. A single ray at the waypoint returns
-    0.479 m, which is the top of a wall beside it; the robot spawned 0.2 m above that,
+def level_ground(model, data, x: float, y: float, yaw: float, z_ref: float = 0.0) -> float:
+    """Ground height at ``(x, y)`` on storey ``z_ref``, or NaN if it is not one surface.
+
+    Waypoint 23 is the case that motivates this, twice over. A single ray at the waypoint
+    returns 0.479 m, which is the top of a wall beside it; the robot spawned 0.2 m above that,
     dropped off it, and spent the run wedged at 0.37 m from a wall face reversing at
     -0.4 m/s without moving. That is not the navigation stack failing the segment, and
     counting it as such would have been the second wrong conclusion in this file's history.
+
+    The footprint fixed the wall top. It did not fix the storey: waypoint 23 is at z = 1.670
+    and 0.479 is the open floor a metre and a half *below* the deck it is on, which the
+    footprint agrees is beautifully level because it is. Thirty-six runs were collected
+    against that, all of them of a robot boxed in under the deck it was supposed to be
+    driving on. Passing the waypoint's own z is what makes the answer the right storey, and
+    the reason it is a required argument in practice rather than a nicety.
     """
     heights = []
     for dx, dy in FOOTPRINT:
         px = x + dx * math.cos(yaw) - dy * math.sin(yaw)
         py = y + dx * math.sin(yaw) + dy * math.cos(yaw)
-        height = ground_height(model, data, px, py, 0.0)
+        height = ground_height(model, data, px, py, z_ref)
         if not math.isfinite(height):
             return float("nan")
         heights.append(height)
@@ -92,7 +117,7 @@ def level_ground(model, data, x: float, y: float, yaw: float) -> float:
 
 
 def ground_height(model, data, x: float, y: float, z_ref: float, *, ceiling: float = 14.0) -> float:
-    """Height of the surface at ``(x, y)`` that a robot near ``z_ref`` would stand on.
+    """Height of the surface at ``(x, y)`` on the storey ``z_ref`` names.
 
     Casting down from high above finds the roof rather than the floor wherever the course
     runs over itself, and the surfaces cannot be told apart by the order the rays return
@@ -100,12 +125,16 @@ def ground_height(model, data, x: float, y: float, z_ref: float, *, ceiling: flo
     So each candidate is tested: fire again from just above it and see whether the ray comes
     back to the same surface, which it only does if that space is empty.
 
-    Returns NaN when there is no such surface.
+    Free space is necessary and not sufficient. The floor under a deck is free space too, and
+    picking it because it was the first free surface found is how a spawn ends up a storey
+    down. So a candidate must also be within :data:`STOREY_BELOW` / :data:`STOREY_ABOVE` of
+    the reference, and a walk that finds no such candidate returns NaN rather than the
+    nearest thing it did find. Returning something plausible from the wrong storey is worse
+    than returning nothing: nothing is caught by the caller, and plausible is not.
     """
     z = ceiling
     down = np.array([0.0, 0.0, -1.0])
     gid = np.zeros(1, dtype=np.int32)
-    best = float("nan")
     for _ in range(24):
         dist = mujoco.mj_ray(model, data, np.array([x, y, z]), down, TERRAIN_ONLY, 1, -1, gid)
         if dist < 0:
@@ -114,15 +143,13 @@ def ground_height(model, data, x: float, y: float, z_ref: float, *, ceiling: flo
         back = mujoco.mj_ray(
             model, data, np.array([x, y, hit + 0.25]), down, TERRAIN_ONLY, 1, -1, gid
         )
-        if back >= 0 and abs(back - 0.25) < 1e-6:
-            best = hit
-            if hit <= z_ref + 0.9:
-                return hit
+        if back >= 0 and abs(back - 0.25) < 1e-6 and hit <= z_ref + STOREY_ABOVE:
+            return hit if hit >= z_ref - STOREY_BELOW else float("nan")
         nxt = hit - 0.005
         if nxt >= z - 1e-9:
             break
         z = nxt
-    return best
+    return float("nan")
 
 
 @dataclass(frozen=True)
@@ -135,6 +162,12 @@ class SpawnOverride:
     height: float = 0.2
     seed: int = 0
     waypoint_index: int | None = None
+    #: The storey to stand on, as the waypoint's own z. Zero is the ground floor, which is
+    #: what a single-storey scene and every test fixture in this repository has.
+    z_ref: float = 0.0
+    position_sigma: float = POSITION_SIGMA
+    yaw_sigma_deg: float = YAW_SIGMA_DEG
+    joint_sigma: float = JOINT_SIGMA
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> SpawnOverride | None:
@@ -155,6 +188,10 @@ class SpawnOverride:
             height=float(env.get("S10_SPAWN_HEIGHT", "0.2")),
             seed=int(env.get("S10_SPAWN_SEED", "0")),
             waypoint_index=int(index) if index else None,
+            z_ref=float(env.get("S10_SPAWN_Z", "0.0")),
+            position_sigma=float(env.get("S10_SPAWN_POSITION_SIGMA", POSITION_SIGMA)),
+            yaw_sigma_deg=float(env.get("S10_SPAWN_YAW_SIGMA_DEG", YAW_SIGMA_DEG)),
+            joint_sigma=float(env.get("S10_SPAWN_JOINT_SIGMA", JOINT_SIGMA)),
         )
 
     def pose(
@@ -166,13 +203,13 @@ class SpawnOverride:
         being driven, and so a caller that wants to reject a spawn can see it first.
         """
         rng = np.random.default_rng(self.seed)
-        jitter = rng.normal(0.0, POSITION_SIGMA, 2) if self.seed else np.zeros(2)
+        jitter = rng.normal(0.0, self.position_sigma, 2) if self.seed else np.zeros(2)
         x = self.x + float(jitter[0])
         y = self.y + float(jitter[1])
-        yaw = self.yaw + (math.radians(rng.normal(0.0, YAW_SIGMA_DEG)) if self.seed else 0.0)
+        yaw = self.yaw + (math.radians(rng.normal(0.0, self.yaw_sigma_deg)) if self.seed else 0.0)
         joints = np.asarray(joint_init, dtype=np.float64).copy()
         if self.seed:
-            joints += rng.normal(0.0, JOINT_SIGMA, joints.size)
+            joints += rng.normal(0.0, self.joint_sigma, joints.size)
 
         # A waypoint is a point on the route, not necessarily a place to stand: several sit
         # hard against the wall the robot is meant to pass. The robot reaches them from
@@ -183,7 +220,7 @@ class SpawnOverride:
         while back <= SEARCH_LIMIT:
             px = x - back * math.cos(yaw)
             py = y - back * math.sin(yaw)
-            floor = level_ground(model, data, px, py, yaw)
+            floor = level_ground(model, data, px, py, yaw, self.z_ref)
             if math.isfinite(floor):
                 half = yaw / 2.0
                 quat = np.array([math.cos(half), 0.0, 0.0, math.sin(half)])
@@ -192,7 +229,8 @@ class SpawnOverride:
 
         raise ValueError(
             f"no ground level enough to stand on within {SEARCH_LIMIT:.1f}m behind "
-            f"({x:.3f}, {y:.3f}); this spawn is not a segment the robot failed"
+            f"({x:.3f}, {y:.3f}) on the storey at z={self.z_ref:.3f}; this spawn is not a "
+            "segment the robot failed"
         )
 
     def apply(self, model, data, joint_init: np.ndarray) -> np.ndarray:
