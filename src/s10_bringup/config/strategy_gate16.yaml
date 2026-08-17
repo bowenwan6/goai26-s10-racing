@@ -1,4 +1,4 @@
-# Strategy router configuration.
+# Stable frontal Gate16 strategy configuration. This file is opt-in at launch.
 #
 # This file is only read when the race is launched with strategy_router:=true. The default
 # scored run does not start this node at all, so nothing here can change it.
@@ -7,8 +7,8 @@
 # `if waypoint == 16` in the follower, in the router and in the runner, and the moment that
 # test exists in three files two of them are wrong and the third is the one in the run.
 #
-# The default remains observation/plumbing-safe: enabling the router does not silently enable
-# actuator takeover. Use strategy_gate16.yaml for the reviewed stable Gate16 configuration.
+# The router is still opt-in at launch. When it is selected, this configuration enables the
+# frozen stable Gate16 actor for segment 15->16; mock and scripted remain test-only choices.
 
 strategy_router:
   ros__parameters:
@@ -17,10 +17,10 @@ strategy_router:
     nav_cmd_topic: /strategy/nav_cmd_vel
     cmd_vel_topic: /cmd_vel
 
-    climb_enabled: false
+    climb_enabled: true
     measurement_only: false
-    # mock | scripted. The stable Gate16 configuration is isolated in strategy_gate16.yaml.
-    climb_policy: mock
+    # Stable frontal 174D base+residual. Adaptive mirroring and command profiles remain off.
+    climb_policy: gate16
     climb_segment: [15, 16]
     scripted_trajectory: ""
     # succeed | fail | never_finish | go_silent | raise | lie
@@ -42,7 +42,23 @@ strategy_router:
 
     approach_enter: 3.0
     approach_speed_scale: 0.5
-    align_enter: 1.2
+    align_enter: 1.6
+    align_timeout: 40.0
     climb_timeout: 20.0
-    max_retries: 3
-    sensor_timeout: 0.5
+    climb_progress_window: 12.0
+    max_retries: 0
+    sensor_timeout: 0.2
+    ready_distance_min: 0.55
+    ready_distance_max: 0.70
+    ready_dwell: 0.10
+    min_entry_speed: 0.10
+    max_entry_speed: 0.30
+    target_entry_speed: 0.25
+    max_entry_yaw_rate: 0.10
+    align_yaw_rate: 0.70
+    max_lateral_error: 0.25
+    gate16_staging_tolerance: 0.25
+    verify_clearance: 0.02
+    verify_hold: 0.30
+    verify_timeout: 3.0
+    verify_deck_z: 0.4787248

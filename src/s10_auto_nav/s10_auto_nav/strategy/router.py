@@ -59,6 +59,7 @@ class Mode(Enum):
     CLIMB_READY = "climb_ready"
     CLIMB = "climb"
     VERIFY_CLEAR = "verify_clear"
+    HANDOFF = "handoff"
     RECOVER = "recover"
     ABORT = "abort"
     DONE = "done"
@@ -116,6 +117,9 @@ class RobotState:
     joint_torques: np.ndarray | None = None
     wheel_positions: np.ndarray | None = None
     wheel_contacts: np.ndarray | None = None
+    obstacle_edge: np.ndarray | None = None
+    obstacle_normal: np.ndarray | None = None
+    actual_joint_owner: str = "unknown"
 
     @property
     def tilt(self) -> float:
@@ -161,6 +165,10 @@ class RouterConfig:
     max_lateral_error: float = 0.08
     max_heading_error: float = math.radians(6.0)
     max_entry_speed: float = 0.05
+    min_entry_speed: float = 0.10
+    target_entry_speed: float = 0.25
+    gate16_staging_lead: float = 0.25
+    gate16_staging_tolerance: float = 0.10
     max_entry_tilt: float = math.radians(12.0)
     #: How close the edge must be, and no closer. Without a distance band the readiness
     #: check passed anywhere inside the align radius, including 1.2 m short of the edge and
@@ -196,9 +204,13 @@ class RouterConfig:
 
     #: Verification. All of these must hold together, for ``verify_hold`` seconds.
     verify_hold: float = 2.0
+    verify_timeout: float = 0.0
     verify_min_contacts: int = 3
     #: Metres a wheel centre must be past the obstacle edge to count as over it.
     verify_clearance: float = 0.0
+    verify_deck_z: float = 0.47872480
+    verify_wheel_radius: float = 0.081
+    verify_height_fraction: float = 0.70
     #: Metres of forward progress required after handing back, and the time allowed for it.
     resume_distance: float = 0.5
     resume_timeout: float = 15.0
@@ -246,9 +258,12 @@ class _Attempt:
     started_at: float = 0.0
     start_travelled: float = 0.0
     best_travelled: float = 0.0
+    best_physical_progress: float = 0.0
     last_progress_at: float = 0.0
     entry_position: np.ndarray | None = None
     entry_obstacle_distance: float = math.inf
+    segment: tuple[int, int] = (-1, -1)
+    gate16: bool = False
 
 
 class Router:
@@ -273,6 +288,7 @@ class Router:
         self._near_align = Hysteresis(c.align_enter, c.align_exit, rising=False)
         self._in_envelope = Debounced(c.ready_dwell, c.unready_dwell)
         self._verified = Debounced(c.verify_hold, 0.0)
+        self._gate16_staging_complete = False
 
         self._entered_at = 0.0
         self._t = 0.0
@@ -299,6 +315,10 @@ class Router:
     @property
     def active_policy_name(self) -> str:
         return self._active_name
+
+    @property
+    def active_action_kind(self) -> ActionKind | None:
+        return None if self._active is None else self._active.action_kind
 
     @property
     def retries(self) -> int:
@@ -449,6 +469,7 @@ class Router:
             Mode.CLIMB_READY: self._climb_ready,
             Mode.CLIMB: self._climb,
             Mode.VERIFY_CLEAR: self._verify_clear,
+            Mode.HANDOFF: self._handoff,
             Mode.RECOVER: self._recover,
         }[self.mode]
         return handler(state, nav_command, observation, dt)
@@ -468,11 +489,19 @@ class Router:
                 self._resume_deadline = math.inf
                 # Retracted means retracted: the segment goes back to being uncleared, or the
                 # retry that follows would be refused by the latch it just set.
-                self._cleared.discard(tuple(state.segment))
+                self._cleared.discard(tuple(self._attempt.segment))
                 self._go(Mode.RECOVER, "no progress after climb; verification retracted")
                 return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         name = self.policy_for(state.segment)
+        gate16 = bool(getattr(self.policies.get(name), "is_gate16_policy", False))
+        if gate16 and state.actual_joint_owner != "official":
+            return RouterOutput(
+                self.mode,
+                Source.NAV,
+                command=nav_command,
+                reason=f"waiting for official owner ({state.actual_joint_owner})",
+            )
         near = self._near_approach.update(state.obstacle_distance)
         # The edge has to be *ahead*. `near` is a distance band and is equally satisfied by an
         # obstacle 1 m behind, which is exactly the state the robot is in immediately after a
@@ -499,6 +528,7 @@ class Router:
                 self.mode, Source.NAV, command=nav_command, reason=self._last_reason
             )
         if self._near_align.update(state.obstacle_distance):
+            self._gate16_staging_complete = False
             self._go(Mode.ALIGN, "within align radius")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
         return RouterOutput(
@@ -518,11 +548,19 @@ class Router:
         into a straddle at all, which is exactly the case ``align_timeout`` exists for.
         """
         c = self.config
+        name = self.policy_for(state.segment)
+        requires_moving_entry = bool(
+            getattr(self.policies.get(name), "is_gate16_policy", False)
+        )
         in_envelope = (
             c.ready_distance_min <= state.obstacle_distance <= c.ready_distance_max
             and abs(state.lateral_error) <= c.max_lateral_error
             and abs(state.heading_error) <= c.max_heading_error
-            and state.speed <= c.max_entry_speed
+            and (
+                c.min_entry_speed <= state.speed <= c.max_entry_speed
+                if requires_moving_entry
+                else state.speed <= c.max_entry_speed
+            )
             and abs(state.yaw_rate) <= c.max_entry_yaw_rate
             and state.tilt <= c.max_entry_tilt
         )
@@ -534,8 +572,47 @@ class Router:
             self._go(Mode.RECOVER, f"could not align in {c.align_timeout:.0f}s")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
-        # Yaw first, then lateral, then close the remaining gap: correcting all three at once
-        # on a lip walks the contact points along the edge, which is the failure `StepCommit`
+        # WP15 approaches Gate 16 diagonally, while the stable frontal actor was evaluated
+        # on the obstacle centreline. This wheelbase cannot remove half a metre of lateral
+        # error while holding yaw at zero. Drive to a safe pre-entry point as a unicycle,
+        # then face the lip and establish the validated moving handoff.
+        if requires_moving_entry and not self._gate16_staging_complete:
+            if state.obstacle_edge is None or state.obstacle_normal is None:
+                self._go(Mode.RECOVER, "Gate16 staging has no obstacle frame")
+                return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+            edge = np.asarray(state.obstacle_edge, float)
+            normal = np.asarray(state.obstacle_normal, float)
+            staging = edge - normal * (
+                c.ready_distance_max + c.gate16_staging_lead
+            )
+            delta = staging - np.asarray(state.position[:2], float)
+            distance = float(np.linalg.norm(delta))
+            if distance <= c.gate16_staging_tolerance:
+                self._gate16_staging_complete = True
+                return RouterOutput(
+                    self.mode,
+                    Source.ROUTER,
+                    command=(0.0, 0.0, 0.0),
+                    reason="Gate16 staging point reached; facing lip",
+                )
+            desired_yaw = math.atan2(float(delta[1]), float(delta[0]))
+            yaw_error = (desired_yaw - state.yaw + math.pi) % (2.0 * math.pi) - math.pi
+            yaw_command = float(
+                np.clip(yaw_error * 1.5, -c.align_yaw_rate, c.align_yaw_rate)
+            )
+            forward = 0.0
+            if abs(yaw_error) <= math.radians(35.0):
+                forward = float(min(c.align_speed, max(0.08, distance * 0.7)))
+            return RouterOutput(
+                self.mode,
+                Source.ROUTER,
+                command=(forward, 0.0, yaw_command),
+                reason=f"driving to Gate16 staging point ({distance:.2f}m)",
+            )
+
+        # Yaw first, then lateral, then establish the moving Gate16 entry. Correcting all
+        # three at once on a lip walks the contact points along the edge, which is the failure
+        # `StepCommit`
         # was written to avoid and it applies just as well here.
         heading = float(np.clip(-state.heading_error * 1.5, -c.align_yaw_rate, c.align_yaw_rate))
         lateral = 0.0
@@ -543,8 +620,13 @@ class Router:
         if abs(state.heading_error) <= c.max_heading_error * 2.0:
             lateral = float(np.clip(-state.lateral_error * 1.2, -c.align_lateral, c.align_lateral))
             if abs(state.lateral_error) <= c.max_lateral_error * 2.0:
-                gap = state.obstacle_distance - c.align_enter * 0.5
-                forward = float(np.clip(gap * 0.8, -c.align_speed, c.align_speed))
+                if state.obstacle_distance < c.ready_distance_min:
+                    forward = -min(c.align_speed, c.target_entry_speed)
+                elif requires_moving_entry:
+                    forward = min(c.align_speed, c.target_entry_speed)
+                else:
+                    gap = state.obstacle_distance - c.align_enter * 0.5
+                    forward = float(np.clip(gap * 0.8, -c.align_speed, c.align_speed))
         settling = " (settling)" if self._in_envelope.settling else ""
         return RouterOutput(
             self.mode,
@@ -591,6 +673,8 @@ class Router:
             last_progress_at=state.t,
             entry_position=np.asarray(state.position, float).copy(),
             entry_obstacle_distance=state.obstacle_distance,
+            segment=tuple(state.segment),
+            gate16=bool(getattr(policy, "is_gate16_policy", False)),
         )
         self._go(Mode.CLIMB, f"started {name}")
         return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
@@ -615,8 +699,30 @@ class Router:
             self._go(Mode.RECOVER, f"climb timed out after {elapsed:.1f}s")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
-        if state.travelled > self._attempt.best_travelled + c.climb_progress_epsilon:
-            self._attempt.best_travelled = state.travelled
+        physical_progress = 0.0
+        if (
+            self._attempt.gate16
+            and self._attempt.entry_position is not None
+            and state.obstacle_normal is not None
+        ):
+            physical_progress = float(
+                np.dot(
+                    np.asarray(state.position[:2], float)
+                    - self._attempt.entry_position[:2],
+                    np.asarray(state.obstacle_normal, float),
+                )
+            )
+        if (
+            state.travelled > self._attempt.best_travelled + c.climb_progress_epsilon
+            or physical_progress
+            > self._attempt.best_physical_progress + c.climb_progress_epsilon
+        ):
+            self._attempt.best_travelled = max(
+                self._attempt.best_travelled, state.travelled
+            )
+            self._attempt.best_physical_progress = max(
+                self._attempt.best_physical_progress, physical_progress
+            )
             self._attempt.last_progress_at = state.t
         elif state.t - self._attempt.last_progress_at >= c.climb_progress_window:
             self._cancel_active("no progress")
@@ -631,6 +737,17 @@ class Router:
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         self._policy_status = action.status
+        if self._attempt.gate16:
+            clear, why = self._physically_clear(state)
+            if clear:
+                self._go(Mode.VERIFY_CLEAR, f"four-wheel candidate: {why}")
+                self._verified.reset(False)
+                return RouterOutput(
+                    self.mode,
+                    Source.POLICY,
+                    command=action.twist or (0.0, 0.0, 0.0),
+                    reason=self._last_reason,
+                )
         if action.status is PolicyStatus.SUCCEEDED:
             # Note what is *not* happening here: a hand back to NAVIGATE.
             self._go(Mode.VERIFY_CLEAR, "policy reports success; verifying")
@@ -641,9 +758,16 @@ class Router:
             self._go(Mode.RECOVER, f"policy reported {action.status.value}")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
-        if action.kind is ActionKind.TWIST:
+        if action.kind in (ActionKind.TWIST, ActionKind.DELEGATED):
             return RouterOutput(
-                self.mode, Source.POLICY, command=action.twist or (0.0, 0.0, 0.0), reason="climbing"
+                self.mode,
+                Source.POLICY,
+                command=action.twist or (0.0, 0.0, 0.0),
+                reason=(
+                    "climbing"
+                    if action.kind is ActionKind.TWIST
+                    else f"climbing (actual owner {state.actual_joint_owner})"
+                ),
             )
         # No twist: a joint action is not a body velocity and must not be turned into one.
         return RouterOutput(
@@ -665,15 +789,29 @@ class Router:
         contacts = np.asarray(state.wheel_contacts, bool)
         if wheels.shape != (4, 3) or contacts.shape != (4,):
             return False, "malformed wheel state"
-        # obstacle_distance is measured to the base; a negative value means the base is past
-        # the edge, and the wheels are checked individually against the same edge.
-        past = int(
-            np.sum(
-                state.obstacle_distance + (wheels[:, 0] - state.position[0]) <= -c.verify_clearance
+        if state.obstacle_edge is None or state.obstacle_normal is None:
+            if self._attempt.gate16:
+                return False, "no frozen obstacle frame"
+            past = int(
+                np.sum(
+                    state.obstacle_distance + (wheels[:, 0] - state.position[0])
+                    <= -c.verify_clearance
+                )
             )
-        )
+        else:
+            edge = np.asarray(state.obstacle_edge, float)
+            normal = np.asarray(state.obstacle_normal, float)
+            if edge.shape != (2,) or normal.shape != (2,) or not np.all(np.isfinite(edge)):
+                return False, "malformed obstacle frame"
+            forward_margin = (wheels[:, :2] - edge) @ normal - c.verify_clearance
+            past = int(np.sum(forward_margin >= 0.0))
         if past < 4:
             return False, f"only {past}/4 wheel centres past the edge"
+        if self._attempt.gate16:
+            deck_threshold = c.verify_deck_z + c.verify_height_fraction * c.verify_wheel_radius
+            high = int(np.sum(wheels[:, 2] >= deck_threshold))
+            if high < 4:
+                return False, f"only {high}/4 wheel centres above the deck threshold"
         touching = int(np.sum(contacts))
         if touching < c.verify_min_contacts:
             return False, f"only {touching} wheels in contact"
@@ -686,26 +824,78 @@ class Router:
         return True, "four wheels over, contacts and attitude sane"
 
     def _verify_clear(self, state, nav_command, observation, dt) -> RouterOutput:
-        """Hold still, check the geometry, and only then hand back."""
+        """Keep Gate16 in control, verify geometry, then start an acknowledged handoff."""
         ok, why = self._physically_clear(state)
         if self._verified.update(ok and state.speed <= self.config.max_entry_speed * 4.0, dt):
             self._resume_from = state.travelled
             self._resume_deadline = state.t + self.config.resume_timeout
-            self._cleared.add(tuple(state.segment))
+            self._cleared.add(tuple(self._attempt.segment))
+            gate16 = self._attempt.gate16
+            if self._active is not None and hasattr(self._active, "succeed"):
+                self._active.succeed()
             self._cancel_active("verified")
-            self._go(Mode.NAVIGATE, f"verified: {why}")
-            return RouterOutput(
-                self.mode, Source.NAV, command=nav_command, reason=self._last_reason
-            )
-        if self._elapsed >= self.config.verify_hold * 3.0:
+            if not gate16:
+                self._go(Mode.NAVIGATE, f"verified: {why}")
+                return RouterOutput(
+                    self.mode, Source.NAV, command=nav_command, reason=self._last_reason
+                )
+            self._go(Mode.HANDOFF, f"verified: {why}; returning official owner")
+            return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+        verify_timeout = max(
+            self.config.verify_hold * 3.0, self.config.verify_timeout
+        )
+        if self._elapsed >= verify_timeout:
             self._cancel_active("verification failed")
             self._go(Mode.RECOVER, f"verification failed: {why}")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
-        return RouterOutput(self.mode, Source.ROUTER, reason=f"verifying: {why}")
+        if self._active is None or observation is None:
+            self._go(Mode.RECOVER, "verification lost active Gate16 policy")
+            return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+        try:
+            action = self._active.step(observation)
+        except Exception as exc:
+            self._cancel_active("verification step raised")
+            self._go(Mode.RECOVER, f"policy raised while verifying: {type(exc).__name__}")
+            return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+        return RouterOutput(
+            self.mode,
+            Source.POLICY,
+            # Rear-wheel completion ends the push command. Gate16 still owns the actuator
+            # matrix through this dwell, but its command observation is zero so verification
+            # does not keep accelerating a robot already on the upper platform.
+            command=(0.0, 0.0, 0.0) if self._attempt.gate16 else action.twist,
+            reason=f"verifying under Gate16 ownership: {why}",
+        )
+
+    def _handoff(self, state, nav_command, observation, dt) -> RouterOutput:
+        """Hold navigation until the SDK confirms the reset official actor is in control."""
+        if state.actual_joint_owner == "official":
+            self._go(Mode.NAVIGATE, "official owner acknowledged; follower resumed")
+            return RouterOutput(self.mode, Source.NAV, command=nav_command, reason=self._last_reason)
+        if self._elapsed >= 2.0:
+            self._go(Mode.ABORT, f"official handoff not acknowledged ({state.actual_joint_owner})")
+        return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
     def _recover(self, state, nav_command, observation, dt) -> RouterOutput:
         """Back straight off, then try again -- a bounded number of times."""
         c = self.config
+        if self._attempt.gate16:
+            wheels = (
+                None
+                if state.wheel_positions is None
+                else np.asarray(state.wheel_positions, float)
+            )
+            safe_lower = bool(
+                wheels is not None
+                and wheels.shape == (4, 3)
+                and np.all(
+                    wheels[:, 2]
+                    < c.verify_deck_z + c.verify_height_fraction * c.verify_wheel_radius
+                )
+            )
+            if not safe_lower:
+                self._go(Mode.ABORT, "Gate16 recovery refused: robot may be straddling the lip")
+                return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
         if self._elapsed < c.recover_duration:
             return RouterOutput(
                 self.mode, Source.ROUTER, command=(-c.recover_speed, 0.0, 0.0), reason="backing off"
@@ -716,6 +906,7 @@ class Router:
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
         self._in_envelope.reset(False)
         self._near_align.reset(False)
+        self._gate16_staging_complete = False
         self._go(Mode.ALIGN, f"retry {self._retries}/{c.max_retries}")
         return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 

@@ -133,6 +133,8 @@ def run_once(args, waypoints: list[dict], seed: int, course_path: Path) -> dict:
     ]
     if args.nav_params:
         command.append(f"nav_params:={args.nav_params}")
+    if args.router_params:
+        command.append(f"router_params:={args.router_params}")
     stack = subprocess.Popen(command, env=env, stdout=log, stderr=log)
 
     # The recorder ends the run; this is only the backstop for a stack that never got as far
@@ -178,6 +180,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--tag", default="", help="suffix, to keep an A/B pair apart")
     parser.add_argument("--nav-params", default="", help="override nav.yaml, for an A/B only")
+    parser.add_argument(
+        "--router-params", default="", help="override strategy.yaml when --router is enabled"
+    )
     parser.add_argument("--router", action="store_true", help="insert the strategy router")
     parser.add_argument("--video", action="store_true")
     parser.add_argument("--video-hz", type=float, default=10.0)
