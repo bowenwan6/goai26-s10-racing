@@ -153,6 +153,7 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("climb_timeout", 40.0)
         self.declare_parameter("climb_yaw_rate", 0.15)
         self.declare_parameter("climb_backup", 3.0)
+        self.declare_parameter("climb_attempts", 3)
 
         self.declare_parameter("avoidance_enabled", True)
         self.declare_parameter("max_deviation_deg", math.degrees(AvoidanceConfig.max_deviation))
@@ -211,6 +212,7 @@ class WaypointFollowerNode(Node):
                 yaw_rate=float(self.get_parameter("climb_yaw_rate").value),
                 timeout=float(self.get_parameter("climb_timeout").value),
                 backup=float(self.get_parameter("climb_backup").value),
+                attempts=int(self.get_parameter("climb_attempts").value),
             )
         )
 
@@ -242,6 +244,7 @@ class WaypointFollowerNode(Node):
         self._stall_reference: float | None = None
         self._no_progress_for = 0.0
         self._recovering_for = 0.0
+        self._committing = False
 
         self._ranges: np.ndarray | None = None
         self._beam_angles: np.ndarray | None = None
@@ -335,7 +338,18 @@ class WaypointFollowerNode(Node):
             self._publish(self._recovery_command())
             return
 
+        was_committing = self._committing
         climbing = self.step_commit.update(self._pitch, self._speed, dt)
+        self._committing = climbing
+        if was_committing and self.step_commit.conceded:
+            # Logged once on the edge, because this is the moment the follower stops calling
+            # the thing in front of it terrain and starts calling it an obstruction, and a
+            # run that ends badly afterwards is unreadable without knowing when that happened.
+            self.get_logger().warn(
+                f"Gave up climbing after {self.step_commit.failures} attempts at "
+                f"{self._pose_xy[0]:.1f},{self._pose_xy[1]:.1f}; steering around it instead"
+            )
+
         carrot = self.course.lookahead_point(self._pose_xy, self.controller.lookahead_distance())
 
         if climbing:

@@ -23,11 +23,23 @@ instinct the rest of the follower has is wrong here, and each was observed being
   behaviour that has ever worked -- which is why the first stall eventually resolved and
   the second, once the watchdog got involved, never did.
 
-What is *not* wrong is retrying. This class therefore never hands back to free steering
-while still pitched; it cycles, pushing for :attr:`timeout` and then reversing straight for
-:attr:`backup` to build a genuine run-up, indefinitely. Leaning on a wall forever is the
-cost of that, and it is the cheaper mistake: the wall case loses a run that was already
-lost, while handing back mid-ledge loses a run that was still winnable.
+What is *not* wrong is retrying. This class therefore does not hand back to free steering
+after one failure; it cycles, pushing for :attr:`timeout` and then reversing straight for
+:attr:`backup` to build a genuine run-up.
+
+It used to do that indefinitely, on the argument that the wall case loses a run that was
+already lost while handing back mid-ledge loses a run that was still winnable. The first
+half of that turned out to be false. On the leg from waypoint 18 to 19 the robot put its
+nose on a 0.544 m rise at (27.8, 29.5), held 0.7 m/s against it for 130 seconds, reared up
+and went over at 70 degrees of tilt -- and the way past it was a **0.2 m sidestep**, the deck
+being clear at y=30.2 for the whole length of the leg. Measured: 8.966 m round against 8.88 m
+straight, a 1 per cent detour, with the body's full 0.45 m half-width. A wall the planner can
+walk around is not a run that was already lost, and leaning on it costs every gate after it.
+
+So the cycling is bounded by :attr:`attempts`. What makes that safe is what the count means:
+conceding takes three consecutive *complete* failures to cross, and the slowest genuine
+crossing ever measured on this track took 7.1 s against a 12 s push. A step that has resisted
+three run-ups is not a step.
 """
 
 from __future__ import annotations
@@ -77,6 +89,15 @@ class StepCommitConfig:
     timeout: float = 12.0
     #: Seconds of straight reverse to build a run-up.
     backup: float = 3.0
+    #: Complete push-and-run-up cycles to fail before conceding the obstacle is not a step.
+    #:
+    #: Three, at 15 s each, so a wall costs 45 s and then the planner gets to look for a way
+    #: round -- against the 130 s and a fall it cost on the leg to waypoint 19. It cannot cut
+    #: a real climb short: the slowest genuine crossing on this track is 7.1 s inside a 12 s
+    #: push, so three consecutive failures is not a slow step, it is a different kind of
+    #: object. Raising this trades gates after the obstacle for attempts at it, and the
+    #: evidence says the attempts are not the scarce thing.
+    attempts: int = 3
 
 
 class StepCommit:
@@ -85,14 +106,26 @@ class StepCommit:
     def __init__(self, config: StepCommitConfig | None = None) -> None:
         self.config = config or StepCommitConfig()
         self._elapsed = 0.0
+        self._failures = 0
 
     def reset(self) -> None:
         self._elapsed = 0.0
+        self._failures = 0
 
     @property
     def elapsed(self) -> float:
         """Seconds into the current push-or-run-up cycle."""
         return self._elapsed
+
+    @property
+    def failures(self) -> int:
+        """Complete push-and-run-up cycles that have not got the body over."""
+        return self._failures
+
+    @property
+    def conceded(self) -> bool:
+        """True once this obstacle has been given up on as not being a step."""
+        return self._failures >= self.config.attempts
 
     @property
     def backing(self) -> bool:
@@ -111,12 +144,22 @@ class StepCommit:
         # step after it began and leave the robot shuffling on the lip.
         moving = speed >= self.config.progress_speed and not self.backing
         if abs(pitch) < self.config.pitch_threshold or moving:
+            # Levelling out or getting under way is the only evidence of success there is,
+            # and it clears the tally as well as the clock: the next ledge starts fresh, and
+            # a robot that has just driven off this one is not carrying its failures onward.
             self._elapsed = 0.0
+            self._failures = 0
+            return False
+        if self.conceded:
+            # Still pitched, still stuck, but out of attempts. Handing back is the whole
+            # point -- the follower's classifier and planner get to look for a way round,
+            # which on the one measured case was 0.2 m to the left.
             return False
         self._elapsed += dt
         if self._elapsed >= self.config.timeout + self.config.backup:
             self._elapsed = 0.0  # Run-up finished; charge the step again.
-        return True
+            self._failures += 1
+        return not self.conceded
 
     def command(self, steering: Command) -> Command:
         """Rewrite the follower's command into a straight push, or a straight run-up."""

@@ -140,3 +140,9 @@ waypoint_follower:
     # minute.
     climb_timeout: 12.0
     climb_backup: 3.0
+    # Complete push-and-run-up cycles to fail before deciding this is not a step and letting
+    # the planner look for a way round. The commit used to be unbounded: on the leg to
+    # waypoint 19 that meant 130 s at 0.7 m/s against a 0.544 m rise, then a fall at 70
+    # degrees, with the deck clear 0.2 m to the left the whole time -- 8.966 m round against
+    # 8.88 m straight. Three cycles is 45 s; the slowest genuine crossing measured is 7.1 s.
+    climb_attempts: 3
