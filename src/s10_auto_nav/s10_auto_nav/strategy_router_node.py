@@ -12,20 +12,24 @@ an error in ROS, it is a merge, and the result is a robot driven by whichever me
 last at 50 Hz. This project has already lost an afternoon to exactly that -- an orphaned
 container's follower publishing into a later run -- and the symptom was misread as terrain.
 
-For a policy that emits 16 joint targets the same rule applies one level down, and here an
-honest limitation has to be stated rather than papered over. ``/JOINTS_CMD`` is written by the
-contest SDK from inside the ``rl_deploy`` process, as a ``drdds::msg::JointsDataCmd``. This
-node cannot take that topic away from it: a second publisher from out here would be a
-different message type on the same name, and stopping the official policy writing is not
-something an external node can do at all.
+For a policy that emits 16 joint targets the same rule applies one level down, and there the
+enforcement is not here. ``/JOINTS_CMD`` is written by the contest SDK from inside the
+``rl_deploy`` process, as a ``drdds::msg::JointsDataCmd``. This node cannot take that topic
+away from it: a second publisher from out here would be a different message type on the same
+name, and stopping the official policy writing is not something an external node can do at
+all.
 
-So this node publishes joint targets to ``/strategy/climb_joints`` and :class:`JointArbiter`
-enforces single ownership of *that*. Turning it into genuine ownership of ``/JOINTS_CMD``
-requires the override to live where ``/JOINTS_CMD`` is written -- in
-``integration/ros_cmd_interface.hpp``, which is installed into the SDK by
-``scripts/patch_upstream.py`` -- and that is not yet implemented. Until it is, a 16-joint
-climb policy is testable end to end up to this topic and no further, and the arbiter's
-guarantee is about this node's output, not about the actuators.
+So the gate lives where the writing happens -- ``integration/joint_command_owner.hpp``,
+installed into the SDK by ``scripts/patch_upstream.py``, through which every joint command
+``RLControlState`` produces now passes. This node's part is to *ask*: it publishes joint
+targets on ``/strategy/climb_joints`` and the owner it wants on ``/strategy/joint_owner``,
+and reads back on ``/joints/owner`` who is actually driving. :class:`JointArbiter` still
+gates what leaves this node, which is a different and weaker guarantee, and is kept because
+a request the gate refuses should never have been sent in the first place.
+
+Requested and actual ownership are recorded separately in ``/strategy/status`` on purpose. If
+they ever disagree for longer than the gate's handover window, that is the fact worth having
+in the log, and collapsing them into one field would hide it.
 
 There is no attempt anywhere in this file to convert a 16-dimensional joint action into a
 Twist. They are not the same kind of thing, the manoeuvre is not expressible as a body
@@ -40,6 +44,11 @@ Topics published:
 ``/strategy/status``    JSON: mode, source, reason, policy status, retries, active policy
 ``/strategy/transition`` a line per transition, for the log
 ``/strategy/climb_joints`` 16 joint targets, when a joint-mode policy is driving
+``/strategy/joint_owner`` which controller this node is asking the SDK gate to run
+
+Topics subscribed for ownership:
+
+``/joints/owner``       who the SDK gate says is actually driving the actuators
 """
 
 from __future__ import annotations
@@ -74,6 +83,19 @@ def _yaw_pitch_roll(q) -> tuple[float, float, float]:
     return yaw, pitch, roll
 
 
+def _obstacle_coordinates(position, yaw, edge, normal, tangent) -> tuple[float, float, float]:
+    """Pose in a measured obstacle frame: distance, lateral error, heading error."""
+    position = np.asarray(position, dtype=float)
+    edge = np.asarray(edge, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    tangent = np.asarray(tangent, dtype=float)
+    distance = float(np.dot(edge - position, normal))
+    lateral = float(np.dot(position - edge, tangent))
+    normal_yaw = math.atan2(float(normal[1]), float(normal[0]))
+    heading = (float(yaw) - normal_yaw + math.pi) % (2.0 * math.pi) - math.pi
+    return distance, lateral, heading
+
+
 class StrategyRouterNode(Node):
     def __init__(self) -> None:
         super().__init__("strategy_router")
@@ -97,21 +119,39 @@ class StrategyRouterNode(Node):
         # is not on it. NaN means fall back to the target waypoint, which is the honest
         # default for a segment nobody has measured.
         self.declare_parameter("climb_obstacle_x", float("nan"))
+        self.declare_parameter("climb_edge_center", [float("nan"), float("nan")])
+        self.declare_parameter("climb_normal", [float("nan"), float("nan")])
+        self.declare_parameter("climb_tangent", [float("nan"), float("nan")])
         self.declare_parameter("advance_radius", 0.35)
 
         self.declare_parameter("approach_enter", RouterConfig.approach_enter)
+        self.declare_parameter("approach_speed_scale", RouterConfig.approach_speed_scale)
         self.declare_parameter("align_enter", RouterConfig.align_enter)
         self.declare_parameter("climb_timeout", RouterConfig.climb_timeout)
         self.declare_parameter("max_retries", RouterConfig.max_retries)
         self.declare_parameter("sensor_timeout", RouterConfig.sensor_timeout)
+        # Run the state machine but leave the follower's command alone; see RouterConfig.
+        self.declare_parameter("router_shadow", RouterConfig.shadow)
+        self.declare_parameter("measurement_only", RouterConfig.measurement_only)
+        # The entry gate's distance band and yaw-rate limit, exposed so the pit-failure
+        # experiment can sweep them without a code change. Provisional values.
+        self.declare_parameter("ready_distance_min", RouterConfig.ready_distance_min)
+        self.declare_parameter("ready_distance_max", RouterConfig.ready_distance_max)
+        self.declare_parameter("max_entry_yaw_rate", RouterConfig.max_entry_yaw_rate)
 
         rate = float(self.get_parameter("control_rate").value)
         config = RouterConfig(
             control_rate=rate,
+            shadow=bool(self.get_parameter("router_shadow").value),
+            measurement_only=bool(self.get_parameter("measurement_only").value),
             approach_enter=float(self.get_parameter("approach_enter").value),
             approach_exit=float(self.get_parameter("approach_enter").value) + 0.6,
+            approach_speed_scale=float(self.get_parameter("approach_speed_scale").value),
             align_enter=float(self.get_parameter("align_enter").value),
             align_exit=float(self.get_parameter("align_enter").value) + 0.3,
+            ready_distance_min=float(self.get_parameter("ready_distance_min").value),
+            ready_distance_max=float(self.get_parameter("ready_distance_max").value),
+            max_entry_yaw_rate=float(self.get_parameter("max_entry_yaw_rate").value),
             climb_timeout=float(self.get_parameter("climb_timeout").value),
             max_retries=int(self.get_parameter("max_retries").value),
             sensor_timeout=float(self.get_parameter("sensor_timeout").value),
@@ -119,12 +159,19 @@ class StrategyRouterNode(Node):
 
         policies, segment_policies = self._build_policies()
         self.router = Router(config, policies=policies, segment_policies=segment_policies)
-        # Deliberately not /JOINTS_CMD -- see the module docstring. That topic belongs to
-        # the SDK and cannot be arbitrated from out here.
+        # Deliberately not /JOINTS_CMD -- see the module docstring. That topic belongs to the
+        # SDK; what goes out here is a request and a set of targets, and the gate inside
+        # rl_deploy decides whether either is used.
         self._joint_pub = self.create_publisher(Float32MultiArray, "/strategy/climb_joints", 10)
+        self._owner_pub = self.create_publisher(String, "/strategy/joint_owner", 10)
         self.arbiter = JointArbiter(
             lambda values: self._joint_pub.publish(Float32MultiArray(data=values.tolist()))
         )
+        # What the gate says, as opposed to what was asked for. Starts as unknown rather than
+        # as "official": before the first message there is no evidence either way, and
+        # assuming the safe answer is how an unrun gate passes for a working one.
+        self._actual_owner = "unknown"
+        self.create_subscription(String, "/joints/owner", self._on_joint_owner, 10)
 
         course_file = self.get_parameter("course_file").value
         # The router keeps its own cursor rather than subscribing to the follower's, so that
@@ -138,6 +185,17 @@ class StrategyRouterNode(Node):
             else None
         )
         self._obstacle_x = float(self.get_parameter("climb_obstacle_x").value)
+        edge = np.asarray(self.get_parameter("climb_edge_center").value, dtype=float)
+        normal = np.asarray(self.get_parameter("climb_normal").value, dtype=float)
+        tangent = np.asarray(self.get_parameter("climb_tangent").value, dtype=float)
+        self._obstacle_frame = None
+        if (
+            edge.shape == normal.shape == tangent.shape == (2,)
+            and np.all(np.isfinite(np.concatenate([edge, normal, tangent])))
+            and abs(float(np.linalg.norm(normal)) - 1.0) <= 1e-6
+            and abs(float(np.dot(normal, tangent))) <= 1e-6
+        ):
+            self._obstacle_frame = (edge, normal, tangent)
         self._climb_segment = tuple(int(v) for v in self.get_parameter("climb_segment").value)
 
         latched = QoSProfile(
@@ -176,6 +234,8 @@ class StrategyRouterNode(Node):
         self._finished = False
         self._segment = (0, 1)
         self._obstacle_distance = math.inf
+        self._lateral_error = 0.0
+        self._heading_error = 0.0
         self._history_seen = 0
 
         self.timer = self.create_timer(1.0 / rate, self._tick)
@@ -259,6 +319,8 @@ class StrategyRouterNode(Node):
         if self.course.finished or cursor == 0:
             self._segment = (max(cursor - 1, 0), cursor)
             self._obstacle_distance = math.inf
+            self._lateral_error = 0.0
+            self._heading_error = 0.0
             return
         previous = self.course.waypoints[cursor - 1]
         target = self.course.waypoints[cursor]
@@ -269,6 +331,8 @@ class StrategyRouterNode(Node):
             # ordinary driving and must read as "nothing ahead", or the router would arm on
             # every waypoint in the course.
             self._obstacle_distance = math.inf
+            self._lateral_error = 0.0
+            self._heading_error = 0.0
             return
 
         heading = np.asarray(target.position[:2], float) - np.asarray(previous.position[:2], float)
@@ -277,6 +341,14 @@ class StrategyRouterNode(Node):
             self._obstacle_distance = math.inf
             return
         heading = heading / norm
+        if self._obstacle_frame is not None:
+            edge, normal, tangent = self._obstacle_frame
+            (
+                self._obstacle_distance,
+                self._lateral_error,
+                self._heading_error,
+            ) = _obstacle_coordinates(self._position[:2], self._ypr[0], edge, normal, tangent)
+            return
         if math.isnan(self._obstacle_x):
             edge = np.asarray(target.position[:2], float)
         else:
@@ -284,6 +356,10 @@ class StrategyRouterNode(Node):
             along = (self._obstacle_x - float(previous.position[0])) / (heading[0] or 1e-6)
             edge = np.asarray(previous.position[:2], float) + heading * along
         self._obstacle_distance = float(np.dot(edge - self._position[:2], heading))
+        tangent = np.array([-heading[1], heading[0]])
+        self._lateral_error = float(np.dot(self._position[:2] - edge, tangent))
+        target_yaw = math.atan2(float(heading[1]), float(heading[0]))
+        self._heading_error = (self._ypr[0] - target_yaw + math.pi) % (2.0 * math.pi) - math.pi
 
     def _state(self) -> RobotState:
         yaw, pitch, roll = self._ypr
@@ -300,6 +376,8 @@ class StrategyRouterNode(Node):
             lidar_time=self._lidar_time,
             heightmap_time=self._heightmap_time,
             obstacle_distance=self._obstacle_distance,
+            lateral_error=self._lateral_error,
+            heading_error=self._heading_error,
             travelled=self._travelled,
             course_finished=self._finished,
         )
@@ -320,7 +398,7 @@ class StrategyRouterNode(Node):
             yaw_rate=state.yaw_rate,
             joint_positions=np.zeros(16),
             joint_velocities=np.zeros(16),
-            obstacle_delta=np.array([state.obstacle_distance, 0.0, 0.0]),
+            obstacle_delta=np.array([state.obstacle_distance, state.lateral_error, 0.0]),
             odom_time=state.odom_time,
             lidar_time=state.lidar_time,
             heightmap_time=state.heightmap_time,
@@ -336,9 +414,18 @@ class StrategyRouterNode(Node):
             self.arbiter.forward(JointArbiter.CLIMB, out.joints)
         else:
             self.arbiter.grant(JointArbiter.OFFICIAL)
+        # Asked every tick rather than once per transition. The gate ignores a request for
+        # the owner it already has, so repeating costs nothing, and a single request lost on
+        # the way to another process would otherwise leave the two permanently disagreeing.
+        self._owner_pub.publish(String(data=self.arbiter.owner))
 
         self._publish_command(out)
         self._publish_status(out)
+
+    def _on_joint_owner(self, msg: String) -> None:
+        if msg.data != self._actual_owner:
+            self.get_logger().info(f"joint command owner is now {msg.data}")
+        self._actual_owner = msg.data
 
     def _publish_command(self, out) -> None:
         """One publish, or a deliberate silence. Never two."""
@@ -371,6 +458,7 @@ class StrategyRouterNode(Node):
                         "active_policy": self.router.active_policy_name,
                         "retries": self.router.retries,
                         "joint_owner": self.arbiter.owner,
+                        "joint_owner_actual": self._actual_owner,
                     }
                 )
             )
