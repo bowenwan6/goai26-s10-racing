@@ -19,7 +19,7 @@ def test_requires_waypoints():
 
 
 def test_cursor_advances_only_within_radius():
-    course = straight_course(advance_radius=0.5)
+    course = straight_course(score_radius=0.5)
     assert course.cursor == 0
 
     assert not course.update(np.array([1.0, 0.0]))
@@ -29,15 +29,80 @@ def test_cursor_advances_only_within_radius():
     assert course.cursor == 1
 
 
+# --------------------------------------------------------------------------------------
+# What counts as reaching a gate.
+# --------------------------------------------------------------------------------------
+#
+# The cursor used to move at advance_radius, 0.35 m, against a scorer that wants 0.2 m. On
+# a corner that is the difference between a gate and a near miss, because the carrot swings
+# onto the next leg the moment the cursor moves. Measured on the continuous waypoint 16 to
+# 32 run: gates 17, 21 and 22 approached to 0.338, 0.320 and 0.336 m and scored nothing.
+
+
+def approach(course: Course, gate_xy, distances: list[float]) -> list[bool]:
+    """Walk the robot straight at ``gate_xy`` through each distance in turn."""
+    gate = np.asarray(gate_xy, float)
+    return [course.update(gate - np.array([d, 0.0])) for d in distances]
+
+
+def test_coming_inside_the_advance_radius_is_not_by_itself_reaching_the_gate():
+    """0.34 m from a gate is a miss, and the cursor must not call it anything else."""
+    course = straight_course(n=3, spacing=2.0)
+    course.update(np.array([0.0, 0.0]))
+    assert course.cursor == 1
+
+    assert approach(course, (2.0, 0.0), [0.60, 0.45, 0.34]) == [False, False, False]
+    assert course.cursor == 1, "still approaching; the closest point has not happened yet"
+
+
+def test_entering_the_scoring_radius_advances():
+    course = straight_course(n=3, spacing=2.0)
+    course.update(np.array([0.0, 0.0]))
+    approach(course, (2.0, 0.0), [0.60, 0.34, 0.19])
+    assert course.cursor == 2
+
+
+def test_a_gate_the_robot_is_moving_away_from_again_releases_the_cursor():
+    """Without this the tighter radius deadlocks: an orbit looks like progress forever.
+
+    The robot gets to 0.24 m, which does not score, and then starts receding. There is
+    nothing further to be gained by holding the cursor there -- the closest approach has
+    already been and gone -- so the course moves on rather than turning the robot round.
+    """
+    course = straight_course(n=3, spacing=2.0)
+    course.update(np.array([0.0, 0.0]))
+    moved = approach(course, (2.0, 0.0), [0.60, 0.30, 0.24, 0.26, 0.31])
+    assert moved == [False, False, False, False, True]
+    assert course.cursor == 2
+
+
+def test_receding_from_a_gate_never_approached_does_not_release_it():
+    """Otherwise a detour around an obstacle would discard the gate it was detouring to."""
+    course = straight_course(n=3, spacing=2.0)
+    course.update(np.array([0.0, 0.0]))
+    assert approach(course, (2.0, 0.0), [1.2, 0.9, 1.4, 2.0]) == [False] * 4
+    assert course.cursor == 1
+
+
+def test_the_closest_approach_is_forgotten_at_each_new_gate():
+    """Carrying it over would release the next gate on its first receding sample."""
+    course = straight_course(n=4, spacing=2.0)
+    course.update(np.array([0.0, 0.0]))
+    approach(course, (2.0, 0.0), [0.10])
+    assert course.cursor == 2
+    assert not course.update(np.array([2.0, 0.0])), "2 m from gate 2, and not a near miss"
+    assert course.cursor == 2
+
+
 def test_one_waypoint_consumed_per_update():
     """A pose jump past several gates must not skip the course."""
-    course = straight_course(advance_radius=100.0)
+    course = straight_course(score_radius=100.0)
     course.update(np.array([0.0, 0.0]))
     assert course.cursor == 1
 
 
 def test_course_finishes():
-    course = straight_course(n=3, advance_radius=10.0)
+    course = straight_course(n=3, score_radius=10.0)
     for _ in range(3):
         course.update(np.array([0.0, 0.0]))
     assert course.finished
@@ -117,14 +182,14 @@ def test_remaining_distance_shrinks_as_the_robot_advances():
 
 
 def test_remaining_distance_is_zero_once_finished():
-    course = straight_course(n=2, advance_radius=10.0)
+    course = straight_course(n=2, score_radius=10.0)
     for _ in range(2):
         course.update(np.array([0.0, 0.0]))
     assert course.remaining_distance(np.array([0.0, 0.0])) == 0.0
 
 
 def test_reset_restores_the_start():
-    course = straight_course(advance_radius=10.0)
+    course = straight_course(score_radius=10.0)
     course.update(np.array([0.0, 0.0]))
     course.reset()
     assert course.cursor == 0

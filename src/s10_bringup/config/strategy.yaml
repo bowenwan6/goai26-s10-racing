@@ -39,7 +39,10 @@ strategy_router:
     climb_edge_center: [12.64593, 32.49969]
     climb_normal: [1.0, 0.0]
     climb_tangent: [0.0, 1.0]
+    # Must match nav.yaml: the router runs its own cursor over the same course file, and
+    # two cursors advancing on different rules disagree about which segment is current.
     advance_radius: 0.35
+    score_radius: 0.2
 
     approach_enter: 3.0
     approach_speed_scale: 0.5

@@ -123,6 +123,7 @@ class StrategyRouterNode(Node):
         self.declare_parameter("climb_normal", [float("nan"), float("nan")])
         self.declare_parameter("climb_tangent", [float("nan"), float("nan")])
         self.declare_parameter("advance_radius", 0.35)
+        self.declare_parameter("score_radius", 0.2)
 
         self.declare_parameter("approach_enter", RouterConfig.approach_enter)
         self.declare_parameter("approach_speed_scale", RouterConfig.approach_speed_scale)
@@ -176,10 +177,14 @@ class StrategyRouterNode(Node):
         course_file = self.get_parameter("course_file").value
         # The router keeps its own cursor rather than subscribing to the follower's, so that
         # a follower that has stalled or been pre-empted cannot freeze the router's idea of
-        # which segment it is on. Same course file, same advance radius, read only.
+        # which segment it is on. Same course file, same radii, read only -- the two cursors
+        # must move on the same rule or the router's idea of the segment drifts off the
+        # follower's mid-run.
         self.course = (
             Course.from_yaml(
-                course_file, advance_radius=float(self.get_parameter("advance_radius").value)
+                course_file,
+                advance_radius=float(self.get_parameter("advance_radius").value),
+                score_radius=float(self.get_parameter("score_radius").value),
             )
             if course_file
             else None

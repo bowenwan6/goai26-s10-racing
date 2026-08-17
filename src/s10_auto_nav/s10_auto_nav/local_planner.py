@@ -231,6 +231,16 @@ class Relief:
     #: Metres the corridor rises above the fitted plane, and falls below it. Both positive.
     rise: float = 0.0
     drop: float = 0.0
+    #: Fraction of the corridor's width that shares in the rise, 0 to 1.
+    #:
+    #: ``rise`` alone is the highest cell anywhere in the corridor, and a step across the
+    #: robot's path and a post beside its shoulder produce the same number. They are not the
+    #: same situation: one is driven at and one is driven around, and getting that backwards
+    #: is how a run ends. A staircase spans the corridor, so its columns all rise together;
+    #: a post occupies one or two of them. Measured on the leg from waypoint 24 to 25, where
+    #: a pillar clipping the left edge of the patch read as ``rise 0.29m``, was called
+    #: STAIRS, and was charged at 0.27 m/s until the robot went over on its nose.
+    rise_fraction: float = 0.0
     #: Pitch of the fitted plane along the direction of travel, degrees, uphill positive.
     slope_deg: float = 0.0
     #: False when the patch was too small or too occluded to fit anything to, in which
@@ -273,12 +283,40 @@ def terrain_relief(heightmap: np.ndarray, cell_x: float = DEFAULT_CELL_X) -> Rel
         slope_deg = 0.0
 
     ground = residual[is_ground]
+    rise = float(max(0.0, ground.max()))
     return Relief(
-        rise=float(max(0.0, ground.max())),
+        rise=rise,
         drop=float(max(0.0, -ground.min())),
+        rise_fraction=_rise_fraction(residual, is_ground, rise),
         slope_deg=slope_deg,
         valid=True,
     )
+
+
+#: Share of the peak rise a column must reach to count as rising with it. Half, because the
+#: near end of a step the robot is square-on to is genuinely lower than the far end, and a
+#: test for the full height would only ever pass on a wall.
+RISE_SHARE = 0.5
+
+
+def _rise_fraction(residual: np.ndarray, is_ground: np.ndarray, rise: float) -> float:
+    """How much of the corridor's width rises with the highest cell in it.
+
+    One number per lateral column -- the tallest ground cell in it -- and then the fraction
+    of columns that get at least ``RISE_SHARE`` of the way to the peak. A step across the
+    path scores near 1.0; something clipping one edge of the patch scores near 0.
+    """
+    # A millimetre, not zero: on flat ground the peak residual is floating-point dust, and
+    # dividing by it apportions that dust across the columns and returns a fraction that
+    # looks like a measurement of something.
+    if residual.ndim != 2 or rise <= 1e-3:
+        return 0.0
+    masked = np.where(is_ground, residual, -np.inf)
+    per_column = masked.max(axis=0)
+    counted = per_column[np.isfinite(per_column)]
+    if counted.size == 0:
+        return 0.0
+    return float((counted >= rise * RISE_SHARE).mean())
 
 
 def ground_clearance(heightmap: np.ndarray, max_step: float, max_drop: float) -> float:

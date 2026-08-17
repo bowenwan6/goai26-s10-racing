@@ -82,6 +82,18 @@ class TerrainReading:
     relief_rise: float = 0.0
     #: Metres the corridor falls below the fitted plane. Positive.
     relief_drop: float = 0.0
+    #: Share of the corridor's width that rises with ``relief_rise``, 0 to 1.
+    #:
+    #: ``relief_rise`` is the highest cell anywhere in the corridor, so a stair across the
+    #: path and a post beside the shoulder produce the same number while being opposite
+    #: answers: one is driven at, one is driven around. This says which.
+    #:
+    #: Defaults to 1.0, which is the reading of a feature the robot is square-on to and so
+    #: the behaviour of every caller written before this field existed. The alternative
+    #: default, 0.0, is safer against a caller that forgets to measure it, but it would also
+    #: silently disable climbing for one, and a robot that will not climb fails the course
+    #: as surely as one that charges a pillar.
+    rise_fraction: float = 1.0
     #: Pitch of the fitted plane, degrees. Positive is uphill.
     slope_deg: float = 0.0
     #: Metres of laterally free space at the obstruction. Narrow means no detour exists.
@@ -136,6 +148,16 @@ class TerrainConfig:
     barrier_rise: float = 0.30
     #: A fall past this is a drop rather than a dip, metres.
     drop_fall: float = 0.25
+    #: How much of the corridor's width a rise must occupy before it counts as the route
+    #: rather than as something standing beside it, 0 to 1.
+    #:
+    #: Measured by replaying the whole waypoint 16 to 32 run through the real sampler. Every
+    #: genuine climb and ramp in it -- fifteen samples across five separate features --
+    #: spans 1.00. The pillar at (32.03, 15.66) on the leg from waypoint 24 to 25, which was
+    #: called STAIRS and charged at 0.25 m/s until the robot went over on its nose at 60
+    #: degrees of pitch, spans 0.20. Two further samples sit at 0.40 and were already
+    #: classified FLAT and BLOCKED on other evidence. 0.6 is the middle of the empty band.
+    rise_span: float = 0.6
     #: Fitted-plane pitch past this is a ramp, degrees.
     ramp_slope: float = 7.0
     #: A return closer than this is in the way, metres.
@@ -322,8 +344,14 @@ class TerrainClassifier:
             )
 
         rise = reading.relief_rise
+        # Whether the rise goes across the path or stands beside it. Both of the kinds
+        # below turn the avoidance planner off, so both need the rise to be the route; a
+        # tall thing clipping one edge of the patch is the one case where driving at the
+        # rise and driving at the obstruction are different manoeuvres.
+        spans = reading.rise_fraction >= cfg.rise_span
+
         barrier = self._threshold(cfg.barrier_rise, TerrainKind.HIGH_BARRIER, reading)
-        if rise >= barrier:
+        if rise >= barrier and spans:
             return (
                 TerrainKind.HIGH_BARRIER,
                 _ramp_confidence(rise, barrier),
@@ -334,22 +362,41 @@ class TerrainClassifier:
         # it is the near face of the thing the robot is meant to climb, not a wall beside
         # it, and steering around it only finds another part of the same staircase.
         step = self._threshold(cfg.step_rise, TerrainKind.STAIRS, reading)
-        if rise >= step:
+        if rise >= step and spans:
             return (
                 TerrainKind.STAIRS,
                 _ramp_confidence(rise, step),
-                (f"rise {rise:.2f}m with return at {reading.obstacle_distance:.1f}m"),
+                (
+                    f"rise {rise:.2f}m across {reading.rise_fraction:.0%} of the width "
+                    f"with return at {reading.obstacle_distance:.1f}m"
+                ),
             )
 
         blocked = self._threshold(cfg.blocked_distance, TerrainKind.BLOCKED, reading)
-        if reading.obstacle_distance <= blocked and rise <= cfg.wall_rise_ceiling:
+        # Flat ground under the return, or a rise big enough to be a step that nonetheless
+        # does not go across the path. The second is the near face of something with room
+        # beside it, and BLOCKED is how it reaches the planner that can find that room.
+        #
+        # The size test is not decoration. Without it -- BLOCKED on any partial rise at all
+        # -- the approach to a staircase becomes a trap, because at 2.5 m out only the near
+        # corner of the bottom tread is inside the corridor and the rise is both small and
+        # one-sided. Measured: the robot reached (18.8, 29.6) on the leg from waypoint 17 to
+        # 18, was told BLOCKED at 2.2 m with 0.06 m of rise, steered away from the staircase,
+        # and never squared up to it again. It was still there a minute later, oscillating
+        # too fast for the stall recovery and too slowly for the wedge detector.
+        partial_step = rise >= self._threshold(cfg.step_rise, TerrainKind.BLOCKED, reading)
+        if reading.obstacle_distance <= blocked and (
+            rise <= cfg.wall_rise_ceiling or (partial_step and not spans)
+        ):
+            ground = (
+                f"flat ground (rise {rise:.2f}m)"
+                if rise <= cfg.wall_rise_ceiling
+                else f"a rise of {rise:.2f}m across {reading.rise_fraction:.0%} of the width"
+            )
             return (
                 TerrainKind.BLOCKED,
                 _near_confidence(reading.obstacle_distance, blocked),
-                (
-                    f"return at {reading.obstacle_distance:.1f}m over flat ground "
-                    f"(rise {rise:.2f}m)"
-                ),
+                f"return at {reading.obstacle_distance:.1f}m over {ground}",
             )
 
         slope = self._threshold(cfg.ramp_slope, TerrainKind.RAMP, reading)
