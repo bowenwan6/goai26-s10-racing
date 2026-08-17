@@ -82,6 +82,22 @@ def test_clearance_ignores_obstacles_behind():
     assert clear[0] == pytest.approx(planner.cfg.probe_distance)
 
 
+def test_an_obstacle_beyond_a_short_target_does_not_block_reaching_it():
+    """WP24 ends before a pillar; planning through the pillar made the gate unreachable."""
+    planner = LocalPlanner()
+    ranges, angles = wall(normal_deg=0.0, half_width_deg=30.0, distance=1.0)
+    steering = planner.plan(ranges, angles, goal_bearing=0.0, travel_distance=0.5)
+    assert steering.heading == pytest.approx(0.0, abs=1e-9)
+    assert steering.clearance == pytest.approx(planner.cfg.probe_distance)
+
+
+def test_an_obstacle_before_the_target_still_blocks_the_heading():
+    planner = LocalPlanner()
+    ranges, angles = wall(normal_deg=0.0, half_width_deg=30.0, distance=1.0)
+    steering = planner.plan(ranges, angles, goal_bearing=0.0, travel_distance=2.0)
+    assert abs(steering.heading) > math.radians(20.0)
+
+
 def test_steers_around_a_wall_across_the_goal_bearing():
     planner = LocalPlanner()
     ranges, angles = wall(normal_deg=0.0, half_width_deg=25.0, distance=1.5)
@@ -150,6 +166,58 @@ def test_declares_blocked_when_boxed_in():
     steering = planner.plan(ranges, angles, goal_bearing=0.0)
     assert steering.blocked
     assert steering.speed_scale == 0.0
+
+
+# ---------------------------------------------------------------- a low barrier escape
+
+
+def waypoint_24_heightmap() -> np.ndarray:
+    """Height map replayed at t=265.0 of ``17_32_trail_seed0``.
+
+    Flat deck is -0.42 m relative to the base and the 0.465 m wall enters at -0.10 m.
+    Columns are lateral: negative/right first, positive/left last. The first right-hand
+    column remains open while progressively more of the left edge meets the wall.
+    """
+    grid = np.full((13, 9), -0.42)
+    grid[12, 1:5] = -0.10
+    grid[11:, 5:8] = -0.10
+    grid[10:, 8] = -0.10
+    return grid
+
+
+def test_the_recorded_waypoint_24_wall_opens_to_the_right():
+    assert LocalPlanner.barrier_escape_side(waypoint_24_heightmap()) == -1
+
+
+def test_mirroring_the_wall_mirrors_the_escape():
+    assert LocalPlanner.barrier_escape_side(waypoint_24_heightmap()[:, ::-1]) == 1
+
+
+def test_a_full_width_step_does_not_invent_an_escape_side():
+    grid = np.full((13, 9), -0.42)
+    grid[-2:, :] = -0.10
+    assert LocalPlanner.barrier_escape_side(grid) == 0
+
+
+def test_a_deck_edge_is_not_mistaken_for_an_open_escape_side():
+    grid = np.full((13, 9), -0.42)
+    grid[6:, :4] = -1.62  # lower storey/drop on the robot's right
+    assert LocalPlanner.barrier_escape_side(grid) == 1
+
+
+def test_barrier_escape_commits_far_enough_to_make_lateral_room():
+    planner = LocalPlanner()
+    ranges, angles = ring()
+    steering = planner.plan_barrier_escape(ranges, angles, goal_bearing=0.0, side=-1)
+    assert steering.heading <= -math.radians(60.0)
+    assert not steering.blocked
+
+
+def test_barrier_escape_keeps_the_selected_side_when_the_other_side_is_tempting():
+    planner = LocalPlanner()
+    ranges, angles = wall(normal_deg=-60.0, half_width_deg=10.0, distance=0.4)
+    steering = planner.plan_barrier_escape(ranges, angles, goal_bearing=0.0, side=-1)
+    assert steering.heading < 0.0
 
 
 def test_speed_falls_off_as_clearance_shrinks():

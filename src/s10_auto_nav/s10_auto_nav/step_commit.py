@@ -45,6 +45,7 @@ three run-ups is not a step.
 from __future__ import annotations
 
 import math
+from collections import deque
 from dataclasses import dataclass
 
 from s10_auto_nav.pure_pursuit import Command
@@ -69,14 +70,48 @@ class StepCommitConfig:
     #: Yaw authority retained while pitched: enough to hold a line, not enough to walk the
     #: wheels along the lip.
     yaw_rate: float = 0.15
-    #: Ground speed above which a pitched body is simply driving up a slope and wants no
-    #: help at all. Pitch alone is not the signal: measured on the shipped track, the
-    #: approach to gate 1 pitches the base a steady +8 degrees for four seconds and the
-    #: robot crosses it at 0.83 m/s. Committing there would have capped it at ``speed`` and
-    #: clamped its steering for no reason, on a course where 12 of 32 legs cross raised
-    #: terrain. What distinguishes the ledge is not the angle, it is being pitched and
-    #: getting nowhere -- at the wedge the base was doing 0.08 to 0.30 m/s.
-    progress_speed: float = 0.35
+    #: Ground the body must cover within :attr:`progress_window` before a pitched robot
+    #: counts as driving up a slope rather than leaning on a ledge, metres.
+    #:
+    #: This was a ground *speed* of 0.35 m/s, on the reasoning that pitch alone is not the
+    #: signal -- the approach to gate 1 pitches the base a steady +8 degrees for four seconds
+    #: and the robot crosses it at 0.83 m/s, and committing there would clamp its steering
+    #: for no reason. The reasoning holds. The proxy does not: the gait oscillates, so
+    #: instantaneous speed spikes while the body goes nowhere.
+    #:
+    #: Measured on the wedge at the 0.16 m step to waypoint 19: 53 s pitched over 8 degrees
+    #: on 1004 of 1060 samples, for **+0.01 m** of net progress while drifting 0.53 m
+    #: sideways out of the lane. Ninety-four of those samples touched 0.35 m/s, and each one
+    #: zeroed the clock *and* the failure tally, so the longest unbroken push the 12 s
+    #: timeout ever saw was **3.9 s**. The run-up never fired, and the run-up is how the
+    #: baseline got up this step -- it reached the lip at 1.16 m/s off the flat.
+    #:
+    #: Displacement over a window is not fooled the same way, because it is what "getting
+    #: under way" actually means. Swept over that same wedge, the furthest the body ever got
+    #: from where it had been 1.5 s earlier was 0.125 m, so 0.25 m has a factor of two on the
+    #: worst case it has to reject, and a real crossing covers it in under a second.
+    progress_distance: float = 0.25
+    #: How far back to look when asking whether the body is getting anywhere, seconds.
+    #:
+    #: Long enough that a gait cycle averages out, short enough to notice a stop. The
+    #: measurement is flat in this parameter -- the wedge's furthest excursion was 0.116 m
+    #: over 0.5 s and 0.125 m over 1.5 s -- so it is not a knife edge.
+    progress_window: float = 1.5
+    #: How long the body must read level before the commit accepts it is off the ledge,
+    #: seconds.
+    #:
+    #: Not instantaneous, for the same reason the progress test is not: single samples of
+    #: contrary evidence are gait noise. On the waypoint 19 wedge the pitch dipped under
+    #: :attr:`pitch_threshold` seven times in 53 s, median 0.40 s and longest 1.05 s, none of
+    #: them the robot getting off anything -- and each dip zeroed a 12 s clock. Debounced at
+    #: 1.5 s the same trace yields a run-up at exactly 15 s and concedes after three, against
+    #: never conceding at all.
+    #:
+    #: This debounces *levelling out* only. Genuine displacement releases the commit at once,
+    #: because :attr:`progress_window` has already smoothed it; making that wait as well kept
+    #: the robot committed for 99 per cent of a ramp it was climbing perfectly well, against
+    #: 91 per cent, for no gain on the wedge.
+    level_dwell: float = 1.5
     #: Seconds of pushing before conceding this attempt and backing up for another.
     #:
     #: This was 40 s on the reasoning that both escapes ever seen took twenty-odd seconds of
@@ -107,10 +142,35 @@ class StepCommit:
         self.config = config or StepCommitConfig()
         self._elapsed = 0.0
         self._failures = 0
+        #: Recent (age, x, y), oldest first. Progress is the distance across this window
+        #: rather than an integral of speed, because the body oscillates and a speed
+        #: magnitude does not cancel out when it does.
+        self._trail: deque[tuple[float, float, float]] = deque()
+        self._clock = 0.0
+        #: Whether the body is currently taken to be on a step. Held separately from the
+        #: clock because entering and leaving are deliberately not symmetric: one pitched
+        #: sample is enough to engage, but leaving has to be sustained.
+        self._engaged = False
+        self._level_for = 0.0
 
     def reset(self) -> None:
+        self._release()
+        self._trail.clear()
+
+    def _release(self) -> None:
+        """Let go of the ledge, without forgetting where the body has just been.
+
+        The trail deliberately survives. Clearing it here is what an earlier version did,
+        and it made the commit oscillate: releasing wiped the evidence of the motion that
+        justified releasing, so the next tick saw a pitched body that had gone nowhere and
+        engaged again. On a slope taken at 0.83 m/s that flip-flopped several times a
+        second. Only a completed run-up clears the trail, because only then is the recent
+        travel -- two metres of reverse -- something that must not count.
+        """
         self._elapsed = 0.0
         self._failures = 0
+        self._engaged = False
+        self._level_for = 0.0
 
     @property
     def elapsed(self) -> float:
@@ -132,24 +192,53 @@ class StepCommit:
         """True during the reverse half of the cycle."""
         return self._elapsed >= self.config.timeout
 
-    def update(self, pitch: float, speed: float, dt: float) -> bool:
+    def update(self, pitch: float, position: tuple[float, float], dt: float) -> bool:
         """Advance the cycle; True while the follower should be committing to a step.
 
-        Takes ground speed as well as pitch because pitch alone over-triggers: a slope
-        being climbed at speed looks identical in attitude to a lip being leant on, and
-        only one of them wants the follower to stop steering.
+        Takes the body's planar position as well as pitch because pitch alone
+        over-triggers: a slope being climbed looks identical in attitude to a lip being
+        leant on, and only one of them wants the follower to stop steering. What tells them
+        apart is whether the body is getting anywhere -- see
+        :attr:`StepCommitConfig.progress_distance` for why the ground speed this used to
+        read cannot answer that, and could not be made to.
+
+        Engaging and disengaging are deliberately asymmetric. One pitched sample that is
+        going nowhere is enough to commit, because the cost of a moment's straight push is
+        nil and the cost of missing a ledge is the run. Letting go has to be earned, because
+        every way of letting go cheaply has already been measured failing on this course.
         """
-        # The speed test is suspended mid-run-up: reversing at ``speed`` is by construction
-        # fast enough to pass it, so applying it there would abort the run-up one control
-        # step after it began and leave the robot shuffling on the lip.
-        moving = speed >= self.config.progress_speed and not self.backing
-        if abs(pitch) < self.config.pitch_threshold or moving:
-            # Levelling out or getting under way is the only evidence of success there is,
-            # and it clears the tally as well as the clock: the next ledge starts fresh, and
-            # a robot that has just driven off this one is not carrying its failures onward.
-            self._elapsed = 0.0
-            self._failures = 0
+        self._clock += dt
+        self._trail.append((self._clock, position[0], position[1]))
+        while self._trail and self._clock - self._trail[0][0] > self.config.progress_window:
+            self._trail.popleft()
+
+        level = abs(pitch) < self.config.pitch_threshold
+        # The progress test is suspended mid-run-up: reversing at ``speed`` crosses
+        # ``progress_distance`` in well under a second by construction, so applying it there
+        # would abort the run-up almost as it began and leave the robot shuffling on the lip.
+        moving = self._travelled(position) >= self.config.progress_distance and not self.backing
+
+        if not self._engaged:
+            if level or moving:
+                return False
+            self._engaged = True
+            self._level_for = 0.0
+        elif moving:
+            # Real ground covered, over a window that has already averaged the gait out.
+            # Clears the tally as well as the clock: the next ledge is a fresh problem, and
+            # a robot that has just driven off this one is not carrying its failures on.
+            self._release()
             return False
+        elif level:
+            # A dip in gait pitch is not the robot getting off anything; seven of them cost
+            # this exact wedge every run-up it should have had. Sustained is different.
+            self._level_for += dt
+            if self._level_for >= self.config.level_dwell:
+                self._release()
+                return False
+        else:
+            self._level_for = 0.0
+
         if self.conceded:
             # Still pitched, still stuck, but out of attempts. Handing back is the whole
             # point -- the follower's classifier and planner get to look for a way round,
@@ -159,7 +248,18 @@ class StepCommit:
         if self._elapsed >= self.config.timeout + self.config.backup:
             self._elapsed = 0.0  # Run-up finished; charge the step again.
             self._failures += 1
+            # Forgotten, or the run-up's own couple of metres of reverse would read as
+            # progress on the first tick of the next push and cancel the failure it just
+            # earned -- which would put ``attempts`` back out of reach.
+            self._trail.clear()
         return not self.conceded
+
+    def _travelled(self, position: tuple[float, float]) -> float:
+        """How far the body is from where it was a window ago."""
+        if not self._trail:
+            return 0.0
+        _, x, y = self._trail[0]
+        return math.hypot(position[0] - x, position[1] - y)
 
     def command(self, steering: Command) -> Command:
         """Rewrite the follower's command into a straight push, or a straight run-up."""

@@ -12,6 +12,7 @@ for that reason -- they are the ones that catch a parameter renamed in one file 
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import numpy as np
@@ -36,8 +37,26 @@ def shipped() -> dict:
 
 def test_the_brake_distances_ship_in_nav_yaml():
     params = shipped()
+    assert params["advance_radius"] == params["score_radius"] == 0.2
+    assert params["pivot_threshold_deg"] == 30.0
+    assert params["corner_retreat_waypoints"] == [26, 27]
+    assert params["corner_retreat_distance"] == 0.7
+    assert params["corner_retreat_speed"] == 0.3
+    assert params["corner_align_tolerance_deg"] == 10.0
+    assert params["committed_terrain_waypoints"] == [28, 30]
+    assert params["committed_runup_waypoints"] == [28]
+    assert params["committed_runup_trigger"] == 0.55
+    assert params["committed_runup_distance"] == 1.5
+    assert params["committed_runup_timeout"] == 20.0
     assert params["brake_distance"] == 0.0, "the flat default must still inherit the lookahead"
     assert params["stair_brake_distance"] == 0.4
+    assert params["barrier_escape_angle_deg"] == 60.0
+    assert params["barrier_escape_distance"] == 1.2
+    assert params["barrier_bypass_forward"] == 3.0
+    assert params["barrier_bypass_gate_standoff"] == 0.6
+    assert params["barrier_bypass_lateral"] == 1.2
+    assert params["barrier_clear_dwell"] == 2.0
+    assert params["target_clearance_margin"] == 0.25
 
 
 def test_no_parameter_in_nav_yaml_is_unknown_to_the_node():
@@ -45,6 +64,22 @@ def test_no_parameter_in_nav_yaml_is_unknown_to_the_node():
     source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
     for name in shipped():
         assert f'declare_parameter("{name}"' in source, f"nav.yaml sets unknown parameter {name}"
+
+
+def test_the_node_default_cannot_abandon_an_unscored_gate():
+    source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
+    assert 'declare_parameter("advance_radius", 0.2)' in source
+
+
+def test_a_scored_gate_resets_command_slew_before_the_next_leg():
+    source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
+    gate_change = source[source.index("if self.course.update") : source.index("if self.course.finished")]
+    assert "self.controller.reset()" in gate_change
+
+
+def test_a_clear_final_bypass_can_use_step_commit_again():
+    source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
+    assert "suppressing_step_commit = bypassing_barrier and not self._barrier_final_phase" in source
 
 
 # --------------------------------------------------------------- the node
@@ -89,10 +124,66 @@ def node(tmp_path, request):
 
 
 @needs_ros
+def test_an_edge_corner_retreats_over_the_incoming_path_before_turning(node):
+    from s10_auto_nav.pure_pursuit import wrap_angle
+
+    node.corner_retreat_waypoints = {1}
+    node.course.waypoints[2].position[:] = [1.0, 1.0, 0.0]
+    node._pose_xy = np.array([0.9, 0.0])
+    node._yaw = 0.0
+    node._begin_corner_retreat(1)
+
+    assert node._corner_retreat_target == pytest.approx([0.3, 0.0])
+    retreat = node._corner_transition_command(0.02)
+    assert retreat.forward == pytest.approx(-node.corner_retreat_speed)
+    assert retreat.yaw_rate == pytest.approx(0.0)
+
+    # The reverse gait need only enter the body-clear staging area; it does not have to
+    # intersect an exact point. This 14 cm cross-track miss reproduced sequence6's runaway
+    # reverse before the capture radius was corrected.
+    node._pose_xy = node._corner_retreat_target + np.array([0.0, 0.14])
+    align = node._corner_transition_command(0.02)
+    assert align.forward == pytest.approx(0.0)
+    assert align.lateral == pytest.approx(0.0)
+    assert align.yaw_rate > 0.0
+    assert wrap_angle(node._corner_outgoing_yaw - node._yaw) > node.corner_align_tolerance
+
+
+@needs_ros
+def test_committed_terrain_uses_a_distance_defined_runup(node):
+    node.committed_terrain_waypoints = {0}
+    node.committed_runup_waypoints = {0}
+    node._pose_xy = np.array([0.5, 0.0])
+    node._yaw = math.pi
+
+    backing = node._committed_runup_command(0.02)
+    assert node._committed_runup_phase == "back"
+    assert backing.forward == pytest.approx(-node.step_commit.config.speed)
+
+    node._pose_xy = np.array([node.committed_runup_distance, 0.0])
+    charging = node._committed_runup_command(0.02)
+    assert node._committed_runup_phase == "push"
+    assert charging.forward == pytest.approx(node.step_commit.config.speed)
+
+
+@needs_ros
+def test_committed_terrain_runup_has_bounded_cross_track_correction(node):
+    node.committed_terrain_waypoints = {0}
+    node.committed_runup_waypoints = {0}
+    node._pose_xy = np.array([0.4, 0.3])
+    node._yaw = math.pi
+
+    command = node._committed_runup_command(0.02)
+    assert 0.0 < command.lateral <= 0.1
+
+
+@needs_ros
 def test_the_default_brake_distance_is_still_the_lookahead(node):
     """The shipped default must not change what the raced configuration did."""
     assert node.controller.gains.brake_distance is None
     assert node.flat_brake_distance is None
+    assert node.committed_terrain_waypoints == {28, 30}
+    assert node.committed_runup_waypoints == {28}
 
 
 @needs_ros
@@ -158,8 +249,21 @@ def test_a_rise_the_robot_should_drive_at_does_not_also_slow_it_down(node):
     _step_of(0.5, node)
     braked = node._terrain_scale_for(_verdict(TerrainKind.BLOCKED))
     assert braked < 0.6, "the height map is not seeing the step; the rest of this proves nothing"
-    for kind in (TerrainKind.STAIRS, TerrainKind.RAMP, TerrainKind.HIGH_BARRIER):
+    for kind in (TerrainKind.STAIRS, TerrainKind.RAMP):
         assert node._terrain_scale_for(_verdict(kind)) == pytest.approx(1.0)
+
+
+@needs_ros
+def test_a_rise_past_what_the_wheels_can_step_is_slowed_for(node):
+    """The converse, and the half of the pair that the speed scale sees.
+
+    HIGH_BARRIER was in ``DRIVE_AT_IT`` and so took this suppression too, which meant the
+    one verdict that says "the wheels cannot take this" was also the one that guaranteed
+    full speed into it. On the leg to waypoint 24 the scale had fallen to 0.25 and the
+    robot arrived at 0.78 m/s anyway.
+    """
+    _step_of(0.5, node)
+    assert node._terrain_scale_for(_verdict(TerrainKind.HIGH_BARRIER)) < 1.0
 
 
 @needs_ros
@@ -287,3 +391,212 @@ def test_swinging_while_actually_getting_there_is_left_alone(node):
     several. 0.1 m/s closes the 5 cm ratchet five times inside the 12 s window.
     """
     assert not _swing(node, from_m=6.9, seconds=20.0, closes=0.1)
+
+
+# ------------------------------------------- a barrier the planner cannot find a way round
+
+
+def _somewhere(node):
+    """Give the node a pose, which the back-off path always has and the log line reads."""
+    node._pose_xy = np.array([28.8, 16.3])
+    return node
+
+
+@needs_ros
+def test_a_barrier_sends_the_planner_looking_before_anything_else(node):
+    """HIGH_BARRIER is a reason to replan, not a verdict that the rise is impassable.
+
+    ``barrier_rise`` is a threshold on a plane-fit residual and sits deliberately below
+    anything the robot has been measured crossing, so treating it as a traversability limit
+    would abandon rises the machine could have taken. The first response must be to look for
+    a way round.
+    """
+    assert not node._climbing_a_barrier(_verdict(TerrainKind.HIGH_BARRIER))
+
+
+@needs_ros
+def test_a_new_legs_old_heightmap_cannot_latch_a_detour_before_alignment(node):
+    """A body-frame map is evidence about the bearing it faces, not the next gate yet."""
+    node._pose_xy = np.array([30.935, 14.715])
+    node._yaw = math.radians(-167.0)  # WP28 -> WP29 arrival heading in final4.
+    gate = np.array([29.535, 16.3275])
+    node._heightmap = np.full((13, 9), -0.42)
+    node._heightmap[8:, 5:] = -0.10
+
+    barrier = _verdict(TerrainKind.HIGH_BARRIER)
+    assert node._barrier_escape_side_for(barrier, 0.02, gate) == 0
+    assert node._barrier_bypass_target is None
+
+    node._yaw = math.atan2(*(gate - node._pose_xy)[::-1])
+    assert node._barrier_escape_side_for(barrier, 0.02, gate) != 0
+    assert node._barrier_bypass_target is not None
+
+
+@needs_ros
+@pytest.mark.params(barrier_clear_dwell=2.0)
+def test_brief_barrier_label_jitter_keeps_the_committed_side(node):
+    _somewhere(node)
+    node._heightmap = np.full((13, 9), -0.42)
+    node._heightmap[8:, 5:] = -0.10
+    side = node._barrier_escape_side_for(
+        _verdict(TerrainKind.HIGH_BARRIER), 0.02, np.array([31.635, 15.465])
+    )
+    assert side != 0
+
+    for _ in range(90):
+        assert node._barrier_escape_side_for(
+            _verdict(TerrainKind.BLOCKED), 0.02, np.array([31.635, 15.465])
+        ) == side
+
+
+@needs_ros
+@pytest.mark.params(barrier_clear_dwell=2.0)
+def test_sustained_clearance_releases_escape_once_per_gate(node):
+    _somewhere(node)
+    node._heightmap = np.full((13, 9), -0.42)
+    node._heightmap[8:, 5:] = -0.10
+    barrier = _verdict(TerrainKind.HIGH_BARRIER)
+    gate = np.array([31.635, 15.465])
+    side = node._barrier_escape_side_for(barrier, 0.02, gate)
+    assert side != 0
+    assert node._barrier_bypass_target is not None
+    assert node._barrier_corner_target is not None
+
+    for _ in range(150):
+        assert node._barrier_escape_side_for(
+            _verdict(TerrainKind.BLOCKED), 0.02, gate
+        ) == side
+
+    node._pose_xy += np.array([1.21, 0.0])
+    for _ in range(101):
+        released = node._barrier_escape_side_for(
+            _verdict(TerrainKind.BLOCKED), 0.02, gate
+        )
+    assert released == 0
+    assert node._barrier_escape_done
+    assert node._barrier_escape_side_for(barrier, 0.02, gate) == 0
+
+    node._reset_barrier_escape()
+    assert node._barrier_escape_side_for(barrier, 0.02, gate) == side
+
+
+@needs_ros
+def test_a_short_barrier_leg_scales_the_escape_to_the_room_available(node):
+    node._pose_xy = np.array([31.635, 15.465])
+    node._heightmap = np.full((13, 9), -0.42)
+    node._heightmap[8:, 5:] = -0.10
+    gate = np.array([33.165, 15.180])
+
+    side = node._barrier_escape_side_for(
+        _verdict(TerrainKind.HIGH_BARRIER), 0.02, gate
+    )
+
+    assert side != 0
+    assert node._barrier_escape_required == pytest.approx(0.4 * np.linalg.norm(gate - node._pose_xy))
+    assert node._barrier_escape_required < node.barrier_escape_distance
+
+
+@needs_ros
+@pytest.mark.params(barrier_detour_attempts=3)
+def test_a_barrier_with_no_way_round_is_climbed_after_the_detours_fail(node):
+    """The fallback. Without it a full-width wall with no detour backs off forever.
+
+    A back-off is what the follower does whenever it tried something and got nowhere, so
+    that event is what is counted; three of them and it drives at the thing instead. What
+    bounds the climb from there is ``StepCommit``, which concedes after its own three
+    attempts.
+    """
+    barrier = _verdict(TerrainKind.HIGH_BARRIER)
+    _somewhere(node)
+    for _ in range(2):
+        node._note_barrier_detour_failed(barrier)
+        assert not node._climbing_a_barrier(barrier), "still worth another look for a detour"
+    node._note_barrier_detour_failed(barrier)
+    assert node._climbing_a_barrier(barrier)
+
+
+@needs_ros
+@pytest.mark.params(barrier_detour_attempts=1)
+def test_the_climb_decision_latches_rather_than_flapping(node):
+    """Driving at the barrier zeroes the blocked clock, so an unlatched test would flap.
+
+    The follower would alternate between steering and charging at control rate, which is the
+    failure the terrain classifier was written to remove in the first place.
+    """
+    barrier = _verdict(TerrainKind.HIGH_BARRIER)
+    _somewhere(node)
+    node._note_barrier_detour_failed(barrier)
+    assert all(node._climbing_a_barrier(barrier) for _ in range(50))
+
+
+@needs_ros
+@pytest.mark.params(barrier_detour_attempts=1)
+def test_getting_past_the_barrier_releases_the_climb_and_the_tally(node):
+    """Two barriers in a row are two problems, not one with six attempts."""
+    barrier = _verdict(TerrainKind.HIGH_BARRIER)
+    _somewhere(node)
+    node._note_barrier_detour_failed(barrier)
+    assert node._climbing_a_barrier(barrier)
+
+    assert not node._climbing_a_barrier(_verdict(TerrainKind.FLAT))
+    assert not node._climbing_a_barrier(barrier), "the next barrier starts fresh"
+
+
+@needs_ros
+def test_only_a_barrier_counts_towards_climbing_one(node):
+    """A wall with room beside it is BLOCKED, and steering around it is the right answer."""
+    _somewhere(node)
+    for kind in (TerrainKind.BLOCKED, TerrainKind.DROP, TerrainKind.UNKNOWN):
+        for _ in range(10):
+            node._note_barrier_detour_failed(_verdict(kind))
+        assert not node._climbing_a_barrier(_verdict(kind))
+
+
+@needs_ros
+@pytest.mark.params(barrier_detour_attempts=1)
+def test_a_climb_that_gets_nowhere_hands_back_to_the_planner(node):
+    """Neither answer is known to be right, so neither gets the run to itself.
+
+    The climb is bounded by the same evidence that started it: another back-off, with the
+    decision already made, says the charge is not working either. The planner gets it back --
+    from wherever the attempt left the robot, which is not where it gave up before.
+    """
+    barrier = _verdict(TerrainKind.HIGH_BARRIER)
+    _somewhere(node)
+    node._note_barrier_detour_failed(barrier)
+    assert node._climbing_a_barrier(barrier)
+
+    node._note_barrier_detour_failed(barrier)
+    assert not node._climbing_a_barrier(barrier), "back to looking for a way round"
+
+    node._note_barrier_detour_failed(barrier)
+    assert node._climbing_a_barrier(barrier), "and round again, rather than settling"
+
+
+@needs_ros
+def test_deciding_to_climb_the_barrier_also_lifts_the_throttle(node):
+    """The decision is worth nothing if the speed it needs is still being scaled away.
+
+    A 0.26 m rise scales forward to 0.24 m/s, against 0.60 for the slowest crossing ever
+    measured. Made and not carried through, the decision to climb reads in a log exactly like
+    the 1100 s this run spent held at that command in a 0.25 m box.
+    """
+    _step_of(0.5, node)
+    barrier = _verdict(TerrainKind.HIGH_BARRIER)
+
+    assert node._terrain_scale_for(barrier) < 1.0, "still a wall while a detour is in hand"
+    assert node._terrain_scale_for(barrier, charging=True) == pytest.approx(1.0)
+
+
+@needs_ros
+def test_backing_off_for_no_progress_counts_towards_climbing(node):
+    """The clock that actually fires in front of a full-width rise.
+
+    Counting only the no-drivable-heading back-off left this unreachable where it was needed:
+    the planner always had a heading to offer, so that clock never accumulated, and the
+    no-progress clock did all 1100 s of the work uncounted.
+    """
+    _somewhere(node)
+    assert not node._backed_off
+    node._trip_recovery("No progress for 12.0s while driving", gate=7.1)
+    assert node._backed_off, "the tick that classifies the terrain reads this and counts it"

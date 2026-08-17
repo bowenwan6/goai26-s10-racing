@@ -24,6 +24,13 @@ except ImportError:  # pragma: no cover - depends on the environment, not the co
 needs_ros = pytest.mark.skipif(rclpy is None, reason="ROS 2 is not installed here")
 
 
+def test_the_harness_does_not_stop_outside_the_scoring_radius():
+    source = (
+        Path(__file__).resolve().parents[1] / "s10_auto_nav" / "segment_recorder.py"
+    ).read_text()
+    assert 'declare_parameter("reach_radius", 0.2)' in source
+
+
 class _Verdict:
     """The verdict half of the recorder, with the ROS half left out.
 

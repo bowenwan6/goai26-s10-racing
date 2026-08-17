@@ -54,6 +54,24 @@ class AvoidanceConfig:
     clearance_weight: float = 1.6
     deviation_weight: float = 1.0
 
+    #: Minimum turn away from the goal while escaping the edge of a high barrier.
+    #:
+    #: The ordinary heading scan is deliberately greedy toward the gate. That is right for
+    #: pillars and long walls visible in the lidar, but not for a low wall whose top sits
+    #: below the scan ring: by the time the height map sees it, shaving six degrees off the
+    #: goal bearing merely walks the front corner into the face. Sixty degrees buys lateral
+    #: clearance while still making forward progress, so the no-progress watchdog remains a
+    #: valid backstop.
+    barrier_escape_angle: float = math.radians(60.0)
+
+    #: Forward footprint kept clear beyond a short target, metres.
+    #:
+    #: A gate can sit immediately before a pillar. The base only has to reach the gate, but
+    #: its front does extend past the base origin, so obstacles are ignored only after the
+    #: target plus this buffer. The measured WP24 pillar projects 0.40 m beyond the gate;
+    #: 0.25 m keeps the body clear while allowing the gate itself to be approached.
+    target_clearance_margin: float = 0.25
+
     #: Forward speed is scaled by clearance and floored here, so the robot keeps creeping
     #: toward a gap instead of stopping dead in front of one.
     min_speed_fraction: float = 0.15
@@ -115,10 +133,19 @@ class LocalPlanner:
         distances = np.where(obstructs, along, np.inf)
         return np.minimum(distances.min(axis=1), cfg.probe_distance)
 
-    def plan(self, ranges: np.ndarray, angles: np.ndarray, goal_bearing: float) -> Steering:
+    def plan(
+        self,
+        ranges: np.ndarray,
+        angles: np.ndarray,
+        goal_bearing: float,
+        travel_distance: float | None = None,
+    ) -> Steering:
         """Pick a heading toward ``goal_bearing`` that is actually drivable.
 
         ``goal_bearing`` is relative to the robot's heading, as is the result.
+        When ``travel_distance`` is given, an obstacle beyond the target plus the robot's
+        forward footprint is not allowed to veto reaching the target. This distinction is
+        essential at WP24, whose scoring point sits just before a pillar.
         """
         cfg = self.cfg
         headings = goal_bearing + np.linspace(
@@ -127,6 +154,9 @@ class LocalPlanner:
         headings = np.array([wrap_angle(h) for h in headings])
 
         clearance = self.clearances(ranges, angles, headings)
+        if travel_distance is not None:
+            horizon = max(0.0, float(travel_distance)) + cfg.target_clearance_margin
+            clearance = np.where(clearance > horizon, cfg.probe_distance, clearance)
 
         # Deviation is measured from the goal bearing, not from straight ahead: turning is
         # cheap, giving up progress toward the gate is not.
@@ -150,6 +180,90 @@ class LocalPlanner:
             np.clip(openness, 0.0, 1.0)
         )
 
+        return Steering(
+            heading=float(headings[best]),
+            clearance=chosen_clearance,
+            speed_scale=0.0 if blocked else speed_scale,
+            blocked=blocked,
+        )
+
+    @staticmethod
+    def barrier_escape_side(heightmap: np.ndarray) -> int:
+        """Choose the lower-relief edge of a height map, ``-1`` right or ``+1`` left.
+
+        A ``HIGH_BARRIER`` has already established that the rise spans the wheel corridor.
+        This asks the different question needed to get round it: which *outer* side of the
+        local patch runs out of obstacle first?  The maximum forward relief per lateral
+        column is used because a wall may occupy only the last row when it first becomes
+        visible, and averaging longitudinally would erase exactly that early warning.
+
+        Zero means the two sides are indistinguishable. A full-width stair therefore does
+        not acquire an arbitrary steering bias, while the measured WP23->24 map -- flat on
+        the right edge and raised on the left -- returns ``-1``.
+        """
+        grid = np.asarray(heightmap, float)
+        if grid.ndim != 2 or min(grid.shape) < 3 or not np.isfinite(grid).any():
+            return 0
+
+        n_x, n_y = grid.shape
+        near = grid[: max(1, n_x // 3)]
+        finite_near = near[np.isfinite(near)]
+        if finite_near.size == 0:
+            return 0
+        floor = float(np.median(finite_near))
+
+        forward = grid[max(1, n_x // 2) :]
+        # Both directions away from the local floor are hazards. The first version used
+        # positive relief only, which made an open deck edge look like the cheapest escape:
+        # WP28->29 saw the lower storey 1.2 m below on its south side, called that side
+        # "zero relief", and drove off it. Absolute residual keeps the WP24 wall decision
+        # unchanged while correctly making a drop more expensive than flat deck.
+        residual = np.where(np.isfinite(forward), np.abs(forward - floor), math.inf)
+        column_cost = residual.max(axis=0)
+
+        half = n_y // 2
+        right = float(column_cost[:half].mean())
+        left = float(column_cost[-half:].mean())
+        # Two centimetres is above plane-fit and ray-cast noise, but well below the 8 cm
+        # separation in the recorded WP24 patch. Inside this dead band there is no measured
+        # preference and the ordinary lidar planner remains the honest answer.
+        if abs(left - right) <= 0.02:
+            return 0
+        return -1 if right < left else 1
+
+    def plan_barrier_escape(
+        self,
+        ranges: np.ndarray,
+        angles: np.ndarray,
+        goal_bearing: float,
+        side: int,
+    ) -> Steering:
+        """Commit to one side of a high barrier instead of re-choosing every tick.
+
+        Candidate headings start at :attr:`AvoidanceConfig.barrier_escape_angle` and extend
+        to the normal deviation limit, all on the selected side.  Lidar still vetoes a
+        boxed-in heading; the height map selects the side but does not overrule a body-height
+        obstacle on it.
+        """
+        if side not in (-1, 1):
+            return self.plan(ranges, angles, goal_bearing)
+
+        cfg = self.cfg
+        start = min(cfg.barrier_escape_angle, cfg.max_deviation)
+        offsets = np.linspace(start, cfg.max_deviation, max(2, cfg.n_candidates // 4))
+        headings = np.array([wrap_angle(goal_bearing + side * value) for value in offsets])
+        clearance = self.clearances(ranges, angles, headings)
+
+        # Clearance first. Once two headings are equally open, use the smallest committed
+        # escape rather than turning farther away from the gate for no gain.
+        best = int(np.lexsort((offsets, -clearance))[0])
+        chosen_clearance = float(clearance[best])
+        blocked = chosen_clearance < cfg.blocked_distance
+        span = max(cfg.full_speed_clearance - cfg.blocked_distance, 1e-6)
+        openness = (chosen_clearance - cfg.blocked_distance) / span
+        speed_scale = cfg.min_speed_fraction + (1.0 - cfg.min_speed_fraction) * float(
+            np.clip(openness, 0.0, 1.0)
+        )
         return Steering(
             heading=float(headings[best]),
             clearance=chosen_clearance,

@@ -97,14 +97,16 @@ class SegmentRecorder(Node):
         # Two radii, because they answer two different questions and conflating them made
         # this file report passes it had not measured.
         #
-        # reach_radius ends the run: it matches the follower's advance_radius, so the recorder
-        # stops when the follower itself has nothing left to chase.
+        # reach_radius ends the run. A strict experiment cannot stop at the historical
+        # 0.35 m follower radius: doing so killed escape18 and escape20 while the corrected
+        # follower was still chasing the gate, making a proof of the 0.20 m result
+        # impossible. It therefore ships at the scoring radius too.
         #
         # score_radius decides whether the gate was taken, and is the contest's, from
         # course.yaml's own metadata. Run 18_19_baseline_seed0 ended "reached the end
         # waypoint" with its closest approach to waypoint 19 at 0.348 m, which is not a point.
         # Every "reached" recorded before this was the 0.35 m answer wearing the 0.2 m name.
-        self.declare_parameter("reach_radius", 0.35)
+        self.declare_parameter("reach_radius", 0.2)
         self.declare_parameter("score_radius", 0.2)
 
         course_file = str(self.get_parameter("course_file").value)

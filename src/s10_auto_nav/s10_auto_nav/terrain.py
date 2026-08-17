@@ -61,7 +61,19 @@ class TerrainKind(Enum):
 
 #: Kinds where steering around the obstruction is the wrong answer, because the
 #: obstruction is the route. Exported because the follower needs exactly this question.
-DRIVE_AT_IT = frozenset({TerrainKind.RAMP, TerrainKind.STAIRS, TerrainKind.HIGH_BARRIER})
+#:
+#: HIGH_BARRIER used to be in here, which asserted that the way past a rise whose own reason
+#: string reads "exceeds what the wheels can step" is to drive at it. It cost twice over,
+#: because ``drive_at_it`` both switches the avoidance planner off and suppresses the terrain
+#: speed scale -- on the leg to waypoint 24 the scale had already fallen to 0.25 and the
+#: robot went in at 0.78 m/s regardless.
+#:
+#: Taking it out only does anything together with ``barrier_rise``: at the old 0.30 this kind
+#: was reached seven ticks in a 300 s run, all of them after the body was past 28 degrees of
+#: tilt and the fall was already underway. The pair is the fix, and either half alone is
+#: inert. What the planner is being handed is a real route: 5.904 m round against 5.431 m
+#: straight past that wall, measured at the body's full 0.45 m half-width.
+DRIVE_AT_IT = frozenset({TerrainKind.RAMP, TerrainKind.STAIRS})
 
 
 @dataclass(frozen=True)
@@ -142,10 +154,49 @@ class TerrainConfig:
 
     #: A rise past this is a step rather than texture, metres.
     step_rise: float = 0.12
-    #: A rise past this cannot be taken by driving at it however slowly, metres. The
-    #: measured Gate 16 riser is 0.377 m and needs the climb policy; the ordinary course
-    #: steps are well under this.
-    barrier_rise: float = 0.30
+    #: A rise past this cannot be taken by driving at it however slowly, metres.
+    #:
+    #: This is a residual from the plane fitted across the corridor, not the height of the
+    #: obstacle, and the difference is the whole reason this number is not 0.30. A wall
+    #: fills enough of the corridor to tilt the fit, which absorbs part of it into
+    #: ``slope_deg`` and leaves only the remainder here. Replaying the leg to waypoint 24
+    #: through the real sampler: a wall the map measures at 0.465 m reports 0.18 to 0.31,
+    #: and at 0.30 it was still reading STAIRS at 2.9 m out. The robot drove at it at
+    #: 0.78 m/s, reared to 28 degrees, and the run ended on its side at 70.
+    #:
+    #: 0.16 looked like the middle of an empty band. Replaying every sample of the whole
+    #: waypoint 16 to 32 run gave twelve full-width rises over ``step_rise``: three drivable
+    #: features reading 0.124, 0.125 and 0.128, and nine wall samples reading 0.181 to 0.296,
+    #: with nothing between. The band was an artefact of which samples the replay contained.
+    #: Driving the leg for real, the 0.16 m step at x=27.05 that is the only way from
+    #: waypoint 18 to 19 reports 0.26 -- inside the "wall" band, on a step the course
+    #: requires. Held at 0.24 m/s by that verdict the robot never got up it: one run sat in a
+    #: 0.25 m box for 1100 s, the next was deflected onto the 0.5 m block beside the lane and
+    #: fell off it at 72 degrees.
+    #:
+    #: So this number cannot do the job alone, and no value of it can: the required step and
+    #: the wall overlap in the one quantity it measures. What separates them is ``spans`` and
+    #: ``barrier_return`` below, and it is only sound as the pair.
+    #:
+    #: The four 0.125 m steps between gates 5 and 6 sit 0.035 under this. That margin is the
+    #: tightest on the course and is now measured rather than assumed: a continuous waypoint
+    #: 0 to 16 run at this threshold took gates 1 to 15, gate 6 among them.
+    barrier_rise: float = 0.16
+    #: A rise this far off or nearer has been seen by the scan ring as well as by the height
+    #: map, metres. Required for HIGH_BARRIER, because the residual above cannot tell a step
+    #: from a wall and this can.
+    #:
+    #: The physics is the whole argument: the ring sits at body height, so a rise tall enough
+    #: that the wheels cannot take it is tall enough to break the plane, and a rise low enough
+    #: to step onto passes under it. Measured on the two features that defeat the residual --
+    #: the 0.16 m step to waypoint 19 returns nothing at all, median 99 m over 2609 samples in
+    #: one run and 61 in another, while the 0.465 m wall before waypoint 24 returns on every
+    #: sample of the approach, 1.09 to 4.22 m with a median of 3.21.
+    #:
+    #: 4.0 rather than something tighter because the question is whether there is a return,
+    #: not how close it is; ``blocked_distance`` already owns how close. It matches
+    #: ``probe_distance`` in nav.yaml, past which the planner is not looking either.
+    barrier_return: float = 4.0
     #: A fall past this is a drop rather than a dip, metres.
     drop_fall: float = 0.25
     #: How much of the corridor's width a rise must occupy before it counts as the route
@@ -351,11 +402,22 @@ class TerrainClassifier:
         spans = reading.rise_fraction >= cfg.rise_span
 
         barrier = self._threshold(cfg.barrier_rise, TerrainKind.HIGH_BARRIER, reading)
-        if rise >= barrier and spans:
+        # Two witnesses, because one of them cannot tell the difference. The plane fit
+        # absorbs a wide wall into ``slope_deg`` and leaves a residual no larger than a
+        # step's, so on residual alone the 0.16 m step to waypoint 19 (0.26) outranks the
+        # 0.465 m wall before waypoint 24 (0.18 to 0.31). The scan ring is not fooled the
+        # same way: it sees the wall from 4 m and never sees the step at all. Requiring both
+        # costs nothing on a real wall, which returns on every sample of the approach, and
+        # keeps the classifier off the steps the course is made of.
+        seen = reading.obstacle_distance <= cfg.barrier_return
+        if rise >= barrier and spans and seen:
             return (
                 TerrainKind.HIGH_BARRIER,
                 _ramp_confidence(rise, barrier),
-                (f"rise {rise:.2f}m exceeds what the wheels can step"),
+                (
+                    f"rise {rise:.2f}m exceeds what the wheels can step, "
+                    f"with return at {reading.obstacle_distance:.1f}m"
+                ),
             )
 
         # The arbitration this module exists for. A return with ground rising underneath
