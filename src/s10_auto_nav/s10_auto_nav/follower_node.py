@@ -127,7 +127,7 @@ class WaypointFollowerNode(Node):
 
         self.declare_parameter("course_file", "")
         self.declare_parameter("control_rate", CONTROL_RATE_HZ)
-        self.declare_parameter("advance_radius", 0.35)
+        self.declare_parameter("advance_radius", 0.2)
         # The contest's radius, from course.yaml's own metadata. A knob rather than a
         # constant only so a stricter scorer can be raced against; it is not a tuning
         # parameter and raising it above 0.2 makes the follower claim gates it did not take.
@@ -137,6 +137,16 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("max_yaw_rate", PursuitGains.max_yaw_rate)
         self.declare_parameter("lookahead", PursuitGains.lookahead)
         self.declare_parameter("yaw_gain", PursuitGains.yaw_gain)
+        self.declare_parameter("pivot_threshold_deg", math.degrees(PursuitGains.pivot_threshold))
+        self.declare_parameter("corner_retreat_waypoints", [26, 27])
+        self.declare_parameter("corner_retreat_distance", 0.7)
+        self.declare_parameter("corner_retreat_speed", 0.3)
+        self.declare_parameter("corner_align_tolerance_deg", 10.0)
+        self.declare_parameter("committed_terrain_waypoints", [28, 30])
+        self.declare_parameter("committed_runup_waypoints", [28])
+        self.declare_parameter("committed_runup_trigger", 0.55)
+        self.declare_parameter("committed_runup_distance", 1.5)
+        self.declare_parameter("committed_runup_timeout", 20.0)
         # Approach braking. Zero means "inherit the lookahead", which is what the brake did
         # before the knob existed, so the shipped default changes nothing. The stair value
         # is selected automatically by the terrain classifier, not by the operator: see
@@ -149,7 +159,9 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("recovery_duration", 1.0)
         self.declare_parameter("climb_pitch_deg", 8.0)
         self.declare_parameter("climb_speed", 0.5)
-        self.declare_parameter("climb_progress_speed", 0.35)
+        self.declare_parameter("climb_progress_distance", 0.25)
+        self.declare_parameter("climb_progress_window", 1.5)
+        self.declare_parameter("climb_level_dwell", 1.5)
         self.declare_parameter("climb_timeout", 40.0)
         self.declare_parameter("climb_yaw_rate", 0.15)
         self.declare_parameter("climb_backup", 3.0)
@@ -162,7 +174,15 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("blocked_distance", AvoidanceConfig.blocked_distance)
         self.declare_parameter("clearance_weight", AvoidanceConfig.clearance_weight)
         self.declare_parameter("deviation_weight", AvoidanceConfig.deviation_weight)
+        self.declare_parameter("barrier_escape_angle_deg", 60.0)
+        self.declare_parameter("barrier_escape_distance", 1.2)
+        self.declare_parameter("barrier_bypass_forward", 3.0)
+        self.declare_parameter("barrier_bypass_gate_standoff", 0.6)
+        self.declare_parameter("barrier_bypass_lateral", 1.2)
+        self.declare_parameter("barrier_clear_dwell", 2.0)
+        self.declare_parameter("target_clearance_margin", AvoidanceConfig.target_clearance_margin)
         self.declare_parameter("blocked_timeout", 0.4)
+        self.declare_parameter("barrier_detour_attempts", 3)
         self.declare_parameter("max_step", 0.35)
         self.declare_parameter("max_drop", 0.5)
 
@@ -190,12 +210,40 @@ class WaypointFollowerNode(Node):
                 max_yaw_rate=float(self.get_parameter("max_yaw_rate").value),
                 lookahead=float(self.get_parameter("lookahead").value),
                 yaw_gain=float(self.get_parameter("yaw_gain").value),
+                pivot_threshold=math.radians(
+                    float(self.get_parameter("pivot_threshold_deg").value)
+                ),
                 brake_distance=_optional_positive(self.get_parameter("brake_distance").value),
             )
         )
         self.flat_brake_distance = self.controller.gains.brake_distance
         self.stair_brake_distance = _optional_positive(
             self.get_parameter("stair_brake_distance").value
+        )
+        self.corner_retreat_waypoints = {
+            int(value) for value in self.get_parameter("corner_retreat_waypoints").value
+        }
+        self.corner_retreat_distance = float(
+            self.get_parameter("corner_retreat_distance").value
+        )
+        self.corner_retreat_speed = float(self.get_parameter("corner_retreat_speed").value)
+        self.corner_align_tolerance = math.radians(
+            float(self.get_parameter("corner_align_tolerance_deg").value)
+        )
+        self.committed_terrain_waypoints = {
+            int(value) for value in self.get_parameter("committed_terrain_waypoints").value
+        }
+        self.committed_runup_waypoints = {
+            int(value) for value in self.get_parameter("committed_runup_waypoints").value
+        }
+        self.committed_runup_trigger = float(
+            self.get_parameter("committed_runup_trigger").value
+        )
+        self.committed_runup_distance = float(
+            self.get_parameter("committed_runup_distance").value
+        )
+        self.committed_runup_timeout = float(
+            self.get_parameter("committed_runup_timeout").value
         )
 
         self.stall_speed = float(self.get_parameter("stall_speed").value)
@@ -208,7 +256,13 @@ class WaypointFollowerNode(Node):
                     float(self.get_parameter("climb_pitch_deg").value)
                 ),
                 speed=float(self.get_parameter("climb_speed").value),
-                progress_speed=float(self.get_parameter("climb_progress_speed").value),
+                progress_distance=float(
+                    self.get_parameter("climb_progress_distance").value
+                ),
+                progress_window=float(
+                    self.get_parameter("climb_progress_window").value
+                ),
+                level_dwell=float(self.get_parameter("climb_level_dwell").value),
                 yaw_rate=float(self.get_parameter("climb_yaw_rate").value),
                 timeout=float(self.get_parameter("climb_timeout").value),
                 backup=float(self.get_parameter("climb_backup").value),
@@ -227,9 +281,33 @@ class WaypointFollowerNode(Node):
                 blocked_distance=float(self.get_parameter("blocked_distance").value),
                 clearance_weight=float(self.get_parameter("clearance_weight").value),
                 deviation_weight=float(self.get_parameter("deviation_weight").value),
+                barrier_escape_angle=math.radians(
+                    float(self.get_parameter("barrier_escape_angle_deg").value)
+                ),
+                target_clearance_margin=float(
+                    self.get_parameter("target_clearance_margin").value
+                ),
             )
         )
         self.blocked_timeout = float(self.get_parameter("blocked_timeout").value)
+        self.barrier_escape_distance = float(
+            self.get_parameter("barrier_escape_distance").value
+        )
+        self.barrier_bypass_forward = float(
+            self.get_parameter("barrier_bypass_forward").value
+        )
+        self.barrier_bypass_gate_standoff = float(
+            self.get_parameter("barrier_bypass_gate_standoff").value
+        )
+        self.barrier_bypass_lateral = float(
+            self.get_parameter("barrier_bypass_lateral").value
+        )
+        self.barrier_clear_dwell = float(
+            self.get_parameter("barrier_clear_dwell").value
+        )
+        self.barrier_detour_attempts = int(
+            self.get_parameter("barrier_detour_attempts").value
+        )
         self.max_step = float(self.get_parameter("max_step").value)
         self.max_drop = float(self.get_parameter("max_drop").value)
 
@@ -252,6 +330,34 @@ class WaypointFollowerNode(Node):
         self._heightmap: np.ndarray | None = None
         self._heightmap_age = math.inf
         self._blocked_for = 0.0
+        #: Back-offs the planner has made at the current HIGH_BARRIER, and whether that has
+        #: gone on long enough to give up on a detour and climb the thing instead.
+        self._barrier_detours = 0
+        self._climbing_barrier = False
+        #: Side selected from the height map for the current high barrier. It is latched so
+        #: gait noise cannot send successive ticks around opposite ends of the same wall.
+        self._barrier_side = 0
+        #: A wall edge has to stay out of HIGH_BARRIER for this clock to expire before the
+        #: committed side is released. Once released, it stays released for this gate: the
+        #: same wall remains visible beside the robot after it has cleared the corner and
+        #: must not start a second escape away from the target.
+        self._barrier_clear_for = 0.0
+        self._barrier_escape_done = False
+        self._barrier_escape_origin: np.ndarray | None = None
+        self._barrier_escape_required = self.barrier_escape_distance
+        self._barrier_bypass_target: np.ndarray | None = None
+        self._barrier_corner_target: np.ndarray | None = None
+        self._barrier_corner_phase = False
+        self._barrier_final_phase = False
+        self._corner_retreat_target: np.ndarray | None = None
+        self._corner_incoming_yaw: float | None = None
+        self._corner_outgoing_yaw: float | None = None
+        self._committed_runup_phase: str | None = None
+        self._committed_runup_elapsed = 0.0
+        self._committed_runup_attempts = 0
+        #: Set by every path that backs the robot off, cleared by the tick that reads it.
+        #: The reader needs a terrain verdict that the setters run too early to have.
+        self._backed_off = False
         self._speed_scale = 1.0
         self._log_countdown = 0.0
         self.terrain_classifier = TerrainClassifier()
@@ -322,7 +428,16 @@ class WaypointFollowerNode(Node):
             self._stall_reference = None
             self._stalled_for = 0.0
             self._no_progress_for = 0.0
+            # The next leg may turn sharply at the gate. Carrying the previous leg's slew
+            # memory means compute() takes several ticks to remove forward/lateral motion;
+            # after WP26 that translated the body 0.6 m north while it tried to rotate east
+            # and sent it off the narrow deck. A scored gate is a genuine discontinuity in
+            # the target, so start its command ramp from rest.
+            self.controller.reset()
+            self._reset_barrier_escape()
+            self._reset_committed_runup()
             reached = self.course.cursor - 1
+            self._begin_corner_retreat(reached)
             self.get_logger().info(
                 f"Waypoint {reached} reached ({self.course.cursor}/{len(self.course)}), "
                 f"{self.course.remaining_distance(self._pose_xy):.1f} m remaining"
@@ -333,13 +448,55 @@ class WaypointFollowerNode(Node):
             self._publish_stop()
             return
 
+        corner_command = self._corner_transition_command(dt)
+        if corner_command is not None:
+            # The retreat follows the last metres of the path that were just proved safe,
+            # then aligns away from the edge. Obstacle and stall reactions would only
+            # interrupt that short, bounded manoeuvre and put the robot back at the gate.
+            self._stalled_for = 0.0
+            self._no_progress_for = 0.0
+            self._stall_reference = None
+            self._last_forward = corner_command.forward
+            self._publish(corner_command)
+            self._log_state(corner_command, 1.0, 1.0, False, dt)
+            return
+
+        runup_command = self._committed_runup_command(dt)
+        if runup_command is not None:
+            self._stalled_for = 0.0
+            self._no_progress_for = 0.0
+            self._stall_reference = None
+            self._last_forward = runup_command.forward
+            self._publish(runup_command)
+            self._log_state(runup_command, 1.0, 1.0, False, dt)
+            return
+
         if self._recovering_for > 0.0:
             self._recovering_for -= dt
             self._publish(self._recovery_command())
             return
 
         was_committing = self._committing
-        climbing = self.step_commit.update(self._pitch, self._speed, dt)
+        bypassing_barrier = (
+            self._barrier_side != 0 or self._barrier_bypass_target is not None
+        )
+        committed_terrain = self.course.target.index in self.committed_terrain_waypoints
+        suppressing_step_commit = bypassing_barrier and not self._barrier_final_phase
+        if suppressing_step_commit or committed_terrain:
+            # A selected route around a height-map-confirmed wall is stronger evidence than
+            # pitch alone. Contact with its corner can pitch the body 50+ degrees; treating
+            # that as a stair replaced the bypass with a 0.7 m/s wall charge and caused the
+            # measured escape10 fall at 75 degrees. Suppression ends on the clear final leg:
+            # final2 reached WP29's last ledge, pitched 23 degrees 0.8 m from the gate, but
+            # could not use the run-up because the stale bypass flag still owned the route.
+            # A committed terrain route has the
+            # complementary evidence: WP27->28 crossed 3/3 under continuous pure pursuit,
+            # while StepCommit's bounded back-offs repeatedly pulled it down from 0.3 m
+            # short of WP28. In both cases the selected route owns the manoeuvre.
+            self.step_commit.reset()
+            climbing = False
+        else:
+            climbing = self.step_commit.update(self._pitch, self._pose_xy, dt)
         self._committing = climbing
         if was_committing and self.step_commit.conceded:
             # Logged once on the edge, because this is the moment the follower stops calling
@@ -373,33 +530,139 @@ class WaypointFollowerNode(Node):
             self._log_state(published, 1.0, 1.0, climbing, dt)
             return
 
-        self._update_stall_watchdog(dt)
+        gate_distance = float(np.linalg.norm(self.course.target.xy - self._pose_xy))
+        near_scoring_gate = gate_distance <= 0.5
+        if self._barrier_final_phase or near_scoring_gate:
+            # Inside the final body-clear corridor, reversing is strictly harmful. At
+            # escape21 the robot reached 0.213 m, then the low-speed watchdog repeatedly
+            # pushed it back out because the ordinary flat-ground taper was below the gait's
+            # useful envelope. Keep closing instead; the route state is reset on the score.
+            self._stalled_for = 0.0
+            self._no_progress_for = 0.0
+            self._stall_reference = None
+        else:
+            self._update_stall_watchdog(dt)
         verdict = self._classify_terrain(dt)
         self.terrain_pub.publish(String(data=f"{verdict.kind.value}:{verdict.confidence:.2f}"))
         self.controller.gains.brake_distance = self._brake_distance_for(verdict.kind)
 
-        if verdict.drive_at_it:
+        # The watchdog runs before the classifier, so the tick that trips it cannot say what
+        # the robot was backing away from. The answer arrives here, one classification later
+        # and still on the same tick, because the recovery itself does not start until the
+        # next one.
+        counted = self._backed_off
+        if counted:
+            self._backed_off = False
+            self._note_barrier_detour_failed(verdict)
+
+        climbing_barrier = (
+            False if bypassing_barrier else self._climbing_a_barrier(verdict)
+        )
+        charging = verdict.drive_at_it or climbing_barrier or committed_terrain
+        if charging:
             # The lidar return and the rise underneath it are the same object, so steering
             # around it only finds another part of it. This is the waypoint 17 case: the
             # avoidance re-chose a side every tick for a hundred seconds while the height
-            # map reported 0.31 m of stairs dead ahead the whole time.
+            # map reported 0.31 m of stairs dead ahead the whole time. WP27->28 is the other
+            # measured case: the track's stacked/spiral geometry alternates DROP and
+            # HIGH_BARRIER even though three controlled trials climbed the route smoothly.
+            # Its waypoint-index commitment is explicit in nav.yaml rather than inferred
+            # from that ambiguous local projection.
             target, scale = carrot, 1.0
             self._blocked_for = 0.0
         else:
-            target, scale = self._avoidance_target(carrot, dt)
+            barrier_side = self._barrier_escape_side_for(
+                verdict, dt, self.course.target.xy
+            )
+            avoidance_carrot = carrot
+            if barrier_side == 0 and self._barrier_bypass_target is not None:
+                if np.linalg.norm(self._pose_xy - self._barrier_bypass_target) <= 0.35:
+                    if self._barrier_corner_target is not None:
+                        self.get_logger().info(
+                            f"Barrier bypass reached at {self._pose_xy[0]:.1f},"
+                            f"{self._pose_xy[1]:.1f}; entering waypoint {self.course.cursor}"
+                        )
+                        # Do not stop beside the far corner and pivot ninety degrees. In
+                        # escape17 the body made contact there, yaw stayed at 90 degrees
+                        # despite a sustained -0.7 command, and WP24 remained 0.61 m away.
+                        # From the measured-safe low lane the diagonal to the gate is clear,
+                        # so carry one continuous arc through the scoring point.
+                        self._barrier_bypass_target = self.course.target.xy.copy()
+                        self._barrier_corner_target = None
+                        self._barrier_corner_phase = False
+                        self._barrier_final_phase = True
+                        self._stalled_for = 0.0
+                        self._no_progress_for = 0.0
+                        self._stall_reference = None
+                        avoidance_carrot = self._barrier_bypass_target
+                    elif not self._barrier_final_phase:
+                        self.get_logger().info(
+                            f"Barrier corner reached at {self._pose_xy[0]:.1f},"
+                            f"{self._pose_xy[1]:.1f}; entering waypoint {self.course.cursor}"
+                        )
+                        # Preserve the planned corridor through the scoring point. Handing
+                        # this last half metre back to the generic scan planner made it turn
+                        # broadside to the pillar beyond WP24 and recede at 0.348 m. The
+                        # body-clear route and the target horizon have already established
+                        # that the gate itself is reachable; drive the short final segment
+                        # directly and let the course reset this state only after scoring.
+                        self._barrier_bypass_target = self.course.target.xy.copy()
+                        self._barrier_corner_phase = False
+                        self._barrier_final_phase = True
+                        avoidance_carrot = self._barrier_bypass_target
+                else:
+                    avoidance_carrot = self._barrier_bypass_target
+            if self._barrier_final_phase:
+                self._blocked_for = 0.0
+                # The final few decimetres need the same short taper as a ledge approach.
+                # The flat 1.4 m taper commanded only 0.11 m/s at escape21's 0.213 m near
+                # miss; the locomotion policy oscillated in place instead of scoring.
+                self.controller.gains.brake_distance = (
+                    self.stair_brake_distance or self.flat_brake_distance
+                )
+                target, scale = avoidance_carrot, 1.0
+            else:
+                target, scale = self._avoidance_target(avoidance_carrot, dt, barrier_side)
+
+        if near_scoring_gate:
+            # Below the ordinary 1.4 m taper the policy can be commanded at 0.10-0.15 m/s,
+            # where it oscillates rather than translating. A 0.4 m taper still brakes, but
+            # carried WP23->24 through a 13 mm miss and gives every strict gate the same
+            # treatment instead of a waypoint-specific exception.
+            self.controller.gains.brake_distance = (
+                self.stair_brake_distance or self.flat_brake_distance
+            )
 
         if self._blocked_for >= self.blocked_timeout:
             self.get_logger().warn(
                 f"No drivable heading for {self._blocked_for:.1f}s at waypoint "
                 f"{self.course.cursor}; backing off"
             )
+            # Directly rather than through the flag, because a back-off taken for want of a
+            # heading is evidence about the barrier that is in front of the robot *now*; read
+            # two ticks later, after a metre of reversing, it may not be in front of it any
+            # more. ``counted`` keeps a tick that trips both clocks from counting twice.
+            if not counted:
+                self._note_barrier_detour_failed(verdict)
             self._recovering_for = self.recovery_duration
             self._blocked_for = 0.0
             self.controller.reset()
             self._publish(self._recovery_command())
             return
 
-        terrain = self._terrain_scale_for(verdict)
+        # The temporary route comes from a body-clear plan and only admits relief the wheels
+        # can traverse (up to max_step). Re-applying the generic relief throttle after the
+        # wall edge is clear held escape15 at 0.21-0.29 m/s against a harmless 0.26 m map
+        # return for most of 180 seconds; measured crossings need at least 0.6 m/s. An older
+        # unthrottled route clipped the wall because it had only 0.8 m lateral clearance;
+        # the measured-safe route now uses 1.2 m. Keep the conservative throttle during the
+        # initial side escape, then give both planned route legs the locomotion authority
+        # they need. Lidar still vets every heading.
+        terrain = (
+            1.0
+            if self._barrier_side == 0 and self._barrier_bypass_target is not None
+            else self._terrain_scale_for(verdict, charging)
+        )
         command = self.controller.compute(self._pose_xy, self._yaw, target, dt)
         published = self._apply_speed_scale(command, min(scale, terrain), dt)
         self._last_forward = published.forward
@@ -432,6 +695,16 @@ class WaypointFollowerNode(Node):
         mode = ""
         if climbing:
             mode = " RUNUP" if self.step_commit.backing else " CLIMB"
+        elif self._barrier_side:
+            mode = " DETOUR_L" if self._barrier_side > 0 else " DETOUR_R"
+        elif self._corner_retreat_target is not None:
+            mode = " CORNER_RETREAT"
+        elif self._corner_outgoing_yaw is not None:
+            mode = " CORNER_ALIGN"
+        elif self._committed_runup_phase == "back":
+            mode = " TERRAIN_RUNUP"
+        elif self._committed_runup_phase == "push":
+            mode = " TERRAIN_PUSH"
         self.get_logger().info(
             f"wp {self.course.cursor}/{len(self.course)} {gate} "
             f"at ({self._pose_xy[0]:.1f},{self._pose_xy[1]:.1f}) "
@@ -444,7 +717,383 @@ class WaypointFollowerNode(Node):
             + (f" [{verdict}]" if verdict is not None else "")
         )
 
-    def _avoidance_target(self, carrot: np.ndarray, dt: float) -> tuple[np.ndarray, float]:
+    def _begin_corner_retreat(self, reached: int) -> None:
+        """Arm a safe run-up for a sharp turn at an edge-adjacent scored gate.
+
+        WP26 and WP27 sit on the narrow transfer deck. A nominally in-place yaw command
+        still walks the learned locomotion policy roughly 0.6 m in its old travel direction,
+        enough to fall off the deck. Once the gate has scored, retreat along the segment we
+        have just traversed, align there, and approach the next gate with the new heading.
+
+        The waypoint indices are explicit configuration because this is a property of the
+        fixed race scene, not something a planar lidar can infer reliably beneath the upper
+        storey. Keeping the list in nav.yaml also prevents this conservative manoeuvre being
+        applied to every ordinary corner on the course.
+        """
+        if reached <= 0 or reached >= len(self.course) - 1:
+            return
+        gate = self.course.waypoints[reached]
+        if gate.index not in self.corner_retreat_waypoints:
+            return
+
+        previous = self.course.waypoints[reached - 1].xy
+        following = self.course.waypoints[reached + 1].xy
+        incoming = gate.xy - previous
+        outgoing = following - gate.xy
+        incoming_length = float(np.linalg.norm(incoming))
+        outgoing_length = float(np.linalg.norm(outgoing))
+        if incoming_length < 1e-6 or outgoing_length < 1e-6:
+            return
+
+        incoming /= incoming_length
+        outgoing /= outgoing_length
+        self._corner_retreat_target = gate.xy - self.corner_retreat_distance * incoming
+        self._corner_incoming_yaw = math.atan2(incoming[1], incoming[0])
+        self._corner_outgoing_yaw = math.atan2(outgoing[1], outgoing[0])
+        self.get_logger().info(
+            f"Waypoint {gate.index} needs an edge-safe turn; retreating "
+            f"{self.corner_retreat_distance:.1f} m before aligning to the next leg"
+        )
+
+    def _corner_transition_command(self, dt: float) -> Command | None:
+        """Return the bounded retreat/alignment command, or None outside the manoeuvre."""
+        if self._corner_retreat_target is not None:
+            delta = self._corner_retreat_target - self._pose_xy
+            distance = float(np.linalg.norm(delta))
+            # This is a staging area, not a scoring point. The reverse gait carries a
+            # centimetre-scale cross-track offset; demanding a 12 cm Euclidean hit let the
+            # WP27 trial pass 14 cm beside the target and continue backing off the opposite
+            # edge. A 20 cm capture still leaves at least the planned half-metre of extra
+            # turn margin and terminates monotonically in the body-clear area.
+            if distance > 0.2:
+                incoming_yaw = self._corner_incoming_yaw or 0.0
+                yaw_error = wrap_angle(incoming_yaw - self._yaw)
+                cross_track = -math.sin(self._yaw) * delta[0] + math.cos(self._yaw) * delta[1]
+                return Command(
+                    forward=-self.corner_retreat_speed,
+                    lateral=float(
+                        np.clip(
+                            self.controller.gains.lateral_gain * cross_track,
+                            -0.2,
+                            0.2,
+                        )
+                    ),
+                    yaw_rate=float(
+                        np.clip(
+                            self.controller.gains.yaw_gain * yaw_error,
+                            -self.controller.gains.max_yaw_rate,
+                            self.controller.gains.max_yaw_rate,
+                        )
+                    ),
+                )
+            self._corner_retreat_target = None
+            self.controller.reset()
+            self.get_logger().info("Corner retreat complete; aligning in the safe run-up")
+
+        if self._corner_outgoing_yaw is None:
+            return None
+        yaw_error = wrap_angle(self._corner_outgoing_yaw - self._yaw)
+        if abs(yaw_error) <= self.corner_align_tolerance:
+            self._corner_incoming_yaw = None
+            self._corner_outgoing_yaw = None
+            self.controller.reset()
+            self.get_logger().info("Corner alignment complete; resuming waypoint pursuit")
+            return None
+        return Command(
+            yaw_rate=float(
+                np.clip(
+                    self.controller.gains.yaw_gain * yaw_error,
+                    -self.controller.gains.max_yaw_rate,
+                    self.controller.gains.max_yaw_rate,
+                )
+            )
+        )
+
+    def _reset_committed_runup(self) -> None:
+        self._committed_runup_phase = None
+        self._committed_runup_elapsed = 0.0
+        self._committed_runup_attempts = 0
+
+    def _committed_runup_command(self, dt: float) -> Command | None:
+        """Build momentum for a known route whose final riser defeats a standing push.
+
+        The WP27->28 ramp reaches 0.31-0.32 m from the strict gate and then high-centres on
+        its last 0.231 m riser. StepCommit's three-second reverse moved only about 0.2 m on
+        the incline, so each retry began from essentially the same stuck state. Distance,
+        not time, defines a real run-up here; the time limit merely bounds a failed reverse.
+        """
+        target = self.course.target
+        if target is None or target.index not in self.committed_runup_waypoints:
+            self._reset_committed_runup()
+            return None
+
+        delta = target.xy - self._pose_xy
+        distance = float(np.linalg.norm(delta))
+        if self._committed_runup_phase is None:
+            if distance > self.committed_runup_trigger:
+                return None
+            self._committed_runup_phase = "back"
+            self._committed_runup_elapsed = 0.0
+            self.controller.reset()
+            self.get_logger().info(
+                f"Committed terrain stopped {distance:.2f} m from waypoint {target.index}; "
+                f"backing to a {self.committed_runup_distance:.1f} m run-up"
+            )
+
+        desired_yaw = math.atan2(delta[1], delta[0])
+        yaw_error = wrap_angle(desired_yaw - self._yaw)
+        yaw_rate = float(
+            np.clip(
+                self.controller.gains.yaw_gain * yaw_error,
+                -self.step_commit.config.yaw_rate,
+                self.step_commit.config.yaw_rate,
+            )
+        )
+        cross_track = -math.sin(self._yaw) * delta[0] + math.cos(self._yaw) * delta[1]
+        # Straight-only sequence final3 drifted 0.8 m across the ramp during its charge and
+        # fell from the east edge. Keep the correction deliberately small: enough to hold
+        # the centreline over several seconds, not enough to scrub a wheel sideways on the
+        # final lip (the failure StepCommit's zero-lateral rule protects against).
+        lateral = float(
+            np.clip(self.controller.gains.lateral_gain * cross_track, -0.1, 0.1)
+        )
+        self._committed_runup_elapsed += dt
+
+        if self._committed_runup_phase == "back":
+            backed_up = distance >= self.committed_runup_distance
+            timed_out = self._committed_runup_elapsed >= self.committed_runup_timeout
+            if not backed_up and not timed_out:
+                return Command(
+                    forward=-self.step_commit.config.speed,
+                    lateral=lateral,
+                    yaw_rate=yaw_rate,
+                )
+            self._committed_runup_phase = "push"
+            self._committed_runup_elapsed = 0.0
+            self.controller.reset()
+            self.get_logger().info(
+                f"Terrain run-up ready {distance:.2f} m from waypoint {target.index}; charging"
+            )
+
+        # A failed charge gets another distance-defined run-up. Keep the final attempt
+        # pushing: abandoning this validated, full-width route would only hand the same
+        # ambiguous stacked-storey projection back to the obstacle planner.
+        if self._committed_runup_elapsed >= self.step_commit.config.timeout:
+            self._committed_runup_attempts += 1
+            self._committed_runup_elapsed = 0.0
+            if self._committed_runup_attempts < self.step_commit.config.attempts:
+                self._committed_runup_phase = "back"
+                self.get_logger().warn(
+                    f"Terrain charge stopped {distance:.2f} m from waypoint {target.index}; "
+                    "building another run-up"
+                )
+                return Command(
+                    forward=-self.step_commit.config.speed,
+                    lateral=lateral,
+                    yaw_rate=yaw_rate,
+                )
+        return Command(
+            forward=self.step_commit.config.speed,
+            lateral=lateral,
+            yaw_rate=yaw_rate,
+        )
+
+    def _climbing_a_barrier(self, verdict: TerrainVerdict) -> bool:
+        """Whether to drive at a HIGH_BARRIER because there is demonstrably no way round it.
+
+        ``barrier_rise`` is a threshold on a plane-fit residual, not a measurement of what
+        the machine can climb, and it is set where it is to catch a wall early enough to
+        steer -- deliberately below anything the robot has been seen to cross. So a
+        HIGH_BARRIER is a *reason to look for a detour*, not a verdict that the obstacle is
+        impassable, and treating it as the latter would give up on rises the robot could
+        have taken.
+
+        Hence the order: steering gets first refusal, and only after
+        ``barrier_detour_attempts`` back-offs have failed to get the robot anywhere does the
+        follower drive at the thing instead. The climb that follows is not open-ended either
+        -- ``StepCommit`` owns it from the moment the body pitches, and concedes after its
+        own three bounded attempts.
+
+        "Steering" is doing less work in that sentence than it looks. ``LocalPlanner.plan``
+        takes ranges and bearings and nothing else, so a barrier the height map can see and
+        the lidar cannot is one the planner has no way to steer around: on the leg to
+        waypoint 19 it reported a clear corridor on every one of the 892 ticks the classifier
+        spent calling the rise a wall. What the count really measures is attempts that got
+        nowhere, whatever the planner thought it was doing. That is the honest reading, and
+        it is still the right thing to count -- but it means the first phase is a genuine
+        detour only where the obstacle shows up in the scan.
+
+        Counted in back-offs rather than in seconds, because seconds cannot be counted from
+        here. Every back-off resets the clock it would have been kept on -- ``_blocked_for``
+        every 0.4 s, ``_no_progress_for`` every 12 -- so a timer started here would never
+        mature. What survives a reset is the event, so the events are what get counted.
+
+        The latch matters too. Driving at the barrier immediately clears ``_blocked_for``,
+        so without one the condition would go false on the very next tick and the follower
+        would alternate between steering and charging at control rate, which is the
+        flip-flop this whole module exists to remove.
+        """
+        if verdict.kind is not TerrainKind.HIGH_BARRIER:
+            self._barrier_detours = 0
+            self._climbing_barrier = False
+            return False
+        # Released by leaving HIGH_BARRIER above -- either over it, or turned aside far
+        # enough that the map no longer reads a wall across the corridor.
+        return self._climbing_barrier
+
+    def _reset_barrier_escape(self) -> None:
+        """Forget the detour only when the ordered gate changes.
+
+        A cleared wall remains visible over the robot's shoulder, so resetting on terrain
+        alone can immediately start a second detour away from the gate. The course cursor is
+        the unambiguous boundary between independent obstacles.
+        """
+        self._barrier_side = 0
+        self._barrier_clear_for = 0.0
+        self._barrier_escape_done = False
+        self._barrier_escape_origin = None
+        self._barrier_escape_required = self.barrier_escape_distance
+        self._barrier_bypass_target = None
+        self._barrier_corner_target = None
+        self._barrier_corner_phase = False
+        self._barrier_final_phase = False
+
+    def _barrier_escape_side_for(
+        self, verdict: TerrainVerdict, dt: float, gate: np.ndarray
+    ) -> int:
+        """Return a stable escape side through brief terrain-classifier label changes.
+
+        The measured waypoint-24 approach alternates HIGH_BARRIER and BLOCKED about once a
+        second as gait motion changes how much of the wall fills the height map. Releasing
+        the side on each BLOCKED sample alternated +60 and -40 degree commands and parked
+        the robot at the wall's corner. Require continuous contrary evidence before leaving
+        the detour, then suppress re-entry until the gate changes so the wall beside/behind
+        the robot cannot pull it away from the target again.
+        """
+        if self._barrier_escape_done:
+            return 0
+
+        if verdict.kind is TerrainKind.HIGH_BARRIER:
+            self._barrier_clear_for = 0.0
+            if self._barrier_side == 0:
+                # The height map is fixed in the body frame. Immediately after a scored
+                # gate it can therefore still be looking straight back down the previous
+                # leg while pure pursuit pivots toward the new one.  In final4, WP29 was
+                # taken facing west, WP30 lay 62 degrees to the right, and the map of the
+                # old approach was mistaken for a wall on the new route.  That latched a
+                # right-hand detour and walked the robot off an otherwise clear diagonal.
+                # Wait until the sensor actually faces the candidate leg before using it
+                # to choose a side.  Once selected, the existing latch remains authoritative
+                # through later yaw changes and classifier jitter.
+                delta = gate - self._pose_xy
+                gate_bearing = math.atan2(delta[1], delta[0])
+                if abs(wrap_angle(gate_bearing - self._yaw)) > self.controller.gains.pivot_threshold:
+                    return 0
+                self._barrier_side = self.planner.barrier_escape_side(self._heightmap)
+                if self._barrier_side:
+                    self._barrier_escape_origin = self._pose_xy.copy()
+                    gate_distance = float(np.linalg.norm(delta))
+                    if gate_distance > 1e-6:
+                        lateral = min(
+                            self.barrier_bypass_lateral,
+                            max(0.5, 0.4 * gate_distance),
+                        )
+                        self._barrier_escape_required = min(
+                            self.barrier_escape_distance, lateral
+                        )
+                        forward = min(
+                            self.barrier_bypass_forward,
+                            max(0.0, gate_distance - self.barrier_bypass_gate_standoff),
+                        )
+                        along = delta / gate_distance
+                        left = np.array([-along[1], along[0]])
+                        self._barrier_bypass_target = (
+                            self._pose_xy
+                            + forward * along
+                            + self._barrier_side * lateral * left
+                        )
+                        self._barrier_corner_target = (
+                            gate - self.barrier_bypass_gate_standoff * along
+                        )
+                    side = "left" if self._barrier_side > 0 else "right"
+                    self.get_logger().warn(
+                        f"High barrier at {self._pose_xy[0]:.1f},{self._pose_xy[1]:.1f}; "
+                        f"height map opens to the {side}, committing to that escape"
+                    )
+            return self._barrier_side
+
+        if self._barrier_side == 0:
+            return 0
+
+        distance = (
+            0.0
+            if self._barrier_escape_origin is None
+            else float(np.linalg.norm(self._pose_xy - self._barrier_escape_origin))
+        )
+        if distance < self._barrier_escape_required:
+            self._barrier_clear_for = 0.0
+            return self._barrier_side
+
+        self._barrier_clear_for += dt
+        if self._barrier_clear_for < self.barrier_clear_dwell:
+            return self._barrier_side
+
+        # The stall watchdog normally measures progress toward the ordered gate. During
+        # the escape it must measure the temporary route instead: moving sideways around a
+        # wall can leave gate distance unchanged for several seconds and escape14 proved
+        # that reversing at precisely that phase boundary puts the robot back into the
+        # obstacle. Start the new phase with a fresh ratchet.
+        self._stalled_for = 0.0
+        self._no_progress_for = 0.0
+        self._stall_reference = None
+        self.get_logger().info(
+            f"Barrier edge clear for {self._barrier_clear_for:.1f}s at "
+            f"{self._pose_xy[0]:.1f},{self._pose_xy[1]:.1f}; following the bypass route"
+        )
+        self._barrier_side = 0
+        self._barrier_clear_for = 0.0
+        self._barrier_escape_done = True
+        return 0
+
+    def _note_barrier_detour_failed(self, verdict: TerrainVerdict) -> None:
+        """Record a back-off, and switch between steering round the barrier and climbing it.
+
+        Called from every path that backs the robot off, because each of them is a report
+        that the follower tried something and got nowhere. Hanging this on the blocked
+        timeout alone -- which is where it started -- made it unreachable in the case it was
+        written for: in front of the rise to waypoint 19 the planner always had *a* heading,
+        so ``_blocked_for`` never accumulated, and what actually fired for 1100 s was the
+        no-progress clock. The robot backed off eighty-odd times, never counted one of them,
+        and finished the run inside a 0.25 m box having never once tried to climb.
+
+        Both directions, because neither answer is known to be right. Detours run out first
+        and the climb takes over; a climb that gets nowhere hands back, and the planner --
+        by then looking from wherever the failed attempts left the robot -- gets another go.
+        Alternating costs a few seconds per switch and cannot wedge; committing to either
+        one for good is exactly how both of the runs before this were lost.
+        """
+        if verdict.kind is not TerrainKind.HIGH_BARRIER:
+            return
+        if self._climbing_barrier:
+            self._climbing_barrier = False
+            self._barrier_detours = 0
+            self.get_logger().warn(
+                f"Climbing the barrier at {self._pose_xy[0]:.1f},{self._pose_xy[1]:.1f} "
+                f"got nowhere either; looking for a way round again"
+            )
+            return
+        self._barrier_detours += 1
+        if self._barrier_detours < self.barrier_detour_attempts:
+            return
+        self._climbing_barrier = True
+        self.get_logger().warn(
+            f"No way round the barrier at {self._pose_xy[0]:.1f},{self._pose_xy[1]:.1f} "
+            f"after {self._barrier_detours} attempts; climbing it instead"
+        )
+
+    def _avoidance_target(
+        self, carrot: np.ndarray, dt: float, barrier_side: int = 0
+    ) -> tuple[np.ndarray, float]:
         """Redirect the carrot onto a drivable bearing, and report the speed it allows.
 
         Only the bearing is overridden; the distance to the carrot is preserved, so the
@@ -465,7 +1114,14 @@ class WaypointFollowerNode(Node):
             return carrot, 1.0
 
         goal_bearing = wrap_angle(math.atan2(delta[1], delta[0]) - self._yaw)
-        steering = self.planner.plan(self._ranges, self._beam_angles, goal_bearing)
+        if barrier_side:
+            steering = self.planner.plan_barrier_escape(
+                self._ranges, self._beam_angles, goal_bearing, barrier_side
+            )
+        else:
+            steering = self.planner.plan(
+                self._ranges, self._beam_angles, goal_bearing, travel_distance=distance
+            )
 
         self._blocked_for = self._blocked_for + dt if steering.blocked else 0.0
 
@@ -540,7 +1196,7 @@ class WaypointFollowerNode(Node):
             return 1.0
         return ground_clearance(self._heightmap, self.max_step, self.max_drop)
 
-    def _terrain_scale_for(self, verdict: TerrainVerdict) -> float:
+    def _terrain_scale_for(self, verdict: TerrainVerdict, charging: bool = False) -> float:
         """The same scale, read in the light of what the classifier decided the ground is.
 
         The scale and the verdict come from one height map, and without this they were read
@@ -557,8 +1213,15 @@ class WaypointFollowerNode(Node):
         This is the decision the pitched-climb branch in ``_tick`` already makes; the
         difference is that this one fires before the nose is up, which on a lip taken square
         is the only moment it can still be taken.
+
+        ``charging`` carries the same decision for a barrier the follower has given up
+        steering round. It is separate from ``drive_at_it`` because it is not a claim about
+        what the ground is -- the classifier still says wall, and still means it. It is a
+        claim that this is the last thing left to try, and trying it at a third speed is not
+        trying it: the 900 s parked at 0.24 m/s above is exactly what a run does when the
+        decision to climb is made and the throttle is not told.
         """
-        if verdict.drive_at_it:
+        if charging or verdict.drive_at_it:
             return 1.0
         if verdict.kind is TerrainKind.UNKNOWN:
             # Not knowing is a reason to go slowly, not a reason to stop: the height map only
@@ -601,9 +1264,12 @@ class WaypointFollowerNode(Node):
         to drive and is not getting nearer is in trouble whatever the wheels are doing.
         """
         gate = None
-        target = self.course.target
-        if target is not None and self._pose_xy is not None:
-            gate = float(np.linalg.norm(target.xy - self._pose_xy))
+        target_xy = self._barrier_bypass_target
+        if target_xy is None:
+            target = self.course.target
+            target_xy = None if target is None else target.xy
+        if target_xy is not None and self._pose_xy is not None:
+            gate = float(np.linalg.norm(target_xy - self._pose_xy))
 
         # Seeded here rather than only on the clearing branch below. Left unseeded it stays
         # None through the whole of a slow approach -- the branch that would set it is the
@@ -656,6 +1322,7 @@ class WaypointFollowerNode(Node):
     def _trip_recovery(self, why: str, gate: float | None) -> None:
         """Hand the follower to the recovery command and restart both watchdog clocks."""
         self.get_logger().warn(f"{why} at waypoint {self.course.cursor}; backing off")
+        self._backed_off = True
         self._recovering_for = self.recovery_duration
         self._stalled_for = 0.0
         self._no_progress_for = 0.0
@@ -666,8 +1333,11 @@ class WaypointFollowerNode(Node):
         """Reverse while yawing toward the target to unwedge from a ledge or wall."""
         target = self.course.target
         yaw_rate = 0.0
-        if target is not None and self._pose_xy is not None:
-            delta = target.xy - self._pose_xy
+        target_xy = self._barrier_bypass_target
+        if target_xy is None and target is not None:
+            target_xy = target.xy
+        if target_xy is not None and self._pose_xy is not None:
+            delta = target_xy - self._pose_xy
             yaw_rate = float(
                 np.clip(wrap_angle(math.atan2(delta[1], delta[0]) - self._yaw), -0.8, 0.8)
             )

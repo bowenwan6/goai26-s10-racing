@@ -54,7 +54,13 @@ class PursuitGains:
     lateral_gain: float = 0.9
 
     #: Beyond this heading error the robot turns in place instead of driving forward.
-    pivot_threshold: float = math.radians(75.0)
+    #:
+    #: The old 75-degree threshold let a nominal 90-degree gate transition start
+    #: translating after only 15 degrees of rotation.  On the narrow WP26 deck that was
+    #: enough to walk the robot over the edge before it faced WP27.  Keep large course
+    #: turns in-place until they are genuinely aligned; the extra pivot time is cheaper
+    #: than losing the ordered tail of the run.
+    pivot_threshold: float = math.radians(30.0)
     #: Heading error at which forward speed has decayed to its floor.
     align_falloff: float = math.radians(60.0)
     #: Fraction of max_forward retained when badly misaligned.

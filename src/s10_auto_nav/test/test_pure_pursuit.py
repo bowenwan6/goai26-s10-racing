@@ -9,7 +9,7 @@ from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains, wrap_
 
 DT = 0.02
 
-#: 27 degrees off the nose: inside the 75-degree pivot threshold, but far enough to one
+#: 27 degrees off the nose: inside the 30-degree pivot threshold, but far enough to one
 #: side that the cross-track term saturates lateral.
 OFFSET_TARGET = np.array([2.0, 1.0])
 
@@ -43,6 +43,15 @@ def test_pivots_in_place_when_facing_away():
     command = settled(controller, [0.0, 0.0], 0.0, [-50.0, 0.0])
     assert math.isclose(command.forward, 0.0, abs_tol=1e-6)
     assert abs(command.yaw_rate) > 0.5
+
+
+def test_pivots_in_place_during_a_large_gate_transition():
+    """Do not translate toward an elevated-deck edge while making a sharp turn."""
+    controller = PurePursuitController()
+    command = settled(controller, [0.0, 0.0], 0.0, [1.0, 1.0])
+    assert command.forward == pytest.approx(0.0)
+    assert command.lateral == pytest.approx(0.0)
+    assert command.yaw_rate > 0.5
 
 
 def test_yaw_rate_points_toward_the_target():

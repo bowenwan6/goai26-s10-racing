@@ -15,20 +15,46 @@ WEDGED_PITCH = math.radians(-17.0)
 #: Gait pitch on the flat ran 1-3 degrees, so this must not read as a step.
 WALKING_PITCH = math.radians(3.0)
 
-
-#: Ground speed while genuinely wedged: the base logged 0.00-0.04 m/s for forty seconds.
-WEDGED_SPEED = 0.02
-
 #: Ground speed on the +8 degree approach to gate 1, which needs no help whatsoever.
 SLOPE_SPEED = 0.83
 
+#: Half the width of the band the base swung through while wedged on the 0.16 m step to
+#: waypoint 19: 0.13 m in x over 53 s, for +0.01 m of net progress. Modelled as a sway
+#: rather than as stillness because standing still is precisely what it did not do, and
+#: that is what defeated the speed test this class used to run.
+WEDGE_SWAY = 0.065
 
-def hold(commit, pitch, seconds, speed=WEDGED_SPEED):
-    """Run the state machine at control rate; return whether it still claims a step."""
-    climbing = False
-    for _ in range(int(round(seconds / DT))):
-        climbing = commit.update(pitch, speed, DT)
-    return climbing
+
+class Body:
+    """A position the commit can measure, driven at a velocity with an optional sway.
+
+    The commit judges progress by displacement, so the tests have to move something. A
+    plain velocity is not enough to reproduce the failure that motivated the change: the
+    wedge oscillated, which is why sampling instantaneous speed said "moving" ninety-four
+    times while the body stayed put.
+    """
+
+    def __init__(self) -> None:
+        self.centre = 0.0
+        self.t = 0.0
+
+    @property
+    def xy(self) -> tuple[float, float]:
+        return (self.centre + WEDGE_SWAY * math.sin(2 * math.pi * self.t / 1.5), 0.0)
+
+    def run(self, commit, pitch, seconds, velocity=0.0, sway=True) -> bool:
+        """Drive for ``seconds``; return whether the commit still claims a step."""
+        climbing = False
+        for _ in range(int(round(seconds / DT))):
+            self.t += DT if sway else 0.0
+            self.centre += velocity * DT
+            climbing = commit.update(pitch, self.xy, DT)
+        return climbing
+
+
+def hold(commit, pitch, seconds, velocity=0.0):
+    """Wedge in place for ``seconds`` unless a velocity is given."""
+    return Body().run(commit, pitch, seconds, velocity=velocity)
 
 
 def test_gait_pitch_is_not_a_step():
@@ -39,12 +65,12 @@ def test_gait_pitch_is_not_a_step():
 def test_a_descent_counts_as_a_step():
     """Nose-down 17 degrees is the wedge; tilt alone could not tell it from a climb."""
     commit = StepCommit()
-    assert commit.update(WEDGED_PITCH, WEDGED_SPEED, DT)
+    assert commit.update(WEDGED_PITCH, (0.0, 0.0), DT)
 
 
 def test_a_climb_counts_too():
     commit = StepCommit()
-    assert commit.update(-WEDGED_PITCH, WEDGED_SPEED, DT)
+    assert commit.update(-WEDGED_PITCH, (0.0, 0.0), DT)
 
 
 def test_a_slope_taken_at_speed_is_not_a_step():
@@ -56,40 +82,67 @@ def test_a_slope_taken_at_speed_is_not_a_step():
     raised terrain. Being pitched is not the signal; being pitched and going nowhere is.
     """
     commit = StepCommit()
-    assert not hold(commit, math.radians(8.0), 4.0, speed=SLOPE_SPEED)
+    assert not hold(commit, math.radians(8.0), 4.0, velocity=SLOPE_SPEED)
 
 
 def test_getting_moving_again_releases_the_commit():
     commit = StepCommit()
-    assert hold(commit, WEDGED_PITCH, 2.0)
-    assert not commit.update(WEDGED_PITCH, SLOPE_SPEED, DT)
+    body = Body()
+    assert body.run(commit, WEDGED_PITCH, 2.0)
+    assert not body.run(commit, WEDGED_PITCH, 1.0, velocity=SLOPE_SPEED)
+
+
+def test_a_shuffle_on_the_spot_is_not_getting_moving():
+    """The measured failure, and the reason progress is a distance and not a speed.
+
+    On the 0.16 m step to waypoint 19 the base was pitched over 8 degrees for 1004 of
+    1060 samples across 53 s, and moved +0.01 m. Ninety-four of those samples touched
+    0.35 m/s as the gait swung it through a 0.13 m band, and under the old speed test each
+    one zeroed both the push clock and the failure tally: the longest unbroken push the
+    12 s timeout ever saw was 3.9 s, so the run-up never fired once. The run-up is how
+    the baseline got up this step -- it reached the lip at 1.16 m/s off the flat.
+    """
+    commit = StepCommit()
+    body = Body()
+    assert not body.run(commit, WEDGED_PITCH, 53.0), "must have conceded by now"
+    assert abs(body.xy[0]) < commit.config.progress_distance, "the body must not have left"
+    assert commit.conceded
+    assert commit.failures == 3, "53 s of going nowhere has to spend every attempt"
 
 
 def test_the_run_up_does_not_abort_itself():
-    """Reversing at ``speed`` trivially passes the progress test, so it must be exempt.
+    """Reversing covers ``progress_distance`` at once, so the run-up must be exempt.
 
-    Otherwise the run-up ends one control step after it starts and the robot never gets
+    Otherwise it ends within a control step or two of starting and the robot never gets
     far enough back to have a run at anything.
     """
-    config = StepCommitConfig(timeout=8.0, backup=1.5, speed=0.5, progress_speed=0.35)
+    config = StepCommitConfig(timeout=8.0, backup=1.5, speed=0.5)
     commit = StepCommit(config)
-    assert hold(commit, WEDGED_PITCH, 8.5)
+    body = Body()
+    assert body.run(commit, WEDGED_PITCH, 8.5)
     assert commit.backing
-    # Now moving backwards at the commanded 0.5, comfortably past progress_speed.
-    assert commit.update(WEDGED_PITCH, config.speed, DT)
+    # Now reversing at the commanded 0.5, which covers 0.25 m in half a second.
+    assert body.run(commit, WEDGED_PITCH, 1.0, velocity=-config.speed)
     assert commit.backing
 
 
-def test_levelling_out_releases_immediately():
+def test_levelling_out_releases_once_it_is_sustained():
+    """A single level sample is gait noise; a second of them is the robot off the ledge.
+
+    On the waypoint 19 wedge the pitch dipped under the threshold seven times in 53 s,
+    median 0.40 s, none of them a departure -- and each dip used to zero the 12 s clock.
+    """
     commit = StepCommit()
-    hold(commit, WEDGED_PITCH, 2.0)
-    assert not commit.update(WALKING_PITCH, WEDGED_SPEED, DT)
+    body = Body()
+    assert body.run(commit, WEDGED_PITCH, 2.0)
+    assert commit.update(WALKING_PITCH, body.xy, DT), "one level tick is not a departure"
+    assert body.run(commit, WALKING_PITCH, commit.config.level_dwell + 0.1) is False
     assert commit.elapsed == 0.0
 
 
 def test_push_drives_straight_and_floors_forward():
     commit = StepCommit()
-    commit.update(WEDGED_PITCH, WEDGED_SPEED, DT)
+    commit.update(WEDGED_PITCH, (0.0, 0.0), DT)
     # The thrash that lost the second run had exactly these saturated inputs.
     out = commit.command(Command(forward=0.11, lateral=0.40, yaw_rate=0.70))
     assert out.forward == pytest.approx(commit.config.speed)
@@ -104,14 +157,14 @@ def test_push_floors_forward_even_where_pure_pursuit_would_pivot():
     observed failure was precisely the robot rotating on the spot while y never advanced.
     """
     commit = StepCommit()
-    commit.update(WEDGED_PITCH, WEDGED_SPEED, DT)
+    commit.update(WEDGED_PITCH, (0.0, 0.0), DT)
     out = commit.command(Command(forward=0.0, lateral=0.0, yaw_rate=0.70))
     assert out.forward == pytest.approx(commit.config.speed)
 
 
 def test_yaw_is_clamped_both_ways():
     commit = StepCommit(StepCommitConfig(yaw_rate=0.15))
-    commit.update(WEDGED_PITCH, WEDGED_SPEED, DT)
+    commit.update(WEDGED_PITCH, (0.0, 0.0), DT)
     assert commit.command(Command(yaw_rate=-0.70)).yaw_rate == pytest.approx(-0.15)
     assert commit.command(Command(yaw_rate=0.05)).yaw_rate == pytest.approx(0.05)
 
@@ -136,15 +189,16 @@ def test_the_run_up_is_followed_by_another_attempt():
     bounded is how many times, and that is the next two tests.
     """
     commit = StepCommit(StepCommitConfig(timeout=8.0, backup=1.5))
+    body = Body()
     # A tick past the 9.5 s cycle, not exactly on it: the accumulator sums 0.02 at a time
     # and lands either side of the boundary on float dust. One control step of slop in when
     # the run-up ends is beneath notice; a test that pins it is testing arithmetic.
-    assert hold(commit, WEDGED_PITCH, 9.6)
+    assert body.run(commit, WEDGED_PITCH, 9.6)
     assert not commit.backing, "should be pushing again, not still reversing"
     assert commit.command(Command()).forward > 0.0
 
     # And round again, for as long as the body stays pitched and attempts remain.
-    assert hold(commit, WEDGED_PITCH, 8.5)
+    assert body.run(commit, WEDGED_PITCH, 8.5)
     assert commit.backing
 
 
@@ -169,8 +223,9 @@ def test_conceding_stays_conceded_while_the_body_is_still_on_it():
     act on it; a state that re-commits on the next tick is the flip-flop with extra steps.
     """
     commit = StepCommit(StepCommitConfig(timeout=8.0, backup=1.5, attempts=3))
-    hold(commit, WEDGED_PITCH, 30.0)
-    assert not hold(commit, WEDGED_PITCH, 20.0)
+    body = Body()
+    body.run(commit, WEDGED_PITCH, 30.0)
+    assert not body.run(commit, WEDGED_PITCH, 20.0)
     assert commit.failures == 3, "conceding must not keep counting attempts it is not making"
 
 
@@ -181,9 +236,28 @@ def test_getting_over_the_step_clears_the_tally():
     successful crossing would concede partway up one of them.
     """
     commit = StepCommit(StepCommitConfig(timeout=8.0, backup=1.5, attempts=3))
-    assert hold(commit, WEDGED_PITCH, 15.0)
+    body = Body()
+    assert body.run(commit, WEDGED_PITCH, 15.0)
     assert commit.failures == 1
-    # Over it: still pitched, but now moving at the speed of a slope being driven up.
-    assert not hold(commit, WEDGED_PITCH, 1.0, speed=SLOPE_SPEED)
+    # Over it: still pitched, but now covering ground like a slope being driven up.
+    assert not body.run(commit, WEDGED_PITCH, 1.0, velocity=SLOPE_SPEED)
     assert commit.failures == 0
     assert not commit.conceded
+
+
+def test_the_run_up_does_not_cancel_the_failure_it_just_earned():
+    """The reverse leg moves the body metres, which must not read as progress afterwards.
+
+    Without re-anchoring at the top of each push the first tick of the new attempt would
+    measure the whole run-up as displacement, release the commit and zero the tally -- so
+    ``attempts`` could never be reached and the wall case would be unbounded again.
+    """
+    config = StepCommitConfig(timeout=8.0, backup=1.5, speed=0.5, attempts=3)
+    commit = StepCommit(config)
+    body = Body()
+    body.run(commit, WEDGED_PITCH, 8.5)
+    assert commit.backing
+    body.run(commit, WEDGED_PITCH, 1.1, velocity=-config.speed)  # a real 0.55 m of reverse
+    assert commit.failures == 1
+    assert body.run(commit, WEDGED_PITCH, 0.5), "the next push must start, not release"
+    assert commit.failures == 1, "the run-up's own travel must not count as getting over it"
