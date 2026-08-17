@@ -124,32 +124,97 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         Same rule as the spawn override: unset environment means this costs one dictionary
         lookup and nothing else. A headless renderer is expensive enough -- roughly a
         millisecond a frame at this size, against a 1 ms physics step -- that it must not be
-        something a scored run can end up paying for by accident.
+        something a scored run can end up paying for by accident. ``replay`` mode records
+        only qpos and renders after the run; that is the right choice for high-resolution
+        software rendering, which otherwise blocks sensor publication long enough to change
+        the navigation behavior being filmed.
         """
         self._frames_dir = None
         self._frame_renderer = None
+        self._frame_replay = False
+        self._frame_times: list[float] = []
+        self._frame_qpos: list[np.ndarray] = []
         directory = os.environ.get("S10_SEGMENT_VIDEO", "").strip()
         if not directory:
             return
+        width = int(os.environ.get("S10_SEGMENT_VIDEO_WIDTH", "640"))
+        height = int(os.environ.get("S10_SEGMENT_VIDEO_HEIGHT", "480"))
+        if width <= 0 or height <= 0:
+            raise ValueError("S10_SEGMENT_VIDEO_WIDTH/HEIGHT must be positive integers")
         self._frames_dir = Path(directory)
         self._frames_dir.mkdir(parents=True, exist_ok=True)
-        self._frame_renderer = mujoco.Renderer(self.model, height=480, width=640)
-        self._frame_camera = mujoco.MjvCamera()
-        self._frame_camera.distance = 4.0
-        self._frame_camera.elevation = -20.0
-        self._frame_camera.azimuth = 90.0
-        self._frame_period = 1.0 / float(os.environ.get("S10_SEGMENT_VIDEO_HZ", "10"))
+        self._frame_width = width
+        self._frame_height = height
+        capture_hz = float(os.environ.get("S10_SEGMENT_VIDEO_HZ", "10"))
+        if capture_hz <= 0.0:
+            raise ValueError("S10_SEGMENT_VIDEO_HZ must be positive")
+        self._frame_period = 1.0 / capture_hz
         self._frame_next = 0.0
         self._frame_number = 0
+        mode = os.environ.get("S10_SEGMENT_VIDEO_MODE", "frames").strip().lower()
+        if mode not in {"frames", "replay"}:
+            raise ValueError("S10_SEGMENT_VIDEO_MODE must be 'frames' or 'replay'")
+        if mode == "replay":
+            self._frame_replay = True
+            self.get_logger().info(
+                f"[segment] recording replay states at {capture_hz:.1f} Hz to "
+                f"{self._frames_dir / 'replay.npz'}"
+            )
+            return
+
+        # MuJoCo's offscreen framebuffer has its own size limit. Raise it before creating
+        # the renderer so an explicitly requested 1080p capture is genuinely rendered at
+        # 1080p rather than rejected or silently constrained by the model's default buffer.
+        self.model.vis.global_.offwidth = max(self.model.vis.global_.offwidth, width)
+        self.model.vis.global_.offheight = max(self.model.vis.global_.offheight, height)
+        self._frame_renderer = mujoco.Renderer(self.model, height=height, width=width)
+        self._frame_camera = mujoco.MjvCamera()
+        self._frame_camera.distance = float(
+            os.environ.get("S10_SEGMENT_VIDEO_CAMERA_DISTANCE", "4.0")
+        )
+        self._frame_camera.elevation = float(
+            os.environ.get("S10_SEGMENT_VIDEO_CAMERA_ELEVATION", "-20.0")
+        )
+        self._frame_camera.azimuth = float(
+            os.environ.get("S10_SEGMENT_VIDEO_CAMERA_AZIMUTH", "90.0")
+        )
+        self.get_logger().info(
+            f"[segment] recording {width}x{height} frames at "
+            f"{capture_hz:.1f} Hz to {self._frames_dir}"
+        )
 
     def _capture_frame(self) -> None:
-        if self._frame_renderer is None or self.timestamp < self._frame_next:
+        if self._frames_dir is None or self.timestamp < self._frame_next:
             return
-        self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
-        self._frame_renderer.update_scene(self.data, self._frame_camera)
-        write_png(self._frames_dir / f"{self._frame_number:05d}.png", self._frame_renderer.render())
+        if self._frame_replay:
+            self._frame_times.append(float(self.timestamp))
+            self._frame_qpos.append(self.data.qpos.copy())
+        else:
+            self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
+            self._frame_renderer.update_scene(self.data, self._frame_camera)
+            write_png(
+                self._frames_dir / f"{self._frame_number:05d}.png",
+                self._frame_renderer.render(),
+            )
         self._frame_number += 1
         self._frame_next = self.timestamp + self._frame_period
+
+    def destroy_node(self):
+        """Flush a lightweight replay trace before ROS tears the simulator down."""
+        if self._frame_replay and self._frame_times:
+            replay = self._frames_dir / "replay.npz"
+            np.savez_compressed(
+                replay,
+                time=np.asarray(self._frame_times),
+                qpos=np.asarray(self._frame_qpos),
+                width=self._frame_width,
+                height=self._frame_height,
+            )
+            self.get_logger().info(
+                f"[segment] wrote {len(self._frame_times)} replay states to {replay}"
+            )
+            self._frame_replay = False
+        return super().destroy_node()
 
     def _publish_robot_state(self, step: int) -> None:
         """Extend upstream's state publication with our own sensors."""
