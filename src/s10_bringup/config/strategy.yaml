@@ -20,6 +20,7 @@ strategy_router:
     cmd_vel_topic: /cmd_vel
 
     climb_enabled: false
+    measurement_only: false
     # mock | scripted. There is no `dagger` value yet: no checkpoint, no export, no
     # interface note has been produced, and inventing an interface for it here would just
     # have to be undone. See ClimbPolicyAdapter for what a real one must implement.
@@ -35,9 +36,13 @@ strategy_router:
     # waypoint is not on the lip, and approaching as though it were starts the align phase
     # in the wrong place. Leave as NaN for any segment whose geometry has not been measured.
     climb_obstacle_x: 12.6459
+    climb_edge_center: [12.64593, 32.49969]
+    climb_normal: [1.0, 0.0]
+    climb_tangent: [0.0, 1.0]
     advance_radius: 0.35
 
     approach_enter: 3.0
+    approach_speed_scale: 0.5
     align_enter: 1.2
     climb_timeout: 20.0
     max_retries: 3

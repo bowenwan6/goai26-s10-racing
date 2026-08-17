@@ -134,6 +134,17 @@ class RouterConfig:
 
     control_rate: float = 50.0
 
+    #: Observe without touching the robot. The state machine runs in full -- it arms, it
+    #: aligns, it evaluates the entry gate and it records every transition -- but the command
+    #: that leaves :meth:`Router.tick` is the follower's, unscaled, whatever mode says. This
+    #: is how the pit-failure experiment measures what the router *would* have done to an
+    #: unmodified production run; switching the router off instead would measure nothing.
+    #: Off by default, so a scored run cannot end up in it by accident.
+    shadow: bool = False
+    #: Stop at CLIMB_READY without starting a policy. Test harnesses use this to measure a
+    #: handoff state while guaranteeing that /JOINTS_CMD remains under official ownership.
+    measurement_only: bool = False
+
     #: Distance at which a segment with a configured policy stops being ordinary driving.
     approach_enter: float = 3.0
     approach_exit: float = 3.6
@@ -151,6 +162,18 @@ class RouterConfig:
     max_heading_error: float = math.radians(6.0)
     max_entry_speed: float = 0.05
     max_entry_tilt: float = math.radians(12.0)
+    #: How close the edge must be, and no closer. Without a distance band the readiness
+    #: check passed anywhere inside the align radius, including 1.2 m short of the edge and
+    #: including part-way onto the step, so "aligned" said nothing about where the robot was.
+    #: **These two numbers are provisional experiment thresholds, not proven policy limits.**
+    #: Nothing has yet measured the entry distance a climb needs; the pit-failure experiment
+    #: varies them, and what it finds replaces them.
+    ready_distance_min: float = 0.45
+    ready_distance_max: float = 0.70
+    #: A robot still turning is not settled even when its heading error happens to read zero
+    #: as it swings through. ``max_entry_speed`` does not catch this: a pivot in place has no
+    #: ground speed at all.
+    max_entry_yaw_rate: float = 0.10
     ready_dwell: float = 0.40
     #: Losing alignment is acted on faster than gaining it; see ``Debounced``.
     unready_dwell: float = 0.15
@@ -354,6 +377,21 @@ class Router:
         out.transitioned = self.mode is not before
         out.mode = self.mode
         out.policy_status = self._policy_status
+        if self.config.shadow:
+            # Applied here, at the one place every decision leaves, rather than inside the
+            # states: a shadow check per state is a shadow check that one day gets forgotten
+            # in a new one. ``speed_scale`` is reset as well -- APPROACH's 0.5 cap is a
+            # change to the robot's behaviour, and an observer that halves the approach
+            # speed is not observing the run it claims to be. The mode, the transition and
+            # the counterfactual source survive in the output, which is the whole point.
+            out = replace(
+                out,
+                source=Source.NAV,
+                command=nav_command,
+                joints=None,
+                speed_scale=1.0,
+                reason=f"shadow ({out.source.value}): {out.reason}",
+            )
         return out
 
     def _tick_inner(
@@ -481,9 +519,11 @@ class Router:
         """
         c = self.config
         in_envelope = (
-            abs(state.lateral_error) <= c.max_lateral_error
+            c.ready_distance_min <= state.obstacle_distance <= c.ready_distance_max
+            and abs(state.lateral_error) <= c.max_lateral_error
             and abs(state.heading_error) <= c.max_heading_error
             and state.speed <= c.max_entry_speed
+            and abs(state.yaw_rate) <= c.max_entry_yaw_rate
             and state.tilt <= c.max_entry_tilt
         )
         if self._in_envelope.update(in_envelope, dt):
@@ -515,6 +555,13 @@ class Router:
 
     def _climb_ready(self, state, nav_command, observation, dt) -> RouterOutput:
         """Reset and start the policy. Exactly once, which is why this is its own state."""
+        if self.config.measurement_only:
+            return RouterOutput(
+                self.mode,
+                Source.ROUTER,
+                command=(0.0, 0.0, 0.0),
+                reason="measurement-only handoff reached",
+            )
         name = self.policy_for(state.segment)
         policy = self.policies.get(name)
         if policy is None:
