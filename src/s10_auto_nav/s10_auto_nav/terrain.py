@@ -301,11 +301,24 @@ class TerrainClassifier:
                 f"{self._not_moving_for:.1f}s",
             )
 
-        if reading.relief_drop >= self._threshold(cfg.drop_fall, TerrainKind.DROP, reading):
+        # A fall outranks a rise only when the fall is the larger of the two. An edge the
+        # robot is about to climb shows up as both: the plane is fitted across the whole
+        # corridor, so the near ground sits below it exactly as far as the far ground sits
+        # above it, and a bare "is there a fall" test then reads every step up as a step down.
+        #
+        # Measured on the WP18 to WP19 leg. The robot stood at (27.5, 29.6) for the whole
+        # 900 s budget reporting "drop(0.4x) ground falls 0.20m" while the corridor was in
+        # fact rising 0.26 m in front of it, and DROP is not a kind the follower drives at, so
+        # it steered and braked at a step it should have taken. The fall latched first on the
+        # approach and hold_margin then kept it: staying in DROP needs only 0.16 m.
+        drop = reading.relief_drop
+        if drop >= self._threshold(cfg.drop_fall, TerrainKind.DROP, reading) and (
+            drop >= reading.relief_rise
+        ):
             return (
                 TerrainKind.DROP,
-                _ramp_confidence(reading.relief_drop, cfg.drop_fall),
-                (f"ground falls {reading.relief_drop:.2f}m"),
+                _ramp_confidence(drop, cfg.drop_fall),
+                (f"ground falls {drop:.2f}m"),
             )
 
         rise = reading.relief_rise
