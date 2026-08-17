@@ -176,3 +176,114 @@ def test_not_knowing_what_is_ahead_slows_down_without_stopping(node):
     _step_of(0.0, node)
     scale = node._terrain_scale_for(_verdict(TerrainKind.UNKNOWN))
     assert 0.0 < scale <= 0.5
+
+
+# ------------------------------------------------------------------- the stall watchdog
+
+
+def _creep(
+    node,
+    *,
+    from_m: float,
+    speed: float,
+    seconds: float,
+    closes: float | None = None,
+    dt: float = 0.05,
+) -> bool:
+    """Run the watchdog while the robot crawls toward waypoint 0 from ``from_m`` metres out.
+
+    ``speed`` is the odometry speed and ``closes`` is the rate the gap actually shrinks; they
+    default to being the same, which is the honest pairing for a robot pointed at its gate.
+    Passing them separately is how the swinging case is written -- wheels turning, ground
+    covered, no ground covered *toward the gate*. ``speed=0`` holds it in place. Returns
+    whether the watchdog ever ordered a reversal.
+
+    The commanded forward speed is written straight onto the controller because the property
+    that exposes it is read-only, and the watchdog reads the *commanded* value on purpose --
+    see its docstring. 0.1 m/s is what the approach taper asks for at 0.2 m from a gate under
+    the shipped 1.4 m lookahead.
+    """
+    from s10_auto_nav.pure_pursuit import Command
+
+    gap = from_m
+    rate = speed if closes is None else closes
+    tripped = False
+    for _ in range(int(seconds / dt)):
+        node._pose_xy = np.array([gap, 0.0])
+        node._speed = speed
+        node.controller._last = Command(forward=0.101)
+        node._update_stall_watchdog(dt)
+        tripped = tripped or node._recovering_for > 0.0
+        gap = max(0.0, gap - rate * dt)
+    return tripped
+
+
+def _swing(node, *, from_m: float, seconds: float, closes: float = 0.0, dt: float = 0.05) -> bool:
+    """The other shape of stuck: wheels turning, gate no nearer.
+
+    Speed alternates 0.04 / 0.11 / 0.06, which is read off the log at (18.9, 29.6). Two of
+    the three are under ``stall_speed`` and the third is over it, so the fast clock is reset
+    before it can ever run out -- which is why that run reported no stalls while sitting in
+    one place for the whole of its time limit.
+    """
+    from s10_auto_nav.pure_pursuit import Command
+
+    speeds = [0.04, 0.11, 0.06]
+    gap = from_m
+    tripped = False
+    for tick in range(int(seconds / dt)):
+        node._pose_xy = np.array([gap, 0.0])
+        node._speed = speeds[tick % len(speeds)]
+        node.controller._last = Command(forward=0.101)
+        node._update_stall_watchdog(dt)
+        tripped = tripped or node._recovering_for > 0.0
+        gap = max(0.0, gap - closes * dt)
+    return tripped
+
+
+@needs_ros
+def test_creeping_into_a_gate_is_not_a_stall(node):
+    """The defect that zeroed a scorecard: four gates reached, then reversed back out of.
+
+    0.03 m/s is the speed the policy actually achieved inside the taper at waypoints 17, 19,
+    21 and 22, and it is below ``stall_speed``. Six seconds is more than twice the timeout,
+    so a watchdog that only looks at speed fails this on the first run through.
+    """
+    assert not _creep(node, from_m=0.35, speed=0.03, seconds=6.0)
+
+
+@needs_ros
+def test_the_same_speed_with_no_ground_covered_still_trips(node):
+    """The veto is progress, not slowness -- otherwise the watchdog stops working at all."""
+    assert _creep(node, from_m=0.35, speed=0.0, seconds=6.0)
+
+
+@needs_ros
+def test_a_robot_inching_below_the_ratchet_is_not_saved_by_it(node):
+    """Closing is measured against the closest approach so far, not against last tick.
+
+    A robot sliding down a ledge a fraction of a millimetre at a time gets nearer on every
+    single tick and would clear a tick-to-tick comparison indefinitely.
+    """
+    assert _creep(node, from_m=0.35, speed=0.002, seconds=6.0)
+
+
+@needs_ros
+def test_swinging_between_two_avoidance_choices_is_caught(node):
+    """The run that sat at (18.9, 29.6) for the whole time limit reporting zero stalls.
+
+    Every speed here is one the robot actually reported there, and the fast clock cannot fire
+    on any of them, so this fails outright on a watchdog that only measures speed.
+    """
+    assert not _swing(node, from_m=6.9, seconds=6.0), "12 s has not elapsed yet"
+    assert _swing(node, from_m=6.9, seconds=20.0)
+
+
+@needs_ros
+def test_swinging_while_actually_getting_there_is_left_alone(node):
+    """The same speeds, closing on the gate: an obstacle skirted, not an obstacle fought.
+
+    Without this the slow clock would punish every legitimate detour, and the course has
+    several. 0.1 m/s closes the 5 cm ratchet five times inside the 12 s window.
+    """
+    assert not _swing(node, from_m=6.9, seconds=20.0, closes=0.1)

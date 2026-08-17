@@ -13,6 +13,7 @@ from s10_auto_nav.local_planner import (
     AvoidanceConfig,
     LocalPlanner,
     ground_clearance,
+    terrain_relief,
     wrap_angle,
 )
 
@@ -275,3 +276,38 @@ def test_ground_clearance_never_reaches_zero():
     grid = np.full((13, 9), -0.42)
     grid[6:, :] = -0.42 + 0.55             # a step well past anything walkable
     assert ground_clearance(grid, max_step=0.35, max_drop=0.5) > 0.0
+
+
+# --------------------------------------------------------------------------------------
+# Across the path, or beside it.
+# --------------------------------------------------------------------------------------
+#
+# ``rise`` is a maximum over the corridor, so a stair and a post give the same number while
+# needing opposite manoeuvres. ``rise_fraction`` is the number that tells them apart, and
+# these fix the two ends of it. The threshold that reads it lives in ``terrain.py``; what is
+# asserted here is only that the measurement separates the two shapes.
+
+
+def test_a_step_across_the_path_rises_across_the_whole_width():
+    grid = np.full((13, 9), -0.42)
+    grid[-3:, :] = -0.42 + 0.30
+    assert terrain_relief(grid).rise_fraction == pytest.approx(1.0)
+
+
+def test_something_standing_beside_the_path_does_not():
+    """The pillar at (32.03, 15.66), which was called a staircase and driven into.
+
+    Its face clipped the left edge of the patch, reaching one column into the five-column
+    wheel corridor at 0.32 m above the deck while the other four stayed flat. ``rise`` alone
+    reported 0.29 m and was indistinguishable from the step above. One column in five is
+    where the measured 0.20 comes from.
+    """
+    grid = np.full((13, 9), -0.43)
+    grid[6:, :3] = -0.43 + 0.32            # column 2 is the corridor's left-hand edge
+    relief = terrain_relief(grid)
+    assert relief.rise > 0.12, "the rise is real; it is the width that is wrong"
+    assert relief.rise_fraction <= 0.4
+
+
+def test_flat_ground_has_no_rise_to_apportion():
+    assert terrain_relief(np.full((13, 9), -0.42)).rise_fraction == pytest.approx(0.0)

@@ -67,6 +67,23 @@ SCALE_RECOVERY_RATE = 1.5
 #: height map only changes when the robot moves, so stopping on UNKNOWN keeps it unknown.
 UNKNOWN_TERRAIN_SCALE = 0.5
 
+#: How much closer to its gate the robot must get before the stall watchdog accepts that it
+#: is making progress, metres.
+#:
+#: Speed alone cannot tell a wedged robot from one creeping deliberately. The approach taper
+#: commands ``max_forward * distance / brake_distance``, which at 0.2 m from the gate with the
+#: default 1.4 m taper is 0.10 m/s -- above the watchdog's 0.1 m/s "is it even trying" test,
+#: while the achieved speed of 0.03-0.04 m/s sits below ``stall_speed`` of 0.08. So the last
+#: 20 cm of every approach looked exactly like a stall, and after ``stall_timeout`` the
+#: watchdog reversed at 0.4 m/s. Measured: gates 17, 19, 21 and 22 of the continuous waypoint
+#: 16 to 32 run were each pushed back out at closest approaches of 0.201, 0.200, 0.203 and
+#: 0.200 m, all four inside the scoring radius but not for the tick it needed.
+#:
+#: 5 cm because at the 0.03 m/s worst case observed the robot still covers 7.5 cm inside the
+#: 2.5 s timeout, so a real approach always resets the ratchet with room to spare, while a
+#: robot held against a wall closes nothing and still trips on schedule.
+STALL_PROGRESS_M = 0.05
+
 
 def _optional_positive(value) -> float | None:
     """Read a ROS float parameter where zero means "unset".
@@ -111,6 +128,10 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("course_file", "")
         self.declare_parameter("control_rate", CONTROL_RATE_HZ)
         self.declare_parameter("advance_radius", 0.35)
+        # The contest's radius, from course.yaml's own metadata. A knob rather than a
+        # constant only so a stricter scorer can be raced against; it is not a tuning
+        # parameter and raising it above 0.2 makes the follower claim gates it did not take.
+        self.declare_parameter("score_radius", 0.2)
         self.declare_parameter("max_forward", PursuitGains.max_forward)
         self.declare_parameter("max_lateral", PursuitGains.max_lateral)
         self.declare_parameter("max_yaw_rate", PursuitGains.max_yaw_rate)
@@ -124,6 +145,7 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("stair_brake_distance", 0.4)
         self.declare_parameter("stall_speed", 0.08)
         self.declare_parameter("stall_timeout", 2.5)
+        self.declare_parameter("progress_timeout", 12.0)
         self.declare_parameter("recovery_duration", 1.0)
         self.declare_parameter("climb_pitch_deg", 8.0)
         self.declare_parameter("climb_speed", 0.5)
@@ -156,7 +178,9 @@ class WaypointFollowerNode(Node):
 
         self.control_rate = float(self.get_parameter("control_rate").value)
         self.course = Course.from_yaml(
-            course_file, advance_radius=float(self.get_parameter("advance_radius").value)
+            course_file,
+            advance_radius=float(self.get_parameter("advance_radius").value),
+            score_radius=float(self.get_parameter("score_radius").value),
         )
         self.controller = PurePursuitController(
             PursuitGains(
@@ -175,6 +199,7 @@ class WaypointFollowerNode(Node):
 
         self.stall_speed = float(self.get_parameter("stall_speed").value)
         self.stall_timeout = float(self.get_parameter("stall_timeout").value)
+        self.progress_timeout = float(self.get_parameter("progress_timeout").value)
         self.recovery_duration = float(self.get_parameter("recovery_duration").value)
         self.step_commit = StepCommit(
             StepCommitConfig(
@@ -212,6 +237,10 @@ class WaypointFollowerNode(Node):
         self._pitch = 0.0
         self._speed = 0.0
         self._stalled_for = 0.0
+        #: Closest the robot has been to its current gate since the watchdog last cleared,
+        #: metres. None until the first tick with a pose and a target.
+        self._stall_reference: float | None = None
+        self._no_progress_for = 0.0
         self._recovering_for = 0.0
 
         self._ranges: np.ndarray | None = None
@@ -283,6 +312,13 @@ class WaypointFollowerNode(Node):
         self._heightmap_age += dt
 
         if self.course.update(self._pose_xy):
+            # The stall ratchet measures the gap to *a* gate, so it means nothing once the
+            # gate changes: the new one is metres further off than the old one was, and a
+            # reference carried over from the last approach is one the robot cannot beat for
+            # as long as it takes to drive the leg.
+            self._stall_reference = None
+            self._stalled_for = 0.0
+            self._no_progress_for = 0.0
             reached = self.course.cursor - 1
             self.get_logger().info(
                 f"Waypoint {reached} reached ({self.course.cursor}/{len(self.course)}), "
@@ -312,6 +348,8 @@ class WaypointFollowerNode(Node):
             # off it. So while pitched the follower drives at the raw carrot and commits.
             self._blocked_for = 0.0
             self._stalled_for = 0.0
+            self._no_progress_for = 0.0
+            self._stall_reference = None
             command = self.controller.compute(self._pose_xy, self._yaw, carrot, dt)
             published = self.step_commit.command(command)
             # The scale memory has to learn what was actually sent, or the controller
@@ -447,6 +485,7 @@ class WaypointFollowerNode(Node):
             obstacle_distance=obstacle,
             relief_rise=relief.rise,
             relief_drop=relief.drop,
+            rise_fraction=relief.rise_fraction,
             slope_deg=relief.slope_deg,
             pitch_deg=math.degrees(self._pitch),
             roll_deg=math.degrees(self._roll_from_tilt()),
@@ -536,20 +575,78 @@ class WaypointFollowerNode(Node):
         scaling can hold forward speed at zero, which then reads as "not commanded to
         move", and the watchdog sleeps through the one failure it exists to catch. A run
         was lost this way, parked against an arch for five minutes in silence.
+
+        Speed is necessary evidence of a stall but not sufficient, so ground covered toward
+        the gate has a veto: a robot getting closer is not stuck no matter how slowly it is
+        doing it. Without that veto the watchdog fires hardest exactly where the taper is
+        slowest, which is the last few centimetres of an approach -- see ``STALL_PROGRESS_M``
+        for the four gates it cost.
+
+        Speed is not necessary either, which is the second clock. Ground covered toward the
+        gate is the only thing that means anything on its own, so a robot that is being told
+        to drive and is not getting nearer is in trouble whatever the wheels are doing.
         """
-        commanded = abs(self.controller.last_command.forward) > 0.1
-        if commanded and self._speed < self.stall_speed:
+        gate = None
+        target = self.course.target
+        if target is not None and self._pose_xy is not None:
+            gate = float(np.linalg.norm(target.xy - self._pose_xy))
+
+        # Seeded here rather than only on the clearing branch below. Left unseeded it stays
+        # None through the whole of a slow approach -- the branch that would set it is the
+        # one the slow approach never takes -- so ``closing`` reads False forever and the
+        # ratchet silently does nothing. Caught by the creeping-approach test.
+        if self._stall_reference is None:
+            self._stall_reference = gate
+
+        trying = abs(self.controller.last_command.forward) > 0.1
+        slow = trying and self._speed < self.stall_speed
+        # Against the closest approach so far, not against last tick: a robot inching in at
+        # under a millimetre a tick is closing every tick and would clear a tick-to-tick test
+        # forever while going nowhere.
+        closing = (
+            gate is not None
+            and self._stall_reference is not None
+            and gate <= self._stall_reference - STALL_PROGRESS_M
+        )
+
+        if closing:
+            self._stalled_for = 0.0
+            self._no_progress_for = 0.0
+            self._stall_reference = gate
+            return
+
+        # Two clocks against the same reference, because "stuck" has two shapes and the fast
+        # one only sees the first. Wedged against a wall the wheels stop, and that is caught
+        # in stall_timeout. Caught between two avoidance choices the wheels do not stop -- the
+        # robot swings left, swings right, and covers ground the whole time. Measured at
+        # (18.9, 29.6) on the leg to waypoint 18: speed alternating 0.04, 0.11, 0.07, 0.06,
+        # so every tick above stall_speed reset the fast clock before it could ever reach 2.5
+        # s, and the run sat there until the time limit with the watchdog reporting no stalls
+        # at all. Distance to the gate did not change by 5 cm in any of it.
+        if slow:
             self._stalled_for += dt
-            if self._stalled_for >= self.stall_timeout:
-                self.get_logger().warn(
-                    f"Stalled for {self._stalled_for:.1f}s at waypoint {self.course.cursor}; "
-                    "backing off"
-                )
-                self._recovering_for = self.recovery_duration
-                self._stalled_for = 0.0
-                self.controller.reset()
         else:
             self._stalled_for = 0.0
+        if trying:
+            self._no_progress_for += dt
+        else:
+            self._no_progress_for = 0.0
+
+        if self._stalled_for >= self.stall_timeout:
+            self._trip_recovery(f"Stalled for {self._stalled_for:.1f}s", gate)
+        elif self._no_progress_for >= self.progress_timeout:
+            self._trip_recovery(
+                f"No progress for {self._no_progress_for:.1f}s while driving", gate
+            )
+
+    def _trip_recovery(self, why: str, gate: float | None) -> None:
+        """Hand the follower to the recovery command and restart both watchdog clocks."""
+        self.get_logger().warn(f"{why} at waypoint {self.course.cursor}; backing off")
+        self._recovering_for = self.recovery_duration
+        self._stalled_for = 0.0
+        self._no_progress_for = 0.0
+        self._stall_reference = gate
+        self.controller.reset()
 
     def _recovery_command(self) -> Command:
         """Reverse while yawing toward the target to unwedge from a ledge or wall."""

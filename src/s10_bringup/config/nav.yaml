@@ -20,9 +20,13 @@ waypoint_follower:
   ros__parameters:
     control_rate: 50.0
 
-    # Advance slightly outside the scorer's 0.2 m radius so the follower commits to the
-    # next leg without braking at every gate.
+    # Two radii. score_radius is the contest's and is what "reached" means; advance_radius
+    # is only the outer bound at which an approach is considered to have begun, so that a
+    # gate the robot has already passed its closest point to releases the cursor instead of
+    # sending it back round. Advancing on advance_radius alone lost gates 17, 21 and 22 of
+    # the continuous waypoint 16 to 32 run at closest approaches of 0.34, 0.32 and 0.34 m.
     advance_radius: 0.35
+    score_radius: 0.2
 
     max_forward: 0.7
     max_lateral: 0.4
@@ -48,10 +52,22 @@ waypoint_follower:
     brake_distance: 0.0
     stair_brake_distance: 0.4
 
-    # Stall watchdog: the dominant failure on the elevated sections is wedging against a
-    # ledge while the gait keeps cycling, which never trips a fall detector.
+    # Stall watchdog, two clocks. The fast one is for wedging against a ledge while the gait
+    # keeps cycling, which never trips a fall detector: under stall_speed for stall_timeout.
+    #
+    # The slow one is for the other shape of stuck, where the wheels never stop. Between two
+    # avoidance choices the robot swings left and right at 0.04-0.11 m/s, so every tick above
+    # stall_speed resets the fast clock and it never reaches 2.5 s; a run sat at (18.9, 29.6)
+    # short of the waypoint-18 staircase until the time limit, reporting zero stalls. The slow
+    # clock ignores speed entirely and asks only whether the gate is getting closer.
+    #
+    # 12 s, not 2.5, because a legitimate detour around an obstacle covers ground sideways and
+    # closes nothing for as long as it lasts. At the 0.7 m/s ceiling that is 8 m of driving --
+    # longer than any detour this course asks for, and short enough to leave 99 attempts inside
+    # a 1200 s run.
     stall_speed: 0.08
     stall_timeout: 2.5
+    progress_timeout: 12.0
     recovery_duration: 1.0
 
     # Obstacle avoidance. Not optional on this course: 12 of the 32 legs cross terrain

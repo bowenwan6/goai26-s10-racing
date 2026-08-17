@@ -8,6 +8,7 @@ the real problem rather than at a tidy version of it.
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 import pytest
 
@@ -102,6 +103,68 @@ def test_a_riser_past_the_wheels_asks_for_the_climb_policy():
     gate16 = TerrainReading(relief_rise=0.377, obstacle_distance=1.0)
     verdict = settle(TerrainClassifier(), gate16)
     assert verdict.kind is TerrainKind.HIGH_BARRIER
+
+
+# --------------------------------------------------------------------------------------
+# The second failure: a rise that was not the route.
+# --------------------------------------------------------------------------------------
+
+#: Replayed from ``continuous/16_32__fixed_seed0`` at t=259.2 s, on the leg from waypoint 24
+#: to waypoint 25. Geom g1870 is a pillar 1.94 m tall whose face sits 0.28 m from waypoint 24,
+#: and the approach from waypoint 23 points straight at it. The height map showed the wheel
+#: corridor flat and two of its nine columns standing 0.32 m and 0.80 m up, which
+#: ``terrain_relief`` reduced to ``rise 0.29m`` -- the same number a staircase gives. It was
+#: called STAIRS, so avoidance was switched off and the speed scale forced to 1.0, and the
+#: robot drove into it: pitch -13.9, -40.1, -59.5 degrees over the next second, then the run
+#: ended at 70 degrees of tilt with sixteen gates unscored.
+WAYPOINT_24_PILLAR = TerrainReading(
+    relief_rise=0.29,
+    rise_fraction=0.20,
+    obstacle_distance=0.17,
+    lidar_clearance=0.17,
+    commanded_forward=0.25,
+    speed=0.24,
+)
+
+
+def test_a_rise_that_only_clips_the_edge_of_the_patch_is_not_a_staircase():
+    verdict = settle(TerrainClassifier(), WAYPOINT_24_PILLAR)
+    assert verdict.kind is TerrainKind.BLOCKED
+    assert not verdict.drive_at_it, "this is the flag that turned the avoidance planner off"
+
+
+def test_the_same_rise_across_the_path_is_still_a_staircase():
+    """The guard is the width of the rise, not the height of it; climbing must still work."""
+    stairs = replace(WAYPOINT_24_PILLAR, rise_fraction=1.0, obstacle_distance=1.0)
+    assert settle(TerrainClassifier(), stairs).kind is TerrainKind.STAIRS
+
+
+def test_a_barrier_that_does_not_span_the_path_is_not_handed_to_the_climb_policy():
+    """A 0.5 m rise in one column is a bollard. Rearing up at it accomplishes nothing."""
+    bollard = replace(WAYPOINT_24_PILLAR, relief_rise=0.5, rise_fraction=0.2)
+    assert settle(TerrainClassifier(), bollard).kind is TerrainKind.BLOCKED
+
+
+def test_the_far_approach_to_a_staircase_is_not_called_blocked():
+    """The regression the first version of the width test caused, and it cost a whole run.
+
+    At 2.2 m from the bottom of the waypoint 17 staircase only the near corner of the first
+    tread is inside the corridor, so the rise is both small -- 0.06 m, well under a step --
+    and one-sided. Calling that BLOCKED turns the avoidance planner loose on the route
+    itself: the robot at (18.8, 29.6) steered away from the staircase, never squared up to
+    it, and was still oscillating there a minute later, too fast for the stall recovery to
+    fire and too slowly for the wedge detector. The width test only gets to speak about
+    rises that are large enough to be steps in the first place.
+    """
+    approach = TerrainReading(
+        relief_rise=0.06, rise_fraction=0.2, obstacle_distance=2.2, lidar_clearance=2.2
+    )
+    assert settle(TerrainClassifier(), approach).kind is not TerrainKind.BLOCKED
+
+
+def test_the_reason_says_which_of_the_two_it_was():
+    """The verdict is what the log carries; a BLOCKED with no width in it is undiagnosable."""
+    assert "20% of the width" in settle(TerrainClassifier(), WAYPOINT_24_PILLAR).reason
 
 
 def test_ground_falling_away_is_a_drop():
