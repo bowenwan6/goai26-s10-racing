@@ -67,6 +67,7 @@ def test_gate16_enforces_b824_canonical_moving_handoff():
     assert params["ready_distance_max"] == pytest.approx(0.65)
     assert params["target_entry_speed"] == pytest.approx(0.25)
     assert params["gate16_prewarm_forward"] == pytest.approx(0.23)
+    assert params["gate16_staging_lead"] == pytest.approx(0.25)
     assert params["ready_dwell"] == pytest.approx(0.0)
     assert params["min_entry_speed"] == pytest.approx(0.23)
     assert params["max_entry_speed"] == pytest.approx(0.27)

@@ -53,17 +53,20 @@ evidence of complete-course autonomy, not a claim about an official competition 
 The official **57-dimensional proprioceptive locomotion policy** remains the normal controller.
 Only WP15→WP16 uses the Gate 16 bundle: a 174D observation drives the frozen base and
 heightmap-gated residual ONNX pair at 50 Hz, producing a 16D joint command. The current
-development branch wraps those unchanged checkpoints in the competition-v4 runtime from
-`belsun/goai-s10-gate16-policy@b6535a4`: edge-timed residual engagement, bounded policy-frame
-mirroring, independent front-wheel support/tuck events, and staged command profiles. After all
-four wheels are verified on the upper platform, joint ownership returns through safe-hold to
-the official policy and the existing follower resumes.
+development branch wraps those unchanged checkpoints in the frozen adaptive-v3 contract from
+`belsun/goai-s10-gate16-policy@b824f7f`: bounded policy-frame mirroring and the original
+heightmap residual gate. The bundle's staged command-profile asset is retained but disabled because
+the current SDK observation does not expose the verified front-wheel deck-height/contact signal it
+requires; approximating that signal caused repeatable tilt failures. The later competition-v4
+force-line, independent front-limb tuck, and delayed-residual additions are deliberately not used.
+After all four wheels are verified on the upper platform, the residual is disarmed and joint
+ownership returns to the official policy; the existing follower resumes at 0.5 m/s.
 
 | Layer | Responsibility |
 |---|---|
 | Perception | MuJoCo ray-cast lidar, horizontal scan, storey-aware body-frame height map, and ground-truth odometry |
 | Navigation | Strict ordered-gate tracking, pure pursuit, terrain classification, body-clear local planning, barrier bypass, corner retreat, step commitment, run-up, and stall recovery |
-| Locomotion | Official SDK ONNX policy normally; competition-v4 Gate 16 runtime around the frozen base+residual pair only for WP15→16 |
+| Locomotion | Official SDK ONNX policy normally; adaptive-v3 Gate 16 runtime around the frozen base+residual pair only for WP15→16 |
 | Integration | 50 Hz strategy router, four-wheel clearance verification, safe handoff, and single-owner arbitration at `/JOINTS_CMD` |
 
 `training/s10_rl/` contains a perceptive-observation/export research scaffold. It is not used

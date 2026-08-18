@@ -30,7 +30,8 @@ BUNDLE = ROOT / "policy/gate16"
 
 def test_frozen_gate16_assets_match_manifest_and_graph_contract():
     manifest = json.loads((BUNDLE / "climb_policy_manifest.json").read_text())
-    assert manifest["format"] == "s10-gated-residual-front-tuck-symmetry-v4"
+    assert manifest["format"] == "s10-gated-residual-front-tuck-symmetry-v3"
+    assert manifest["source_commit"].startswith("b824f7f")
     profile_ref = manifest["front_tuck_command_profile"]
     profile = BUNDLE / profile_ref["file"]
     assert profile.name == "front_tuck_command_profiles.json"
@@ -38,6 +39,7 @@ def test_frozen_gate16_assets_match_manifest_and_graph_contract():
     profile_data = json.loads(profile.read_text())
     assert profile_data["version"] == 1
     assert any(item["name"] == "v025_yaw0_precontact_tuck" for item in profile_data["profiles"])
+    assert profile_ref["runner_applies_profile"] is False
     integration = manifest["racing_integration"]
     assert integration["canonical_handoff_source"].startswith("b824f7f")
     assert integration["entry_distance_m"] == [0.60, 0.65]
@@ -165,12 +167,12 @@ def test_gate16_uses_delegated_owner_and_waits_for_acknowledged_handoff():
     assert out.command == (0.7, 0.2, 0.1)
 
 
-def test_gate16_adapter_identifies_competition_v4_source():
+def test_gate16_adapter_identifies_adaptive_v3_source():
     policy = StableGate16Policy()
     state = _state(0.0)
     policy.start(observation_from_state(state))
     action = policy.step(observation_from_state(state))
-    assert action.info == {"owner": "gate16", "profile": "competition_v4_b6535a4"}
+    assert action.info == {"owner": "gate16", "profile": "adaptive_v3_b824f7f"}
 
 
 def test_gate16_base_owns_only_after_official_far_field_alignment():
@@ -191,6 +193,8 @@ def test_gate16_base_owns_only_after_official_far_field_alignment():
     assert gate16_owner_request(
         policy, Mode.ALIGN.value, prewarm_ready=True
     ) == "gate16"
+    assert gate16_owner_request(policy, Mode.APPROACH.value) == "gate16_shadow"
+    assert gate16_owner_request(policy, Mode.ALIGN.value) == "gate16_shadow"
     for mode in (Mode.CLIMB_READY, Mode.CLIMB, Mode.VERIFY_CLEAR):
         assert gate16_owner_request(policy, mode.value) == "gate16_climb"
     assert gate16_owner_request(policy, Mode.HANDOFF.value) == "official"
@@ -273,3 +277,21 @@ def test_runner_uses_calibrated_base_yaw_instead_of_heightmap_fit():
     assert "climb_entry_heading_error_deg_ = base_yaw_rad" in source
     assert "residual_available_ && climb_armed_" in source
     assert "S10 climb residual " in source
+    assert "S10 adaptive-v3 climb config loaded" in source
+    assert "front-wheel support-height input" in source
+    assert "speed_error > profile.speed_tolerance_mps" in source
+    assert "if (gate.active)" in source
+    assert "aggressive_supported_forward_floor_mps" not in source
+    assert "supported_policy_frame_yaw_bias_rps" not in source
+
+
+def test_adaptive_v3_manifest_has_frozen_mirror_bands_and_no_v4_force_line():
+    manifest = json.loads((BUNDLE / "climb_policy_manifest.json").read_text())
+    assert manifest["policy_symmetry"]["yaw_bands_deg"] == [
+        [-27.5, -22.5],
+        [-7.5, 7.5],
+        [17.5, 90.0],
+    ]
+    assert "full_stack_runtime" not in manifest
+    profile = manifest["front_tuck_command_profile"]
+    assert profile["unmatched_behavior"].startswith("keep the frozen entry command")
