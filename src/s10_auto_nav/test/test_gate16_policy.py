@@ -9,6 +9,7 @@ import numpy as np
 import onnxruntime as ort
 
 from s10_auto_nav.strategy.gate16_policy import (
+    Gate16Config,
     StableGate16Policy,
     gate16_owner_request,
     gate16_should_own,
@@ -40,6 +41,7 @@ def test_frozen_gate16_assets_match_manifest_and_graph_contract():
     assert profile_data["version"] == 1
     assert any(item["name"] == "v025_yaw0_precontact_tuck" for item in profile_data["profiles"])
     assert profile_ref["runner_applies_profile"] is False
+    assert profile_ref["ros_adapter_applies_profile"] is True
     integration = manifest["racing_integration"]
     assert integration["canonical_handoff_source"].startswith("b824f7f")
     assert integration["entry_distance_m"] == [0.60, 0.65]
@@ -172,7 +174,51 @@ def test_gate16_adapter_identifies_adaptive_v3_source():
     state = _state(0.0)
     policy.start(observation_from_state(state))
     action = policy.step(observation_from_state(state))
-    assert action.info == {"owner": "gate16", "profile": "adaptive_v3_b824f7f"}
+    assert action.info["owner"] == "gate16"
+    assert action.info["runtime"] == "adaptive_v3_b824f7f"
+    assert action.info["profile"] == "unmatched"
+    assert action.info["phase"] == "entry"
+
+
+def test_gate16_ros_adapter_executes_profile_from_verified_front_wheels():
+    policy = StableGate16Policy(
+        Gate16Config(
+            profile_file=str(BUNDLE / "front_tuck_command_profiles.json"),
+            obstacle_edge=(0.0, 0.0),
+            obstacle_normal=(1.0, 0.0),
+            deck_z=0.4787248,
+            front_clearance=0.02,
+        )
+    )
+    entry = replace(_state(0.0), yaw=np.deg2rad(-2.5))
+    policy.start(observation_from_state(entry))
+    action = policy.step(observation_from_state(entry))
+    assert action.info["profile"] == "v025_yawm02p5_mirror_compensated"
+    assert action.info["phase"] == "entry"
+    assert action.twist == (0.25, 0.0, 0.0)
+
+    front_clear = replace(
+        entry,
+        wheel_positions=np.array(
+            [[0.03, 0.2, 0.60], [0.03, -0.2, 0.60], [-0.3, 0.2, 0.20], [-0.3, -0.2, 0.20]]
+        ),
+    )
+    for step in range(30):
+        observation = observation_from_state(
+            replace(
+                front_clear,
+                t=(step + 1) * 0.02,
+                odom_time=(step + 1) * 0.02,
+                lidar_time=(step + 1) * 0.02,
+                heightmap_time=(step + 1) * 0.02,
+            )
+        )
+        action = policy.step(observation)
+        assert action.info["phase"] == "settle"
+        assert action.twist == (0.20, 0.0, 0.0)
+    action = policy.step(observation)
+    assert action.info["phase"] == "push"
+    assert action.twist == (0.10, 0.0, 0.0)
 
 
 def test_gate16_base_owns_only_after_official_far_field_alignment():
@@ -189,10 +235,10 @@ def test_gate16_base_owns_only_after_official_far_field_alignment():
         Mode.DONE,
     ):
         assert not gate16_should_own(policy, mode.value)
-    assert gate16_should_own(policy, Mode.ALIGN.value, prewarm_ready=True)
+    assert not gate16_should_own(policy, Mode.ALIGN.value, prewarm_ready=True)
     assert gate16_owner_request(
         policy, Mode.ALIGN.value, prewarm_ready=True
-    ) == "gate16"
+    ) == "official"
     assert gate16_owner_request(policy, Mode.APPROACH.value) == "gate16_shadow"
     assert gate16_owner_request(policy, Mode.ALIGN.value) == "gate16_shadow"
     for mode in (Mode.CLIMB_READY, Mode.CLIMB, Mode.VERIFY_CLEAR):
@@ -264,10 +310,10 @@ def test_official_actor_aligns_position_and_yaw_before_gate16_prewarm():
     )
     out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
     assert router.gate16_prewarm_ready
-    assert np.isclose(out.command[0], 0.23)
+    assert np.isclose(out.command[0], 0.25)
     assert gate16_owner_request(
         policy, out.mode.value, prewarm_ready=router.gate16_prewarm_ready
-    ) == "gate16"
+    ) == "official"
 
 
 def test_runner_uses_calibrated_base_yaw_instead_of_heightmap_fit():
@@ -275,6 +321,11 @@ def test_runner_uses_calibrated_base_yaw_instead_of_heightmap_fit():
     assert "BeginClimb(gate, uc, ro.base_rpy(2))" in source
     assert "heightmap_yaw=" in source
     assert "climb_entry_heading_error_deg_ = base_yaw_rad" in source
+    assert "UpdatePolicyFrameBeforeArm(ro.base_rpy(2))" in source
+    assert "staged_mirror_policy_frame" in source
+    assert "action history seeded from measured state on actuator takeover" in source
+    assert "SeedActionHistoryFromMeasuredState" in source
+    assert "SetActuatorOwnership" in source
     assert "residual_available_ && climb_armed_" in source
     assert "S10 climb residual " in source
     assert "S10 adaptive-v3 climb config loaded" in source
@@ -285,13 +336,16 @@ def test_runner_uses_calibrated_base_yaw_instead_of_heightmap_fit():
     assert "supported_policy_frame_yaw_bias_rps" not in source
 
 
-def test_adaptive_v3_manifest_has_frozen_mirror_bands_and_no_v4_force_line():
+def test_adaptive_v3_manifest_has_canonical_native_and_verified_profiles():
     manifest = json.loads((BUNDLE / "climb_policy_manifest.json").read_text())
     assert manifest["policy_symmetry"]["yaw_bands_deg"] == [
         [-27.5, -22.5],
-        [-7.5, 7.5],
         [17.5, 90.0],
     ]
+    assert "lateral divergence" in manifest["policy_symmetry"]["canonical_override"]
     assert "full_stack_runtime" not in manifest
+    assert "full_stack_completion_adapter" not in manifest
     profile = manifest["front_tuck_command_profile"]
+    assert profile["execution_owner"].startswith("strategy_router_ros_adapter")
+    assert profile["ros_adapter_applies_profile"] is True
     assert profile["unmatched_behavior"].startswith("keep the frozen entry command")

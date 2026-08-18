@@ -171,7 +171,7 @@ class RouterConfig:
     #: Calibrated official-follower command for the final moving entry. This may differ from
     #: ``target_entry_speed`` because the latter is measured obstacle-normal velocity, not
     #: the actor's command input.
-    gate16_prewarm_forward: float = 0.23
+    gate16_prewarm_forward: float = 0.25
     gate16_staging_lead: float = 0.25
     gate16_staging_tolerance: float = 0.10
     max_entry_tilt: float = math.radians(12.0)
@@ -665,7 +665,14 @@ class Router:
                 # first trial did that with 0.24 m of cross-track error left and then had no
                 # kinematic way to remove it. Capture lateral position first; straighten
                 # only after it is inside the staging tolerance.
-                lookahead = max(0.30, 0.40 * max(0.0, distance_error))
+                # WP15 releases the Gate16 segment only 1.67 m from the lip with about
+                # 0.55 m cross-track error. Capture that large error decisively, then use a
+                # one-metre lookahead below 0.15 m so yaw and lateral error converge
+                # together instead of holding a 30--45 deg arc until the last 60 cm.
+                if abs(state.lateral_error) > 0.15:
+                    lookahead = max(0.30, 0.40 * max(0.0, distance_error))
+                else:
+                    lookahead = 1.0
                 raw_capture_heading = float(
                     np.clip(
                         -math.atan2(state.lateral_error, lookahead),
@@ -877,6 +884,12 @@ class Router:
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         if action.kind in (ActionKind.TWIST, ActionKind.DELEGATED):
+            policy_detail = ""
+            if action.kind is ActionKind.DELEGATED and action.info:
+                policy_detail = (
+                    f"; profile={action.info.get('profile', 'unknown')}"
+                    f" phase={action.info.get('phase', 'unknown')}"
+                )
             return RouterOutput(
                 self.mode,
                 Source.POLICY,
@@ -884,7 +897,9 @@ class Router:
                 reason=(
                     "climbing"
                     if action.kind is ActionKind.TWIST
-                    else f"climbing (actual owner {state.actual_joint_owner})"
+                    else (
+                        f"climbing (actual owner {state.actual_joint_owner}{policy_detail})"
+                    )
                 ),
             )
         # No twist: a joint action is not a body velocity and must not be turned into one.

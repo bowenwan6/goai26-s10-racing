@@ -263,6 +263,8 @@ EDITS = [
                             gate16_policy_->OnEnter();
                             gate16_running_ = true;
                         }
+                        gate16_policy_->SetActuatorOwnership(
+                            owner.owner() == s10::JointOwner::kGate16);
                         gate16_policy_->SetClimbArmed(owner.gate16_armed());
                         gate16_command = gate16_policy_->getRobotAction(
                             rbs_[getrbsReadIndex()], *(uc_ptr_->GetUserCommand())).ConvertToMat();
@@ -278,6 +280,16 @@ EDITS = [
                     if (reset_official) policy_ptr_->OnEnter();
                     ri_ptr_->SetJointCommand(gated);""",
         marker="gate16_ptr",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor="                        gate16_policy_->SetClimbArmed(owner.gate16_armed());\n",
+        addition="""                        gate16_policy_->SetActuatorOwnership(
+                            owner.owner() == s10::JointOwner::kGate16);
+                        gate16_policy_->SetClimbArmed(owner.gate16_armed());
+""",
+        marker="SetActuatorOwnership",
         mode="replace",
     ),
     # Upgrade workspaces patched by the earlier owner-only runner block. The main edit is

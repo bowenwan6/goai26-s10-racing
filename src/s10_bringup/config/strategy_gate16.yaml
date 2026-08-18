@@ -1,4 +1,4 @@
-# Competition-v4 Gate16 strategy configuration. This file is opt-in at launch.
+# Adaptive-v3 b824 Gate16 strategy configuration. This file is opt-in at launch.
 #
 # This file is only read when the race is launched with strategy_router:=true. The default
 # scored run does not start this node at all, so nothing here can change it.
@@ -8,7 +8,7 @@
 # test exists in three files two of them are wrong and the third is the one in the run.
 #
 # The router is still opt-in at launch. When it is selected, this configuration enables the
-# frozen-checkpoint v4 Gate16 actor for segment 15->16; mock and scripted remain test-only.
+# frozen-checkpoint adaptive-v3 actor for segment 15->16; mock and scripted remain test-only.
 
 strategy_router:
   ros__parameters:
@@ -44,7 +44,10 @@ strategy_router:
     approach_speed_scale: 0.5
     # Begin the holonomic lane/yaw correction far enough out to remove the WP15 diagonal
     # before the 0.90 m ownership staging band.
-    align_enter: 2.2
+    # WP15 exits with roughly -35 deg yaw and 0.4 m cross-track error. Begin correction at
+    # the full 3.0 m approach boundary so both errors converge before the 0.90 m staging
+    # point; the measured 2.2 m start reached yaw tolerance only after overshooting d=0.60.
+    align_enter: 3.0
     align_timeout: 40.0
     climb_timeout: 20.0
     climb_progress_window: 12.0
@@ -62,12 +65,12 @@ strategy_router:
     min_entry_speed: 0.23
     max_entry_speed: 0.27
     target_entry_speed: 0.25
-    # Gate16 owns the short final runway after official staging alignment. Its measured
-    # bracket is command 0.18 below the window and 0.25 above it; 0.23 targets 0.25 m/s.
+    # The official actor owns the final runway. This value is its moving-entry command;
+    # measured speed remains independently gated at 0.23--0.27 m/s.
     # This does not change the tested global 0.7 speed limit.
-    gate16_prewarm_forward: 0.23
-    # Shadow-evaluate from APPROACH; take actual ownership only on the final 0.25 m runway,
-    # leaving the earlier distance available for official-actor alignment.
+    gate16_prewarm_forward: 0.25
+    # Reserve 0.25 m after staging for the official actor to establish moving entry.
+    # Gate16 shadow-evaluates but does not own until the full entry envelope is met.
     gate16_staging_lead: 0.25
     max_entry_yaw_rate: 0.05
     align_yaw_rate: 0.70
