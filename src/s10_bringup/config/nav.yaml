@@ -32,7 +32,20 @@ waypoint_follower:
     advance_radius: 0.18
     score_radius: 0.18
 
-    max_forward: 0.7
+    # The straight-flat actor passed WP9->10 at 2.0 for seeds 6/7/8 (actual p95 speed
+    # 2.25-2.34 m/s, max tilt 13.2 deg). 2.5 and 3.0 were faster but produced 24.0 and
+    # 28.1 deg flat-ground tilt, so they are rejected for a continuous run.
+    max_forward: 2.0
+    # max_forward is admitted only on measured-clear, level course legs by the scheduler
+    # below. Every turn, obstacle, ramp, stair, route hint and Gate16 approach retains the
+    # already accepted 0.7 ceiling. Values are target waypoint indices for each leg.
+    terrain_max_forward: 0.7
+    fast_flat_waypoints: [2, 10, 14, 22]
+    fast_flat_min_gate_distance: 3.0
+    fast_flat_max_heading_deg: 8.0
+    fast_flat_max_cross_track: 0.15
+    fast_flat_max_tilt_deg: 6.0
+    fast_flat_max_pitch_deg: 5.0
     max_lateral: 0.4
     max_yaw_rate: 0.7
 
@@ -103,7 +116,7 @@ waypoint_follower:
     # clock ignores speed entirely and asks only whether the gate is getting closer.
     #
     # 12 s, not 2.5, because a legitimate detour around an obstacle covers ground sideways and
-    # closes nothing for as long as it lasts. At the 0.7 m/s ceiling that is 8 m of driving --
+    # closes nothing for as long as it lasts. At the 0.7 m/s terrain ceiling that is 8 m of driving --
     # longer than any detour this course asks for, and short enough to leave 99 attempts inside
     # a 1200 s run.
     stall_speed: 0.08
