@@ -54,6 +54,7 @@ def gate16_owner_request(policy, mode: str, *, prewarm_ready: bool = False) -> s
 @dataclass
 class Gate16Config:
     command_forward: float = 0.25
+    fallback_command_forward: float | None = None
     command_lateral: float = 0.0
     command_yaw_rate: float = 0.0
     profile_file: str = ""
@@ -173,6 +174,7 @@ class StableGate16Policy:
         self._settle_steps = 0
         self._entry_speed = 0.0
         self._entry_yaw_deg_value = 0.0
+        self._entry_mode = "unmatched"
 
     def start(self, observation: PolicyObservation) -> None:
         self._started_at = float(observation.t)
@@ -184,10 +186,20 @@ class StableGate16Policy:
         self._profile = self._select_profile(
             self._entry_speed, self._entry_yaw_deg_value
         )
+        self._entry_mode = (
+            "fast_profile"
+            if self._profile is not None
+            else (
+                "stable_fallback"
+                if self.config.fallback_command_forward is not None
+                else "unmatched"
+            )
+        )
         print(
             "Gate16 command profile selected: "
             f"{self._profile.name if self._profile is not None else 'unmatched'} "
-            f"speed={self._entry_speed:.3f} yaw={self._entry_yaw_deg_value:.3f}",
+            f"mode={self._entry_mode} speed={self._entry_speed:.3f} "
+            f"yaw={self._entry_yaw_deg_value:.3f}",
             flush=True,
         )
 
@@ -207,9 +219,16 @@ class StableGate16Policy:
                 print("Gate16 command profile phase: push", flush=True)
         elif self._phase == "push":
             command_forward = self._profile.push_forward_mps
+        elif self.config.fallback_command_forward is not None and self._profile is None:
+            command_forward = self.config.fallback_command_forward
         else:
             command_forward = self.config.command_forward
         profile_name = self._profile.name if self._profile is not None else "unmatched"
+        runtime = (
+            "confidence_fallback_v1_5"
+            if self.config.fallback_command_forward is not None
+            else "adaptive_v3_b824f7f"
+        )
         return PolicyAction(
             ActionKind.DELEGATED,
             self._status,
@@ -220,7 +239,8 @@ class StableGate16Policy:
             ),
             info={
                 "owner": self.owner_name,
-                "runtime": "adaptive_v3_b824f7f",
+                "runtime": runtime,
+                "entry_mode": self._entry_mode,
                 "profile": profile_name,
                 "phase": reported_phase,
                 "entry_speed_mps": self._entry_speed,
@@ -252,7 +272,12 @@ class StableGate16Policy:
             elapsed,
             {
                 "stable_gate16_checkpoint": True,
-                "profile": "adaptive_v3_b824f7f",
+                "profile": (
+                    "confidence_fallback_v1_5"
+                    if self.config.fallback_command_forward is not None
+                    else "adaptive_v3_b824f7f"
+                ),
+                "entry_mode": self._entry_mode,
                 "command_profile": (
                     self._profile.name if self._profile is not None else "unmatched"
                 ),
