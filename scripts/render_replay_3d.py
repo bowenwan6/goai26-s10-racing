@@ -230,7 +230,11 @@ def main() -> int:
         camera.lookat[:] = data.xpos[base_body_id]
         camera.lookat[2] += 0.15
         renderer.update_scene(data, camera)
-        write_png(args.out / f"{number:05d}.png", renderer.render())
+        write_png(
+            args.out / f"{number:05d}.png",
+            renderer.render(),
+            compression=1,
+        )
         if shard_number == 0 or (shard_number + 1) % 50 == 0 or shard_number + 1 == count:
             print(
                 f"rendered shard {shard_number + 1}/{count} "
