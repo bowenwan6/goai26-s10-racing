@@ -23,14 +23,18 @@ downstream nodes need no change.
 from __future__ import annotations
 
 import argparse
+import math
 import os
+import socket
+import struct
+import time
 
 import mujoco
 import numpy as np
 import rclpy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension
+from std_msgs.msg import Empty, Float32MultiArray, MultiArrayDimension
 
 from s10_perception.heightmap import HeightmapConfig, HeightmapSampler
 from s10_perception.lidar import LidarConfig, RayCastLidar
@@ -41,6 +45,28 @@ _upstream = load_simulator_module()
 #: Publish perception at 50 Hz to match the policy rate. The base loop runs at 1 kHz and
 #: upstream publishes proprioception every 5 steps, so we decimate by 20.
 PERCEPTION_DECIMATION = 20
+_MANUAL_FRAME = struct.Struct("!4sB16f")
+_MANUAL_MAGIC = b"S10C"
+_WHEEL_JOINTS = np.array([3, 7, 11, 15])
+
+
+def _decode_manual_control(payload: bytes):
+    if len(payload) != _MANUAL_FRAME.size:
+        return None
+    magic, mode, *targets = _MANUAL_FRAME.unpack(payload)
+    targets = np.asarray(targets, dtype=np.float32)
+    if magic != _MANUAL_MAGIC or mode not in (0, 1, 2) or not np.isfinite(targets).all():
+        return None
+    return mode, targets
+
+
+def _set_wheel_friction(model, friction: float) -> None:
+    if not math.isfinite(friction) or friction <= 0:
+        raise ValueError("S10_WHEEL_FRICTION must be positive and finite")
+    for name in ("fl_wheel", "fr_wheel", "hl_wheel", "hr_wheel"):
+        body = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
+        geoms = (model.geom_bodyid == body) & (model.geom_group == 1)
+        model.geom_friction[geoms, 0] = friction
 
 
 class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
@@ -64,6 +90,9 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         if xml_path is not None:
             kwargs["xml_path"] = xml_path
         super().__init__(**kwargs)
+        _set_wheel_friction(
+            self.model, float(os.environ.get("S10_WHEEL_FRICTION", "2.0"))
+        )
 
         self.base_body_id = mujoco.mj_name2id(
             self.model, mujoco.mjtObj.mjOBJ_BODY, _upstream.TRACK_BODY_NAME
@@ -71,18 +100,139 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         if self.base_body_id < 0:
             raise RuntimeError(f"Body '{_upstream.TRACK_BODY_NAME}' not found in the model")
 
+        self._set_start_waypoint()
+        self._reset_qpos = self.data.qpos.copy()
+
         self.lidar = RayCastLidar(self.model, self.base_body_id, lidar_config)
         self.heightmap = HeightmapSampler(self.model, self.base_body_id, heightmap_config)
+        self.use_perception = os.environ.get("S10_USE_PERCEPTION", "1") != "0"
+        self.use_lidar = self.use_perception and os.environ.get("S10_USE_LIDAR", "1") != "0"
+        self.use_heightmap = self.use_perception and os.environ.get("S10_USE_HEIGHTMAP", "1") != "0"
 
         self.odom_pub = self.create_publisher(Odometry, "/ground_truth/odom", 50)
         self.scan_pub = self.create_publisher(LaserScan, "/scan", 10)
         self.lidar_pub = self.create_publisher(Float32MultiArray, "/perception/lidar", 10)
         self.heightmap_pub = self.create_publisher(Float32MultiArray, "/perception/heightmap", 10)
+        self.reset_sub = self.create_subscription(Empty, "/sim/reset", self._reset_sim, 1)
 
+        manual_port = int(os.environ.get("S10_MANUAL_PORT", "18778"))
+        if not 1 <= manual_port <= 65535:
+            raise ValueError("S10_MANUAL_PORT must be between 1 and 65535")
+        self._manual_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._manual_socket.bind(("0.0.0.0", manual_port))
+        self._manual_socket.setblocking(False)
+        self._manual_mode = 0
+        self._manual_targets = np.zeros(16, dtype=np.float32)
+        self._manual_last_packet = 0.0
+        self.get_logger().info(f"[manual] joint control UDP listening on {manual_port}")
+
+        if self.use_lidar or self.use_heightmap:
+            sensors = []
+            if self.use_lidar:
+                sensors.append(
+                    f"lidar {self.lidar.cfg.n_elevation}x{self.lidar.cfg.n_azimuth} rays"
+                )
+            if self.use_heightmap:
+                sensors.append(f"heightmap {self.heightmap.cfg.n_x}x{self.heightmap.cfg.n_y} cells")
+            self.get_logger().info(f"[perception] {', '.join(sensors)}")
+        else:
+            self.get_logger().info("[perception] lidar and heightmap disabled")
+
+    def _set_start_waypoint(self) -> None:
+        value = os.environ.get("S10_START_WAYPOINT")
+        if value is None:
+            return
+        try:
+            waypoint_number = int(value)
+        except ValueError as exc:
+            raise ValueError("S10_START_WAYPOINT must be an integer") from exc
+        if not 1 <= waypoint_number < len(self.track_waypoint_positions):
+            raise ValueError(
+                f"S10_START_WAYPOINT must be between 1 and {len(self.track_waypoint_positions) - 1}"
+            )
+
+        start_index = waypoint_number - 1
+        start = self.track_waypoint_positions[start_index]
+        target = self.track_waypoint_positions[start_index + 1]
+        path_yaw = math.atan2(target[1] - start[1], target[0] - start[0])
+        yaw = math.radians(float(os.environ["S10_START_YAW_DEG"])) if os.environ.get(
+            "S10_START_YAW_DEG"
+        ) else path_yaw
+        self.data.qpos[:3] = start + np.array([0.0, 0.0, 0.2])
+        self.data.qpos[3:7] = (math.cos(yaw / 2), 0.0, 0.0, math.sin(yaw / 2))
+        self.data.qvel[:] = 0.0
+        mujoco.mj_forward(self.model, self.data)
         self.get_logger().info(
-            f"[perception] lidar {self.lidar.cfg.n_elevation}x{self.lidar.cfg.n_azimuth} rays, "
-            f"heightmap {self.heightmap.cfg.n_x}x{self.heightmap.cfg.n_y} cells"
+            f"[sim] starting at path waypoint {waypoint_number} "
+            f"toward waypoint {waypoint_number + 1}: "
+            f"x={start[0]:.3f}, y={start[1]:.3f}, yaw={math.degrees(yaw):.1f}deg"
         )
+
+    def _reset_sim(self, _msg: Empty) -> None:
+        mujoco.mj_resetData(self.model, self.data)
+        self.data.qpos[:] = self._reset_qpos
+        for command in (
+            self.kp_cmd,
+            self.kd_cmd,
+            self.pos_cmd,
+            self.vel_cmd,
+            self.tau_ff,
+            self.input_tq,
+        ):
+            command.fill(0.0)
+        self.last_base_linvel.fill(0.0)
+        mujoco.mj_forward(self.model, self.data)
+        self.get_logger().info("[sim] reset to the test start pose")
+
+    def _poll_manual_control(self) -> None:
+        while True:
+            try:
+                payload = self._manual_socket.recv(_MANUAL_FRAME.size + 1)
+            except BlockingIOError:
+                return
+            command = _decode_manual_control(payload)
+            if command is None:
+                continue
+            mode, targets = command
+            for index in range(16):
+                if index in _WHEEL_JOINTS:
+                    targets[index] = np.clip(targets[index], -20.0, 20.0)
+                    continue
+                joint = self.model.actuator_trnid[index, 0]
+                if self.model.jnt_limited[joint]:
+                    targets[index] = np.clip(targets[index], *self.model.jnt_range[joint])
+            if mode != self._manual_mode:
+                self.get_logger().info(f"[manual] mode {self._manual_mode} -> {mode}")
+            self._manual_mode = mode
+            self._manual_targets = targets
+            self._manual_last_packet = time.monotonic()
+
+    def _apply_joint_torque(self) -> None:
+        self._poll_manual_control()
+        if self._manual_mode == 0:
+            super()._apply_joint_torque()
+            return
+        if self._manual_mode == 1 and time.monotonic() - self._manual_last_packet > 0.5:
+            self._manual_mode = 2
+            self.get_logger().warn("[manual] control heartbeat lost; entering damping")
+
+        q = self.data.qpos[7:23].reshape(-1, 1)
+        dq = self.data.qvel[6:22].reshape(-1, 1)
+        if self._manual_mode == 2:
+            self.input_tq = -2.0 * dq
+        else:
+            kp = np.full((16, 1), 80.0, dtype=np.float32)
+            kp[_WHEEL_JOINTS] = 0.0
+            pos = self._manual_targets.reshape(-1, 1).copy()
+            pos[_WHEEL_JOINTS] = q[_WHEEL_JOINTS]
+            vel = np.zeros((16, 1), dtype=np.float32)
+            vel[_WHEEL_JOINTS] = self._manual_targets[_WHEEL_JOINTS, None]
+            self.input_tq = kp * (pos - q) + 2.0 * (vel - dq)
+        self.data.ctrl[:] = self.input_tq.ravel()
+
+    def destroy_node(self):
+        self._manual_socket.close()
+        return super().destroy_node()
 
     def _publish_robot_state(self, step: int) -> None:
         """Extend upstream's state publication with our own sensors."""
@@ -94,13 +244,17 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         stamp = self.get_clock().now().to_msg()
 
         self._publish_odometry(stamp)
+        if not self.use_perception:
+            return
 
-        ranges = self.lidar.scan(self.data)
-        self._publish_scan(stamp, self.lidar.horizontal_ring(ranges))
-        self.lidar_pub.publish(_to_float_array(ranges, ("elevation", "azimuth")))
+        if self.use_lidar:
+            ranges = self.lidar.scan(self.data)
+            self._publish_scan(stamp, self.lidar.horizontal_ring(ranges))
+            self.lidar_pub.publish(_to_float_array(ranges, ("elevation", "azimuth")))
 
-        grid = self.heightmap.sample(self.data)
-        self.heightmap_pub.publish(_to_float_array(grid, ("x", "y")))
+        if self.use_heightmap:
+            grid = self.heightmap.sample(self.data)
+            self.heightmap_pub.publish(_to_float_array(grid, ("x", "y")))
 
     def _publish_odometry(self, stamp) -> None:
         msg = Odometry()
@@ -202,7 +356,8 @@ def main() -> None:
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":
