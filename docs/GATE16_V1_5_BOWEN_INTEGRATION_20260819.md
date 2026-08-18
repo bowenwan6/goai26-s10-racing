@@ -88,5 +88,5 @@ same-state focused trial that actually reaches its stricter staging contract.
 
 Seed 11 never reached either entry contract. A longer alignment arc, a fallback-aware
 straightening threshold, and one safe retry all failed, so none of those experiments is in
-this branch. This avoids making the three proven successes depend on an unvalidated arrival
-controller change.
+this branch. This avoids making the four proven 0.18 m/s successes depend on an unvalidated
+arrival controller change.
