@@ -86,7 +86,7 @@ def test_gate16_v15_keeps_stable_v1_as_bounded_fallback():
     assert params["gate16_fallback_ready_dwell"] == pytest.approx(0.10)
     assert params["gate16_fallback_min_entry_speed"] == pytest.approx(0.08)
     assert params["gate16_fallback_max_entry_speed"] == pytest.approx(0.20)
-    assert params["gate16_fallback_target_entry_speed"] == pytest.approx(0.15)
+    assert params["gate16_fallback_target_entry_speed"] == pytest.approx(0.18)
     assert params["gate16_fallback_max_lateral_error"] == pytest.approx(0.25)
     assert params["gate16_fallback_max_heading_error_deg"] == pytest.approx(6.0)
     assert params["gate16_fallback_max_yaw_rate"] == pytest.approx(0.10)

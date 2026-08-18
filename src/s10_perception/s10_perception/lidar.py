@@ -129,8 +129,6 @@ class RayCastLidar:
         world = self._directions_local @ rot.T
         self._vec_world[:] = world.reshape(-1)
 
-        # ``normal`` is required by the binding but unused here; passing None skips the
-        # extra per-ray normal computation.
         mujoco.mj_multiRay(
             m=self.model,
             d=data,
@@ -141,7 +139,6 @@ class RayCastLidar:
             bodyexclude=self._bodyexclude,
             geomid=self._geomid,
             dist=self._dist,
-            normal=None,
             nray=self.cfg.n_rays,
             cutoff=self.cfg.range_max,
         )
