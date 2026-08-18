@@ -122,6 +122,7 @@ class RayCastLidar:
             bodyexclude=self._bodyexclude,
             geomid=self._geomid,
             dist=self._dist,
+            normal=None,
             nray=self.cfg.n_rays,
             cutoff=self.cfg.range_max,
         )

@@ -33,12 +33,17 @@ class Course:
     the next leg before the scorer's check fires, which avoids braking at every gate.
     """
 
-    def __init__(self, waypoints: list[Waypoint], advance_radius: float = 0.35) -> None:
+    def __init__(
+        self, waypoints: list[Waypoint], advance_radius: float = 0.35, start_index: int = 0
+    ) -> None:
         if not waypoints:
             raise ValueError("Course requires at least one waypoint")
+        if not 0 <= start_index < len(waypoints):
+            raise ValueError(f"start_index must be between 0 and {len(waypoints) - 1}")
         self.waypoints = waypoints
         self.advance_radius = float(advance_radius)
-        self._cursor = 0
+        self._start_index = int(start_index)
+        self._cursor = self._start_index
 
     @classmethod
     def from_yaml(cls, path: str | Path, **kwargs) -> Course:
@@ -119,4 +124,4 @@ class Course:
         return total
 
     def reset(self) -> None:
-        self._cursor = 0
+        self._cursor = self._start_index

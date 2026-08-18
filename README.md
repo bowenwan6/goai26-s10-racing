@@ -91,20 +91,43 @@ velocity command from a ROS topic instead of a keyboard.
 repository (issued to registered teams).
 
 ```bash
-# 1. Dependencies
-sudo apt install libevdev-dev
-sudo adduser "$USER" input && newgrp input     # keyboard capture, for manual driving
-pip install "numpy<2.0" mujoco pyyaml
-
-# 2. Clone and fetch the contest SDK
+# 1. Clone
 git clone <this-repo> && cd goai26-s10-racing
+
+# 2. Python dependencies (keep ROS packages visible inside the venv)
+python3 -m venv --system-site-packages .venv
+source .venv/bin/activate
+pip install "numpy<2.0" mujoco scipy pyyaml pytest ruff
+
+# 3. Fetch and patch the contest SDK
 scripts/setup_upstream.sh
 
-# 3. Build
+# 4. Build
 scripts/build.sh
 
-# 4. Race
+# 5. Race
 scripts/run_race.sh
+
+# Or drive manually (keep this terminal focused)
+scripts/run_race.sh --manual
+# Z: stand, C: RL control, W/A/S/D: move, Q/E: turn
+# Manual mode keeps odometry but skips unused lidar and height-map ray casts.
+```
+
+Manual mode runs physics headless and opens a native Windows MuJoCo viewer. WSL streams
+only the latest robot pose over local UDP, so Windows window latency cannot stall physics
+or RL control; `--manual --headless` skips the display stream too. Set
+`S10_VIEWER_BACKEND=wsl` only when the older WSLg viewer is needed.
+
+The Windows viewer uses a project-local environment. It is already installed on the
+current workstation; to recreate it on D: from Windows PowerShell:
+
+```powershell
+$env:UV_PYTHON_INSTALL_DIR = 'D:\DevTools\uv-python'
+$env:UV_CACHE_DIR = 'D:\DevTools\uv-cache'
+uv python install 3.12
+uv venv --python 3.12 .venv-win
+uv pip install --python .venv-win\Scripts\python.exe "numpy<2" mujoco
 ```
 
 The lap time is printed to the terminal by the simulator when the final waypoint is
@@ -136,13 +159,46 @@ ros2 launch s10_bringup race.launch.py launch_sim:=false
 
 ```bash
 scripts/run_race.sh --headless                      # batch evaluation, no viewer
+scripts/run_race.sh --manual                        # WASD/QE, V/M obstacle, H flat high speed
+S10_START_WAYPOINT=16 S10_START_YAW_DEG=0 scripts/run_race.sh --manual  # face the 37 cm ledge normal
+S10_VIEWER_BACKEND=wsl scripts/run_race.sh --manual # fallback WSLg viewer
 scripts/build.sh --packages-select s10_auto_nav     # rebuild one package
 BUILD_PLATFORM=arm scripts/build.sh                 # cross-build for the robot
 scripts/extract_waypoints.py --check                # confirm the course is current
 scripts/patch_upstream.py --revert                  # restore a pristine SDK checkout
 
 S10_MUJOCO_XML=/abs/path/model.xml scripts/run_race.sh    # custom scene
+
+# Path waypoints are 1-based here: 16 means course.yaml entry index 15.
+S10_POLICY_PATH=/abs/path/policy.onnx \
+S10_RECORD_QPOS=/abs/path/wp16.npy \
+scripts/replay_waypoint.sh 16 0.60 30
+
+python scripts/render_qpos_gif.py /abs/path/wp16.npy /abs/path/wp16.gif \
+  --xml-path upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/mjcf/S10_track.xml \
+  --width 640 --height 360 --fps 10
 ```
+
+The 37 cm test ledge has its approach normal at world yaw `0 deg`; the waypoint 16→17
+tangent (`-18.4 deg`) is not square to the face. `V` enters the approach pose and drives
+the wheels toward the face; `M` extends the front knees, sets the rear knees to `0.35 rad`,
+and ramps all four wheels to `8 rad/s`. The old `B`/`N` phase controls are disabled.
+Keys `1/2`, `3/4`, `5/6`, `7/8`, and `[/]` decrease/increase phase time, fold hip,
+fold knee, wheel speed, and `S10_OBSTACLE_FRONT_PRESS`.
+Set `S10_OBSTACLE_WHEEL_KD` before launch to calibrate loaded-wheel torque.
+Set `S10_OBSTACLE_REAR_KP` to calibrate rear-leg stiffness (default `20`), and
+`S10_OBSTACLE_LIFT_HIP`/`S10_OBSTACLE_LIFT_KNEE` to calibrate the lift pose. Each phase
+holds until its key; `C` cancels directly to RL. IMU and sustained torque limits can send
+the robot to damping, but phase triggering remains manual.
+Safety limits are configurable with `S10_OBSTACLE_ROLL_LIMIT` (`0.75`) and
+`S10_OBSTACLE_PITCH_LIMIT` (`1.75`, applied to nose-down pitch magnitude).
+The full climb remains experimental.
+
+In RL control, `H` toggles flat-ground high-speed mode. It first crouches for one second
+to `(front hip/knee=-0.75/+1.50, rear=+0.75/-1.50 rad)`, then ramps all four wheels to
+`20 rad/s`; pressing `H` again slows down before standing back up. Calibrate with
+`S10_HIGH_SPEED_HIP`, `S10_HIGH_SPEED_KNEE`, `S10_HIGH_SPEED_WHEEL`,
+`S10_HIGH_SPEED_WHEEL_KD`, and `S10_HIGH_SPEED_RAMP` before launch.
 
 </details>
 
