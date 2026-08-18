@@ -1,0 +1,11 @@
+variant,seed,entry_command_mps,entry_mode,measured_entry_speed_mps,entry_yaw_deg,reached_wp17,elapsed_s,max_tilt_deg,outcome
+fallback_015,6,0.15,stable_fallback,0.146,-4.751,true,40.60,39.3,reached_wp17
+fallback_015,7,0.15,stable_fallback,0.140,-4.785,true,37.25,44.0,reached_wp17
+fallback_015,8,0.15,stable_fallback,0.112,-5.138,true,35.65,40.9,reached_wp17
+fallback_015,9,0.15,stable_fallback,0.159,-4.735,false,33.65,42.8,straddled_no_progress
+fallback_015,10,0.15,stable_fallback,0.135,-4.929,false,21.35,65.6,tilt_abort
+fallback_018,6,0.18,stable_fallback,0.178,-4.793,true,43.70,44.0,reached_wp17
+fallback_018,7,0.18,stable_fallback,0.175,-4.766,true,36.20,34.0,reached_wp17
+fallback_018,8,0.18,stable_fallback,0.148,-5.231,true,30.70,32.0,reached_wp17
+fallback_018,9,0.18,stable_fallback,0.177,-4.907,true,33.40,34.0,reached_wp17
+fallback_018,10,0.18,stable_fallback,0.171,-4.947,false,34.00,45.0,straddled_no_progress
