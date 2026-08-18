@@ -280,14 +280,27 @@ def test_a_single_torque_spike_is_not_a_violation():
     assert router.mode is not Mode.ABORT
 
 
-def test_sustained_torque_over_the_ceiling_aborts():
+def test_sustained_torque_over_the_ceiling_aborts_gate16_control():
+    router, _ = make_router(duration=10.0)
+    t = run_to_climb(router)
+    router._attempt.gate16 = True
+    for _ in range(200):
+        s = state(t, obstacle_distance=0.4, joint_torques=np.full(16, 400.0))
+        router.tick(s, (0.5, 0.0, 0.0), observation_from_state(s))
+        t += 0.02
+        if router.mode is Mode.ABORT:
+            break
+    assert router.mode is Mode.ABORT
+
+
+def test_follower_terrain_torque_does_not_trigger_gate16_watchdog():
     router, _ = make_router()
     t = 0.0
     for _ in range(200):
         s = state(t, joint_torques=np.full(16, 400.0))
         router.tick(s, (0.5, 0.0, 0.0), observation_from_state(s))
         t += 0.02
-    assert router.mode is Mode.ABORT
+    assert router.mode is Mode.NAVIGATE
 
 
 # --------------------------------------------------------------- policy outcomes

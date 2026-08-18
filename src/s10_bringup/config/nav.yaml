@@ -62,6 +62,18 @@ waypoint_follower:
     committed_runup_trigger: 0.55
     committed_runup_distance: 1.5
     committed_runup_timeout: 20.0
+    # WP30->31 starts beside the upper-deck drop and a pillar. WP31->32 crosses a two-tier
+    # wall whose south end is y=19.124; a 0.45 m body envelope must first pass west of the
+    # wall at y=18.5. These measured body-clear points shape the legs without advancing or
+    # relaxing the strict waypoint cursor.
+    route_hint_waypoints: [31, 32]
+    route_hint_points: [29.35, 17.8, 30.55, 18.5]
+    route_hint_radius: 0.25
+    route_hint_speed: 0.5
+    # A gate may score before the rear wheels have cleared its lip. In that pose the normal
+    # terrain recovery must retain ownership; the connector arms only after settling.
+    route_hint_max_tilt_deg: 12.0
+    route_hint_stable_hold: 0.5
 
     # Distance from the gate at which forward speed starts coming off. Zero means "use the
     # lookahead", which is what the brake did before this was a parameter, so the shipped

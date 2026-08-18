@@ -156,6 +156,9 @@ class StrategyRouterNode(Node):
         self.declare_parameter("verify_clearance", RouterConfig.verify_clearance)
         self.declare_parameter("verify_hold", RouterConfig.verify_hold)
         self.declare_parameter("verify_timeout", RouterConfig.verify_timeout)
+        self.declare_parameter(
+            "verify_unready_dwell", RouterConfig.verify_unready_dwell
+        )
         self.declare_parameter("verify_deck_z", RouterConfig.verify_deck_z)
 
         rate = float(self.get_parameter("control_rate").value)
@@ -185,6 +188,9 @@ class StrategyRouterNode(Node):
             verify_clearance=float(self.get_parameter("verify_clearance").value),
             verify_hold=float(self.get_parameter("verify_hold").value),
             verify_timeout=float(self.get_parameter("verify_timeout").value),
+            verify_unready_dwell=float(
+                self.get_parameter("verify_unready_dwell").value
+            ),
             verify_deck_z=float(self.get_parameter("verify_deck_z").value),
             climb_timeout=float(self.get_parameter("climb_timeout").value),
             climb_progress_window=float(
@@ -271,6 +277,7 @@ class StrategyRouterNode(Node):
         self._position = np.zeros(3)
         self._ypr = (0.0, 0.0, 0.0)
         self._speed = 0.0
+        self._linear_velocity = np.zeros(3)
         self._yaw_rate = 0.0
         self._odom_time = 0.0
         self._lidar_time = 0.0
@@ -351,6 +358,7 @@ class StrategyRouterNode(Node):
         self._position = np.array([p.x, p.y, p.z])
         self._ypr = _yaw_pitch_roll(msg.pose.pose.orientation)
         self._speed = float(math.hypot(v.x, v.y))
+        self._linear_velocity = np.array([v.x, v.y, v.z], dtype=float)
         self._yaw_rate = float(msg.twist.twist.angular.z)
         self._odom_time = self._now()
 
@@ -446,6 +454,9 @@ class StrategyRouterNode(Node):
         edge = normal = None
         if self._obstacle_frame is not None:
             edge, normal, _ = self._obstacle_frame
+        forward_speed = None
+        if normal is not None:
+            forward_speed = float(np.dot(self._linear_velocity[:2], normal))
         return RobotState(
             t=self._now(),
             segment=self._segment,
@@ -454,6 +465,7 @@ class StrategyRouterNode(Node):
             pitch=pitch,
             roll=roll,
             speed=self._speed,
+            forward_speed=forward_speed,
             yaw_rate=self._yaw_rate,
             odom_time=self._odom_time,
             lidar_time=self._lidar_time,
@@ -487,9 +499,7 @@ class StrategyRouterNode(Node):
             yaw=state.yaw,
             pitch=state.pitch,
             roll=state.roll,
-            linear_velocity=np.array(
-                [state.speed * math.cos(state.yaw), state.speed * math.sin(state.yaw), 0.0]
-            ),
+            linear_velocity=self._linear_velocity.copy(),
             yaw_rate=state.yaw_rate,
             joint_positions=self._joint_positions.copy(),
             joint_velocities=self._joint_velocities.copy(),

@@ -48,6 +48,12 @@ def test_the_brake_distances_ship_in_nav_yaml():
     assert params["committed_runup_trigger"] == 0.55
     assert params["committed_runup_distance"] == 1.5
     assert params["committed_runup_timeout"] == 20.0
+    assert params["route_hint_waypoints"] == [31, 32]
+    assert params["route_hint_points"] == [29.35, 17.8, 30.55, 18.5]
+    assert params["route_hint_radius"] == 0.25
+    assert params["route_hint_speed"] == 0.5
+    assert params["route_hint_max_tilt_deg"] == 12.0
+    assert params["route_hint_stable_hold"] == 0.5
     assert params["brake_distance"] == 0.0, "the flat default must still inherit the lookahead"
     assert params["stair_brake_distance"] == 0.4
     assert params["barrier_escape_angle_deg"] == 60.0
@@ -164,6 +170,55 @@ def test_committed_terrain_uses_a_distance_defined_runup(node):
     charging = node._committed_runup_command(0.02)
     assert node._committed_runup_phase == "push"
     assert charging.forward == pytest.approx(node.step_commit.config.speed)
+
+
+@needs_ros
+def test_committed_terrain_never_turns_a_failed_charge_into_an_infinite_push(node):
+    node.committed_terrain_waypoints = {0}
+    node.committed_runup_waypoints = {0}
+    node._pose_xy = np.array([0.4, 0.0])
+    node._yaw = math.pi
+    node._committed_runup_phase = "push"
+    node._committed_runup_attempts = node.step_commit.config.attempts
+    node._committed_runup_elapsed = node.step_commit.config.timeout
+
+    command = node._committed_runup_command(0.02)
+
+    assert node._committed_runup_phase == "back"
+    assert node._committed_runup_attempts == node.step_commit.config.attempts + 1
+    assert command.forward == pytest.approx(-node.step_commit.config.speed)
+
+
+@needs_ros
+def test_route_hint_is_body_clear_staging_not_gate_acceptance(node):
+    node.route_hints = {0: np.array([0.5, 0.0])}
+    node._route_hints_completed.clear()
+    node._pose_xy = np.array([0.0, 0.0])
+    node._yaw = 0.0
+
+    command = None
+    for _ in range(25):
+        command = node._route_hint_command(0.02)
+    assert 0.0 < command.forward <= node.route_hint_speed
+    assert node.course.cursor == 0
+
+
+@needs_ros
+def test_route_hint_defers_to_terrain_recovery_until_chassis_is_stable(node):
+    node.route_hints = {0: np.array([0.5, 0.0])}
+    node._pose_xy = np.array([0.0, 0.0])
+    node._tilt = math.radians(16.0)
+    for _ in range(100):
+        assert node._route_hint_command(0.02) is None
+    node._tilt = 0.0
+    for _ in range(24):
+        assert node._route_hint_command(0.02) is None
+    assert node._route_hint_command(0.02) is not None
+
+    node._pose_xy = np.array([0.5, 0.0])
+    assert node._route_hint_command(0.02) is None
+    assert 0 in node._route_hints_completed
+    assert node.course.cursor == 0
 
 
 @needs_ros

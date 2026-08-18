@@ -103,6 +103,7 @@ class RobotState:
     odom_time: float
     lidar_time: float
     heightmap_time: float
+    forward_speed: float | None = None
     #: Distance to the entry line of the obstacle for this segment, metres. Negative once
     #: the robot is past it.
     obstacle_distance: float = math.inf
@@ -205,6 +206,7 @@ class RouterConfig:
     #: Verification. All of these must hold together, for ``verify_hold`` seconds.
     verify_hold: float = 2.0
     verify_timeout: float = 0.0
+    verify_unready_dwell: float = 0.0
     verify_min_contacts: int = 3
     #: Metres a wheel centre must be past the obstacle edge to count as over it.
     verify_clearance: float = 0.0
@@ -287,7 +289,7 @@ class Router:
         self._near_approach = Hysteresis(c.approach_enter, c.approach_exit, rising=False)
         self._near_align = Hysteresis(c.align_enter, c.align_exit, rising=False)
         self._in_envelope = Debounced(c.ready_dwell, c.unready_dwell)
-        self._verified = Debounced(c.verify_hold, 0.0)
+        self._verified = Debounced(c.verify_hold, c.verify_unready_dwell)
         self._gate16_staging_complete = False
 
         self._entered_at = 0.0
@@ -301,6 +303,7 @@ class Router:
         self._policy_status = PolicyStatus.IDLE
         self._resume_deadline = math.inf
         self._resume_from = 0.0
+        self._resume_position: np.ndarray | None = None
         #: Segments whose obstacle has been physically verified as crossed. Without this the
         #: router re-arms on the segment it just cleared -- the edge is still *within* the
         #: approach radius after the climb, only behind instead of ahead -- and climbs the
@@ -353,6 +356,11 @@ class Router:
     # ------------------------------------------------------------------ safety
 
     def _sensor_age(self, state: RobotState) -> float:
+        if self._attempt.gate16 and self.mode in (Mode.CLIMB, Mode.VERIFY_CLEAR):
+            # Gate16 consumes the calibrated SDK state and the height map. Lidar remains a
+            # navigation input, but it is intentionally preempted during this low-level
+            # manoeuvre and must not cancel a valid climb because one scan was delayed.
+            return max(state.t - state.odom_time, state.t - state.heightmap_time)
         return max(
             state.t - state.odom_time, state.t - state.lidar_time, state.t - state.heightmap_time
         )
@@ -452,7 +460,16 @@ class Router:
             self._go(Mode.ABORT, f"tilt {math.degrees(state.tilt):.0f}deg")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
-        if self._torque_violation(state, dt):
+        # This watchdog belongs to the low-level Gate 16 controller.  Applying its
+        # deliberately conservative ceiling while the existing follower owns the robot
+        # makes normal terrain contacts abort an otherwise healthy waypoint run.
+        gate16_owns_control = self._attempt.gate16 and self.mode in (
+            Mode.CLIMB,
+            Mode.VERIFY_CLEAR,
+        )
+        if not gate16_owns_control:
+            self._torque_over_since = None
+        elif self._torque_violation(state, dt):
             self._cancel_active("torque")
             self._go(Mode.ABORT, "sustained torque over ceiling")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
@@ -482,11 +499,26 @@ class Router:
         # NAVIGATE's job. Verification that ends the moment the robot is static would pass a
         # robot balanced on the lip with nowhere to go.
         if self._resume_deadline < math.inf:
-            if state.travelled - self._resume_from >= self.config.resume_distance:
+            physical_resume = (
+                0.0
+                if self._resume_position is None
+                else float(
+                    np.linalg.norm(
+                        np.asarray(state.position[:2], float)
+                        - self._resume_position[:2]
+                    )
+                )
+            )
+            if (
+                state.travelled - self._resume_from >= self.config.resume_distance
+                or physical_resume >= self.config.resume_distance
+            ):
                 self._resume_deadline = math.inf
+                self._resume_position = None
                 self._last_reason = "resume confirmed"
             elif state.t >= self._resume_deadline:
                 self._resume_deadline = math.inf
+                self._resume_position = None
                 # Retracted means retracted: the segment goes back to being uncleared, or the
                 # retry that follows would be refused by the latch it just set.
                 self._cleared.discard(tuple(self._attempt.segment))
@@ -557,7 +589,9 @@ class Router:
             and abs(state.lateral_error) <= c.max_lateral_error
             and abs(state.heading_error) <= c.max_heading_error
             and (
-                c.min_entry_speed <= state.speed <= c.max_entry_speed
+                c.min_entry_speed
+                <= (state.speed if state.forward_speed is None else state.forward_speed)
+                <= c.max_entry_speed
                 if requires_moving_entry
                 else state.speed <= c.max_entry_speed
             )
@@ -828,6 +862,7 @@ class Router:
         ok, why = self._physically_clear(state)
         if self._verified.update(ok and state.speed <= self.config.max_entry_speed * 4.0, dt):
             self._resume_from = state.travelled
+            self._resume_position = np.asarray(state.position, float).copy()
             self._resume_deadline = state.t + self.config.resume_timeout
             self._cleared.add(tuple(self._attempt.segment))
             gate16 = self._attempt.gate16
