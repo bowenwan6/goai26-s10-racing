@@ -174,6 +174,19 @@ class RouterConfig:
     gate16_prewarm_forward: float = 0.25
     gate16_staging_lead: float = 0.25
     gate16_staging_tolerance: float = 0.10
+    #: v1.5 keeps the adaptive-v3 contract as the preferred path, but may select the
+    #: stable-v1 moving-entry contract at the far staging point when pose confidence is
+    #: outside the fast envelope. The selected contract is fixed for the attempt.
+    gate16_fallback_enabled: bool = False
+    gate16_fallback_ready_distance_min: float = 0.62
+    gate16_fallback_ready_distance_max: float = 0.70
+    gate16_fallback_ready_dwell: float = 0.10
+    gate16_fallback_min_entry_speed: float = 0.08
+    gate16_fallback_max_entry_speed: float = 0.20
+    gate16_fallback_target_entry_speed: float = 0.15
+    gate16_fallback_max_lateral_error: float = 0.25
+    gate16_fallback_max_heading_error: float = math.radians(6.0)
+    gate16_fallback_max_yaw_rate: float = 0.10
     max_entry_tilt: float = math.radians(12.0)
     #: How close the edge must be, and no closer. Without a distance band the readiness
     #: check passed anywhere inside the align radius, including 1.2 m short of the edge and
@@ -273,6 +286,7 @@ class _Attempt:
     entry_obstacle_distance: float = math.inf
     segment: tuple[int, int] = (-1, -1)
     gate16: bool = False
+    gate16_entry_mode: str = ""
 
 
 class Router:
@@ -296,9 +310,13 @@ class Router:
         self._near_approach = Hysteresis(c.approach_enter, c.approach_exit, rising=False)
         self._near_align = Hysteresis(c.align_enter, c.align_exit, rising=False)
         self._in_envelope = Debounced(c.ready_dwell, c.unready_dwell)
+        self._gate16_fallback_envelope = Debounced(
+            c.gate16_fallback_ready_dwell, c.unready_dwell
+        )
         self._verified = Debounced(c.verify_hold, c.verify_unready_dwell)
         self._gate16_staging_complete = False
         self._gate16_prewarm_ready = False
+        self._gate16_entry_mode: str | None = None
 
         self._entered_at = 0.0
         self._t = 0.0
@@ -338,11 +356,21 @@ class Router:
         return self._gate16_prewarm_ready
 
     @property
+    def gate16_entry_mode(self) -> str | None:
+        """The confidence-selected Gate16 contract for this attempt."""
+        return self._gate16_entry_mode
+
+    @property
     def retries(self) -> int:
         return self._retries
 
     def policy_for(self, segment: tuple[int, int]) -> str:
         return self.segment_policies.get(tuple(segment), "")
+
+    def _gate16_entry_command(self) -> float:
+        if self._gate16_entry_mode == "stable_fallback":
+            return self.config.gate16_fallback_target_entry_speed
+        return self.config.target_entry_speed
 
     def _go(self, mode: Mode, reason: str) -> None:
         if mode is self.mode:
@@ -584,6 +612,9 @@ class Router:
         if self._near_align.update(state.obstacle_distance):
             self._gate16_staging_complete = False
             self._gate16_prewarm_ready = False
+            self._gate16_entry_mode = None
+            self._in_envelope.reset(False)
+            self._gate16_fallback_envelope.reset(False)
             self._go(Mode.ALIGN, "within align radius")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
         return RouterOutput(
@@ -607,29 +638,60 @@ class Router:
         requires_moving_entry = bool(
             getattr(self.policies.get(name), "is_gate16_policy", False)
         )
-        in_envelope = (
+        entry_speed = state.speed if state.forward_speed is None else state.forward_speed
+        fast_in_envelope = (
             c.ready_distance_min <= state.obstacle_distance <= c.ready_distance_max
             and abs(state.lateral_error) <= c.max_lateral_error
             and abs(state.heading_error) <= c.max_heading_error
             and (
-                c.min_entry_speed
-                <= (state.speed if state.forward_speed is None else state.forward_speed)
-                <= c.max_entry_speed
+                c.min_entry_speed <= entry_speed <= c.max_entry_speed
                 if requires_moving_entry
                 else state.speed <= c.max_entry_speed
             )
             and abs(state.yaw_rate) <= c.max_entry_yaw_rate
             and state.tilt <= c.max_entry_tilt
         )
-        if self._in_envelope.update(in_envelope, dt):
-            self._go(Mode.CLIMB_READY, "entry envelope held")
+        fast_ready = self._in_envelope.update(fast_in_envelope, dt)
+        fallback_in_envelope = bool(
+            requires_moving_entry
+            and c.gate16_fallback_enabled
+            and c.gate16_fallback_ready_distance_min
+            <= state.obstacle_distance
+            <= c.gate16_fallback_ready_distance_max
+            and abs(state.lateral_error) <= c.gate16_fallback_max_lateral_error
+            and abs(state.heading_error) <= c.gate16_fallback_max_heading_error
+            and c.gate16_fallback_min_entry_speed
+            <= entry_speed
+            <= c.gate16_fallback_max_entry_speed
+            and abs(state.yaw_rate) <= c.gate16_fallback_max_yaw_rate
+            and state.tilt <= c.max_entry_tilt
+        )
+        fallback_ready = self._gate16_fallback_envelope.update(
+            fallback_in_envelope, dt
+        )
+
+        # Prefer the fast contract whenever both are possible. Once one is selected, do not
+        # oscillate between speed targets while crossing the final 30 cm of runway.
+        if requires_moving_entry and self._gate16_entry_mode is None:
+            if fast_ready:
+                self._gate16_entry_mode = "fast_profile"
+            elif fallback_ready:
+                self._gate16_entry_mode = "stable_fallback"
+        entry_ready = (
+            fast_ready
+            if self._gate16_entry_mode != "stable_fallback"
+            else fallback_ready
+        )
+        if entry_ready:
+            entry_mode = self._gate16_entry_mode or "default"
+            self._go(Mode.CLIMB_READY, f"{entry_mode} entry envelope held")
             # Preserve the frozen moving handoff on the transition tick. A command-less
             # RouterOutput becomes a zero Twist in the ROS adapter, which previously made
             # the runner select its unvalidated frozen-default profile at exactly the lip.
             return RouterOutput(
                 self.mode,
                 Source.ROUTER,
-                command=(c.target_entry_speed, 0.0, 0.0),
+                command=(self._gate16_entry_command(), 0.0, 0.0),
                 reason=self._last_reason,
             )
 
@@ -651,13 +713,23 @@ class Router:
             staging_distance = c.ready_distance_max + c.gate16_staging_lead
             distance_error = state.obstacle_distance - staging_distance
             staged = abs(distance_error) <= c.gate16_staging_tolerance
-            aligned = (
+            fast_aligned = (
                 abs(state.heading_error) <= c.max_heading_error
                 and abs(state.lateral_error) <= c.max_lateral_error
             )
-            if staged and aligned:
+            fallback_aligned = bool(
+                c.gate16_fallback_enabled
+                and abs(state.heading_error)
+                <= c.gate16_fallback_max_heading_error
+                and abs(state.lateral_error)
+                <= c.gate16_fallback_max_lateral_error
+            )
+            if staged and (fast_aligned or fallback_aligned):
                 self._gate16_staging_complete = True
                 self._gate16_prewarm_ready = True
+                self._gate16_entry_mode = (
+                    "fast_profile" if fast_aligned else "stable_fallback"
+                )
             else:
                 # The official wheeled actor does not translate sideways reliably. Capture
                 # the centreline as a forward arc instead: steer into the cross-track error
@@ -732,20 +804,39 @@ class Router:
         # three at once on a lip walks the contact points along the edge, which is the failure
         # `StepCommit`
         # was written to avoid and it applies just as well here.
+        fallback_selected = self._gate16_entry_mode == "stable_fallback"
+        heading_tolerance = (
+            c.gate16_fallback_max_heading_error
+            if fallback_selected
+            else c.max_heading_error
+        )
+        lateral_tolerance = (
+            c.gate16_fallback_max_lateral_error
+            if fallback_selected
+            else c.max_lateral_error
+        )
+        ready_distance_min = (
+            c.gate16_fallback_ready_distance_min
+            if fallback_selected
+            else c.ready_distance_min
+        )
         heading = float(np.clip(-state.heading_error * 1.5, -c.align_yaw_rate, c.align_yaw_rate))
         lateral = 0.0
         forward = 0.0
-        if abs(state.heading_error) <= c.max_heading_error * 2.0:
+        if abs(state.heading_error) <= heading_tolerance * 2.0:
             lateral = float(np.clip(-state.lateral_error * 1.2, -c.align_lateral, c.align_lateral))
-            if abs(state.lateral_error) <= c.max_lateral_error * 2.0:
-                if state.obstacle_distance < c.ready_distance_min:
-                    forward = -min(c.align_speed, c.target_entry_speed)
+            if abs(state.lateral_error) <= lateral_tolerance * 2.0:
+                if state.obstacle_distance < ready_distance_min:
+                    forward = -min(c.align_speed, self._gate16_entry_command())
                 elif requires_moving_entry:
-                    forward = c.gate16_prewarm_forward
+                    forward = self._gate16_entry_command()
                 else:
                     gap = state.obstacle_distance - c.align_enter * 0.5
                     forward = float(np.clip(gap * 0.8, -c.align_speed, c.align_speed))
-        settling = " (settling)" if self._in_envelope.settling else ""
+        active_envelope = (
+            self._gate16_fallback_envelope if fallback_selected else self._in_envelope
+        )
+        settling = " (settling)" if active_envelope.settling else ""
         return RouterOutput(
             self.mode,
             Source.ROUTER,
@@ -793,14 +884,18 @@ class Router:
             entry_obstacle_distance=state.obstacle_distance,
             segment=tuple(state.segment),
             gate16=bool(getattr(policy, "is_gate16_policy", False)),
+            gate16_entry_mode=self._gate16_entry_mode or "default",
         )
-        self._go(Mode.CLIMB, f"started {name}")
+        mode_suffix = (
+            f" ({self._gate16_entry_mode})" if self._gate16_entry_mode else ""
+        )
+        self._go(Mode.CLIMB, f"started {name}{mode_suffix}")
         # The delegated SDK actor starts on this same tick. Keep its command/profile input
-        # at the canonical 0.25 m/s instead of injecting a one-frame stop between states.
+        # at the selected moving-entry speed instead of injecting a one-frame stop.
         return RouterOutput(
             self.mode,
             Source.ROUTER,
-            command=(self.config.target_entry_speed, 0.0, 0.0),
+            command=(self._gate16_entry_command(), 0.0, 0.0),
             reason=self._last_reason,
         )
 
@@ -887,7 +982,8 @@ class Router:
             policy_detail = ""
             if action.kind is ActionKind.DELEGATED and action.info:
                 policy_detail = (
-                    f"; profile={action.info.get('profile', 'unknown')}"
+                    f"; entry_mode={action.info.get('entry_mode', 'unknown')}"
+                    f" profile={action.info.get('profile', 'unknown')}"
                     f" phase={action.info.get('phase', 'unknown')}"
                 )
             return RouterOutput(
@@ -1045,9 +1141,11 @@ class Router:
             self._go(Mode.ABORT, f"{self._retries - 1} attempts exhausted")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
         self._in_envelope.reset(False)
+        self._gate16_fallback_envelope.reset(False)
         self._near_align.reset(False)
         self._gate16_staging_complete = False
         self._gate16_prewarm_ready = False
+        self._gate16_entry_mode = None
         self._go(Mode.ALIGN, f"retry {self._retries}/{c.max_retries}")
         return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 

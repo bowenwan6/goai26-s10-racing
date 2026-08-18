@@ -180,6 +180,25 @@ def test_gate16_adapter_identifies_adaptive_v3_source():
     assert action.info["phase"] == "entry"
 
 
+def test_gate16_adapter_uses_stable_command_when_fast_profile_is_unmatched():
+    policy = StableGate16Policy(
+        Gate16Config(
+            command_forward=0.25,
+            fallback_command_forward=0.15,
+            obstacle_edge=(0.0, 0.0),
+            obstacle_normal=(1.0, 0.0),
+        )
+    )
+    entry = replace(_state(0.0), speed=0.15, forward_speed=0.15)
+    policy.start(observation_from_state(entry))
+    action = policy.step(observation_from_state(entry))
+
+    assert action.info["runtime"] == "confidence_fallback_v1_5"
+    assert action.info["entry_mode"] == "stable_fallback"
+    assert action.info["profile"] == "unmatched"
+    assert action.twist == (0.15, 0.0, 0.0)
+
+
 def test_gate16_ros_adapter_executes_profile_from_verified_front_wheels():
     policy = StableGate16Policy(
         Gate16Config(
@@ -314,6 +333,113 @@ def test_official_actor_aligns_position_and_yaw_before_gate16_prewarm():
     assert gate16_owner_request(
         policy, out.mode.value, prewarm_ready=router.gate16_prewarm_ready
     ) == "official"
+
+
+def test_v15_prefers_fast_contract_for_strict_staging_pose():
+    policy = StableGate16Policy()
+    router = Router(
+        RouterConfig(
+            ready_distance_min=0.60,
+            ready_distance_max=0.65,
+            ready_dwell=0.0,
+            min_entry_speed=0.23,
+            max_entry_speed=0.27,
+            target_entry_speed=0.25,
+            gate16_fallback_enabled=True,
+        ),
+        policies={"gate16": policy},
+        segment_policies={(15, 16): "gate16"},
+    )
+    router.mode = Mode.ALIGN
+
+    staged = replace(_state(0.02), obstacle_distance=0.90)
+    out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
+    assert router.gate16_entry_mode == "fast_profile"
+    assert router.gate16_prewarm_ready
+    assert out.command == (0.25, 0.0, 0.0)
+
+    entry = replace(
+        staged,
+        t=0.04,
+        odom_time=0.04,
+        lidar_time=0.04,
+        heightmap_time=0.04,
+        obstacle_distance=0.65,
+    )
+    out = router.tick(entry, (0.7, 0.0, 0.0), observation_from_state(entry))
+    assert router.mode is Mode.CLIMB_READY
+    assert out.command == (0.25, 0.0, 0.0)
+    assert "fast_profile" in out.reason
+
+
+def test_v15_uses_stable_contract_for_normal_imperfect_staging_pose():
+    policy = StableGate16Policy(
+        Gate16Config(command_forward=0.25, fallback_command_forward=0.15)
+    )
+    router = Router(
+        RouterConfig(
+            ready_distance_min=0.60,
+            ready_distance_max=0.65,
+            ready_dwell=0.0,
+            min_entry_speed=0.23,
+            max_entry_speed=0.27,
+            target_entry_speed=0.25,
+            max_heading_error=np.deg2rad(2.5),
+            max_lateral_error=0.08,
+            gate16_fallback_enabled=True,
+            gate16_fallback_ready_dwell=0.04,
+            gate16_fallback_target_entry_speed=0.15,
+            gate16_fallback_max_heading_error=np.deg2rad(6.0),
+            gate16_fallback_max_lateral_error=0.25,
+        ),
+        policies={"gate16": policy},
+        segment_policies={(15, 16): "gate16"},
+    )
+    router.mode = Mode.ALIGN
+
+    staged = replace(
+        _state(0.02),
+        obstacle_distance=0.90,
+        lateral_error=0.12,
+        heading_error=np.deg2rad(4.0),
+        speed=0.15,
+        forward_speed=0.15,
+    )
+    out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
+    assert router.gate16_entry_mode == "stable_fallback"
+    assert router.gate16_prewarm_ready
+    assert out.command[0] == 0.15
+
+    for index in range(1, 6):
+        t = 0.02 + index * 0.02
+        entry = replace(
+            staged,
+            t=t,
+            odom_time=t,
+            lidar_time=t,
+            heightmap_time=t,
+            obstacle_distance=0.66,
+        )
+        out = router.tick(entry, (0.7, 0.0, 0.0), observation_from_state(entry))
+        if router.mode is Mode.CLIMB_READY:
+            break
+
+    assert router.mode is Mode.CLIMB_READY
+    assert out.command == (0.15, 0.0, 0.0)
+    assert "stable_fallback" in out.reason
+
+    t += 0.02
+    entry = replace(
+        entry,
+        t=t,
+        odom_time=t,
+        lidar_time=t,
+        heightmap_time=t,
+    )
+    out = router.tick(entry, (0.7, 0.0, 0.0), observation_from_state(entry))
+    assert router.mode is Mode.CLIMB
+    assert out.command == (0.15, 0.0, 0.0)
+    assert "stable_fallback" in out.reason
 
 
 def test_runner_uses_calibrated_base_yaw_instead_of_heightmap_fit():
