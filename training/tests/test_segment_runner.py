@@ -106,17 +106,17 @@ def test_the_approach_taper_applies_at_every_gate_not_just_the_last(n_waypoints)
 def test_the_taper_cannot_stall_the_robot_before_the_gate_is_consumed():
     """The floor on the taper: the slowest command the robot ever gets on a clean approach.
 
-    `Course` consumes a gate at `advance_radius`, so the command bottoms out at
-    `max_forward * advance_radius / lookahead` and then jumps back up. Worth a number rather
-    than a shrug, because whether 0.175 m/s is enough to carry a rear axle over a 0.109 m
-    riser is the whole question on segment 17->18.
+    `Course` consumes a gate at `score_radius`, so the command bottoms out at
+    `max_forward * score_radius / lookahead` and then jumps back up. Worth a number rather
+    than a shrug, because tightening the acceptance radius lowers this sandbox-only taper
+    floor. The production follower separately enforces its configured capture behavior.
     """
     from s10_auto_nav.pure_pursuit import PursuitGains
 
     gains = PursuitGains()
     course = _straight_course(3)
-    floor = gains.max_forward * course.advance_radius / gains.lookahead
-    assert floor == pytest.approx(0.175, abs=1e-3)
+    floor = gains.max_forward * course.score_radius / gains.lookahead
+    assert floor == pytest.approx(0.09, abs=1e-3)
 
 
 def test_the_png_writer_produces_a_file_a_decoder_accepts(tmp_path):

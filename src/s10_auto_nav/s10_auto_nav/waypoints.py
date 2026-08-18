@@ -31,8 +31,9 @@ class Course:
     Progress is strictly sequential, mirroring the contest scorer: waypoint ``i + 1``
     only becomes the target once ``i`` has been reached.
 
-    What counts as reached is the part that had to be rewritten. The scorer's radius is
-    0.2 m; this class advanced at 0.35 m, on the reasoning that committing to the next leg
+    What counts as reached is the part that had to be rewritten. The official scorer's radius
+    is 0.2 m; this class now uses a stricter 0.18 m internal radius. It once advanced at 0.35 m,
+    on the reasoning that committing to the next leg
     early avoids braking into every gate. On a straight leg the robot carries on through
     and scores anyway, which is why it survived so long. On a corner it does not: the
     carrot swings onto the next leg the instant the cursor moves, and the robot turns away
@@ -41,30 +42,17 @@ class Course:
     run that was otherwise navigating them correctly -- three of sixteen, thrown away by the
     bookkeeping rather than by the driving.
 
-    So the cursor now moves on either of two events, and ``advance_radius`` no longer
-    decides on its own:
-
-    * the gate is scored -- inside ``score_radius``, which is the contest's number and is
-      read from the course file's own metadata where there is one;
-    * or the approach is over -- the robot came inside ``advance_radius`` and is now moving
-      away from the gate again, so its closest approach has already happened and holding
-      the cursor there would only make it turn round for a gate it cannot improve on.
-
-    The second rule is what keeps the tighter radius from deadlocking. Chasing a 0.2 m
-    target that the robot cannot quite reach would otherwise leave it orbiting, and an
-    orbit is indistinguishable from progress until the clock runs out.
+    The cursor now moves only when the current gate is inside ``score_radius``. There is no
+    receding/closest-point or ``advance_radius`` fallback: missing a strict gate must hold the
+    cursor instead of invalidating every later gate. Both shipped radii are 0.18 m, but only
+    the score radius is allowed to consume a waypoint.
     """
-
-    #: How far the robot must move back out before its approach is called finished, metres.
-    #: Position noise in the simulation is millimetres, so this only has to be bigger than
-    #: that; it is deliberately much smaller than the difference between the two radii.
-    RECEDING_MARGIN = 0.05
 
     def __init__(
         self,
         waypoints: list[Waypoint],
-        advance_radius: float = 0.35,
-        score_radius: float = 0.2,
+        advance_radius: float = 0.18,
+        score_radius: float = 0.18,
     ) -> None:
         if not waypoints:
             raise ValueError("Course requires at least one waypoint")
@@ -72,7 +60,6 @@ class Course:
         self.advance_radius = float(advance_radius)
         self.score_radius = float(score_radius)
         self._cursor = 0
-        self._closest = math.inf
 
     @classmethod
     def from_yaml(cls, path: str | Path, **kwargs) -> Course:
@@ -111,16 +98,8 @@ class Course:
         if self.finished:
             return False
         distance = float(np.linalg.norm(self.waypoints[self._cursor].xy - position_xy))
-        self._closest = min(self._closest, distance)
-
-        scored = distance <= self.score_radius
-        approach_over = (
-            self._closest <= self.advance_radius
-            and distance > self._closest + self.RECEDING_MARGIN
-        )
-        if scored or approach_over:
+        if distance <= self.score_radius:
             self._cursor += 1
-            self._closest = math.inf
             return True
         return False
 
@@ -168,7 +147,6 @@ class Course:
 
     def reset(self) -> None:
         self._cursor = 0
-        self._closest = math.inf
 
 
 def _segment_circle_exit(

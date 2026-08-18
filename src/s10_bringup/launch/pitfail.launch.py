@@ -126,7 +126,7 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument("seed", default_value="0"),
             DeclareLaunchArgument("max_time", default_value="180.0"),
             DeclareLaunchArgument("grace", default_value="3.0"),
-            DeclareLaunchArgument("reach_radius", default_value="0.35"),
+            DeclareLaunchArgument("reach_radius", default_value="0.18"),
             DeclareLaunchArgument(
                 "stop_before_collision_distance",
                 default_value="0.15",

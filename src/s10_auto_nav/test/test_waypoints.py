@@ -55,25 +55,20 @@ def test_coming_inside_the_advance_radius_is_not_by_itself_reaching_the_gate():
     assert course.cursor == 1, "still approaching; the closest point has not happened yet"
 
 
-def test_entering_the_scoring_radius_advances():
+def test_entering_the_internal_radius_boundary_advances():
     course = straight_course(n=3, spacing=2.0)
     course.update(np.array([0.0, 0.0]))
-    approach(course, (2.0, 0.0), [0.60, 0.34, 0.19])
+    approach(course, (2.0, 0.0), [0.60, 0.181, 0.18])
     assert course.cursor == 2
 
 
-def test_a_gate_the_robot_is_moving_away_from_again_releases_the_cursor():
-    """Without this the tighter radius deadlocks: an orbit looks like progress forever.
-
-    The robot gets to 0.24 m, which does not score, and then starts receding. There is
-    nothing further to be gained by holding the cursor there -- the closest approach has
-    already been and gone -- so the course moves on rather than turning the robot round.
-    """
+def test_receding_after_a_near_miss_never_releases_the_cursor():
+    """A 0.181 m miss cannot discard the gate even after the robot moves away."""
     course = straight_course(n=3, spacing=2.0)
     course.update(np.array([0.0, 0.0]))
-    moved = approach(course, (2.0, 0.0), [0.60, 0.30, 0.24, 0.26, 0.31])
-    assert moved == [False, False, False, False, True]
-    assert course.cursor == 2
+    moved = approach(course, (2.0, 0.0), [0.60, 0.30, 0.181, 0.26, 0.60])
+    assert moved == [False] * 5
+    assert course.cursor == 1
 
 
 def test_receding_from_a_gate_never_approached_does_not_release_it():
@@ -84,14 +79,11 @@ def test_receding_from_a_gate_never_approached_does_not_release_it():
     assert course.cursor == 1
 
 
-def test_the_closest_approach_is_forgotten_at_each_new_gate():
-    """Carrying it over would release the next gate on its first receding sample."""
-    course = straight_course(n=4, spacing=2.0)
+def test_advance_bound_cannot_be_looser_than_local_scoring():
+    course = straight_course(n=3, spacing=2.0, advance_radius=0.35, score_radius=0.18)
     course.update(np.array([0.0, 0.0]))
-    approach(course, (2.0, 0.0), [0.10])
-    assert course.cursor == 2
-    assert not course.update(np.array([2.0, 0.0])), "2 m from gate 2, and not a near miss"
-    assert course.cursor == 2
+    assert not course.update(np.array([2.181, 0.0]))
+    assert course.cursor == 1
 
 
 def test_one_waypoint_consumed_per_update():

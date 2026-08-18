@@ -23,6 +23,10 @@ from s10_auto_nav.terrain import TerrainKind, TerrainVerdict
 
 REPO = Path(__file__).resolve().parents[3]
 NAV_YAML = REPO / "src" / "s10_bringup" / "config" / "nav.yaml"
+STRATEGY_YAMLS = [
+    REPO / "src" / "s10_bringup" / "config" / "strategy.yaml",
+    REPO / "src" / "s10_bringup" / "config" / "strategy_gate16.yaml",
+]
 
 #: Three waypoints in a straight line is enough course for a node to construct.
 COURSE = {"waypoints": [{"index": i, "position": [float(i), 0.0, 0.0]} for i in range(3)]}
@@ -37,7 +41,7 @@ def shipped() -> dict:
 
 def test_the_brake_distances_ship_in_nav_yaml():
     params = shipped()
-    assert params["advance_radius"] == params["score_radius"] == 0.2
+    assert params["advance_radius"] == params["score_radius"] == 0.18
     assert params["pivot_threshold_deg"] == 30.0
     assert params["corner_retreat_waypoints"] == [26, 27]
     assert params["corner_retreat_distance"] == 0.7
@@ -74,7 +78,16 @@ def test_no_parameter_in_nav_yaml_is_unknown_to_the_node():
 
 def test_the_node_default_cannot_abandon_an_unscored_gate():
     source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
-    assert 'declare_parameter("advance_radius", 0.2)' in source
+    assert 'declare_parameter("advance_radius", 0.18)' in source
+    assert 'declare_parameter("score_radius", 0.18)' in source
+
+
+def test_router_and_follower_ship_with_the_same_strict_radius():
+    follower = shipped()
+    for path in STRATEGY_YAMLS:
+        router = yaml.safe_load(path.read_text())["strategy_router"]["ros__parameters"]
+        assert router["advance_radius"] == follower["advance_radius"] == 0.18
+        assert router["score_radius"] == follower["score_radius"] == 0.18
 
 
 def test_a_scored_gate_resets_command_slew_before_the_next_leg():

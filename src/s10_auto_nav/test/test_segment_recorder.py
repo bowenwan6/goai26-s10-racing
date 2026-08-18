@@ -28,7 +28,8 @@ def test_the_harness_does_not_stop_outside_the_scoring_radius():
     source = (
         Path(__file__).resolve().parents[1] / "s10_auto_nav" / "segment_recorder.py"
     ).read_text()
-    assert 'declare_parameter("reach_radius", 0.2)' in source
+    assert 'declare_parameter("reach_radius", 0.18)' in source
+    assert 'declare_parameter("score_radius", 0.18)' in source
 
 
 class _Verdict:
@@ -38,7 +39,7 @@ class _Verdict:
     the real method without a node, a course file or a running graph.
     """
 
-    def __init__(self, closest: float, outcome: str, score_radius: float = 0.2):
+    def __init__(self, closest: float, outcome: str, score_radius: float = 0.18):
         from s10_auto_nav.segment_recorder import SegmentRecorder
 
         self.summary = SegmentRecorder.summary.__get__(self)
@@ -69,8 +70,14 @@ def test_a_run_that_stopped_at_the_advance_radius_did_not_score():
 
 @needs_ros
 def test_a_run_that_passed_through_the_gate_scores():
-    summary = _Verdict(0.19, "reached the end waypoint").summary()
+    summary = _Verdict(0.18, "reached the end waypoint").summary()
     assert summary["reached"] is True
+
+
+@needs_ros
+def test_a_run_beyond_the_internal_radius_is_rejected():
+    summary = _Verdict(0.181, "reached the end waypoint").summary()
+    assert summary["reached"] is False
 
 
 @needs_ros
