@@ -120,6 +120,9 @@ class RobotState:
     wheel_contacts: np.ndarray | None = None
     obstacle_edge: np.ndarray | None = None
     obstacle_normal: np.ndarray | None = None
+    #: Ground/deck height at the segment's target waypoint. Segment stair policies use this
+    #: only to prove that all wheels reached the upper platform; it is not an entry trigger.
+    segment_target_z: float | None = None
     actual_joint_owner: str = "unknown"
 
     @property
@@ -648,12 +651,19 @@ class Router:
             self._policy_entry(policy)
         )
         if segment_owned:
+            start_from_rest = bool(getattr(policy, "start_from_rest", False))
+            measured_forward = (
+                state.speed if state.forward_speed is None else state.forward_speed
+            )
+            heading_aligned = abs(state.heading_error) <= c.max_heading_error
+            lateral_aligned = abs(state.lateral_error) <= c.max_lateral_error * 2.0
             in_envelope = (
-                abs(state.lateral_error) <= c.max_lateral_error * 2.0
-                and abs(state.heading_error) <= c.max_heading_error
-                and entry_speed_min
-                <= (state.speed if state.forward_speed is None else state.forward_speed)
-                <= entry_speed_max
+                lateral_aligned
+                and heading_aligned
+                and (
+                    start_from_rest
+                    or entry_speed_min <= measured_forward <= entry_speed_max
+                )
                 and abs(state.yaw_rate) <= c.max_entry_yaw_rate
                 and state.tilt <= c.max_entry_tilt
             )
@@ -671,10 +681,19 @@ class Router:
             yaw = float(
                 np.clip(-state.heading_error * 2.0, -c.align_yaw_rate, c.align_yaw_rate)
             )
+            if start_from_rest:
+                # A segment test can spawn with 10--20 degrees of yaw error while the robot
+                # stands up. Correct that well before the first riser without consuming the
+                # stair runway. Once inside the heading gate, stop steering and let yaw rate
+                # settle before handing over the actor.
+                forward = 0.0 if not heading_aligned else command_forward
+                yaw = yaw if not heading_aligned else 0.0
+            else:
+                forward = command_forward
             return RouterOutput(
                 self.mode,
                 Source.ROUTER,
-                command=(command_forward, 0.0, yaw),
+                command=(forward, 0.0, yaw),
                 reason="aligning for stairs57 segment ownership",
             )
         in_envelope = (
@@ -905,6 +924,8 @@ class Router:
                 self._attempt.best_travelled = state.travelled
                 self._attempt.last_progress_at = state.t
                 self._attempt.segment = tuple(state.segment)
+                if hasattr(policy, "continue_segment"):
+                    policy.continue_segment()
             else:
                 if hasattr(policy, "succeed"):
                     policy.succeed(f"strict waypoint completed segment {completed}")
@@ -917,6 +938,27 @@ class Router:
                 return RouterOutput(
                     self.mode, Source.NAV, command=nav_command, reason=self._last_reason
                 )
+
+        if hasattr(policy, "completion_candidate"):
+            complete, why = policy.completion_candidate(
+                state,
+                dt,
+                self._attempt.entry_position,
+            )
+            if complete:
+                completed = tuple(self._attempt.segment)
+                self._cleared.add(completed)
+                self._resume_from = state.travelled
+                self._resume_position = np.asarray(state.position, float).copy()
+                self._resume_deadline = state.t + self.config.resume_timeout
+                if hasattr(policy, "succeed"):
+                    policy.succeed(why)
+                self._cancel_active("upper platform verified")
+                self._go(
+                    Mode.HANDOFF,
+                    f"stairs segment {completed} clear: {why}; returning official owner",
+                )
+                return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         elapsed = state.t - self._attempt.started_at
         climb_timeout = float(getattr(policy, "climb_timeout", c.climb_timeout))

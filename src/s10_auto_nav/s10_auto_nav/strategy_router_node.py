@@ -343,6 +343,7 @@ class StrategyRouterNode(Node):
         self._travelled = 0.0
         self._finished = False
         self._segment = (0, 1)
+        self._segment_target_z = None
         self._obstacle_distance = math.inf
         self._lateral_error = 0.0
         self._heading_error = 0.0
@@ -513,6 +514,7 @@ class StrategyRouterNode(Node):
         cursor = self.course.cursor
         if self.course.finished or cursor == 0:
             self._segment = (max(cursor - 1, 0), cursor)
+            self._segment_target_z = None
             self._obstacle_distance = math.inf
             self._lateral_error = 0.0
             self._heading_error = 0.0
@@ -520,6 +522,7 @@ class StrategyRouterNode(Node):
         previous = self.course.waypoints[cursor - 1]
         target = self.course.waypoints[cursor]
         self._segment = (previous.index, target.index)
+        self._segment_target_z = float(target.position[2])
 
         if self._segment not in self.router.segment_policies:
             # Only configured policy segments carry router geometry. Everything else is
@@ -605,6 +608,7 @@ class StrategyRouterNode(Node):
             ),
             obstacle_edge=None if edge is None else np.asarray(edge, float).copy(),
             obstacle_normal=None if normal is None else np.asarray(normal, float).copy(),
+            segment_target_z=self._segment_target_z,
             actual_joint_owner=self._actual_owner,
         )
 
