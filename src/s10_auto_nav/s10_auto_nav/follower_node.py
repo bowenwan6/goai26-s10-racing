@@ -133,6 +133,15 @@ class WaypointFollowerNode(Node):
         # parameter and raising it above 0.2 makes the follower claim gates it did not take.
         self.declare_parameter("score_radius", 0.18)
         self.declare_parameter("max_forward", PursuitGains.max_forward)
+        self.declare_parameter("terrain_max_forward", PursuitGains.max_forward)
+        # A populated default makes rclpy declare INTEGER_ARRAY. An empty Python list is
+        # inferred as BYTE_ARRAY and rejects the integer YAML override before startup.
+        self.declare_parameter("fast_flat_waypoints", [2, 10, 14, 22])
+        self.declare_parameter("fast_flat_min_gate_distance", 3.0)
+        self.declare_parameter("fast_flat_max_heading_deg", 8.0)
+        self.declare_parameter("fast_flat_max_cross_track", 0.15)
+        self.declare_parameter("fast_flat_max_tilt_deg", 6.0)
+        self.declare_parameter("fast_flat_max_pitch_deg", 5.0)
         self.declare_parameter("max_lateral", PursuitGains.max_lateral)
         self.declare_parameter("max_yaw_rate", PursuitGains.max_yaw_rate)
         self.declare_parameter("lookahead", PursuitGains.lookahead)
@@ -225,6 +234,28 @@ class WaypointFollowerNode(Node):
             )
         )
         self.flat_brake_distance = self.controller.gains.brake_distance
+        self.fast_flat_forward = self.controller.gains.max_forward
+        self.terrain_max_forward = float(
+            self.get_parameter("terrain_max_forward").value
+        )
+        self.fast_flat_waypoints = {
+            int(value) for value in self.get_parameter("fast_flat_waypoints").value
+        }
+        self.fast_flat_min_gate_distance = float(
+            self.get_parameter("fast_flat_min_gate_distance").value
+        )
+        self.fast_flat_max_heading = math.radians(
+            float(self.get_parameter("fast_flat_max_heading_deg").value)
+        )
+        self.fast_flat_max_cross_track = float(
+            self.get_parameter("fast_flat_max_cross_track").value
+        )
+        self.fast_flat_max_tilt = math.radians(
+            float(self.get_parameter("fast_flat_max_tilt_deg").value)
+        )
+        self.fast_flat_max_pitch = math.radians(
+            float(self.get_parameter("fast_flat_max_pitch_deg").value)
+        )
         self.stair_brake_distance = _optional_positive(
             self.get_parameter("stair_brake_distance").value
         )
@@ -738,11 +769,64 @@ class WaypointFollowerNode(Node):
             if self._barrier_side == 0 and self._barrier_bypass_target is not None
             else self._terrain_scale_for(verdict, charging)
         )
+        self.controller.gains.max_forward = self._forward_limit_for(
+            target=target,
+            carrot=carrot,
+            gate_distance=gate_distance,
+            verdict=verdict,
+            lidar_scale=scale,
+            terrain_scale=terrain,
+        )
         command = self.controller.compute(self._pose_xy, self._yaw, target, dt)
         published = self._apply_speed_scale(command, min(scale, terrain), dt)
         self._last_forward = published.forward
         self._publish(published)
         self._log_state(published, scale, terrain, climbing, dt, verdict)
+
+    def _forward_limit_for(
+        self,
+        *,
+        target: np.ndarray,
+        carrot: np.ndarray,
+        gate_distance: float,
+        verdict: TerrainVerdict,
+        lidar_scale: float,
+        terrain_scale: float,
+    ) -> float:
+        """Admit the measured high-speed gait only on straight, known-clear flat legs.
+
+        The fixed course has stacked decks that make a truly flat lane alternate between
+        FLAT and BLOCKED in the local height projection. For that reason the route allowlist
+        is primary, while the live checks prove that no avoidance target, terrain throttle,
+        large steering correction or unstable attitude is active. Losing any one condition
+        returns the accepted 0.7 m/s terrain ceiling before the next command is computed.
+        """
+        course_target = self.course.target
+        if course_target is None or course_target.index not in self.fast_flat_waypoints:
+            return self.terrain_max_forward
+        if gate_distance < self.fast_flat_min_gate_distance:
+            return self.terrain_max_forward
+        if self._strategy_mode not in {"", "navigate"}:
+            return self.terrain_max_forward
+        if verdict.kind not in {TerrainKind.FLAT, TerrainKind.BLOCKED}:
+            return self.terrain_max_forward
+        if lidar_scale < 0.999 or terrain_scale < 0.999:
+            return self.terrain_max_forward
+        if np.linalg.norm(np.asarray(target) - np.asarray(carrot)) > 0.05:
+            return self.terrain_max_forward
+        if abs(self._tilt) > self.fast_flat_max_tilt:
+            return self.terrain_max_forward
+        if abs(self._pitch) > self.fast_flat_max_pitch:
+            return self.terrain_max_forward
+
+        delta = np.asarray(target, float) - self._pose_xy
+        heading_error = wrap_angle(math.atan2(delta[1], delta[0]) - self._yaw)
+        cross_track = -math.sin(self._yaw) * delta[0] + math.cos(self._yaw) * delta[1]
+        if abs(heading_error) > self.fast_flat_max_heading:
+            return self.terrain_max_forward
+        if abs(cross_track) > self.fast_flat_max_cross_track:
+            return self.terrain_max_forward
+        return self.fast_flat_forward
 
     def _log_state(
         self,

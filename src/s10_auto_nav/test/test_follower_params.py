@@ -42,6 +42,15 @@ def shipped() -> dict:
 def test_the_brake_distances_ship_in_nav_yaml():
     params = shipped()
     assert params["advance_radius"] == params["score_radius"] == 0.18
+    assert params["max_forward"] == 2.0
+    assert params["terrain_max_forward"] == 0.7
+    assert params["fast_flat_waypoints"] == [2, 10, 14, 22]
+    assert params["fast_flat_min_gate_distance"] == 3.0
+    assert params["fast_flat_max_heading_deg"] == 8.0
+    assert params["fast_flat_max_cross_track"] == 0.15
+    assert params["fast_flat_max_tilt_deg"] == 6.0
+    assert params["fast_flat_max_pitch_deg"] == 5.0
+    assert params["climb_speed"] == 0.7
     assert params["pivot_threshold_deg"] == 30.0
     assert params["corner_retreat_waypoints"] == [26, 27]
     assert params["corner_retreat_distance"] == 0.7
@@ -232,6 +241,45 @@ def test_route_hint_defers_to_terrain_recovery_until_chassis_is_stable(node):
     assert node._route_hint_command(0.02) is None
     assert 0 in node._route_hints_completed
     assert node.course.cursor == 0
+
+
+@needs_ros
+def test_fast_flat_limit_requires_the_whole_live_safety_envelope(node):
+    flat = TerrainVerdict(TerrainKind.FLAT, 1.0, "clear", TerrainKind.FLAT)
+    ramp = TerrainVerdict(TerrainKind.RAMP, 1.0, "inclined", TerrainKind.RAMP)
+    target = np.array([4.0, 0.0])
+    node.fast_flat_waypoints = {0}
+    node.fast_flat_forward = 2.0
+    node.terrain_max_forward = 0.7
+    node._pose_xy = np.array([0.0, 0.0])
+    node._yaw = 0.0
+    node._tilt = 0.0
+    node._pitch = 0.0
+
+    def limit(**changes):
+        values = {
+            "target": target,
+            "carrot": target,
+            "gate_distance": 4.0,
+            "verdict": flat,
+            "lidar_scale": 1.0,
+            "terrain_scale": 1.0,
+        }
+        values.update(changes)
+        return node._forward_limit_for(**values)
+
+    assert limit() == pytest.approx(2.0)
+    assert limit(gate_distance=2.99) == pytest.approx(0.7)
+    assert limit(verdict=ramp) == pytest.approx(0.7)
+    assert limit(lidar_scale=0.99) == pytest.approx(0.7)
+    assert limit(terrain_scale=0.99) == pytest.approx(0.7)
+    assert limit(target=np.array([4.0, 0.2])) == pytest.approx(0.7)
+
+    node._tilt = node.fast_flat_max_tilt + 0.01
+    assert limit() == pytest.approx(0.7)
+    node._tilt = 0.0
+    node._yaw = node.fast_flat_max_heading + 0.01
+    assert limit() == pytest.approx(0.7)
 
 
 @needs_ros
