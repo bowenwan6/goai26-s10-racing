@@ -1,4 +1,4 @@
-"""Lifecycle adapter for the competition-v4 SDK-local Gate 16 policy.
+"""Lifecycle adapter for the adaptive-v3 SDK-local Gate 16 policy.
 
 The ONNX graphs and actuator decoding live in ``rl_deploy`` so they consume the calibrated
 ``RobotBasicState`` and produce wheel velocity targets without a ROS actuator round trip.
@@ -43,6 +43,12 @@ def gate16_owner_request(policy, mode: str, *, prewarm_ready: bool = False) -> s
     ``gate16_climb`` keeps that owner and arms residual only after the router proves the
     complete moving-entry contract.
     """
+    if getattr(policy, "is_gate16_policy", False) and str(mode) in {
+        "approach",
+        "align",
+    } and not prewarm_ready:
+        # Build a causal last_action history without taking actuator ownership.
+        return "gate16_shadow"
     if not gate16_should_own(policy, mode, prewarm_ready=prewarm_ready):
         return "official"
     return "gate16_climb" if str(mode) in GATE16_ARMED_MODES else "gate16"
@@ -56,7 +62,7 @@ class Gate16Config:
 
 
 class StableGate16Policy:
-    """Remote handle for the frozen-checkpoint, competition-v4 Gate16 actor."""
+    """Remote handle for the frozen-checkpoint, adaptive-v3 Gate16 actor."""
 
     action_kind = ActionKind.DELEGATED
     owner_name = "gate16"
@@ -78,7 +84,7 @@ class StableGate16Policy:
         self._started_at = float(observation.t)
         self._last_t = self._started_at
         self._status = PolicyStatus.RUNNING
-        self._reason = "Gate16 competition-v4 actor requested (source b6535a4)"
+        self._reason = "Gate16 adaptive-v3 actor requested (source b824f7f)"
 
     def step(self, observation: PolicyObservation) -> PolicyAction:
         self._last_t = float(observation.t)
@@ -90,7 +96,7 @@ class StableGate16Policy:
                 float(self.config.command_lateral),
                 float(self.config.command_yaw_rate),
             ),
-            info={"owner": self.owner_name, "profile": "competition_v4_b6535a4"},
+            info={"owner": self.owner_name, "profile": "adaptive_v3_b824f7f"},
         )
 
     def succeed(self, reason: str = "four wheels verified on upper platform") -> None:
@@ -117,6 +123,6 @@ class StableGate16Policy:
             elapsed,
             {
                 "stable_gate16_checkpoint": True,
-                "profile": "competition_v4_b6535a4",
+                "profile": "adaptive_v3_b824f7f",
             },
         )

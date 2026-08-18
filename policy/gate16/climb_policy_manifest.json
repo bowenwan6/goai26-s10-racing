@@ -1,7 +1,8 @@
 {
-  "format": "s10-gated-residual-front-tuck-symmetry-v4",
+  "format": "s10-gated-residual-front-tuck-symmetry-v3",
   "source_repository": "https://github.com/belsun/goai-s10-gate16-policy",
-  "source_commit": "b6535a4",
+  "source_commit": "b824f7ff18ef2ca07c78a2826b44a449ac40bdd2",
+  "asset_bundle_commit": "b6535a48bf3d72f3ab2f3e37f8b555eb15aa3e64",
   "observation_dim": 174,
   "action_dim": 16,
   "base_onnx": "policy.onnx",
@@ -76,13 +77,14 @@
       "both_front_wheels_supported",
       "front_tuck_m"
     ],
-    "execution_owner": "s10_policy_runner",
-    "runner_applies_profile": true,
+    "execution_owner": "future_ros_adapter_with_verified_wheel_support",
+    "runner_applies_profile": false,
+    "inactive_reason": "the current SDK observation has no verified front-wheel deck height/contact input; b824f7f reference C++ runner does not execute this profile",
     "phase_semantics": {
-      "settle": "each front edge track crossing x=0.40 m for two frames tucks that physical front limb immediately; after both sides support, keep both tucked for 30 policy steps",
-      "push": "after settle until both rear wheels complete"
+      "settle": "after both front edge tracks reach x=0.40 m for two policy frames, override observation vx for 30 policy steps",
+      "push": "after the 30-step settle window until the router verifies all four wheels clear"
     },
-    "unmatched_behavior": "use frozen policy plus generic supported-front tuck and forward floor",
+    "unmatched_behavior": "keep the frozen entry command and do not extrapolate a profile",
     "front_wheel_forward_sign": "negative"
   },
   "policy_symmetry": {
@@ -101,30 +103,10 @@
         90.0
       ]
     ],
-    "handoff_input": "calibrated base yaw relative to the fixed Gate16 +X normal, frozen on armed climb-gate entry",
+    "handoff_input": "calibrated base yaw relative to the fixed Gate16 +X normal, frozen on armed heightmap-gate entry",
     "input_lifetime": "freeze from CLIMB handoff through CLIMB_EXIT",
-    "runner_api": "LoadDeploymentConfig + explicit router residual arm + heightmap edge timing",
+    "runner_api": "adaptive-v3 mirror bands + explicit router residual arm + heightmap edge timing",
     "onnx_graphs_unchanged": true
-  },
-  "full_stack_runtime": {
-    "terrain_mode_filter": "debounced and climb-latched",
-    "far_alignment_only": true,
-    "residual_engage_edge_distance_m": 0.70,
-    "front_support_trigger": "independent left and right heightmap edge distances with two-frame confirmation",
-    "supported_command_mode": "forward force line with zero lateral command and 30-step policy-frame yaw compensation",
-    "supported_front_tuck_action_delta": [0.075, -0.15],
-    "aggressive_supported_forward_floor_mps": 0.25,
-    "supported_policy_frame_yaw_bias_rps": -0.25,
-    "rear_push_hold_policy_steps": 180,
-    "post_climb_forward_boost": true,
-    "stalled_climb_recovery": true,
-    "default_tuning": "competition_race",
-    "competition_navigation": {
-      "max_forward_mps": 0.70,
-      "waypoint_capture_min_forward_mps": 0.40,
-      "climb_exit_forward_mps": 0.50,
-      "climb_exit_duration_s": 0.80
-    }
   },
   "racing_integration": {
     "canonical_handoff_source": "b824f7ff18ef2ca07c78a2826b44a449ac40bdd2",
@@ -133,7 +115,8 @@
     "entry_heading_abs_max_deg": 5.0,
     "entry_heading_source": "calibrated base yaw relative to measured Gate16 +X normal",
     "base_owner_prewarms_before_residual": true,
-    "prewarm_condition": "official actor reaches the 0.90 m staging point with abs(yaw)<=10 deg and abs(lateral)<=0.16 m",
+    "shadow_condition": "evaluate the unarmed Gate16 base from APPROACH at 3.0 m while official remains sole actuator owner",
+    "prewarm_condition": "warm Gate16 base takes ownership at the 0.90 m staging point with abs(yaw)<=2.5 deg and abs(lateral)<=0.08 m",
     "prewarm_forward_command_mps": 0.23,
     "prewarm_forward_calibration": "full-stack obstacle-normal progress bracket: command 0.18 produced approximately 0.19 m/s and command 0.25 produced approximately 0.27 m/s",
     "residual_arm_request": "gate16_climb only after CLIMB_READY proves the entry contract",

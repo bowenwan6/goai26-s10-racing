@@ -159,6 +159,9 @@ class StrategyRouterNode(Node):
         self.declare_parameter(
             "gate16_staging_tolerance", RouterConfig.gate16_staging_tolerance
         )
+        self.declare_parameter(
+            "gate16_staging_lead", RouterConfig.gate16_staging_lead
+        )
         self.declare_parameter("min_entry_speed", RouterConfig.min_entry_speed)
         self.declare_parameter("max_entry_speed", RouterConfig.max_entry_speed)
         self.declare_parameter("target_entry_speed", RouterConfig.target_entry_speed)
@@ -197,6 +200,9 @@ class StrategyRouterNode(Node):
             ),
             gate16_staging_tolerance=float(
                 self.get_parameter("gate16_staging_tolerance").value
+            ),
+            gate16_staging_lead=float(
+                self.get_parameter("gate16_staging_lead").value
             ),
             min_entry_speed=float(self.get_parameter("min_entry_speed").value),
             max_entry_speed=float(self.get_parameter("max_entry_speed").value),
@@ -341,9 +347,9 @@ class StrategyRouterNode(Node):
                 )
             )
             self.get_logger().warning(
-                "Gate16 competition-v4 policy enabled (source b6535a4): SDK-local "
-                "174D frozen base+residual with edge-timed engagement, independent "
-                "front support, command profiles and bounded policy-frame mirroring"
+                "Gate16 adaptive-v3 policy enabled (source b824f7f): SDK-local "
+                "174D frozen base+residual with explicit arm, shadow history and "
+                "bounded policy-frame mirroring"
             )
         elif kind == "scripted":
             path = str(self.get_parameter("scripted_trajectory").value)
@@ -542,9 +548,9 @@ class StrategyRouterNode(Node):
         )
         out = self.router.tick(state, self._nav_command, observation)
 
-        # The official actor owns the entire moving approach. Gate16 is requested only after
-        # CLIMB_READY proves distance, forward speed, yaw, yaw rate, lateral error and tilt;
-        # the SDK gate then performs the one permitted no-stop handoff and arms residual.
+        # The official actor owns the moving approach while Gate16 shadow-evaluates the same
+        # observations. The warm Gate16 base takes ownership at staging; residual arms only
+        # after CLIMB_READY proves the complete moving-entry envelope.
         policy_name = self.router.policy_for(state.segment)
         policy = self.router.policies.get(policy_name)
         prewarm_gate16 = gate16_should_own(
@@ -565,6 +571,8 @@ class StrategyRouterNode(Node):
             self.arbiter.grant(JointArbiter.GATE16_CLIMB)
         elif prewarm_gate16:
             self.arbiter.grant(gate16_request)
+        elif gate16_request == JointArbiter.GATE16_SHADOW:
+            self.arbiter.grant(JointArbiter.GATE16_SHADOW)
         else:
             self.arbiter.grant(JointArbiter.OFFICIAL)
         # Asked every tick rather than once per transition. The gate ignores a request for

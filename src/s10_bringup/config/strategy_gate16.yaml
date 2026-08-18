@@ -19,7 +19,7 @@ strategy_router:
 
     climb_enabled: true
     measurement_only: false
-    # b6535a4 competition-v4 runtime around the frozen 174D base+residual pair.
+    # b824f7f adaptive-v3 runtime around the frozen 174D base+residual pair.
     climb_policy: gate16
     climb_segment: [15, 16]
     scripted_trajectory: ""
@@ -66,12 +66,14 @@ strategy_router:
     # bracket is command 0.18 below the window and 0.25 above it; 0.23 targets 0.25 m/s.
     # This does not change the tested global 0.7 speed limit.
     gate16_prewarm_forward: 0.23
+    # Shadow-evaluate from APPROACH; take actual ownership only on the final 0.25 m runway,
+    # leaving the earlier distance available for official-actor alignment.
+    gate16_staging_lead: 0.25
     max_entry_yaw_rate: 0.05
     align_yaw_rate: 0.70
     max_lateral_error: 0.08
-    # The user-provided 5 deg value is a hard ceiling. Nominal v4 validation is yaw~0;
-    # triggering inside 2.5 deg selects its measured yaw0 pre-contact-tuck profile instead
-    # of relying on the less stable -5 deg boundary profile.
+    # The user-provided 5 deg value is a hard ceiling. Keep the nominal adaptive-v3 entry
+    # near zero; the broad-angle matrix is arrival-error tolerance, not a target.
     max_heading_error_deg: 2.5
     gate16_staging_tolerance: 0.10
     climb_exit_forward: 0.50

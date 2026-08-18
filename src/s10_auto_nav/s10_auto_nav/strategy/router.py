@@ -641,8 +641,9 @@ class Router:
         # together while still far from the lip, using forward curvature rather than the
         # ineffective lateral channel. An in-place yaw at the staging point made the wheeled
         # base orbit by more than a metre in the failed full-stack trial. The
-        # Gate16 actor is requested only inside the nominal 0.90 m staging band, after yaw and
-        # lateral error are already small.
+        # Gate16 actor is requested only inside the configured staging band, after yaw and
+        # lateral error are already small. The adaptive-v3 deployment uses about 1.50 m so
+        # its recurrent-by-history 174D input settles before residual arm.
         if requires_moving_entry and not self._gate16_prewarm_ready:
             if state.obstacle_edge is None or state.obstacle_normal is None:
                 self._go(Mode.RECOVER, "Gate16 staging has no obstacle frame")
@@ -704,9 +705,9 @@ class Router:
                 elif distance_error < -c.gate16_staging_tolerance:
                     forward = -min(c.align_speed, 0.15)
                 else:
-                    # Position is in-band but yaw/lateral is still settling. This is at
-                    # ~0.90 m, not at the lip, and prevents alignment from consuming the
-                    # 0.25 m runway reserved for Gate16 base warmup.
+                    # Position is in-band but yaw/lateral is still settling. This is well
+                    # before the lip and prevents alignment from consuming the runway
+                    # reserved for Gate16 base warmup.
                     forward = 0.0
                 return RouterOutput(
                     self.mode,
