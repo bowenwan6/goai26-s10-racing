@@ -4,10 +4,14 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 
 from s10_auto_nav.waypoints import Course
 
 COURSE_FILE = Path(__file__).resolve().parents[2] / "s10_bringup" / "config" / "course.yaml"
+GATE16_CONFIG = (
+    Path(__file__).resolve().parents[2] / "s10_bringup" / "config" / "strategy_gate16.yaml"
+)
 
 #: The scorer checks a 0.2 m horizontal radius, so consecutive gates must be further
 #: apart than that or one pose could satisfy two of them.
@@ -55,3 +59,10 @@ def test_start_and_finish_are_labelled(course):
     positions = [wp.position for wp in course.waypoints]
     np.testing.assert_allclose(positions[0], [0.0, -1.725, 0.0], atol=1e-3)
     np.testing.assert_allclose(positions[-1], [32.925, 18.45, 3.75], atol=1e-3)
+
+
+def test_gate16_commands_canonical_speed_but_accepts_measured_gait_envelope():
+    params = yaml.safe_load(GATE16_CONFIG.read_text())["strategy_router"]["ros__parameters"]
+    assert params["target_entry_speed"] == pytest.approx(0.25)
+    assert params["min_entry_speed"] == pytest.approx(0.10)
+    assert params["max_entry_speed"] == pytest.approx(0.30)
