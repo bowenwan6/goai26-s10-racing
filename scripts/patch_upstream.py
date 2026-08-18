@@ -249,6 +249,8 @@ EDITS = [
         addition=(
             "        std::shared_ptr<S10PolicyRunner> stairs57_policy_;\n"
             "        bool stairs57_running_ = false;\n"
+            "        int stairs57_blend_step_ = 0;\n"
+            "        static constexpr int kStairs57BlendSteps = 20;  // 0.4 s at 50 Hz\n"
         ),
         marker="stairs57_running_",
     ),
@@ -338,14 +340,31 @@ EDITS = [
                     if (owner.owner() == s10::JointOwner::kStairs57 ||
                         owner.requested_owner() == s10::JointOwner::kStairs57) {
                         if (!stairs57_running_) {
-                            stairs57_policy_->OnEnter();
+                            // Both policies use the official 57D/16D S10 contract. Seed the
+                            // stair actor with the action currently driving the robot, then
+                            // retain the actual blended action as its recurrent history.
+                            stairs57_policy_->OnEnter(s10_policy_->GetLastAction());
                             stairs57_running_ = true;
+                            stairs57_blend_step_ = 0;
                         }
-                        stairs57_command = stairs57_policy_->getRobotAction(
-                            rbs_[getrbsReadIndex()], *(uc_ptr_->GetUserCommand())).ConvertToMat();
+                        const float blend_phase = std::min(
+                            1.0f, static_cast<float>(stairs57_blend_step_) /
+                                      static_cast<float>(kStairs57BlendSteps));
+                        const float blend_alpha =
+                            blend_phase * blend_phase * (3.0f - 2.0f * blend_phase);
+                        UserCommand stairs57_user_command = *(uc_ptr_->GetUserCommand());
+                        stairs57_user_command.side_vel_scale = 0.0f;
+                        stairs57_user_command.turnning_vel_scale = 0.0f;
+                        stairs57_command = stairs57_policy_->getRobotActionBlended(
+                            rbs_[getrbsReadIndex()], stairs57_user_command,
+                            &s10_policy_->GetLastAction(), blend_alpha).ConvertToMat();
+                        if (stairs57_blend_step_ < kStairs57BlendSteps) {
+                            ++stairs57_blend_step_;
+                        }
                         stairs57_ptr = &stairs57_command;
                     } else {
                         stairs57_running_ = false;
+                        stairs57_blend_step_ = 0;
                     }
 
                     bool reset_official = false;
@@ -372,6 +391,86 @@ EDITS = [
                         gate16_policy_->SetClimbArmed(owner.gate16_armed());
 """,
         marker="SetActuatorOwnership",
+        mode="replace",
+    ),
+    # The stair actor shares the official 57D observation/action contract. Preserve the
+    # command actually sent during a smooth policy transition as its last_action history;
+    # resetting that slice to zero at a moving handoff is outside the training contract.
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor='#include "policy_runner_base.hpp"\n',
+        addition="#include <algorithm>\n",
+        marker="#include <algorithm>",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="""    void OnEnter() {
+        run_cnt_ = 0;
+        cmd_vel_input_.setZero();
+        last_action_eigen.setZero(action_dim);
+        tmp_action_eigen.setZero(action_dim);
+        motor_p_eigen.setZero(12);
+        motor_v_eigen.setZero(motor_num);
+    }
+""",
+        addition="""    void OnEnter() {
+        OnEnter(VecXf());
+    }
+
+    void OnEnter(const VecXf& action_history_seed) {
+        run_cnt_ = 0;
+        cmd_vel_input_.setZero();
+        if (action_history_seed.size() == action_dim && action_history_seed.allFinite()) {
+            last_action_eigen = action_history_seed;
+        } else {
+            last_action_eigen.setZero(action_dim);
+        }
+        tmp_action_eigen.setZero(action_dim);
+        motor_p_eigen.setZero(12);
+        motor_v_eigen.setZero(motor_num);
+    }
+
+    const VecXf& GetLastAction() const {
+        return last_action_eigen;
+    }
+""",
+        marker="action_history_seed",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="""    RobotAction getRobotAction(const RobotBasicState &ro, const UserCommand &uc) {
+
+        Vec3f base_omgea = ro.base_omega * omega_scale_;
+""",
+        addition="""    RobotAction getRobotAction(const RobotBasicState &ro, const UserCommand &uc) {
+        return getRobotActionBlended(ro, uc, nullptr, 1.0f);
+    }
+
+    RobotAction getRobotActionBlended(const RobotBasicState &ro, const UserCommand &uc,
+                                      const VecXf* blend_from, float blend_alpha) {
+
+        Vec3f base_omgea = ro.base_omega * omega_scale_;
+""",
+        marker="getRobotActionBlended",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="""        current_action_eigen = Onnx_infer(current_observation_);
+        last_action_eigen = current_action_eigen;
+""",
+        addition="""        current_action_eigen = Onnx_infer(current_observation_);
+        if (blend_from != nullptr && blend_from->size() == action_dim && blend_from->allFinite()) {
+            const float alpha = std::isfinite(blend_alpha)
+                                    ? std::clamp(blend_alpha, 0.0f, 1.0f)
+                                    : 1.0f;
+            current_action_eigen =
+                (1.0f - alpha) * (*blend_from) + alpha * current_action_eigen;
+        }
+        last_action_eigen = current_action_eigen;
+""",
+        marker="std::clamp(blend_alpha",
         mode="replace",
     ),
     # Upgrade workspaces patched by the earlier owner-only runner block. The main edit is
