@@ -81,7 +81,7 @@ strategy_router:
     gate16_fallback_ready_dwell: 0.10
     gate16_fallback_min_entry_speed: 0.08
     gate16_fallback_max_entry_speed: 0.20
-    gate16_fallback_target_entry_speed: 0.15
+    gate16_fallback_target_entry_speed: 0.18
     gate16_fallback_max_lateral_error: 0.25
     gate16_fallback_max_heading_error_deg: 6.0
     gate16_fallback_max_yaw_rate: 0.10
