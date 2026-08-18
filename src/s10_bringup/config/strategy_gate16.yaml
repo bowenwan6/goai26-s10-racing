@@ -53,9 +53,13 @@ strategy_router:
     ready_distance_min: 0.62
     ready_distance_max: 0.70
     ready_dwell: 0.10
-    # Candidate's canonical measured handoff is 0.25 +/- 0.02 m/s near zero yaw.
-    min_entry_speed: 0.23
-    max_entry_speed: 0.27
+    # Command the candidate's canonical 0.25 m/s handoff, but gate measured forward
+    # velocity over its documented 0.10-0.30 m/s formal envelope. The legged gait's
+    # instantaneous base velocity oscillates around the command; requiring measured
+    # velocity to remain inside 0.23-0.27 m/s prevented any handoff in the seed-6
+    # full-stack preflight even though the commanded entry was exactly 0.25 m/s.
+    min_entry_speed: 0.10
+    max_entry_speed: 0.30
     target_entry_speed: 0.25
     max_entry_yaw_rate: 0.10
     align_yaw_rate: 0.70

@@ -277,7 +277,8 @@ class SegmentRecorder(Node):
             status = json.loads(msg.data)
         except (TypeError, ValueError):
             return
-        self._active_policy = str(status.get("active_policy", self._active_policy))
+        active = str(status.get("active_policy", ""))
+        self._active_policy = "WP16" if active == "climb_policy" else (active or "official")
         self._joint_owner = str(status.get("joint_owner", self._joint_owner))
         self._joint_owner_actual = str(
             status.get("joint_owner_actual", self._joint_owner_actual)
