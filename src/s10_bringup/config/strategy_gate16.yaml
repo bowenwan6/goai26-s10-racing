@@ -47,18 +47,24 @@ strategy_router:
     climb_timeout: 20.0
     climb_progress_window: 12.0
     max_retries: 0
-    sensor_timeout: 0.2
-    ready_distance_min: 0.55
+    # One delayed ROS/Docker scheduling interval must not cancel a climb. This retains the
+    # router's reviewed 0.5 s stale-observation stop threshold (and 3.0 s abort threshold).
+    sensor_timeout: 0.5
+    ready_distance_min: 0.62
     ready_distance_max: 0.70
     ready_dwell: 0.10
-    min_entry_speed: 0.10
-    max_entry_speed: 0.30
-    target_entry_speed: 0.25
+    min_entry_speed: 0.08
+    max_entry_speed: 0.20
+    target_entry_speed: 0.15
     max_entry_yaw_rate: 0.10
     align_yaw_rate: 0.70
     max_lateral_error: 0.25
     gate16_staging_tolerance: 0.25
     verify_clearance: 0.02
-    verify_hold: 0.30
-    verify_timeout: 3.0
+    # Entry into VERIFY already requires all four wheels over with sane contacts/attitude.
+    # Stopping the policy unloads individual wheels briefly, so retain that candidate
+    # through contact chatter while requiring a fresh 0.10 s confirmation before handoff.
+    verify_hold: 0.10
+    verify_timeout: 5.0
+    verify_unready_dwell: 0.30
     verify_deck_z: 0.4787248

@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import math
 import os
+import time
 from pathlib import Path
 
 import mujoco
@@ -146,7 +147,9 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         self._frame_renderer = None
         self._frame_replay = False
         self._frame_times: list[float] = []
+        self._frame_wall_times: list[float] = []
         self._frame_qpos: list[np.ndarray] = []
+        self._frame_wall_started = time.monotonic()
         directory = os.environ.get("S10_SEGMENT_VIDEO", "").strip()
         if not directory:
             return
@@ -201,6 +204,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             return
         if self._frame_replay:
             self._frame_times.append(float(self.timestamp))
+            self._frame_wall_times.append(time.monotonic() - self._frame_wall_started)
             self._frame_qpos.append(self.data.qpos.copy())
         else:
             self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
@@ -219,6 +223,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             np.savez_compressed(
                 replay,
                 time=np.asarray(self._frame_times),
+                wall_time=np.asarray(self._frame_wall_times),
                 qpos=np.asarray(self._frame_qpos),
                 width=self._frame_width,
                 height=self._frame_height,
