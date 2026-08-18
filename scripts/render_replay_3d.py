@@ -89,6 +89,32 @@ def _write_overlay_filter(trace, timing: np.ndarray, output: Path, font: str) ->
     output.write_text(",\n".join(filters) + "\n")
 
 
+def _write_timing_files(args, trace, timing: np.ndarray, qpos_count: int) -> None:
+    indices = list(range(0, qpos_count, args.stride))
+    concat = args.out / "frames.ffconcat"
+    lines = ["ffconcat version 1.0"]
+    for number, source_index in enumerate(indices):
+        lines.append(f"file '{number:05d}.png'")
+        if number + 1 < len(indices):
+            duration = timing[indices[number + 1]] - timing[source_index]
+        else:
+            # There is no measured interval after the final sample. Show it for one output
+            # frame; repeating the previous interval can add a long artificial tail when
+            # shutdown delayed the last capture.
+            duration = 1.0 / 30.0
+        lines.append(f"duration {duration:.9f}")
+    # The concat demuxer ignores the final duration unless the last frame is repeated.
+    if indices:
+        lines.append(f"file '{len(indices) - 1:05d}.png'")
+    concat.write_text("\n".join(lines) + "\n")
+    elapsed = 0.0 if not indices else timing[indices[-1]] - timing[indices[0]]
+    print(f"wrote {concat} for {elapsed:.3f}s of {args.timing} time", flush=True)
+    if args.timing == "wall" and args.stride == 1:
+        overlay = args.out / "overlay_filters.txt"
+        _write_overlay_filter(trace, timing, overlay, args.overlay_font)
+        print(f"wrote {overlay}", flush=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("replay", type=Path, help="replay.npz written by sim_node")
@@ -100,6 +126,18 @@ def main() -> int:
     parser.add_argument("--elevation", type=float, default=-24.0)
     parser.add_argument("--azimuth", type=float, default=90.0)
     parser.add_argument("--stride", type=int, default=1)
+    parser.add_argument("--frame-start", type=int, default=0)
+    parser.add_argument("--frame-stop", type=int, help="exclusive output-frame index")
+    parser.add_argument(
+        "--manifest-only",
+        action="store_true",
+        help="write timing/overlay files without rendering frames",
+    )
+    parser.add_argument(
+        "--no-manifest",
+        action="store_true",
+        help="render a frame shard without writing shared timing/overlay files",
+    )
     parser.add_argument(
         "--overlay-font",
         default=DEFAULT_OVERLAY_FONT,
@@ -115,6 +153,10 @@ def main() -> int:
 
     if args.stride <= 0:
         parser.error("--stride must be positive")
+    if args.frame_start < 0:
+        parser.error("--frame-start must be non-negative")
+    if args.manifest_only and args.no_manifest:
+        parser.error("--manifest-only and --no-manifest are mutually exclusive")
 
     trace = np.load(args.replay)
     qpos = trace["qpos"]
@@ -136,6 +178,20 @@ def main() -> int:
     if width <= 0 or height <= 0:
         parser.error("width and height must be positive")
 
+    args.out.mkdir(parents=True, exist_ok=True)
+    all_indices = list(range(0, len(qpos), args.stride))
+    frame_stop = len(all_indices) if args.frame_stop is None else args.frame_stop
+    if not args.frame_start <= frame_stop <= len(all_indices):
+        parser.error(
+            f"frame range [{args.frame_start}, {frame_stop}) is outside "
+            f"[0, {len(all_indices)})"
+        )
+    if args.manifest_only:
+        if timing is None:
+            parser.error("--manifest-only requires --timing")
+        _write_timing_files(args, trace, timing, len(qpos))
+        return 0
+
     xml = (
         args.repo
         / "upstream/goai_embodied_future_material/src/S10_sdk_deploy/"
@@ -155,7 +211,6 @@ def main() -> int:
     if base_body_id < 0:
         raise SystemExit("body 'base_link' not found in track model")
 
-    args.out.mkdir(parents=True, exist_ok=True)
     model.vis.global_.offwidth = max(model.vis.global_.offwidth, width)
     model.vis.global_.offheight = max(model.vis.global_.offheight, height)
     renderer = mujoco.Renderer(model, height=height, width=width)
@@ -164,9 +219,11 @@ def main() -> int:
     camera.elevation = args.elevation
     camera.azimuth = args.azimuth
 
-    selected = range(0, len(qpos), args.stride)
-    count = (len(qpos) + args.stride - 1) // args.stride
-    for number, source_index in enumerate(selected):
+    selected = [
+        (number, all_indices[number]) for number in range(args.frame_start, frame_stop)
+    ]
+    count = len(selected)
+    for shard_number, (number, source_index) in enumerate(selected):
         data.qpos[:] = qpos[source_index]
         data.qvel[:] = 0.0
         mujoco.mj_forward(model, data)
@@ -174,35 +231,15 @@ def main() -> int:
         camera.lookat[2] += 0.15
         renderer.update_scene(data, camera)
         write_png(args.out / f"{number:05d}.png", renderer.render())
-        if number == 0 or (number + 1) % 50 == 0 or number + 1 == count:
-            print(f"rendered {number + 1}/{count}", flush=True)
+        if shard_number == 0 or (shard_number + 1) % 50 == 0 or shard_number + 1 == count:
+            print(
+                f"rendered shard {shard_number + 1}/{count} "
+                f"(global frame {number + 1}/{len(all_indices)})",
+                flush=True,
+            )
 
-    if timing is not None:
-        indices = list(selected)
-        concat = args.out / "frames.ffconcat"
-        lines = ["ffconcat version 1.0"]
-        for number, source_index in enumerate(indices):
-            lines.append(f"file '{number:05d}.png'")
-            if number + 1 < len(indices):
-                duration = timing[indices[number + 1]] - timing[source_index]
-            elif len(indices) > 1:
-                duration = timing[indices[-1]] - timing[indices[-2]]
-            else:
-                duration = 1.0 / 30.0
-            lines.append(f"duration {duration:.9f}")
-        # The concat demuxer ignores the final duration unless the last frame is repeated.
-        if indices:
-            lines.append(f"file '{len(indices) - 1:05d}.png'")
-        concat.write_text("\n".join(lines) + "\n")
-        print(
-            f"wrote {concat} for {timing[indices[-1]] - timing[indices[0]]:.3f}s "
-            f"of {args.timing} time",
-            flush=True,
-        )
-        if args.timing == "wall" and args.stride == 1:
-            overlay = args.out / "overlay_filters.txt"
-            _write_overlay_filter(trace, timing, overlay, args.overlay_font)
-            print(f"wrote {overlay}", flush=True)
+    if timing is not None and not args.no_manifest:
+        _write_timing_files(args, trace, timing, len(qpos))
 
     renderer.close()
     return 0
