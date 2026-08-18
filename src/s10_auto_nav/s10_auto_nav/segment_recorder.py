@@ -35,6 +35,7 @@ from pathlib import Path
 
 import numpy as np
 import rclpy
+from drdds.msg import JointsData
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from rclpy.executors import ExternalShutdownException
@@ -62,6 +63,63 @@ STALL_SECONDS = 5.0
 #: How long after the grace period the robot has to have reached its spawn height before
 #: the start pose is called illegal. The SDK's stand-up takes about two seconds.
 STAND_SECONDS = 4.0
+
+
+class OrderedWaypointEvidence:
+    """Independently record strict, one-at-a-time horizontal gate entries."""
+
+    def __init__(self, waypoints, radius: float):
+        if radius <= 0.0:
+            raise ValueError("waypoint evidence radius must be positive")
+        self.radius = float(radius)
+        self._waypoints = list(waypoints)
+        self._cursor = 0
+        self._records = [
+            {
+                "index": int(waypoint.index),
+                "passed": False,
+                "first_entry_s": None,
+                "entry_distance_m": None,
+                "closest_m": None,
+            }
+            for waypoint in self._waypoints
+        ]
+
+    @property
+    def finished(self) -> bool:
+        return self._cursor >= len(self._waypoints)
+
+    @property
+    def target_index(self) -> int | None:
+        return None if self.finished else int(self._waypoints[self._cursor].index)
+
+    def update(self, t: float, position_xy: np.ndarray) -> int | None:
+        if self.finished:
+            return None
+        waypoint = self._waypoints[self._cursor]
+        distance = float(np.linalg.norm(waypoint.xy - np.asarray(position_xy, float)))
+        record = self._records[self._cursor]
+        closest = record["closest_m"]
+        record["closest_m"] = distance if closest is None else min(float(closest), distance)
+        if distance > self.radius:
+            return None
+        record.update(
+            passed=True,
+            first_entry_s=float(t),
+            entry_distance_m=distance,
+        )
+        self._cursor += 1
+        return int(waypoint.index)
+
+    def summary(self) -> list[dict]:
+        rounded = []
+        for record in self._records:
+            item = dict(record)
+            for key in ("first_entry_s", "entry_distance_m", "closest_m"):
+                if item[key] is not None:
+                    item[key] = round(float(item[key]), 3)
+            rounded.append(item)
+        return rounded
 
 
 def _yaw_pitch_roll(q) -> tuple[float, float, float]:
@@ -127,6 +185,9 @@ class SegmentRecorder(Node):
         # Ours is the real course's, because that is what every other artefact is indexed by.
         self.targets = [w.position for w in self.course.waypoints]
         self.goal = np.asarray(self.targets[-1], dtype=float)
+        self._waypoint_evidence = OrderedWaypointEvidence(
+            self.course.waypoints, self.score_radius
+        )
 
         self._odom = None
         self._cmd = Twist()
@@ -134,6 +195,10 @@ class SegmentRecorder(Node):
         self._mode = "-"
         self._source = "-"
         self._status = ""
+        self._active_policy = ""
+        self._joint_owner = "unknown"
+        self._joint_owner_actual = "unknown"
+        self._wheel_speeds = np.full(4, np.nan)
         self._transitions: list[str] = []
         self._nav_finished = False
         self._terrain = "-"
@@ -169,6 +234,7 @@ class SegmentRecorder(Node):
         self.create_subscription(String, "/strategy/status", self._on_status, 10)
         self.create_subscription(String, "/strategy/transition", self._on_transition, 20)
         self.create_subscription(String, "/nav/terrain", self._on_terrain, 10)
+        self.create_subscription(JointsData, "/JOINTS_DATA", self._on_joints, 50)
 
         self._dt = 1.0 / float(self.get_parameter("record_rate").value)
         self.timer = self.create_timer(self._dt, self._tick)
@@ -207,9 +273,26 @@ class SegmentRecorder(Node):
 
     def _on_status(self, msg: String) -> None:
         self._status = msg.data
+        try:
+            status = json.loads(msg.data)
+        except (TypeError, ValueError):
+            return
+        self._active_policy = str(status.get("active_policy", self._active_policy))
+        self._joint_owner = str(status.get("joint_owner", self._joint_owner))
+        self._joint_owner_actual = str(
+            status.get("joint_owner_actual", self._joint_owner_actual)
+        )
 
     def _on_transition(self, msg: String) -> None:
         self._transitions.append(msg.data)
+
+    def _on_joints(self, msg: JointsData) -> None:
+        joints = msg.data.joints_data
+        if len(joints) != 16:
+            return
+        values = np.asarray([joints[index].velocity for index in (3, 7, 11, 15)], float)
+        if np.all(np.isfinite(values)):
+            self._wheel_speeds = values
 
     def _tick(self) -> None:
         if self._finished or self._odom is None:
@@ -248,6 +331,8 @@ class SegmentRecorder(Node):
         # Closest approach over the whole run, not the distance at the end: the robot may pass
         # through the gate and drift out again, and passing through it is what scores.
         self._closest_goal = min(self._closest_goal, distance_to_goal)
+        passed_waypoint = self._waypoint_evidence.update(t, position[:2])
+        target_waypoint = self._waypoint_evidence.target_index
         self._rows.append(
             {
                 "t": round(t, 3),
@@ -267,13 +352,22 @@ class SegmentRecorder(Node):
                 "mode": self._mode,
                 "source": self._source,
                 "terrain": self._terrain,
+                "target_waypoint": -1 if target_waypoint is None else target_waypoint,
+                "passed_waypoint": -1 if passed_waypoint is None else passed_waypoint,
+                "active_policy": self._active_policy or "official",
+                "joint_owner": self._joint_owner,
+                "joint_owner_actual": self._joint_owner_actual,
+                "wheel_fl": round(float(self._wheel_speeds[0]), 3),
+                "wheel_fr": round(float(self._wheel_speeds[1]), 3),
+                "wheel_hl": round(float(self._wheel_speeds[2]), 3),
+                "wheel_hr": round(float(self._wheel_speeds[3]), 3),
             }
         )
 
         if settled and not self._stood_up and position[2] >= self._start_z:
             self._stood_up = True
 
-        if self._nav_finished or distance_to_goal <= self.reach_radius:
+        if self._waypoint_evidence.finished:
             self._stop("reached the end waypoint", reached=True)
         elif settled and not self._stood_up and t >= self.grace + STAND_SECONDS:
             # The robot is placed crouched and the SDK stands it up, so the base can only
@@ -306,6 +400,24 @@ class SegmentRecorder(Node):
         for row in self._rows:
             modes[row["mode"]] = modes.get(row["mode"], 0.0) + self._dt
         last = self._rows[-1] if self._rows else {}
+        waypoint_evidence = self._waypoint_evidence.summary()
+        wheel_values = np.asarray(
+            [
+                abs(float(row[key]))
+                for row in self._rows
+                for key in ("wheel_fl", "wheel_fr", "wheel_hl", "wheel_hr")
+                if math.isfinite(float(row[key]))
+            ],
+            dtype=float,
+        )
+        wheel_stats = {}
+        if wheel_values.size:
+            wheel_stats = {
+                "mean_abs_rad_s": round(float(np.mean(wheel_values)), 3),
+                "p95_abs_rad_s": round(float(np.percentile(wheel_values, 95)), 3),
+                "p99_abs_rad_s": round(float(np.percentile(wheel_values, 99)), 3),
+                "max_abs_rad_s": round(float(np.max(wheel_values)), 3),
+            }
         return {
             "start": self.start,
             "end": self.end,
@@ -318,7 +430,7 @@ class SegmentRecorder(Node):
             #              /nav/finished. It says the run ended on purpose, not that it scored.
             # ``closest_goal_m``  the measurement both of the above are derived from, so a
             #              near miss can be read off without re-parsing the CSV.
-            "reached": self._closest_goal <= self.score_radius,
+            "reached": self._waypoint_evidence.finished,
             "arrived": self._outcome == "reached the end waypoint",
             "closest_goal_m": round(self._closest_goal, 3),
             # A run that never got a legal start pose is not evidence either way, and is
@@ -334,6 +446,9 @@ class SegmentRecorder(Node):
             "mode_seconds": {k: round(v, 2) for k, v in sorted(modes.items())},
             "sources": sorted({row["source"] for row in self._rows}),
             "transitions": self._transitions,
+            "waypoints": waypoint_evidence,
+            "waypoint_pass_count": sum(bool(item["passed"]) for item in waypoint_evidence),
+            "wheel_speed": wheel_stats,
             "router_status": self._status,
             "csv": str(self.out_dir / f"{self.run_name}.csv"),
         }

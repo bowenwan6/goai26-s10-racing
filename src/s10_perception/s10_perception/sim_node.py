@@ -23,6 +23,7 @@ downstream nodes need no change.
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import os
 import time
@@ -34,7 +35,7 @@ import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.executors import ExternalShutdownException
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, String
 
 from s10_perception.heightmap import HeightmapConfig, HeightmapSampler
 from s10_perception.lidar import LidarConfig, RayCastLidar
@@ -71,6 +72,8 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             kwargs["xml_path"] = xml_path
         super().__init__(**kwargs)
         self.model_key = model_key or _upstream.MODEL_NAME
+        self._actual_joint_owner = "unknown"
+        self._active_policy = ""
 
         self.base_body_id = mujoco.mj_name2id(
             self.model, mujoco.mjtObj.mjOBJ_BODY, _upstream.TRACK_BODY_NAME
@@ -101,6 +104,8 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         self.wheel_state_pub = self.create_publisher(
             Float32MultiArray, "/perception/wheel_state", 10
         )
+        self.create_subscription(String, "/joints/owner", self._on_joint_owner, 10)
+        self.create_subscription(String, "/strategy/status", self._on_strategy_status, 10)
 
         self.get_logger().info(
             f"[perception] lidar {self.lidar.cfg.n_elevation}x{self.lidar.cfg.n_azimuth} rays, "
@@ -122,7 +127,11 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             return
 
         base = spawn.apply(self.model, self.data, _upstream.JOINT_INIT[self.model_key])
-        if spawn.waypoint_index is not None and getattr(self, "track_enabled", False):
+        if (
+            spawn.waypoint_index is not None
+            and spawn.waypoint_index > 0
+            and getattr(self, "track_enabled", False)
+        ):
             for index in range(min(spawn.waypoint_index + 1, len(self.track_waypoint_positions))):
                 self._hide_track_point(index)
             self.track_next_index = spawn.waypoint_index + 1
@@ -149,6 +158,9 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         self._frame_times: list[float] = []
         self._frame_wall_times: list[float] = []
         self._frame_qpos: list[np.ndarray] = []
+        self._frame_waypoints: list[int] = []
+        self._frame_owners: list[str] = []
+        self._frame_policies: list[str] = []
         self._frame_wall_started = time.monotonic()
         directory = os.environ.get("S10_SEGMENT_VIDEO", "").strip()
         if not directory:
@@ -206,6 +218,10 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             self._frame_times.append(float(self.timestamp))
             self._frame_wall_times.append(time.monotonic() - self._frame_wall_started)
             self._frame_qpos.append(self.data.qpos.copy())
+            self._frame_waypoints.append(int(getattr(self, "track_next_index", -1)))
+            self._frame_owners.append(self._actual_joint_owner)
+            displayed_policy = "WP16" if self._active_policy == "gate16" else "official"
+            self._frame_policies.append(displayed_policy)
         else:
             self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
             self._frame_renderer.update_scene(self.data, self._frame_camera)
@@ -225,6 +241,9 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
                 time=np.asarray(self._frame_times),
                 wall_time=np.asarray(self._frame_wall_times),
                 qpos=np.asarray(self._frame_qpos),
+                target_waypoint=np.asarray(self._frame_waypoints, dtype=np.int16),
+                joint_owner=np.asarray(self._frame_owners, dtype="U16"),
+                active_policy=np.asarray(self._frame_policies, dtype="U16"),
                 width=self._frame_width,
                 height=self._frame_height,
             )
@@ -233,6 +252,16 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             )
             self._frame_replay = False
         return super().destroy_node()
+
+    def _on_joint_owner(self, msg: String) -> None:
+        self._actual_joint_owner = msg.data
+
+    def _on_strategy_status(self, msg: String) -> None:
+        try:
+            status = json.loads(msg.data)
+        except (TypeError, ValueError):
+            return
+        self._active_policy = str(status.get("active_policy", self._active_policy))
 
     def _publish_robot_state(self, step: int) -> None:
         """Extend upstream's state publication with our own sensors."""

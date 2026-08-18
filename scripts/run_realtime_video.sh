@@ -23,6 +23,15 @@ MAX_TIME="${5:-2400}"
 }
 command -v docker >/dev/null || { echo "error: docker is required" >&2; exit 2; }
 command -v ffmpeg >/dev/null || { echo "error: ffmpeg is required on the host" >&2; exit 2; }
+OVERLAY_FONT="${S10_VIDEO_FONT:-/System/Library/Fonts/Supplemental/Arial.ttf}"
+[[ -f "${OVERLAY_FONT}" ]] || {
+  echo "error: overlay font not found: ${OVERLAY_FONT} (set S10_VIDEO_FONT)" >&2
+  exit 2
+}
+[[ "${OVERLAY_FONT}" != *"'"* && "${OVERLAY_FONT}" != *$'\n'* ]] || {
+  echo "error: S10_VIDEO_FONT must not contain a quote or newline" >&2
+  exit 2
+}
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${IMAGE:-s10-racing:dev}"
@@ -67,9 +76,10 @@ docker run --rm -i --name s10-realtime-render \
   "source /opt/ros/jazzy/setup.bash && source /opt/s10-build/install/setup.bash && \
    scripts/render_replay_3d.py /evidence/raw/${RUN_NAME}_frames/replay.npz \
    --out /evidence/video/frames_1080p_realtime --width 1920 --height 1080 \
-   --timing wall"
+   --timing wall --overlay-font '${OVERLAY_FONT}'"
 
 ffmpeg -y -f concat -safe 0 -i "${FRAMES_DIR}/frames.ffconcat" \
+  -filter_script:v "${FRAMES_DIR}/overlay_filters.txt" \
   -c:v libx264 -preset slow -crf 15 -pix_fmt yuv420p -r 30 \
   -vsync cfr -movflags +faststart "${MP4}"
 

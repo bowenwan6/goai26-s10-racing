@@ -15,6 +15,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import numpy as np
+
+from s10_auto_nav.waypoints import Waypoint
 
 try:
     import rclpy
@@ -22,6 +25,30 @@ except ImportError:  # pragma: no cover - depends on the environment, not the co
     rclpy = None
 
 needs_ros = pytest.mark.skipif(rclpy is None, reason="ROS 2 is not installed here")
+
+
+def test_ordered_evidence_accepts_exactly_018_and_only_one_gate_per_tick():
+    from s10_auto_nav.segment_recorder import OrderedWaypointEvidence
+
+    tracker = OrderedWaypointEvidence(
+        [Waypoint(0, np.array([0.0, 0.0, 0.0])), Waypoint(1, np.array([0.0, 0.0, 0.0]))],
+        0.18,
+    )
+    assert tracker.update(1.0, np.array([0.181, 0.0])) is None
+    assert tracker.target_index == 0
+    assert tracker.update(2.0, np.array([0.18, 0.0])) == 0
+    assert tracker.target_index == 1, "one pose cannot skip two ordered gates"
+    assert tracker.update(2.1, np.array([0.0, 0.0])) == 1
+    assert tracker.finished
+    assert [item["first_entry_s"] for item in tracker.summary()] == [2.0, 2.1]
+
+
+class _Evidence:
+    def __init__(self, finished: bool):
+        self.finished = finished
+
+    def summary(self):
+        return []
 
 
 def test_the_harness_does_not_stop_outside_the_scoring_radius():
@@ -46,6 +73,7 @@ class _Verdict:
         self._closest_goal = closest
         self._outcome = outcome
         self.score_radius = score_radius
+        self._waypoint_evidence = _Evidence(closest <= score_radius)
         self.start, self.end, self.seed = 18, 19, 0
         self._rows: list[dict] = []
         self._dt = 0.05
