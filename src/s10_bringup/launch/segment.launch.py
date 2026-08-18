@@ -72,6 +72,10 @@ def generate_launch_description() -> LaunchDescription:
                 "nav_params",
                 default_value=PathJoinSubstitution([bringup_share, "config", "nav.yaml"]),
             ),
+            DeclareLaunchArgument(
+                "router_params",
+                default_value=PathJoinSubstitution([bringup_share, "config", "strategy.yaml"]),
+            ),
             DeclareLaunchArgument("strategy_router", default_value="false"),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
@@ -80,6 +84,7 @@ def generate_launch_description() -> LaunchDescription:
                 launch_arguments={
                     "course_file": course_file,
                     "nav_params": LaunchConfiguration("nav_params"),
+                    "router_params": LaunchConfiguration("router_params"),
                     "strategy_router": LaunchConfiguration("strategy_router"),
                 }.items(),
             ),

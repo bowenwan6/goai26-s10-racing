@@ -71,6 +71,9 @@ class ActionKind(Enum):
 
     TWIST = "twist"
     JOINT = "joint"
+    #: A low-level actor running inside the SDK process. ``twist`` is the command embedded
+    #: in that actor's observation, not a substitute for its actuator output.
+    DELEGATED = "delegated"
 
 
 @dataclass(frozen=True)
@@ -125,13 +128,18 @@ class PolicyAction:
                 raise ValueError("a TWIST action must not carry joint targets")
             if self.twist is None and self.status is PolicyStatus.RUNNING:
                 raise ValueError("a running TWIST action must carry a twist")
-        else:
+        elif self.kind is ActionKind.JOINT:
             if self.twist is not None:
                 raise ValueError("a JOINT action must not carry a twist")
             if self.status is PolicyStatus.RUNNING and (
                 self.joints is None or np.shape(self.joints) != (16,)
             ):
                 raise ValueError("a running JOINT action must carry 16 joint targets")
+        else:
+            if self.joints is not None:
+                raise ValueError("a DELEGATED action must not carry ROS joint targets")
+            if self.status is PolicyStatus.RUNNING and self.twist is None:
+                raise ValueError("a running DELEGATED action must carry its observation command")
 
 
 @dataclass(frozen=True)

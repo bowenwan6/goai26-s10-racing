@@ -94,7 +94,30 @@ int main() {
   Check(out(0, s10::JointCommandOwner::kColPos) != 0.5f,
         "the shipped policy contributes nothing while the climb policy drives");
 
+  // ------------------------------------------------ Gate16 preserves the full mixed command
+  gate.ResetForTest();
+  gate.RequestOwner("gate16");
+  Settle(gate, s10::JointCommandOwner::kHandoverS + 0.05, 0.5f, 0.1f);
+  types::MatXf gate16 = types::MatXf::Zero(16, 5);
+  gate16(0, s10::JointCommandOwner::kColKp) = 80.0f;
+  gate16(0, s10::JointCommandOwner::kColPos) = -0.25f;
+  gate16(3, s10::JointCommandOwner::kColKd) = 0.6f;
+  gate16(3, s10::JointCommandOwner::kColVel) = 12.5f;
+  out = gate.Arbitrate(OfficialAction(0.5f), &gate16, Measured(0.1f), nullptr);
+  Check(gate.owner() == s10::JointOwner::kGate16, "the in-process Gate16 actor owns after hold");
+  Check(out(0, s10::JointCommandOwner::kColPos) == -0.25f,
+        "Gate16 leg position passes through unchanged");
+  Check(out(3, s10::JointCommandOwner::kColVel) == 12.5f,
+        "Gate16 wheel velocity passes through instead of being discarded");
+  Check(out(0, s10::JointCommandOwner::kColPos) != 0.5f,
+        "the official matrix is not blended into Gate16");
+
   // ------------------------------------------------ a silent climb policy is a hold
+  gate.ResetForTest();
+  gate.RequestOwner("climb");
+  gate.SubmitClimbTargets(types::VecXf::Constant(16, 1.25f));
+  Settle(gate, s10::JointCommandOwner::kHandoverS + 0.05, 0.5f, 0.1f);
+  gate.SubmitClimbTargets(types::VecXf::Constant(16, 1.25f));
   std::this_thread::sleep_for(
       std::chrono::milliseconds(static_cast<int>(s10::JointCommandOwner::kClimbTimeoutS * 1000) + 60));
   out = gate.Arbitrate(OfficialAction(0.5f), Measured(0.1f), nullptr);

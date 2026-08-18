@@ -15,6 +15,7 @@
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>drdds</depend>
   <depend>python3-yaml</depend>
 
   <test_depend>ament_copyright</test_depend>
