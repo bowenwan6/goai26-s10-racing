@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 import onnxruntime as ort
 
-from s10_auto_nav.strategy.gate16_policy import StableGate16Policy
+from s10_auto_nav.strategy.gate16_policy import (
+    StableGate16Policy,
+    gate16_owner_request,
+    gate16_should_own,
+)
 from s10_auto_nav.strategy.policy import ActionKind
 from s10_auto_nav.strategy.router import (
     Mode,
@@ -33,6 +38,11 @@ def test_frozen_gate16_assets_match_manifest_and_graph_contract():
     profile_data = json.loads(profile.read_text())
     assert profile_data["version"] == 1
     assert any(item["name"] == "v025_yaw0_precontact_tuck" for item in profile_data["profiles"])
+    integration = manifest["racing_integration"]
+    assert integration["canonical_handoff_source"].startswith("b824f7f")
+    assert integration["entry_distance_m"] == [0.60, 0.65]
+    assert integration["entry_speed_mps"] == [0.23, 0.27]
+    assert integration["base_owner_prewarms_before_residual"] is True
     for filename, key in (
         ("policy.onnx", "base_sha256"),
         ("climb_residual.onnx", "residual_sha256"),
@@ -101,8 +111,8 @@ def test_gate16_uses_delegated_owner_and_waits_for_acknowledged_handoff():
     config = RouterConfig(
         ready_dwell=0.04,
         verify_hold=0.04,
-        min_entry_speed=0.10,
-        max_entry_speed=0.30,
+        min_entry_speed=0.23,
+        max_entry_speed=0.27,
         target_entry_speed=0.25,
         verify_clearance=0.02,
     )
@@ -120,6 +130,7 @@ def test_gate16_uses_delegated_owner_and_waits_for_acknowledged_handoff():
         if router.mode is Mode.CLIMB:
             break
     assert router.mode is Mode.CLIMB
+    assert out.command == (0.25, 0.0, 0.0)
 
     state = _state(t, owner="gate16")
     out = router.tick(state, (0.25, 0.0, 0.0), observation_from_state(state))
@@ -141,6 +152,17 @@ def test_gate16_uses_delegated_owner_and_waits_for_acknowledged_handoff():
     out = router.tick(state, (0.5, 0.0, 0.0), observation_from_state(state))
     assert router.mode is Mode.NAVIGATE
     assert out.source is Source.NAV
+    assert out.command == (0.5, 0.0, 0.0)
+
+    t += 0.4
+    state = _state(t, clear=True, owner="official")
+    out = router.tick(state, (0.7, 0.2, 0.1), observation_from_state(state))
+    assert out.command == (0.5, 0.0, 0.0)
+
+    t += 0.5
+    state = _state(t, clear=True, owner="official")
+    out = router.tick(state, (0.7, 0.2, 0.1), observation_from_state(state))
+    assert out.command == (0.7, 0.2, 0.1)
 
 
 def test_gate16_adapter_identifies_competition_v4_source():
@@ -149,3 +171,105 @@ def test_gate16_adapter_identifies_competition_v4_source():
     policy.start(observation_from_state(state))
     action = policy.step(observation_from_state(state))
     assert action.info == {"owner": "gate16", "profile": "competition_v4_b6535a4"}
+
+
+def test_gate16_base_owns_only_after_official_far_field_alignment():
+    policy = StableGate16Policy()
+    for mode in (Mode.CLIMB_READY, Mode.CLIMB, Mode.VERIFY_CLEAR):
+        assert gate16_should_own(policy, mode.value)
+    for mode in (
+        Mode.NAVIGATE,
+        Mode.APPROACH,
+        Mode.ALIGN,
+        Mode.HANDOFF,
+        Mode.RECOVER,
+        Mode.ABORT,
+        Mode.DONE,
+    ):
+        assert not gate16_should_own(policy, mode.value)
+    assert gate16_should_own(policy, Mode.ALIGN.value, prewarm_ready=True)
+    assert gate16_owner_request(
+        policy, Mode.ALIGN.value, prewarm_ready=True
+    ) == "gate16"
+    for mode in (Mode.CLIMB_READY, Mode.CLIMB, Mode.VERIFY_CLEAR):
+        assert gate16_owner_request(policy, mode.value) == "gate16_climb"
+    assert gate16_owner_request(policy, Mode.HANDOFF.value) == "official"
+
+
+def test_official_actor_aligns_position_and_yaw_before_gate16_prewarm():
+    policy = StableGate16Policy()
+    router = Router(
+        RouterConfig(
+            ready_distance_min=0.60,
+            ready_distance_max=0.65,
+            gate16_staging_lead=0.25,
+            gate16_staging_tolerance=0.10,
+            min_entry_speed=0.23,
+            max_entry_speed=0.27,
+        ),
+        policies={"gate16": policy},
+        segment_policies={(15, 16): "gate16"},
+    )
+    router.mode = Mode.ALIGN
+
+    far = replace(
+        _state(0.02),
+        obstacle_distance=1.50,
+        lateral_error=0.45,
+        heading_error=np.deg2rad(12.0),
+    )
+    out = router.tick(far, (0.7, 0.0, 0.0), observation_from_state(far))
+    assert out.source is Source.ROUTER
+    assert out.command[0] > 0.0
+    assert out.command[1] == 0.0 and out.command[2] < 0.0
+    assert not router.gate16_prewarm_ready
+
+    staged = replace(
+        far,
+        t=0.04,
+        odom_time=0.04,
+        lidar_time=0.04,
+        heightmap_time=0.04,
+        obstacle_distance=0.90,
+        lateral_error=0.10,
+        heading_error=np.deg2rad(8.0),
+    )
+    out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
+    assert not router.gate16_prewarm_ready
+    assert out.command[0] > 0.0
+
+    staged = replace(
+        staged,
+        t=0.06,
+        odom_time=0.06,
+        lidar_time=0.06,
+        heightmap_time=0.06,
+        lateral_error=0.07,
+    )
+    out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
+    assert not router.gate16_prewarm_ready
+    assert out.command[0] > 0.0
+
+    staged = replace(
+        staged,
+        t=0.08,
+        odom_time=0.08,
+        lidar_time=0.08,
+        heightmap_time=0.08,
+        heading_error=np.deg2rad(4.0),
+    )
+    out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
+    assert router.gate16_prewarm_ready
+    assert np.isclose(out.command[0], 0.23)
+    assert gate16_owner_request(
+        policy, out.mode.value, prewarm_ready=router.gate16_prewarm_ready
+    ) == "gate16"
+
+
+def test_runner_uses_calibrated_base_yaw_instead_of_heightmap_fit():
+    source = (ROOT / "integration/gate16_policy_runner.hpp").read_text()
+    assert "BeginClimb(gate, uc, ro.base_rpy(2))" in source
+    assert "heightmap_yaw=" in source
+    assert "climb_entry_heading_error_deg_ = base_yaw_rad" in source
+    assert "residual_available_ && climb_armed_" in source
+    assert "S10 climb residual " in source

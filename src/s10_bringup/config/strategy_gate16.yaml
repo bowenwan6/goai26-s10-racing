@@ -42,7 +42,9 @@ strategy_router:
 
     approach_enter: 3.0
     approach_speed_scale: 0.5
-    align_enter: 1.6
+    # Begin the holonomic lane/yaw correction far enough out to remove the WP15 diagonal
+    # before the 0.90 m ownership staging band.
+    align_enter: 2.2
     align_timeout: 40.0
     climb_timeout: 20.0
     climb_progress_window: 12.0
@@ -50,21 +52,30 @@ strategy_router:
     # One delayed ROS/Docker scheduling interval must not cancel a climb. This retains the
     # router's reviewed 0.5 s stale-observation stop threshold (and 3.0 s abort threshold).
     sensor_timeout: 0.5
-    ready_distance_min: 0.62
-    ready_distance_max: 0.70
-    ready_dwell: 0.10
-    # Command the candidate's canonical 0.25 m/s handoff, but gate measured forward
-    # velocity over its documented 0.10-0.30 m/s formal envelope. The legged gait's
-    # instantaneous base velocity oscillates around the command; requiring measured
-    # velocity to remain inside 0.23-0.27 m/s prevented any handoff in the seed-6
-    # full-stack preflight even though the commanded entry was exactly 0.25 m/s.
-    min_entry_speed: 0.10
-    max_entry_speed: 0.30
+    # b824 canonical moving handoff. These are engineering guardrails around the measured
+    # nominal point, not a claim that the full formal45 bounding box is continuously safe.
+    ready_distance_min: 0.60
+    ready_distance_max: 0.65
+    # The frozen handoff contract is an instantaneous state window. At 0.25 m/s the 5 cm
+    # distance band lasts only 0.20 s, so adding an unrelated dwell consumes the window.
+    ready_dwell: 0.0
+    min_entry_speed: 0.23
+    max_entry_speed: 0.27
     target_entry_speed: 0.25
-    max_entry_yaw_rate: 0.10
+    # Gate16 owns the short final runway after official staging alignment. Its measured
+    # bracket is command 0.18 below the window and 0.25 above it; 0.23 targets 0.25 m/s.
+    # This does not change the tested global 0.7 speed limit.
+    gate16_prewarm_forward: 0.23
+    max_entry_yaw_rate: 0.05
     align_yaw_rate: 0.70
-    max_lateral_error: 0.25
-    gate16_staging_tolerance: 0.25
+    max_lateral_error: 0.08
+    # The user-provided 5 deg value is a hard ceiling. Nominal v4 validation is yaw~0;
+    # triggering inside 2.5 deg selects its measured yaw0 pre-contact-tuck profile instead
+    # of relying on the less stable -5 deg boundary profile.
+    max_heading_error_deg: 2.5
+    gate16_staging_tolerance: 0.10
+    climb_exit_forward: 0.50
+    climb_exit_duration: 0.80
     verify_clearance: 0.02
     # Entry into VERIFY already requires all four wheels over with sane contacts/attitude.
     # Stopping the policy unloads individual wheels briefly, so retain that candidate

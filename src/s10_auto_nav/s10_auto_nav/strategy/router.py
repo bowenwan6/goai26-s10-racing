@@ -168,6 +168,10 @@ class RouterConfig:
     max_entry_speed: float = 0.05
     min_entry_speed: float = 0.10
     target_entry_speed: float = 0.25
+    #: Calibrated official-follower command for the final moving entry. This may differ from
+    #: ``target_entry_speed`` because the latter is measured obstacle-normal velocity, not
+    #: the actor's command input.
+    gate16_prewarm_forward: float = 0.23
     gate16_staging_lead: float = 0.25
     gate16_staging_tolerance: float = 0.10
     max_entry_tilt: float = math.radians(12.0)
@@ -216,6 +220,9 @@ class RouterConfig:
     #: Metres of forward progress required after handing back, and the time allowed for it.
     resume_distance: float = 0.5
     resume_timeout: float = 15.0
+    #: Canonical b824 post-climb cruise while the official follower settles back in.
+    climb_exit_forward: float = 0.5
+    climb_exit_duration: float = 0.8
 
     #: Recovery.
     recover_speed: float = 0.35
@@ -291,6 +298,7 @@ class Router:
         self._in_envelope = Debounced(c.ready_dwell, c.unready_dwell)
         self._verified = Debounced(c.verify_hold, c.verify_unready_dwell)
         self._gate16_staging_complete = False
+        self._gate16_prewarm_ready = False
 
         self._entered_at = 0.0
         self._t = 0.0
@@ -304,6 +312,7 @@ class Router:
         self._resume_deadline = math.inf
         self._resume_from = 0.0
         self._resume_position: np.ndarray | None = None
+        self._climb_exit_deadline = -math.inf
         #: Segments whose obstacle has been physically verified as crossed. Without this the
         #: router re-arms on the segment it just cleared -- the edge is still *within* the
         #: approach radius after the climb, only behind instead of ahead -- and climbs the
@@ -322,6 +331,11 @@ class Router:
     @property
     def active_action_kind(self) -> ActionKind | None:
         return None if self._active is None else self._active.action_kind
+
+    @property
+    def gate16_prewarm_ready(self) -> bool:
+        """The official actor has reached the far staging point and aligned to the lip."""
+        return self._gate16_prewarm_ready
 
     @property
     def retries(self) -> int:
@@ -525,6 +539,14 @@ class Router:
                 self._go(Mode.RECOVER, "no progress after climb; verification retracted")
                 return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
+        if state.t < self._climb_exit_deadline:
+            return RouterOutput(
+                self.mode,
+                Source.NAV,
+                command=(self.config.climb_exit_forward, 0.0, 0.0),
+                reason="canonical 0.5 m/s climb exit",
+            )
+
         name = self.policy_for(state.segment)
         gate16 = bool(getattr(self.policies.get(name), "is_gate16_policy", False))
         if gate16 and state.actual_joint_owner != "official":
@@ -561,6 +583,7 @@ class Router:
             )
         if self._near_align.update(state.obstacle_distance):
             self._gate16_staging_complete = False
+            self._gate16_prewarm_ready = False
             self._go(Mode.ALIGN, "within align radius")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
         return RouterOutput(
@@ -600,49 +623,102 @@ class Router:
         )
         if self._in_envelope.update(in_envelope, dt):
             self._go(Mode.CLIMB_READY, "entry envelope held")
-            return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+            # Preserve the frozen moving handoff on the transition tick. A command-less
+            # RouterOutput becomes a zero Twist in the ROS adapter, which previously made
+            # the runner select its unvalidated frozen-default profile at exactly the lip.
+            return RouterOutput(
+                self.mode,
+                Source.ROUTER,
+                command=(c.target_entry_speed, 0.0, 0.0),
+                reason=self._last_reason,
+            )
 
         if self._elapsed >= c.align_timeout:
             self._go(Mode.RECOVER, f"could not align in {c.align_timeout:.0f}s")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
-        # WP15 approaches Gate 16 diagonally, while the stable frontal actor was evaluated
-        # on the obstacle centreline. This wheelbase cannot remove half a metre of lateral
-        # error while holding yaw at zero. Drive to a safe pre-entry point as a unicycle,
-        # then face the lip and establish the validated moving handoff.
-        if requires_moving_entry and not self._gate16_staging_complete:
+        # WP15 approaches Gate 16 with about half a metre of lateral error. Correct x/y/yaw
+        # together while still far from the lip, using forward curvature rather than the
+        # ineffective lateral channel. An in-place yaw at the staging point made the wheeled
+        # base orbit by more than a metre in the failed full-stack trial. The
+        # Gate16 actor is requested only inside the nominal 0.90 m staging band, after yaw and
+        # lateral error are already small.
+        if requires_moving_entry and not self._gate16_prewarm_ready:
             if state.obstacle_edge is None or state.obstacle_normal is None:
                 self._go(Mode.RECOVER, "Gate16 staging has no obstacle frame")
                 return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
-            edge = np.asarray(state.obstacle_edge, float)
-            normal = np.asarray(state.obstacle_normal, float)
-            staging = edge - normal * (
-                c.ready_distance_max + c.gate16_staging_lead
+            staging_distance = c.ready_distance_max + c.gate16_staging_lead
+            distance_error = state.obstacle_distance - staging_distance
+            staged = abs(distance_error) <= c.gate16_staging_tolerance
+            aligned = (
+                abs(state.heading_error) <= c.max_heading_error
+                and abs(state.lateral_error) <= c.max_lateral_error
             )
-            delta = staging - np.asarray(state.position[:2], float)
-            distance = float(np.linalg.norm(delta))
-            if distance <= c.gate16_staging_tolerance:
+            if staged and aligned:
                 self._gate16_staging_complete = True
+                self._gate16_prewarm_ready = True
+            else:
+                # The official wheeled actor does not translate sideways reliably. Capture
+                # the centreline as a forward arc instead: steer into the cross-track error
+                # while far away. Do not taper the curve merely because x is close: the
+                # first trial did that with 0.24 m of cross-track error left and then had no
+                # kinematic way to remove it. Capture lateral position first; straighten
+                # only after it is inside the staging tolerance.
+                lookahead = max(0.30, 0.40 * max(0.0, distance_error))
+                raw_capture_heading = float(
+                    np.clip(
+                        -math.atan2(state.lateral_error, lookahead),
+                        -math.radians(45.0),
+                        math.radians(45.0),
+                    )
+                )
+                # The Gate16 actor's lateral command did not measurably remove a 9 cm
+                # cross-track error in the focused full-stack run.  Capture the strict
+                # 8 cm entry bound while the official actor still owns the wheels; the
+                # policy warm-up runway is for speed/yaw settling, not lane acquisition.
+                lateral_aligned = abs(state.lateral_error) <= c.max_lateral_error
+                desired_heading = 0.0 if lateral_aligned else raw_capture_heading
+                heading_delta = (
+                    desired_heading - state.heading_error + math.pi
+                ) % (2.0 * math.pi) - math.pi
+                heading = float(
+                    np.clip(heading_delta * 3.0, -c.align_yaw_rate, c.align_yaw_rate)
+                )
+                heading_aligned = abs(state.heading_error) <= c.max_heading_error
+                if not lateral_aligned:
+                    # 0.12 m/s was below the official actor's effective locomotion range in
+                    # the measured trial (actual speed collapsed to ~0.04 m/s). 0.25 m/s is
+                    # both the tested policy command and enough to keep the wheels rolling.
+                    forward = (
+                        c.align_speed
+                        if distance_error >= -c.gate16_staging_tolerance
+                        else -min(c.align_speed, 0.15)
+                    )
+                elif not heading_aligned:
+                    # Straighten while rolling.  The competition handoff explicitly
+                    # forbids stopping at the lip for an in-place turn, and the measured
+                    # official actor also orbited laterally when commanded to do so.
+                    forward = c.align_speed
+                elif distance_error > c.gate16_staging_tolerance:
+                    forward = c.align_speed
+                elif distance_error < -c.gate16_staging_tolerance:
+                    forward = -min(c.align_speed, 0.15)
+                else:
+                    # Position is in-band but yaw/lateral is still settling. This is at
+                    # ~0.90 m, not at the lip, and prevents alignment from consuming the
+                    # 0.25 m runway reserved for Gate16 base warmup.
+                    forward = 0.0
                 return RouterOutput(
                     self.mode,
                     Source.ROUTER,
-                    command=(0.0, 0.0, 0.0),
-                    reason="Gate16 staging point reached; facing lip",
+                    command=(forward, 0.0, heading),
+                    reason=(
+                        "far-field Gate16 alignment "
+                        f"(d={state.obstacle_distance:.2f}m, "
+                        f"lat={state.lateral_error:+.2f}m, "
+                        f"yaw={math.degrees(state.heading_error):+.1f}deg)"
+                    ),
                 )
-            desired_yaw = math.atan2(float(delta[1]), float(delta[0]))
-            yaw_error = (desired_yaw - state.yaw + math.pi) % (2.0 * math.pi) - math.pi
-            yaw_command = float(
-                np.clip(yaw_error * 1.5, -c.align_yaw_rate, c.align_yaw_rate)
-            )
-            forward = 0.0
-            if abs(yaw_error) <= math.radians(35.0):
-                forward = float(min(c.align_speed, max(0.08, distance * 0.7)))
-            return RouterOutput(
-                self.mode,
-                Source.ROUTER,
-                command=(forward, 0.0, yaw_command),
-                reason=f"driving to Gate16 staging point ({distance:.2f}m)",
-            )
 
         # Yaw first, then lateral, then establish the moving Gate16 entry. Correcting all
         # three at once on a lip walks the contact points along the edge, which is the failure
@@ -657,7 +733,7 @@ class Router:
                 if state.obstacle_distance < c.ready_distance_min:
                     forward = -min(c.align_speed, c.target_entry_speed)
                 elif requires_moving_entry:
-                    forward = min(c.align_speed, c.target_entry_speed)
+                    forward = c.gate16_prewarm_forward
                 else:
                     gap = state.obstacle_distance - c.align_enter * 0.5
                     forward = float(np.clip(gap * 0.8, -c.align_speed, c.align_speed))
@@ -711,7 +787,14 @@ class Router:
             gate16=bool(getattr(policy, "is_gate16_policy", False)),
         )
         self._go(Mode.CLIMB, f"started {name}")
-        return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+        # The delegated SDK actor starts on this same tick. Keep its command/profile input
+        # at the canonical 0.25 m/s instead of injecting a one-frame stop between states.
+        return RouterOutput(
+            self.mode,
+            Source.ROUTER,
+            command=(self.config.target_entry_speed, 0.0, 0.0),
+            reason=self._last_reason,
+        )
 
     def _climb(self, state, nav_command, observation, dt) -> RouterOutput:
         """The policy drives. The router only watches for the ways it can go wrong.
@@ -905,8 +988,14 @@ class Router:
     def _handoff(self, state, nav_command, observation, dt) -> RouterOutput:
         """Hold navigation until the SDK confirms the reset official actor is in control."""
         if state.actual_joint_owner == "official":
+            self._climb_exit_deadline = state.t + self.config.climb_exit_duration
             self._go(Mode.NAVIGATE, "official owner acknowledged; follower resumed")
-            return RouterOutput(self.mode, Source.NAV, command=nav_command, reason=self._last_reason)
+            return RouterOutput(
+                self.mode,
+                Source.NAV,
+                command=(self.config.climb_exit_forward, 0.0, 0.0),
+                reason=self._last_reason,
+            )
         if self._elapsed >= 2.0:
             self._go(Mode.ABORT, f"official handoff not acknowledged ({state.actual_joint_owner})")
         return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
@@ -942,6 +1031,7 @@ class Router:
         self._in_envelope.reset(False)
         self._near_align.reset(False)
         self._gate16_staging_complete = False
+        self._gate16_prewarm_ready = False
         self._go(Mode.ALIGN, f"retry {self._retries}/{c.max_retries}")
         return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
