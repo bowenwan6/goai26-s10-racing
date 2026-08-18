@@ -11,12 +11,21 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420.svg?logo=ubuntu&logoColor=white)](https://releases.ubuntu.com/24.04/)
 [![MuJoCo](https://img.shields.io/badge/MuJoCo-simulation-000000.svg)](https://mujoco.org/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/version-Ver0-6f42c1.svg)](#version-status)
 
 </div>
 
 ---
 
 ## Current status
+
+### Version status
+
+**Ver0 is the current stable baseline.** It contains the validated WP0→WP32 autonomous
+simulation stack, stable frontal Gate 16 controller integration, strict ordered-gate scoring,
+and the wall-clock 1080p replay workflow described below. This baseline is now frozen on
+`main`; the next development cycle will target **Ver1.0** without rewriting Ver0's recorded
+acceptance result.
 
 The generated course contains **33 waypoints**, spans **224.21 m horizontally**, and gains
 **6.70 m**. Gates count only inside a **0.2 m horizontal radius** and must be taken in order.
