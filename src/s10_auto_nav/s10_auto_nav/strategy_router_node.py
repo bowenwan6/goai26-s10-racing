@@ -59,6 +59,7 @@ import math
 
 import numpy as np
 import rclpy
+from drdds.msg import JointsData
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from rclpy.executors import ExternalShutdownException
@@ -68,9 +69,10 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Bool, Float32, Float32MultiArray, String
 
 from s10_auto_nav.strategy.arbiter import JointArbiter
+from s10_auto_nav.strategy.gate16_policy import Gate16Config, StableGate16Policy
 from s10_auto_nav.strategy.mock_policy import MockClimbPolicy, MockScenario
-from s10_auto_nav.strategy.policy import PolicyObservation
-from s10_auto_nav.strategy.router import RobotState, Router, RouterConfig, Source
+from s10_auto_nav.strategy.policy import ActionKind, PolicyObservation
+from s10_auto_nav.strategy.router import Mode, RobotState, Router, RouterConfig, Source
 from s10_auto_nav.strategy.scripted_policy import ScriptedClimbPolicy
 from s10_auto_nav.waypoints import Course
 
@@ -107,8 +109,7 @@ class StrategyRouterNode(Node):
         # Off by default. A router with no policy configured is a pass-through, which is what
         # a race run should get until a climb policy has earned its place.
         self.declare_parameter("climb_enabled", False)
-        #: ``mock`` or ``scripted``. There is deliberately no ``dagger`` value yet; when a
-        #: real checkpoint exists it is added here and nothing else in this file changes.
+        #: ``mock``, ``scripted`` or the SDK-local stable ``gate16`` actor.
         self.declare_parameter("climb_policy", "mock")
         self.declare_parameter("climb_segment", [15, 16])
         self.declare_parameter("scripted_trajectory", "")
@@ -128,7 +129,11 @@ class StrategyRouterNode(Node):
         self.declare_parameter("approach_enter", RouterConfig.approach_enter)
         self.declare_parameter("approach_speed_scale", RouterConfig.approach_speed_scale)
         self.declare_parameter("align_enter", RouterConfig.align_enter)
+        self.declare_parameter("align_timeout", RouterConfig.align_timeout)
         self.declare_parameter("climb_timeout", RouterConfig.climb_timeout)
+        self.declare_parameter(
+            "climb_progress_window", RouterConfig.climb_progress_window
+        )
         self.declare_parameter("max_retries", RouterConfig.max_retries)
         self.declare_parameter("sensor_timeout", RouterConfig.sensor_timeout)
         # Run the state machine but leave the follower's command alone; see RouterConfig.
@@ -138,7 +143,23 @@ class StrategyRouterNode(Node):
         # experiment can sweep them without a code change. Provisional values.
         self.declare_parameter("ready_distance_min", RouterConfig.ready_distance_min)
         self.declare_parameter("ready_distance_max", RouterConfig.ready_distance_max)
+        self.declare_parameter("ready_dwell", RouterConfig.ready_dwell)
         self.declare_parameter("max_entry_yaw_rate", RouterConfig.max_entry_yaw_rate)
+        self.declare_parameter("align_yaw_rate", RouterConfig.align_yaw_rate)
+        self.declare_parameter("max_lateral_error", RouterConfig.max_lateral_error)
+        self.declare_parameter(
+            "gate16_staging_tolerance", RouterConfig.gate16_staging_tolerance
+        )
+        self.declare_parameter("min_entry_speed", RouterConfig.min_entry_speed)
+        self.declare_parameter("max_entry_speed", RouterConfig.max_entry_speed)
+        self.declare_parameter("target_entry_speed", RouterConfig.target_entry_speed)
+        self.declare_parameter("verify_clearance", RouterConfig.verify_clearance)
+        self.declare_parameter("verify_hold", RouterConfig.verify_hold)
+        self.declare_parameter("verify_timeout", RouterConfig.verify_timeout)
+        self.declare_parameter(
+            "verify_unready_dwell", RouterConfig.verify_unready_dwell
+        )
+        self.declare_parameter("verify_deck_z", RouterConfig.verify_deck_z)
 
         rate = float(self.get_parameter("control_rate").value)
         config = RouterConfig(
@@ -150,10 +171,31 @@ class StrategyRouterNode(Node):
             approach_speed_scale=float(self.get_parameter("approach_speed_scale").value),
             align_enter=float(self.get_parameter("align_enter").value),
             align_exit=float(self.get_parameter("align_enter").value) + 0.3,
+            align_timeout=float(self.get_parameter("align_timeout").value),
             ready_distance_min=float(self.get_parameter("ready_distance_min").value),
             ready_distance_max=float(self.get_parameter("ready_distance_max").value),
+            ready_dwell=float(self.get_parameter("ready_dwell").value),
             max_entry_yaw_rate=float(self.get_parameter("max_entry_yaw_rate").value),
+            align_yaw_rate=float(self.get_parameter("align_yaw_rate").value),
+            max_lateral_error=float(self.get_parameter("max_lateral_error").value),
+            gate16_staging_tolerance=float(
+                self.get_parameter("gate16_staging_tolerance").value
+            ),
+            min_entry_speed=float(self.get_parameter("min_entry_speed").value),
+            max_entry_speed=float(self.get_parameter("max_entry_speed").value),
+            target_entry_speed=float(self.get_parameter("target_entry_speed").value),
+            align_speed=float(self.get_parameter("target_entry_speed").value),
+            verify_clearance=float(self.get_parameter("verify_clearance").value),
+            verify_hold=float(self.get_parameter("verify_hold").value),
+            verify_timeout=float(self.get_parameter("verify_timeout").value),
+            verify_unready_dwell=float(
+                self.get_parameter("verify_unready_dwell").value
+            ),
+            verify_deck_z=float(self.get_parameter("verify_deck_z").value),
             climb_timeout=float(self.get_parameter("climb_timeout").value),
+            climb_progress_window=float(
+                self.get_parameter("climb_progress_window").value
+            ),
             max_retries=int(self.get_parameter("max_retries").value),
             sensor_timeout=float(self.get_parameter("sensor_timeout").value),
         )
@@ -224,6 +266,10 @@ class StrategyRouterNode(Node):
         self.create_subscription(
             Float32MultiArray, "/perception/heightmap", self._heightmap_callback, 10
         )
+        self.create_subscription(
+            Float32MultiArray, "/perception/wheel_state", self._wheel_state_callback, 10
+        )
+        self.create_subscription(JointsData, "/JOINTS_DATA", self._joints_callback, 50)
         self.create_subscription(Float32, "/nav/progress", self._progress_callback, 10)
         self.create_subscription(Bool, "/nav/finished", self._finished_callback, 10)
 
@@ -231,10 +277,17 @@ class StrategyRouterNode(Node):
         self._position = np.zeros(3)
         self._ypr = (0.0, 0.0, 0.0)
         self._speed = 0.0
+        self._linear_velocity = np.zeros(3)
         self._yaw_rate = 0.0
         self._odom_time = 0.0
         self._lidar_time = 0.0
         self._heightmap_time = 0.0
+        self._joint_time = 0.0
+        self._joint_positions = np.zeros(16)
+        self._joint_velocities = np.zeros(16)
+        self._joint_torques = np.zeros(16)
+        self._wheel_positions = None
+        self._wheel_contacts = None
         self._travelled = 0.0
         self._finished = False
         self._segment = (0, 1)
@@ -256,7 +309,17 @@ class StrategyRouterNode(Node):
             return {}, {}
         segment = tuple(int(v) for v in self.get_parameter("climb_segment").value)
         kind = str(self.get_parameter("climb_policy").value).lower()
-        if kind == "scripted":
+        if kind == "gate16":
+            policy = StableGate16Policy(
+                Gate16Config(
+                    command_forward=float(self.get_parameter("target_entry_speed").value)
+                )
+            )
+            self.get_logger().warning(
+                "Gate16 stable frontal policy enabled: SDK-local 174D base+residual, "
+                "constant command, adaptive mirroring and command profiles disabled"
+            )
+        elif kind == "scripted":
             path = str(self.get_parameter("scripted_trajectory").value)
             if not path:
                 raise RuntimeError("climb_policy 'scripted' requires scripted_trajectory")
@@ -276,7 +339,9 @@ class StrategyRouterNode(Node):
                 "router's handling of a policy that succeeds, fails, hangs or lies."
             )
         else:
-            raise RuntimeError(f"unknown climb_policy '{kind}' (expected mock or scripted)")
+            raise RuntimeError(
+                f"unknown climb_policy '{kind}' (expected gate16, mock or scripted)"
+            )
         return {"climb_policy": policy}, {segment: "climb_policy"}
 
     # -- subscriptions -----------------------------------------------------
@@ -293,6 +358,7 @@ class StrategyRouterNode(Node):
         self._position = np.array([p.x, p.y, p.z])
         self._ypr = _yaw_pitch_roll(msg.pose.pose.orientation)
         self._speed = float(math.hypot(v.x, v.y))
+        self._linear_velocity = np.array([v.x, v.y, v.z], dtype=float)
         self._yaw_rate = float(msg.twist.twist.angular.z)
         self._odom_time = self._now()
 
@@ -301,6 +367,23 @@ class StrategyRouterNode(Node):
 
     def _heightmap_callback(self, msg: Float32MultiArray) -> None:
         self._heightmap_time = self._now()
+
+    def _wheel_state_callback(self, msg: Float32MultiArray) -> None:
+        values = np.asarray(msg.data, dtype=float)
+        if values.size != 16 or not np.all(np.isfinite(values)):
+            return
+        rows = values.reshape(4, 4)
+        self._wheel_positions = rows[:, :3].copy()
+        self._wheel_contacts = rows[:, 3] > 0.5
+
+    def _joints_callback(self, msg: JointsData) -> None:
+        joints = msg.data.joints_data
+        if len(joints) != 16:
+            return
+        self._joint_positions = np.asarray([joint.position for joint in joints], dtype=float)
+        self._joint_velocities = np.asarray([joint.velocity for joint in joints], dtype=float)
+        self._joint_torques = np.asarray([joint.torque for joint in joints], dtype=float)
+        self._joint_time = self._now()
 
     def _progress_callback(self, msg: Float32) -> None:
         self._travelled = float(msg.data)
@@ -368,6 +451,12 @@ class StrategyRouterNode(Node):
 
     def _state(self) -> RobotState:
         yaw, pitch, roll = self._ypr
+        edge = normal = None
+        if self._obstacle_frame is not None:
+            edge, normal, _ = self._obstacle_frame
+        forward_speed = None
+        if normal is not None:
+            forward_speed = float(np.dot(self._linear_velocity[:2], normal))
         return RobotState(
             t=self._now(),
             segment=self._segment,
@@ -376,6 +465,7 @@ class StrategyRouterNode(Node):
             pitch=pitch,
             roll=roll,
             speed=self._speed,
+            forward_speed=forward_speed,
             yaw_rate=self._yaw_rate,
             odom_time=self._odom_time,
             lidar_time=self._lidar_time,
@@ -385,6 +475,18 @@ class StrategyRouterNode(Node):
             heading_error=self._heading_error,
             travelled=self._travelled,
             course_finished=self._finished,
+            joint_positions=self._joint_positions.copy(),
+            joint_velocities=self._joint_velocities.copy(),
+            joint_torques=self._joint_torques.copy(),
+            wheel_positions=(
+                None if self._wheel_positions is None else self._wheel_positions.copy()
+            ),
+            wheel_contacts=(
+                None if self._wheel_contacts is None else self._wheel_contacts.copy()
+            ),
+            obstacle_edge=None if edge is None else np.asarray(edge, float).copy(),
+            obstacle_normal=None if normal is None else np.asarray(normal, float).copy(),
+            actual_joint_owner=self._actual_owner,
         )
 
     def _tick(self) -> None:
@@ -397,16 +499,17 @@ class StrategyRouterNode(Node):
             yaw=state.yaw,
             pitch=state.pitch,
             roll=state.roll,
-            linear_velocity=np.array(
-                [state.speed * math.cos(state.yaw), state.speed * math.sin(state.yaw), 0.0]
-            ),
+            linear_velocity=self._linear_velocity.copy(),
             yaw_rate=state.yaw_rate,
-            joint_positions=np.zeros(16),
-            joint_velocities=np.zeros(16),
+            joint_positions=self._joint_positions.copy(),
+            joint_velocities=self._joint_velocities.copy(),
             obstacle_delta=np.array([state.obstacle_distance, state.lateral_error, 0.0]),
             odom_time=state.odom_time,
             lidar_time=state.lidar_time,
             heightmap_time=state.heightmap_time,
+            wheel_positions=state.wheel_positions,
+            wheel_contacts=state.wheel_contacts,
+            joint_torques=state.joint_torques,
         )
         out = self.router.tick(state, self._nav_command, observation)
 
@@ -414,9 +517,16 @@ class StrategyRouterNode(Node):
         # straight back. Granting on entry to CLIMB and revoking on every other mode is more
         # robust than pairing grant/release across transitions, which is the version that
         # leaks the grant when a transition is missed.
-        if out.source is Source.POLICY and out.joints is not None:
+        if out.mode is Mode.ABORT:
+            self.arbiter.grant(JointArbiter.STOP)
+        elif out.source is Source.POLICY and self.router.active_action_kind is ActionKind.JOINT:
             self.arbiter.grant(JointArbiter.CLIMB)
             self.arbiter.forward(JointArbiter.CLIMB, out.joints)
+        elif (
+            out.source is Source.POLICY
+            and self.router.active_action_kind is ActionKind.DELEGATED
+        ):
+            self.arbiter.grant(JointArbiter.GATE16)
         else:
             self.arbiter.grant(JointArbiter.OFFICIAL)
         # Asked every tick rather than once per transition. The gate ignores a request for

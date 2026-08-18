@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wire our two integration headers into the contest SDK.
+"""Wire the autonomy command and Gate 16 controllers into the contest SDK.
 
 Both are things the SDK has no hook for and that cannot be done from outside the process.
 
@@ -29,6 +29,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -39,13 +41,37 @@ DEFAULT_UPSTREAM = REPO_ROOT / "upstream/goai_embodied_future_material"
 
 SDK = Path("src/S10_sdk_deploy")
 
-#: Our headers, and where they are installed in the SDK. Both land in a directory already on
-#: the SDK's include path, so the anchored includes below are plain quoted includes.
-HEADERS = {
+
+def verify_gate16_assets() -> None:
+    directory = REPO_ROOT / "policy/gate16"
+    manifest = json.loads((directory / "climb_policy_manifest.json").read_text())
+    expected = {
+        manifest["base_onnx"]: manifest["base_sha256"],
+        manifest["residual_onnx"]: manifest["residual_sha256"],
+    }
+    for name, digest in expected.items():
+        actual = hashlib.sha256((directory / name).read_bytes()).hexdigest()
+        if actual != digest:
+            raise SystemExit(f"Gate16 asset hash mismatch for {name}: {actual} != {digest}")
+
+#: Repository-owned integration files and essential frozen policy assets. Binary files are
+#: copied byte-for-byte and verified by the Gate16 runner before use.
+FILES = {
     REPO_ROOT / "integration/ros_cmd_interface.hpp": SDK
     / "interface/user_command/ros_cmd_interface.hpp",
     REPO_ROOT / "integration/joint_command_owner.hpp": SDK
     / "interface/user_command/joint_command_owner.hpp",
+    REPO_ROOT / "integration/gate16_perception_buffer.hpp": SDK
+    / "run_policy/gate16_perception_buffer.hpp",
+    REPO_ROOT / "integration/gate16_skill_gate.hpp": SDK
+    / "run_policy/gate16_skill_gate.hpp",
+    REPO_ROOT / "integration/gate16_policy_runner.hpp": SDK
+    / "run_policy/gate16_policy_runner.hpp",
+    REPO_ROOT / "policy/gate16/policy.onnx": SDK / "policy/gate16/policy.onnx",
+    REPO_ROOT / "policy/gate16/climb_residual.onnx": SDK
+    / "policy/gate16/climb_residual.onnx",
+    REPO_ROOT / "policy/gate16/climb_policy_manifest.json": SDK
+    / "policy/gate16/climb_policy_manifest.json",
 }
 
 
@@ -167,7 +193,75 @@ EDITS = [
                             res, rbs_[getrbsReadIndex()].joint_pos, &reset_official);
                     if (reset_official) policy_ptr_->OnEnter();
                     ri_ptr_->SetJointCommand(gated);""",
-        marker="JointCommandOwner::Instance().Arbitrate",
+        marker="owner.Arbitrate",
+        mode="replace",
+    ),
+    # 6. Add the stable 174D Gate16 runner beside, never in place of, the official 57D actor.
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor='#include "joint_command_owner.hpp"  // added by goai26-s10-racing\n',
+        addition='#include "gate16_policy_runner.hpp"  // added by goai26-s10-racing\n',
+        marker="gate16_policy_runner.hpp",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor="        std::shared_ptr<S10PolicyRunner> s10_policy_;\n",
+        addition=(
+            "        std::shared_ptr<Gate16PolicyRunner> gate16_policy_;\n"
+            "        bool gate16_running_ = false;\n"
+        ),
+        marker="gate16_running_",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor=(
+            "                s10_policy_ = std::make_shared<S10PolicyRunner>"
+            "(\"s10_policy\", model_path.string());\n"
+        ),
+        addition="""                auto gate16_path = fs::canonical(
+                    base / ".." / ".." / "policy" / "gate16" / "policy.onnx");
+                gate16_policy_ = std::make_shared<Gate16PolicyRunner>(
+                    "gate16_stable", gate16_path.string());
+""",
+        marker="gate16_stable",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor="""                    MatXf res = ra.ConvertToMat();
+
+                    // added by goai26-s10-racing: one owner of the actuators, always
+                    bool reset_official = false;
+                    MatXf gated = s10::JointCommandOwner::Instance().Arbitrate(
+                            res, rbs_[getrbsReadIndex()].joint_pos, &reset_official);
+                    if (reset_official) policy_ptr_->OnEnter();
+                    ri_ptr_->SetJointCommand(gated);""",
+        addition="""                    MatXf res = ra.ConvertToMat();
+
+                    // The stable Gate16 actor is evaluated only after the owner gate has
+                    // completed its safe hold. Its history therefore starts at the actual
+                    // control handoff, not when the router first asks for it.
+                    auto& owner = s10::JointCommandOwner::Instance();
+                    MatXf gate16_command;
+                    const MatXf* gate16_ptr = nullptr;
+                    if (owner.owner() == s10::JointOwner::kGate16) {
+                        if (!gate16_running_) {
+                            gate16_policy_->OnEnter();
+                            gate16_running_ = true;
+                        }
+                        gate16_command = gate16_policy_->getRobotAction(
+                            rbs_[getrbsReadIndex()], *(uc_ptr_->GetUserCommand())).ConvertToMat();
+                        gate16_ptr = &gate16_command;
+                    } else {
+                        gate16_running_ = false;
+                    }
+
+                    bool reset_official = false;
+                    MatXf gated = owner.Arbitrate(
+                            res, gate16_ptr, rbs_[getrbsReadIndex()].joint_pos,
+                            &reset_official);
+                    if (reset_official) policy_ptr_->OnEnter();
+                    ri_ptr_->SetJointCommand(gated);""",
+        marker="gate16_ptr",
         mode="replace",
     ),
     Edit(
@@ -193,14 +287,15 @@ EDITS = [
 ]
 
 
-def install_headers(root: Path) -> bool:
+def install_files(root: Path) -> bool:
     changed = False
-    for source, destination in HEADERS.items():
+    for source, destination in FILES.items():
         target = root / destination
-        content = source.read_text()
-        if target.is_file() and target.read_text() == content:
+        content = source.read_bytes()
+        if target.is_file() and target.read_bytes() == content:
             continue
-        target.write_text(content)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
         changed = True
     return changed
 
@@ -221,16 +316,17 @@ def main() -> int:
     args = parser.parse_args()
 
     root = resolve_upstream(args.upstream.resolve())
+    verify_gate16_assets()
 
     if args.revert:
         subprocess.run(["git", "-C", str(root), "checkout", "--", "."], check=True)
-        for destination in HEADERS.values():
+        for destination in FILES.values():
             (root / destination).unlink(missing_ok=True)
         print(f"Reverted {root} to a pristine checkout")
         return 0
 
     if args.check:
-        missing = [d for d in HEADERS.values() if not (root / d).is_file()]
+        missing = [d for d in FILES.values() if not (root / d).is_file()]
         pending = [e.path for e in EDITS if not e.is_applied(root)]
         if not missing and not pending:
             print(f"{root} is patched")
@@ -241,7 +337,7 @@ def main() -> int:
             print(f"Unpatched: {path}", file=sys.stderr)
         return 1
 
-    changed = install_headers(root)
+    changed = install_files(root)
     for edit in EDITS:
         changed |= edit.apply(root)
 

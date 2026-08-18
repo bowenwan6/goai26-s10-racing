@@ -11,6 +11,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420.svg?logo=ubuntu&logoColor=white)](https://releases.ubuntu.com/24.04/)
 [![MuJoCo](https://img.shields.io/badge/MuJoCo-simulation-000000.svg)](https://mujoco.org/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/version-Ver0-6f42c1.svg)](#version-status)
 
 </div>
 
@@ -18,38 +19,50 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 
 ## Current status
 
+### Version status
+
+**Ver0 is the current stable baseline.** It contains the validated WP0→WP32 autonomous
+simulation stack, stable frontal Gate 16 controller integration, strict ordered-gate scoring,
+and the wall-clock 1080p replay workflow described below. This baseline is now frozen on
+`main`; the next development cycle will target **Ver1.0** without rewriting Ver0's recorded
+acceptance result.
+
 The generated course contains **33 waypoints**, spans **224.21 m horizontally**, and gains
 **6.70 m**. Gates count only inside a **0.2 m horizontal radius** and must be taken in order.
 
-The current `main` has completed one uninterrupted full-stack run from **WP17 to WP32**:
+The stable Gate 16 integration has completed one uninterrupted full-stack test run from
+**WP0 to WP32** (seed 6, replay capture enabled):
 
 | Result | Value |
 |---|---:|
-| Ordered target gates | 15/15 (WP18–WP32) |
-| Recorder elapsed time | 641.1 s |
-| Distance travelled | 119.59 m |
-| Maximum tilt | 41.9° |
+| Ordered target gates | 33/33 (WP0–WP32) |
+| Recorder elapsed time | 977.37 s |
+| Distance travelled | 260.81 m |
+| Final WP32 distance | 0.182 m |
+| Maximum tilt | 57.3° |
 | Recorder stalls | 2 |
 
-That is a segment acceptance result, not a complete-lap claim. The harness legally test-spawns
-the robot at WP17 and does not reset it afterward. **WP15→WP16 remains unresolved**, so this
-repository does not yet claim a successful WP0→WP32 autonomous run.
+This is a test-harness result: the same production stack ran continuously, but the segment
+harness supplies a deterministic start pose and records independent 0.2 m gate entries. It is
+evidence of complete-course autonomy, not a claim about an official competition submission.
 
 ## What is actually deployed
 
-The contest SDK's shipped **57-dimensional proprioceptive locomotion policy is unchanged**.
-Perception is used by the navigation layer to decide velocity commands; it is not appended to
-the deployed policy observation.
+The official **57-dimensional proprioceptive locomotion policy** remains the normal controller.
+Only WP15→WP16 uses the frozen stable frontal Gate 16 bundle: a 174D observation drives the
+base and heightmap-gated residual ONNX policies at 50 Hz, producing a 16D joint command. After
+all four wheels are verified on the upper platform, joint ownership returns through safe-hold
+to the official policy and the existing follower resumes.
 
 | Layer | Responsibility |
 |---|---|
 | Perception | MuJoCo ray-cast lidar, horizontal scan, storey-aware body-frame height map, and ground-truth odometry |
 | Navigation | Strict ordered-gate tracking, pure pursuit, terrain classification, body-clear local planning, barrier bypass, corner retreat, step commitment, run-up, and stall recovery |
-| Locomotion | Official SDK ONNX policy at 50 Hz, receiving `/cmd_vel` through the ROS command bridge |
-| Integration | Autonomous startup plus single-owner arbitration at the SDK's `/JOINTS_CMD` write point |
+| Locomotion | Official SDK ONNX policy normally; frozen stable Gate 16 base+residual policy only for WP15→16 |
+| Integration | 50 Hz strategy router, four-wheel clearance verification, safe handoff, and single-owner arbitration at `/JOINTS_CMD` |
 
-`training/s10_rl/` contains a perceptive-observation/export research scaffold. It is useful for
-future retraining, but it is **not** the policy used for the validated WP17→WP32 result.
+`training/s10_rl/` contains a perceptive-observation/export research scaffold. It is not used
+by this result. The adaptive/mirrored Gate 16 variant is also intentionally disabled.
 
 ## Architecture
 
@@ -60,12 +73,13 @@ future retraining, but it is **not** the policy used for the validated WP17→WP
                          ▼
               s10_auto_nav / follower
        pure pursuit + terrain + avoidance + recovery
-                         │
-                      /cmd_vel
+                         │ /cmd_vel
                          ▼
-        contest rl_deploy + ros_cmd_interface.hpp
-          official locomotion policy (50 Hz)
-                         │
+                strategy router (50 Hz)
+               ╱                       ╲
+   official rl_deploy             Gate 16 base+residual
+     normal segments                 WP15→16 only
+               ╲                       ╱
                   joint ownership gate
                          │ /JOINTS_CMD
                          ▼
@@ -81,9 +95,9 @@ are applied to the SDK by `scripts/patch_upstream.py`:
 - `integration/joint_command_owner.hpp` ensures only one controller reaches `/JOINTS_CMD`
   during an explicit strategy handover.
 
-The strategy router is available but **disabled by default**. The validated WP17→WP32 run uses
-the normal follower and official locomotion policy; it does not depend on an unfinished
-special-purpose WP16 climb policy.
+The strategy router remains **disabled by default** for conservative compatibility. Enable the
+reviewed stable policy explicitly with `strategy_gate16.yaml`; the normal follower and official
+locomotion policy retain control everywhere except the bounded Gate 16 state sequence.
 
 ## Repository layout
 
@@ -93,6 +107,7 @@ special-purpose WP16 climb policy.
 │   ├── s10_auto_nav/         follower, planner, terrain logic, recorder, strategy router
 │   └── s10_bringup/          launch files, generated course, tuned parameters
 ├── integration/              ROS command bridge and joint-command ownership gate
+├── policy/gate16/            pinned stable frontal base/residual models and manifest
 ├── training/
 │   ├── s10_climb/            direct-MuJoCo diagnostic/strategy sandbox
 │   └── s10_rl/               optional perceptive-policy observation/export scaffold
@@ -155,10 +170,11 @@ CONTAINER_NAME=s10-wp17-32 docker/run.sh scripts/run_segment.sh \
   --start 17 --end 32 --seeds 1 --max-time 1200 \
   --out /ws/results/wp17_32 --tag verify
 
-# Full recorded WP0→WP32 attempt. This currently encounters the unresolved WP16 problem.
-CONTAINER_NAME=s10-wp0-32 docker/run.sh scripts/run_segment.sh \
+# Full WP0→WP32 test with the stable Gate 16 policy enabled.
+CONTAINER_NAME=s10-wp0-32 docker/run.sh scripts/run_segment.py \
   --start 0 --end 32 --seeds 1 --max-time 2400 \
-  --out /ws/results/wp0_32 --tag verify
+  --out /ws/results/wp0_32 --tag verify --router \
+  --router-params /ws/src/s10_bringup/config/strategy_gate16.yaml
 ```
 
 Each seed writes a per-tick CSV, a per-run JSON summary, and a complete ROS/simulator log.
@@ -169,21 +185,22 @@ for independently checking every intermediate gate in strict order. For acceptan
 score the CSV against `src/s10_bringup/config/course.yaml` at the 0.2 m radius and retain the
 per-gate closest distances.
 
-### Segment frame capture
+### One-shot real-time video
 
 ```bash
-CONTAINER_NAME=s10-video docker/run.sh scripts/run_segment.sh \
-  --start 17 --end 32 --seeds 1 --max-time 1200 \
-  --out /ws/results/video --tag capture --video --video-hz 10
-
-ffmpeg -framerate 10 -i results/video/17_32_capture_seed0_frames/%05d.png \
-  -c:v libx264 -crf 18 -pix_fmt yuv420p results/video/wp17_32.mp4
+# MuJoCo run, lightweight capture, offline 1920x1080 render, and MP4 encode.
+# Arguments: OUTPUT_DIR [START=0] [END=32] [SEED=6] [MAX_TIME=2400]
+scripts/run_realtime_video.sh \
+  /absolute/path/outside/the/repository/wp0_wp32 0 32 6 2400
 ```
 
-Direct rendering runs in the simulator process and may change timing at high resolution.
-The simulator also has a low-cost `replay` mode for external offline-rendering workflows, but
-the complete in-repository workflow above deliberately uses the PNG mode exposed by
-`run_segment.sh`.
+The command deliberately stores raw evidence and video outside the repository. During the
+experiment, the simulator records lightweight robot state plus a monotonic wall-clock timestamp
+for every captured frame. After the run, `render_replay_3d.py` renders those states offline and
+writes an ffconcat timeline from the recorded timestamps; FFmpeg therefore produces a 1x
+wall-clock video (for example, a 900 s run produces a 900 s video) without high-resolution
+rendering perturbing control timing. The final MP4 is H.264, 1920x1080, 30 fps. The script exits
+without rendering if the experiment fails, so a video file cannot disguise a failed run.
 
 ## Important run semantics
 
@@ -278,8 +295,9 @@ scripts/extract_waypoints.py --check
 scripts/patch_upstream.py --check
 ```
 
-At the merge that established the WP17→WP32 result, the combined navigation and perception
-suite passed **326 tests**.
+For the WP0→WP32 acceptance revision, the navigation/perception suite passes **332 tests** and
+the training/observation contract suite passes **29 tests** (361 total); all five ROS packages
+also build cleanly.
 
 Never hand-edit `src/s10_bringup/config/course.yaml`; regenerate it from the upstream scene.
 Never edit `upstream/` directly; put SDK integration in `integration/` and apply it through

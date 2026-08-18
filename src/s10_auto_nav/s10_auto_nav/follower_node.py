@@ -147,6 +147,14 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("committed_runup_trigger", 0.55)
         self.declare_parameter("committed_runup_distance", 1.5)
         self.declare_parameter("committed_runup_timeout", 20.0)
+        # Body-clear staging points for legs whose straight chord starts beside a drop or
+        # pillar. Entries are paired by index with XY coordinates in route_hint_points.
+        self.declare_parameter("route_hint_waypoints", [31, 32])
+        self.declare_parameter("route_hint_points", [29.35, 17.8, 30.55, 18.5])
+        self.declare_parameter("route_hint_radius", 0.25)
+        self.declare_parameter("route_hint_speed", 0.5)
+        self.declare_parameter("route_hint_max_tilt_deg", 12.0)
+        self.declare_parameter("route_hint_stable_hold", 0.5)
         # Approach braking. Zero means "inherit the lookahead", which is what the brake did
         # before the knob existed, so the shipped default changes nothing. The stair value
         # is selected automatically by the terrain classifier, not by the operator: see
@@ -244,6 +252,24 @@ class WaypointFollowerNode(Node):
         )
         self.committed_runup_timeout = float(
             self.get_parameter("committed_runup_timeout").value
+        )
+        hint_waypoints = [
+            int(value) for value in self.get_parameter("route_hint_waypoints").value
+        ]
+        hint_values = [float(value) for value in self.get_parameter("route_hint_points").value]
+        if len(hint_values) != 2 * len(hint_waypoints):
+            raise ValueError("route_hint_points must contain one XY pair per route waypoint")
+        self.route_hints = {
+            waypoint: np.asarray(hint_values[2 * i : 2 * i + 2], dtype=float)
+            for i, waypoint in enumerate(hint_waypoints)
+        }
+        self.route_hint_radius = float(self.get_parameter("route_hint_radius").value)
+        self.route_hint_speed = float(self.get_parameter("route_hint_speed").value)
+        self.route_hint_max_tilt = math.radians(
+            float(self.get_parameter("route_hint_max_tilt_deg").value)
+        )
+        self.route_hint_stable_hold = float(
+            self.get_parameter("route_hint_stable_hold").value
         )
 
         self.stall_speed = float(self.get_parameter("stall_speed").value)
@@ -355,6 +381,8 @@ class WaypointFollowerNode(Node):
         self._committed_runup_phase: str | None = None
         self._committed_runup_elapsed = 0.0
         self._committed_runup_attempts = 0
+        self._route_hints_completed: set[int] = set()
+        self._route_hint_stable_for = 0.0
         #: Set by every path that backs the robot off, cleared by the tick that reads it.
         #: The reader needs a terrain verdict that the setters run too early to have.
         self._backed_off = False
@@ -362,6 +390,7 @@ class WaypointFollowerNode(Node):
         self._log_countdown = 0.0
         self.terrain_classifier = TerrainClassifier()
         self._last_forward = 0.0
+        self._strategy_mode = ""
 
         latched = QoSProfile(
             history=QoSHistoryPolicy.KEEP_LAST,
@@ -380,6 +409,7 @@ class WaypointFollowerNode(Node):
         self.create_subscription(
             Float32MultiArray, "/perception/heightmap", self._heightmap_callback, 10
         )
+        self.create_subscription(String, "/strategy/mode", self._strategy_mode_callback, 10)
 
         self.timer = self.create_timer(1.0 / self.control_rate, self._control_step)
         self.get_logger().info(
@@ -411,6 +441,38 @@ class WaypointFollowerNode(Node):
         data = np.asarray(msg.data, float)
         self._heightmap = data.reshape(shape) if np.prod(shape) == data.size else data
         self._heightmap_age = 0.0
+
+    def _strategy_mode_callback(self, msg: String) -> None:
+        previous = self._strategy_mode
+        self._strategy_mode = msg.data
+        if msg.data != "navigate" or previous not in {
+            "climb",
+            "verify_clear",
+            "handoff",
+        }:
+            return
+        # The follower keeps computing while the router owns /cmd_vel so its sensor and
+        # course state stay current. Its transient manoeuvre state must not survive that
+        # preemption, though: otherwise a barrier detour selected while Gate16 was moving
+        # the robot is executed only after the handoff, against a different pose.
+        self.controller.reset()
+        self.step_commit.reset()
+        self.terrain_classifier.reset()
+        self._reset_barrier_escape()
+        self._reset_committed_runup()
+        self._barrier_detours = 0
+        self._climbing_barrier = False
+        self._blocked_for = 0.0
+        self._stalled_for = 0.0
+        self._no_progress_for = 0.0
+        self._stall_reference = None
+        self._recovering_for = 0.0
+        self._committing = False
+        self._backed_off = False
+        self._corner_retreat_target = None
+        self._corner_incoming_yaw = None
+        self._corner_outgoing_yaw = None
+        self.get_logger().info("Strategy handoff reset transient follower state")
 
     def _control_step(self) -> None:
         if self._pose_xy is None:
@@ -469,6 +531,19 @@ class WaypointFollowerNode(Node):
             self._last_forward = runup_command.forward
             self._publish(runup_command)
             self._log_state(runup_command, 1.0, 1.0, False, dt)
+            return
+
+        route_hint_command = self._route_hint_command(dt)
+        if route_hint_command is not None:
+            # This is a short, measured body-clear connector, analogous to the corner
+            # retreat above. Generic scan recovery at WP31 repeatedly backed into the same
+            # pose because the target chord begins beside the upper-deck drop.
+            self._stalled_for = 0.0
+            self._no_progress_for = 0.0
+            self._stall_reference = None
+            self._last_forward = route_hint_command.forward
+            self._publish(route_hint_command)
+            self._log_state(route_hint_command, 1.0, 1.0, False, dt)
             return
 
         if self._recovering_for > 0.0:
@@ -814,6 +889,47 @@ class WaypointFollowerNode(Node):
         self._committed_runup_elapsed = 0.0
         self._committed_runup_attempts = 0
 
+    def _route_hint_command(self, dt: float) -> Command | None:
+        """Follow one measured body-clear staging point before the ordered gate.
+
+        The hint never advances the course and therefore cannot claim a gate. It only
+        shapes the start of a leg; normal perception and pursuit resume after entering the
+        staging radius, while the strict 0.2 m cursor remains the sole acceptance rule.
+        """
+        target = self.course.target
+        if target is None or target.index in self._route_hints_completed:
+            return None
+        hint = self.route_hints.get(target.index)
+        if hint is None:
+            self._route_hint_stable_for = 0.0
+            return None
+        # A gate can score while the rear wheels are still descending its obstacle. Taking
+        # over immediately then suppresses StepCommit's climb/run-up recovery and can spin
+        # indefinitely on the lip. Require a settled chassis before this connector owns the
+        # command; until then the normal terrain controller below remains authoritative.
+        if self._tilt > self.route_hint_max_tilt:
+            self._route_hint_stable_for = 0.0
+            return None
+        self._route_hint_stable_for += dt
+        if self._route_hint_stable_for < self.route_hint_stable_hold:
+            return None
+        distance = float(np.linalg.norm(hint - self._pose_xy))
+        if distance <= self.route_hint_radius:
+            self._route_hints_completed.add(target.index)
+            self._route_hint_stable_for = 0.0
+            self.controller.reset()
+            self._reset_barrier_escape()
+            self.get_logger().info(
+                f"Route staging point reached for waypoint {target.index}; resuming perception"
+            )
+            return None
+        command = self.controller.compute(self._pose_xy, self._yaw, hint, dt)
+        return Command(
+            forward=float(np.clip(command.forward, -self.route_hint_speed, self.route_hint_speed)),
+            lateral=float(np.clip(command.lateral, -self.route_hint_speed, self.route_hint_speed)),
+            yaw_rate=command.yaw_rate,
+        )
+
     def _committed_runup_command(self, dt: float) -> Command | None:
         """Build momentum for a known route whose final riser defeats a standing push.
 
@@ -875,23 +991,27 @@ class WaypointFollowerNode(Node):
                 f"Terrain run-up ready {distance:.2f} m from waypoint {target.index}; charging"
             )
 
-        # A failed charge gets another distance-defined run-up. Keep the final attempt
-        # pushing: abandoning this validated, full-width route would only hand the same
-        # ambiguous stacked-storey projection back to the obstacle planner.
+        # A failed charge gets another distance-defined run-up.  The old final-attempt
+        # behaviour held ``forward=+speed`` forever after the retry counter was exhausted.
+        # On WP28 that can high-centre the chassis 0.35--0.45 m short of the strict gate:
+        # every wheel command remains non-zero, so none of the ordinary stall recovery can
+        # take ownership and the run never makes another meaningful attempt.  Keep each
+        # charge bounded and rebuild momentum every time.  ``_committed_runup_attempts`` is
+        # retained as telemetry; the segment recorder's run deadline remains the outer
+        # bound on repeated physical attempts.
         if self._committed_runup_elapsed >= self.step_commit.config.timeout:
             self._committed_runup_attempts += 1
             self._committed_runup_elapsed = 0.0
-            if self._committed_runup_attempts < self.step_commit.config.attempts:
-                self._committed_runup_phase = "back"
-                self.get_logger().warn(
-                    f"Terrain charge stopped {distance:.2f} m from waypoint {target.index}; "
-                    "building another run-up"
-                )
-                return Command(
-                    forward=-self.step_commit.config.speed,
-                    lateral=lateral,
-                    yaw_rate=yaw_rate,
-                )
+            self._committed_runup_phase = "back"
+            self.get_logger().warn(
+                f"Terrain charge {self._committed_runup_attempts} stopped {distance:.2f} m "
+                f"from waypoint {target.index}; building another bounded run-up"
+            )
+            return Command(
+                forward=-self.step_commit.config.speed,
+                lateral=lateral,
+                yaw_rate=yaw_rate,
+            )
         return Command(
             forward=self.step_commit.config.speed,
             lateral=lateral,

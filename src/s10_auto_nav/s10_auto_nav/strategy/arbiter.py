@@ -33,6 +33,8 @@ import numpy as np
 
 OFFICIAL = "official"
 CLIMB = "climb"
+GATE16 = "gate16"
+STOP = "stop"
 
 
 class JointArbiter:
@@ -44,6 +46,8 @@ class JointArbiter:
 
     OFFICIAL = OFFICIAL
     CLIMB = CLIMB
+    GATE16 = GATE16
+    STOP = STOP
 
     def __init__(self, publish: Callable[[np.ndarray], None] | None = None):
         self.owner = OFFICIAL
@@ -52,7 +56,7 @@ class JointArbiter:
         self.refused = 0
 
     def grant(self, owner: str) -> None:
-        if owner not in (OFFICIAL, CLIMB):
+        if owner not in (OFFICIAL, CLIMB, GATE16, STOP):
             raise ValueError(f"unknown joint command owner: {owner}")
         self.owner = owner
 

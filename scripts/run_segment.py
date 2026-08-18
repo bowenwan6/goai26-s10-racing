@@ -114,7 +114,11 @@ def run_once(args, waypoints: list[dict], seed: int, course_path: Path) -> dict:
 
     log = (out_dir / f"{name}.log").open("w")
     policy = subprocess.Popen(
-        ["ros2", "run", "s10_sdk_deploy", "rl_deploy"], env=env, stdout=log, stderr=log
+        ["ros2", "run", "s10_sdk_deploy", "rl_deploy"],
+        env=env,
+        stdout=log,
+        stderr=log,
+        start_new_session=True,
     )
     time.sleep(POLICY_WARMUP)
     command = [
@@ -133,7 +137,11 @@ def run_once(args, waypoints: list[dict], seed: int, course_path: Path) -> dict:
     ]
     if args.nav_params:
         command.append(f"nav_params:={args.nav_params}")
-    stack = subprocess.Popen(command, env=env, stdout=log, stderr=log)
+    if args.router_params:
+        command.append(f"router_params:={args.router_params}")
+    stack = subprocess.Popen(
+        command, env=env, stdout=log, stderr=log, start_new_session=True
+    )
 
     # The recorder ends the run; this is only the backstop for a stack that never got as far
     # as recording anything, which is a harness failure rather than a robot one.
@@ -160,11 +168,15 @@ def run_once(args, waypoints: list[dict], seed: int, course_path: Path) -> dict:
 def _terminate(process: subprocess.Popen) -> None:
     if process.poll() is not None:
         return
-    process.send_signal(signal.SIGINT)
+    # ``ros2 run`` and ``ros2 launch`` are wrappers. Signalling only the wrapper leaves
+    # rl_deploy and launch children orphaned on the shared DDS domain, where they continue
+    # publishing actuator commands into the next seed. Each stack owns a process group so
+    # teardown reaches the entire tree.
+    os.killpg(process.pid, signal.SIGINT)
     try:
         process.wait(SHUTDOWN_GRACE)
     except subprocess.TimeoutExpired:
-        process.kill()
+        os.killpg(process.pid, signal.SIGKILL)
         process.wait()
 
 
@@ -178,6 +190,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--tag", default="", help="suffix, to keep an A/B pair apart")
     parser.add_argument("--nav-params", default="", help="override nav.yaml, for an A/B only")
+    parser.add_argument(
+        "--router-params", default="", help="override strategy.yaml when --router is enabled"
+    )
     parser.add_argument("--router", action="store_true", help="insert the strategy router")
     parser.add_argument("--video", action="store_true")
     parser.add_argument("--video-hz", type=float, default=10.0)

@@ -34,8 +34,9 @@
  * driving.
  *
  * Topics
- *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "stop"
+ *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "gate16" | "stop"
  *   subscribe  /strategy/climb_joints   std_msgs/Float32MultiArray   16 joint position targets
+ *   subscribe  /perception/heightmap    std_msgs/Float32MultiArray   Gate16 raw 13x9 grid
  *   publish    /joints/owner            std_msgs/String              who is actually driving
  *
  * The climb policy publishes plain joint targets on its own topic. It does not publish a
@@ -58,6 +59,7 @@
 #include <std_msgs/msg/string.hpp>
 
 #include "common_types.h"
+#include "gate16_perception_buffer.hpp"
 
 namespace s10 {
 
@@ -68,8 +70,9 @@ using types::VecXf;
 enum class JointOwner : uint8_t {
   kOfficial = 0,  //!< the shipped locomotion policy; the default and the fallback
   kClimb = 1,     //!< a climb policy driving joint targets over ROS
-  kSafeHold = 2,  //!< nobody: the robot is held where it is, stiffly enough to stay there
-  kStopped = 3,   //!< nobody, and deliberately so, until something asks otherwise
+  kGate16 = 2,    //!< the in-process 174D Gate 16 policy, including wheel velocities
+  kSafeHold = 3,  //!< nobody: the robot is held where it is, stiffly enough to stay there
+  kStopped = 4,   //!< nobody, and deliberately so, until something asks otherwise
 };
 
 inline const char* OwnerName(JointOwner owner) {
@@ -78,6 +81,8 @@ inline const char* OwnerName(JointOwner owner) {
       return "official";
     case JointOwner::kClimb:
       return "climb";
+    case JointOwner::kGate16:
+      return "gate16";
     case JointOwner::kSafeHold:
       return "safe_hold";
     case JointOwner::kStopped:
@@ -138,6 +143,12 @@ class JointCommandOwner {
         "/strategy/climb_joints", 10,
         [this](const std_msgs::msg::Float32MultiArray::SharedPtr msg) { OnClimbJoints(*msg); });
 
+    heightmap_sub_ = node_->create_subscription<std_msgs::msg::Float32MultiArray>(
+        "/perception/heightmap", 10,
+        [](const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
+          s10_perception::SharedHeightmap().UpdateRaw(msg->data);
+        });
+
     owner_pub_ = node_->create_publisher<std_msgs::msg::String>("/joints/owner", 10);
 
     executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
@@ -166,6 +177,7 @@ class JointCommandOwner {
     owner_pub_.reset();
     owner_sub_.reset();
     joints_sub_.reset();
+    heightmap_sub_.reset();
     node_.reset();
   }
 
@@ -175,13 +187,15 @@ class JointCommandOwner {
    * Decide what actually goes to the actuators this tick.
    *
    * @param official       what the shipped policy produced, in the SDK's five-column layout
+   * @param gate16         current in-process Gate16 matrix, or null while inactive
    * @param measured_pos   current joint positions, used to build the hold
    * @param reset_official set when the official policy must clear its action history before
    *                       its next output is used; the caller owns doing that, because only
    *                       it has the policy pointer
    * @return the command to publish. Never the sum, average or interleaving of two sources.
    */
-  MatXf Arbitrate(const MatXf& official, const VecXf& measured_pos, bool* reset_official) {
+  MatXf Arbitrate(const MatXf& official, const MatXf* gate16,
+                  const VecXf& measured_pos, bool* reset_official) {
     if (reset_official) *reset_official = false;
     std::lock_guard<std::mutex> guard(state_);
 
@@ -231,6 +245,14 @@ class JointCommandOwner {
         }
         break;
       }
+      case JointOwner::kGate16:
+        if (gate16 != nullptr && gate16->rows() == measured_pos.size() &&
+            gate16->cols() == 5 && gate16->allFinite()) {
+          command = *gate16;
+        } else {
+          command = Hold(measured_pos);
+        }
+        break;
       case JointOwner::kSafeHold:
       case JointOwner::kStopped:
         command = Hold(measured_pos);
@@ -241,10 +263,18 @@ class JointCommandOwner {
     return command;
   }
 
-  JointOwner owner() const { return owner_; }
+  MatXf Arbitrate(const MatXf& official, const VecXf& measured_pos,
+                  bool* reset_official) {
+    return Arbitrate(official, nullptr, measured_pos, reset_official);
+  }
+
+  JointOwner owner() const {
+    std::lock_guard<std::mutex> guard(state_);
+    return owner_;
+  }
 
   /**
-   * Ask for an owner by name: "official", "climb" or "stop". Anything else is ignored.
+   * Ask for an owner by name. Anything else is ignored.
    *
    * Public, and the same entry point the subscription uses, so the whole state machine can
    * be driven from a plain C++ main with no ROS running. A gate whose only exercise is the
@@ -255,6 +285,8 @@ class JointCommandOwner {
       requested_.store(JointOwner::kOfficial);
     } else if (name == "climb") {
       requested_.store(JointOwner::kClimb);
+    } else if (name == "gate16") {
+      requested_.store(JointOwner::kGate16);
     } else if (name == "stop") {
       requested_.store(JointOwner::kStopped);
     } else if (node_) {
@@ -358,13 +390,14 @@ class JointCommandOwner {
   std::shared_ptr<rclcpp::Node> node_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr owner_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr joints_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr heightmap_sub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr owner_pub_;
   std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor_;
   std::thread spin_thread_;
   std::atomic<bool> running_{false};
   std::mutex lifecycle_;
 
-  std::mutex state_;
+  mutable std::mutex state_;
   JointOwner owner_{JointOwner::kOfficial};
   JointOwner holding_towards_{JointOwner::kSafeHold};
   std::atomic<JointOwner> requested_{JointOwner::kOfficial};

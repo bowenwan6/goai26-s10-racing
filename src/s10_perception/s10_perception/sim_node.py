@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import math
 import os
+import time
 from pathlib import Path
 
 import mujoco
@@ -82,11 +83,24 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
 
         self.lidar = RayCastLidar(self.model, self.base_body_id, lidar_config)
         self.heightmap = HeightmapSampler(self.model, self.base_body_id, heightmap_config)
+        self.wheel_body_ids = np.asarray(
+            [
+                mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, name)
+                for name in ("fl_wheel", "fr_wheel", "hl_wheel", "hr_wheel")
+            ],
+            dtype=np.int32,
+        )
+        if np.any(self.wheel_body_ids < 0):
+            raise RuntimeError("S10 wheel bodies are missing from the MuJoCo model")
+        self._wheel_geoms = [self._descendant_geoms(int(body)) for body in self.wheel_body_ids]
 
         self.odom_pub = self.create_publisher(Odometry, "/ground_truth/odom", 50)
         self.scan_pub = self.create_publisher(LaserScan, "/scan", 10)
         self.lidar_pub = self.create_publisher(Float32MultiArray, "/perception/lidar", 10)
         self.heightmap_pub = self.create_publisher(Float32MultiArray, "/perception/heightmap", 10)
+        self.wheel_state_pub = self.create_publisher(
+            Float32MultiArray, "/perception/wheel_state", 10
+        )
 
         self.get_logger().info(
             f"[perception] lidar {self.lidar.cfg.n_elevation}x{self.lidar.cfg.n_azimuth} rays, "
@@ -133,7 +147,9 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         self._frame_renderer = None
         self._frame_replay = False
         self._frame_times: list[float] = []
+        self._frame_wall_times: list[float] = []
         self._frame_qpos: list[np.ndarray] = []
+        self._frame_wall_started = time.monotonic()
         directory = os.environ.get("S10_SEGMENT_VIDEO", "").strip()
         if not directory:
             return
@@ -188,6 +204,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             return
         if self._frame_replay:
             self._frame_times.append(float(self.timestamp))
+            self._frame_wall_times.append(time.monotonic() - self._frame_wall_started)
             self._frame_qpos.append(self.data.qpos.copy())
         else:
             self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
@@ -206,6 +223,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             np.savez_compressed(
                 replay,
                 time=np.asarray(self._frame_times),
+                wall_time=np.asarray(self._frame_wall_times),
                 qpos=np.asarray(self._frame_qpos),
                 width=self._frame_width,
                 height=self._frame_height,
@@ -234,6 +252,36 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
 
         grid = self.heightmap.sample(self.data)
         self.heightmap_pub.publish(_to_float_array(grid, ("x", "y")))
+        self.wheel_state_pub.publish(
+            _to_float_array(self._wheel_state(), ("wheel", "x_y_z_contact"))
+        )
+
+    def _descendant_geoms(self, ancestor_body: int) -> set[int]:
+        result: set[int] = set()
+        for geom in range(self.model.ngeom):
+            body = int(self.model.geom_bodyid[geom])
+            while body > 0 and body != ancestor_body:
+                body = int(self.model.body_parentid[body])
+            if body == ancestor_body:
+                result.add(geom)
+        return result
+
+    def _wheel_state(self) -> np.ndarray:
+        """Four world-frame wheel centres plus a terrain-contact oracle."""
+        contacts = np.zeros(4, dtype=np.float32)
+        for index, geoms in enumerate(self._wheel_geoms):
+            for contact_index in range(self.data.ncon):
+                contact = self.data.contact[contact_index]
+                if contact.dist > 0.005:
+                    continue
+                g1, g2 = int(contact.geom1), int(contact.geom2)
+                other = g2 if g1 in geoms else g1 if g2 in geoms else -1
+                if other >= 0 and int(self.model.geom_group[other]) == 0:
+                    contacts[index] = 1.0
+                    break
+        return np.column_stack((self.data.xpos[self.wheel_body_ids], contacts)).astype(
+            np.float32
+        )
 
     def _publish_odometry(self, stamp) -> None:
         msg = Odometry()
