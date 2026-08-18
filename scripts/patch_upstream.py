@@ -251,17 +251,19 @@ EDITS = [
                     ri_ptr_->SetJointCommand(gated);""",
         addition="""                    MatXf res = ra.ConvertToMat();
 
-                    // The stable Gate16 actor is evaluated only after the owner gate has
-                    // completed its safe hold. Its history therefore starts at the actual
-                    // control handoff, not when the router first asks for it.
+                    // Shadow-evaluate Gate16 through APPROACH/ALIGN to preserve the action
+                    // history expected by the reference full-stack runner. The official
+                    // matrix remains the sole actuator command until the armed handoff.
                     auto& owner = s10::JointCommandOwner::Instance();
                     MatXf gate16_command;
                     const MatXf* gate16_ptr = nullptr;
-                    if (owner.owner() == s10::JointOwner::kGate16) {
+                    if (owner.owner() == s10::JointOwner::kGate16 ||
+                        owner.gate16_armed() || owner.gate16_shadow()) {
                         if (!gate16_running_) {
                             gate16_policy_->OnEnter();
                             gate16_running_ = true;
                         }
+                        gate16_policy_->SetClimbArmed(owner.gate16_armed());
                         gate16_command = gate16_policy_->getRobotAction(
                             rbs_[getrbsReadIndex()], *(uc_ptr_->GetUserCommand())).ConvertToMat();
                         gate16_ptr = &gate16_command;
@@ -276,6 +278,18 @@ EDITS = [
                     if (reset_official) policy_ptr_->OnEnter();
                     ri_ptr_->SetJointCommand(gated);""",
         marker="gate16_ptr",
+        mode="replace",
+    ),
+    # Upgrade workspaces patched by the earlier owner-only runner block. The main edit is
+    # intentionally idempotent via ``gate16_ptr`` and therefore cannot rewrite itself.
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor="if (owner.owner() == s10::JointOwner::kGate16) {",
+        addition=(
+            "if (owner.owner() == s10::JointOwner::kGate16 ||\n"
+            "                        owner.gate16_armed() || owner.gate16_shadow()) {"
+        ),
+        marker="owner.gate16_shadow()",
         mode="replace",
     ),
     Edit(

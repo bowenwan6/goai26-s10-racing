@@ -122,6 +122,7 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
   float residual_engage_edge_distance_m_ =
       std::numeric_limits<float>::infinity();
   bool residual_engaged_ = false;
+  bool climb_armed_ = false;
 
   static constexpr float kRadiansToDegrees = 57.29577951308232f;
   static constexpr float kFrontSupportEdgeX = 0.40f;
@@ -282,10 +283,14 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
   }
 
   void BeginClimb(const s10_policy::SkillGateReport& gate,
-                  const UserCommand& command) {
-    // TerrainAdvisor reports the correction direction. The policy package uses the
-    // robot's obstacle-relative entry yaw, which has the opposite sign.
-    climb_entry_heading_error_deg_ = -gate.edge_heading_rad * kRadiansToDegrees;
+                  const UserCommand& command, float base_yaw_rad) {
+    // This isolated runner is deployed only for the measured Gate16 lip, whose normal is
+    // world +X. Use the calibrated base yaw that the router actually gated instead of a
+    // five-column, 0.15 m height-map line fit. The failed full run was physically at -4 deg
+    // but the fit reported -11.3 deg, selecting the wrong profile and mirror frame.
+    const float heightmap_heading_deg =
+        -gate.edge_heading_rad * kRadiansToDegrees;
+    climb_entry_heading_error_deg_ = base_yaw_rad * kRadiansToDegrees;
     mirror_policy_frame_ = ShouldMirrorPolicyFrame(climb_entry_heading_error_deg_);
     float entry_speed_mps = std::abs(command.forward_vel_scale);
     // The follower may still have one pre-gate cruise command in flight. Clamp that
@@ -300,7 +305,9 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
     right_front_supported_ = false;
     front_supported_ = false;
     residual_engaged_ = false;
-    std::cout << "S10 climb entry yaw=" << climb_entry_heading_error_deg_
+    std::cout << "S10 climb entry speed=" << entry_speed_mps
+              << " yaw=" << climb_entry_heading_error_deg_
+              << " heightmap_yaw=" << heightmap_heading_deg
               << " valid=" << (gate.edge_heading_valid ? "yes" : "no")
               << " samples=" << gate.edge_heading_samples
               << " peak_step=" << gate.edge_heading_peak_step
@@ -512,7 +519,23 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
     motor_v_eigen.setZero(motor_num);
     skill_gate_.Reset();
     previous_gate_state_ = false;
+    climb_armed_ = false;
     EndClimb();
+  }
+
+  /** Arm residual inference only after the router proves the moving-entry contract.
+
+      The 174D base actor is deliberately warm during APPROACH/ALIGN. Resetting the skill
+      gate on the arm edge prevents terrain observed during staging from carrying a stale
+      front-tuck event into the climb. */
+  void SetClimbArmed(bool armed) {
+    if (armed == climb_armed_) return;
+    climb_armed_ = armed;
+    skill_gate_.Reset();
+    previous_gate_state_ = false;
+    EndClimb();
+    std::cout << "S10 climb residual " << (armed ? "armed" : "disarmed")
+              << " by router" << std::endl;
   }
 
   RobotAction getRobotAction(const RobotBasicState& ro, const UserCommand& uc) override {
@@ -534,9 +557,11 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
     s10_policy::SkillGateReport gate;
     if (observation_dim == 174) {
       height = s10_perception::SharedHeightmap().Read();
-      if (residual_available_) {
+      if (residual_available_ && climb_armed_) {
         gate = skill_gate_.Update(height);
-        if (gate.active && !previous_gate_state_) BeginClimb(gate, uc);
+        if (gate.active && !previous_gate_state_) {
+          BeginClimb(gate, uc, ro.base_rpy(2));
+        }
         if (gate.active) {
           UpdateResidualEngagement(gate);
           UpdateFrontSupport(gate);

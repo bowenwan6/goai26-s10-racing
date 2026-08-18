@@ -19,8 +19,9 @@
  *
  *  * Only one of the official policy and a climb policy is ever the source of the command
  *    that is published. The other one's output is dropped, not blended and not queued.
- *  * Every change of owner passes through an explicit hold, so no transition is a step
- *    change from one controller's last output to another's first.
+ *  * Every change of owner passes through an explicit hold except the explicitly armed
+ *    official->Gate16 moving climb handoff. That one is accepted only with a finite, fully
+ *    shaped Gate16 command already available on the same 50 Hz tick.
  *  * The official policy's action history is cleared before it drives again, because its
  *    observation includes its own previous action and the last one it produced describes a
  *    robot that has since been driven by something else.
@@ -34,7 +35,7 @@
  * driving.
  *
  * Topics
- *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "gate16" | "stop"
+ *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "gate16_shadow" | "gate16" | "gate16_climb" | "stop"
  *   subscribe  /strategy/climb_joints   std_msgs/Float32MultiArray   16 joint position targets
  *   subscribe  /perception/heightmap    std_msgs/Float32MultiArray   Gate16 raw 13x9 grid
  *   publish    /joints/owner            std_msgs/String              who is actually driving
@@ -103,6 +104,8 @@ class JointCommandOwner {
   //: Every owner change spends this long in the hold first. Long enough for the actuators to
   //: settle onto the held pose, short enough not to be a stumble in its own right.
   static constexpr double kHandoverS = 0.25;
+  //: Callback-order grace for the first finite action of the moving Gate16 handoff.
+  static constexpr double kMovingCommandReadyS = 0.10;
 
   //: A climb command older than this is not used. At 50 Hz this is ten missed messages.
   static constexpr double kClimbTimeoutS = 0.2;
@@ -202,8 +205,34 @@ class JointCommandOwner {
     const double now = Now();
     const JointOwner requested = requested_.load();
 
-    // A request is honoured by going through the hold, never by switching on the spot.
-    if (requested != owner_ && requested != holding_towards_) {
+    const bool finite_gate16 =
+        gate16 != nullptr && gate16->rows() == measured_pos.size() &&
+        gate16->cols() == 5 && gate16->allFinite();
+
+    const bool moving_gate16_request =
+        owner_ == JointOwner::kOfficial && requested == JointOwner::kGate16 &&
+        (gate16_armed_.load() || gate16_shadow_.load());
+
+    // The frozen Gate16 contract requires d=0.60--0.65 m at 0.25 m/s and explicitly
+    // forbids stopping at the lip. The router proves that envelope before sending the
+    // armed request. Preserve the moving state with a single-source atomic transfer, but
+    // only when this tick already carries a valid Gate16 command. Every other owner change
+    // retains the conservative hold below.
+    if (moving_gate16_request) {
+      if (finite_gate16) {
+        Transition(JointOwner::kGate16, "armed moving climb handover");
+        holding_towards_ = JointOwner::kSafeHold;
+      } else if (holding_towards_ != JointOwner::kGate16) {
+        // The request can arrive after this tick's policy-selection snapshot. Keep the
+        // moving official command briefly while the shadow runner supplies its first
+        // validated action; callback ordering alone must not stop the robot at the lip.
+        holding_towards_ = JointOwner::kGate16;
+        hold_started_ = now;
+      } else if (now - hold_started_ >= kMovingCommandReadyS) {
+        Transition(JointOwner::kSafeHold, "handover requested");
+        hold_started_ = now;
+      }
+    } else if (requested != owner_ && requested != holding_towards_) {
       Transition(JointOwner::kSafeHold, "handover requested");
       holding_towards_ = requested;
       hold_started_ = now;
@@ -246,8 +275,7 @@ class JointCommandOwner {
         break;
       }
       case JointOwner::kGate16:
-        if (gate16 != nullptr && gate16->rows() == measured_pos.size() &&
-            gate16->cols() == 5 && gate16->allFinite()) {
+        if (finite_gate16) {
           command = *gate16;
         } else {
           command = Hold(measured_pos);
@@ -273,6 +301,12 @@ class JointCommandOwner {
     return owner_;
   }
 
+  /** Whether the already-warm Gate16 actor may evaluate its height-map residual. */
+  bool gate16_armed() const { return gate16_armed_.load(); }
+
+  /** Whether to evaluate Gate16 at 50 Hz without granting actuator ownership. */
+  bool gate16_shadow() const { return gate16_shadow_.load(); }
+
   /**
    * Ask for an owner by name. Anything else is ignored.
    *
@@ -282,12 +316,30 @@ class JointCommandOwner {
    */
   void RequestOwner(const std::string& name) {
     if (name == "official") {
+      gate16_armed_.store(false);
+      gate16_shadow_.store(false);
       requested_.store(JointOwner::kOfficial);
     } else if (name == "climb") {
+      gate16_armed_.store(false);
+      gate16_shadow_.store(false);
       requested_.store(JointOwner::kClimb);
     } else if (name == "gate16") {
+      gate16_armed_.store(false);
+      // Evaluate the first finite base action before the no-stop staging handoff. Once
+      // ownership transfers this flag is harmless; residual remains separately disarmed.
+      gate16_shadow_.store(true);
+      requested_.store(JointOwner::kGate16);
+    } else if (name == "gate16_shadow") {
+      gate16_armed_.store(false);
+      gate16_shadow_.store(true);
+      requested_.store(JointOwner::kOfficial);
+    } else if (name == "gate16_climb") {
+      gate16_armed_.store(true);
+      gate16_shadow_.store(true);
       requested_.store(JointOwner::kGate16);
     } else if (name == "stop") {
+      gate16_armed_.store(false);
+      gate16_shadow_.store(false);
       requested_.store(JointOwner::kStopped);
     } else if (node_) {
       RCLCPP_WARN(node_->get_logger(), "ignoring unknown joint owner request '%s'", name.c_str());
@@ -316,6 +368,8 @@ class JointCommandOwner {
     owner_ = JointOwner::kOfficial;
     holding_towards_ = JointOwner::kSafeHold;
     requested_.store(JointOwner::kOfficial);
+    gate16_armed_.store(false);
+    gate16_shadow_.store(false);
     climb_.resize(0);
     climb_stamp_ = -1.0;
     owner_since_ = Now();
@@ -401,6 +455,8 @@ class JointCommandOwner {
   JointOwner owner_{JointOwner::kOfficial};
   JointOwner holding_towards_{JointOwner::kSafeHold};
   std::atomic<JointOwner> requested_{JointOwner::kOfficial};
+  std::atomic<bool> gate16_armed_{false};
+  std::atomic<bool> gate16_shadow_{false};
   double hold_started_{0.0};
   //: When the current owner got the joints. The climb timeout runs from this or from the last
   //: command, whichever is later, so a fresh owner is given the same window as a live one.
