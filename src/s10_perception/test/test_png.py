@@ -49,3 +49,12 @@ def test_the_shape_is_checked_rather_than_reinterpreted(tmp_path):
         write_png(tmp_path / "bad.png", np.zeros((4, 4), dtype=np.uint8))
     with pytest.raises(ValueError, match="RGB"):
         write_png(tmp_path / "bad.png", np.zeros((4, 4, 4), dtype=np.uint8))
+
+
+def test_compression_level_is_validated(tmp_path):
+    with pytest.raises(ValueError, match="compression"):
+        write_png(
+            tmp_path / "bad.png",
+            np.zeros((1, 1, 3), dtype=np.uint8),
+            compression=10,
+        )
