@@ -57,9 +57,11 @@ import contextlib
 import json
 import math
 from collections import deque
+from pathlib import Path
 
 import numpy as np
 import rclpy
+from ament_index_python.packages import get_package_share_directory
 from drdds.msg import JointsData
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
@@ -177,6 +179,14 @@ class StrategyRouterNode(Node):
             "verify_unready_dwell", RouterConfig.verify_unready_dwell
         )
         self.declare_parameter("verify_deck_z", RouterConfig.verify_deck_z)
+        self.declare_parameter(
+            "gate16_profile_file",
+            str(
+                Path(get_package_share_directory("s10_bringup"))
+                / "config"
+                / "front_tuck_command_profiles.json"
+            ),
+        )
 
         rate = float(self.get_parameter("control_rate").value)
         config = RouterConfig(
@@ -341,15 +351,28 @@ class StrategyRouterNode(Node):
         segment = tuple(int(v) for v in self.get_parameter("climb_segment").value)
         kind = str(self.get_parameter("climb_policy").value).lower()
         if kind == "gate16":
+            edge = tuple(float(v) for v in self.get_parameter("climb_edge_center").value)
+            normal = tuple(float(v) for v in self.get_parameter("climb_normal").value)
+            if (
+                len(edge) != 2
+                or len(normal) != 2
+                or not all(math.isfinite(value) for value in (*edge, *normal))
+            ):
+                raise RuntimeError("Gate16 command profiles require a finite obstacle frame")
             policy = StableGate16Policy(
                 Gate16Config(
-                    command_forward=float(self.get_parameter("target_entry_speed").value)
+                    command_forward=float(self.get_parameter("target_entry_speed").value),
+                    profile_file=str(self.get_parameter("gate16_profile_file").value),
+                    obstacle_edge=edge,
+                    obstacle_normal=normal,
+                    deck_z=float(self.get_parameter("verify_deck_z").value),
+                    front_clearance=float(self.get_parameter("verify_clearance").value),
                 )
             )
             self.get_logger().warning(
                 "Gate16 adaptive-v3 policy enabled (source b824f7f): SDK-local "
                 "174D frozen base+residual with explicit arm, shadow history and "
-                "bounded policy-frame mirroring"
+                "bounded policy-frame mirroring and verified-wheel command profiles"
             )
         elif kind == "scripted":
             path = str(self.get_parameter("scripted_trajectory").value)
@@ -549,8 +572,8 @@ class StrategyRouterNode(Node):
         out = self.router.tick(state, self._nav_command, observation)
 
         # The official actor owns the moving approach while Gate16 shadow-evaluates the same
-        # observations. The warm Gate16 base takes ownership at staging; residual arms only
-        # after CLIMB_READY proves the complete moving-entry envelope.
+        # observations. The official actor retains the actuators through the moving-entry
+        # window; Gate16 ownership and residual arm begin together only after CLIMB_READY.
         policy_name = self.router.policy_for(state.segment)
         policy = self.router.policies.get(policy_name)
         prewarm_gate16 = gate16_should_own(

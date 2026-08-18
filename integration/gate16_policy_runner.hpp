@@ -95,6 +95,8 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
   std::vector<std::pair<float, float>> mirror_yaw_bands_deg_;
   float climb_entry_heading_error_deg_ = 0.0f;
   bool mirror_policy_frame_ = false;
+  bool actuator_owned_ = false;
+  bool seed_action_history_on_next_tick_ = false;
 
   struct FrontTuckProfile {
     std::string name;
@@ -159,6 +161,43 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
     }
     return s10_policy::ShouldMirrorPositiveYaw(
         heading_error_deg, mirror_positive_yaw_min_deg_);
+  }
+
+  void UpdatePolicyFrameBeforeArm(float base_yaw_rad) {
+    if (climb_armed_) return;
+    const float heading_error_deg = base_yaw_rad * kRadiansToDegrees;
+    const bool mirrored = ShouldMirrorPolicyFrame(heading_error_deg);
+    if (mirrored != mirror_policy_frame_) {
+      std::cout << "S10 adaptive-v3 pre-arm policy frame: "
+                << (mirrored ? "mirrored" : "native")
+                << " yaw=" << heading_error_deg << std::endl;
+    }
+    climb_entry_heading_error_deg_ = heading_error_deg;
+    mirror_policy_frame_ = mirrored;
+  }
+
+  void SeedActionHistoryFromMeasuredState() {
+    // The first twelve actions are joint-position offsets. The last four are wheel
+    // velocity targets. Invert the exact decoder below so observation[41:57] describes
+    // the physical state inherited from the official actor on the ownership edge.
+    for (int policy_index = 0; policy_index < 12; ++policy_index) {
+      const int robot_index = policy2robot_idx[policy_index];
+      last_action_eigen(policy_index) =
+          joint_pos_rl(policy_index) / action_scale_robot[robot_index];
+    }
+    for (int policy_index = 12; policy_index < action_dim; ++policy_index) {
+      const int robot_index = policy2robot_idx[policy_index];
+      last_action_eigen(policy_index) =
+          joint_vel_rl(policy_index) /
+          (dof_vel_scale_ * action_scale_robot[robot_index]);
+    }
+    for (int i = 0; i < action_dim; ++i) {
+      last_action_eigen(i) = std::clamp(
+          last_action_eigen(i), -action_guard_[i], action_guard_[i]);
+    }
+    seed_action_history_on_next_tick_ = false;
+    std::cout << "S10 Gate16 action history seeded from measured state on actuator takeover"
+              << std::endl;
   }
 
   void LoadDeploymentConfig(const std::filesystem::path& policy_directory) {
@@ -431,6 +470,8 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
     skill_gate_.Reset();
     previous_gate_state_ = false;
     climb_armed_ = false;
+    actuator_owned_ = false;
+    seed_action_history_on_next_tick_ = false;
     EndClimb();
   }
 
@@ -441,15 +482,38 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
       front-tuck event into the climb. */
   void SetClimbArmed(bool armed) {
     if (armed == climb_armed_) return;
+    const float staged_heading_error_deg = climb_entry_heading_error_deg_;
+    const bool staged_mirror_policy_frame = mirror_policy_frame_;
     climb_armed_ = armed;
     skill_gate_.Reset();
     previous_gate_state_ = false;
     EndClimb();
+    if (armed) {
+      climb_entry_heading_error_deg_ = staged_heading_error_deg;
+      mirror_policy_frame_ = staged_mirror_policy_frame;
+      // Ownership changes on this arm edge. SetActuatorOwnership schedules replacement of
+      // hypothetical shadow history from measured state before this tick is inferred.
+    }
     std::cout << "S10 climb residual " << (armed ? "armed" : "disarmed")
+              << " policy_frame="
+              << (mirror_policy_frame_ ? "mirrored" : "native")
               << " by router" << std::endl;
   }
 
+  void SetActuatorOwnership(bool owned) {
+    if (owned && !actuator_owned_) {
+      // Shadow actions were never applied. Replace their history on the first owned tick
+      // with the inverse-decoded measured state before base+residual inference.
+      last_action_eigen.setZero(action_dim);
+      current_action_eigen.setZero(action_dim);
+      tmp_action_eigen.setZero(action_dim);
+      seed_action_history_on_next_tick_ = true;
+    }
+    actuator_owned_ = owned;
+  }
+
   RobotAction getRobotAction(const RobotBasicState& ro, const UserCommand& uc) override {
+    UpdatePolicyFrameBeforeArm(ro.base_rpy(2));
     const Vec3f base_omega = ro.base_omega * omega_scale_;
     const Vec3f projected_gravity = ro.base_rot_mat.inverse() * gravity_direction;
     const Vec3f original_command(uc.forward_vel_scale, uc.side_vel_scale,
@@ -460,6 +524,9 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
     }
     joint_pos_rl.segment(12, 4).setZero();
     joint_pos_rl -= dof_default_eigen_policy;
+    if (seed_action_history_on_next_tick_) {
+      SeedActionHistoryFromMeasuredState();
+    }
     current_observation_.head(57) << base_omega, projected_gravity,
         original_command,
         joint_pos_rl, joint_vel_rl, last_action_eigen;
