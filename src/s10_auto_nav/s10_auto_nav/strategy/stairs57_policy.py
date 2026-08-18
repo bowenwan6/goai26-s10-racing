@@ -7,7 +7,10 @@ clearance and handoff decisions.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
+
+import numpy as np
 
 from s10_auto_nav.strategy.policy import (
     ActionKind,
@@ -25,6 +28,12 @@ class Stairs57Config:
     command_yaw_rate: float = 0.0
     entry_speed_min: float = 0.25
     entry_speed_max: float = 0.45
+    completion_min_progress: float = 0.60
+    completion_wheel_clearance: float = 0.04
+    completion_base_clearance: float = 0.15
+    completion_max_tilt_deg: float = 15.0
+    completion_min_contacts: int = 3
+    completion_hold: float = 0.25
 
     def __post_init__(self) -> None:
         if not self.entry_speed_min <= self.command_forward <= self.entry_speed_max:
@@ -40,6 +49,7 @@ class Stairs57Policy:
     requires_moving_entry = True
     requires_physical_clear = False
     owns_entire_segment = True
+    start_from_rest = True
     climb_timeout = 90.0
     climb_progress_window = 10.0
 
@@ -57,6 +67,11 @@ class Stairs57Policy:
         self._started_at: float | None = None
         self._last_t = 0.0
         self._reason = ""
+        self._clear_for = 0.0
+
+    def continue_segment(self) -> None:
+        """Keep the learned action history but verify the next upper platform afresh."""
+        self._clear_for = 0.0
 
     def start(self, observation: PolicyObservation) -> None:
         self._started_at = float(observation.t)
@@ -80,6 +95,56 @@ class Stairs57Policy:
                 "command_forward_mps": self.config.command_forward,
             },
         )
+
+    def completion_candidate(self, state, dt: float, entry_position) -> tuple[bool, str]:
+        """Confirm that the chassis, not merely its front axle, reached the top deck."""
+        target_z = getattr(state, "segment_target_z", None)
+        if target_z is None or not math.isfinite(float(target_z)):
+            self._clear_for = 0.0
+            return False, "target platform height unavailable"
+
+        entry = None if entry_position is None else np.asarray(entry_position, dtype=float)
+        position = np.asarray(state.position, dtype=float)
+        progress = (
+            0.0
+            if entry is None or entry.shape != (3,)
+            else float(np.linalg.norm(position[:2] - entry[:2]))
+        )
+        enough_progress = progress >= self.config.completion_min_progress
+        stable = state.tilt <= math.radians(self.config.completion_max_tilt_deg)
+
+        wheels = getattr(state, "wheel_positions", None)
+        contacts = getattr(state, "wheel_contacts", None)
+        if wheels is not None and contacts is not None:
+            wheels = np.asarray(wheels, dtype=float)
+            contacts = np.asarray(contacts, dtype=bool)
+            valid = (
+                wheels.shape == (4, 3)
+                and contacts.shape == (4,)
+                and np.all(np.isfinite(wheels))
+            )
+            wheel_threshold = float(target_z) + self.config.completion_wheel_clearance
+            upper = valid and bool(np.all(wheels[:, 2] >= wheel_threshold))
+            supported = valid and int(np.sum(contacts)) >= self.config.completion_min_contacts
+            clear = enough_progress and stable and upper and supported
+            why = (
+                f"4/4 wheels above z={wheel_threshold:.2f}m, "
+                f"{int(np.sum(contacts)) if valid else 0}/4 contacts, "
+                f"progress={progress:.2f}m"
+            )
+        else:
+            # Hardware may not publish simulated wheel contact poses. The odometry fallback
+            # is deliberately stricter in height and still requires stable attitude and
+            # sustained forward progress before it can release actuator ownership.
+            base_threshold = float(target_z) + self.config.completion_base_clearance
+            clear = enough_progress and stable and position[2] >= base_threshold
+            why = (
+                f"base above z={base_threshold:.2f}m with stable attitude, "
+                f"progress={progress:.2f}m"
+            )
+
+        self._clear_for = self._clear_for + dt if clear else 0.0
+        return self._clear_for >= self.config.completion_hold, why
 
     def succeed(self, reason: str = "four wheels verified above the stair edge") -> None:
         self._status = PolicyStatus.SUCCEEDED

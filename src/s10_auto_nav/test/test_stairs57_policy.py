@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -117,6 +118,72 @@ def test_segment_policy_owns_until_strict_target_then_waits_for_official_ack():
         acknowledged, (0.7, 0.0, 0.0), observation_from_state(acknowledged)
     )
     assert (router.mode, out.source) == (Mode.NAVIGATE, Source.NAV)
+
+
+def test_stairs57_can_take_control_from_rest_after_alignment():
+    policy = Stairs57Policy()
+    router = Router(
+        RouterConfig(ready_dwell=0.0),
+        policies={"stairs57_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+    )
+    state = _state(0.0, speed=0.0, forward_speed=0.0)
+    router.tick(state, (0.0, 0.0, 0.0), observation_from_state(state))
+    state = _state(0.02, speed=0.0, forward_speed=0.0)
+    out = router.tick(state, (0.0, 0.0, 0.0), observation_from_state(state))
+    assert (router.mode, out.command) == (Mode.CLIMB_READY, (0.35, 0.0, 0.0))
+
+
+def test_stairs57_alignment_does_not_consume_the_runway_while_turning():
+    policy = Stairs57Policy()
+    router = Router(
+        RouterConfig(ready_dwell=0.0),
+        policies={"stairs57_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+    )
+    state = _state(0.0, heading_error=math.radians(-15.0))
+    router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
+    state = _state(0.02, heading_error=math.radians(-15.0))
+    out = router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
+    assert out.command[0] == 0.0
+    assert out.command[2] > 0.0
+
+
+def test_stairs57_hands_back_after_four_wheels_hold_on_target_platform():
+    policy = Stairs57Policy(Stairs57Config(completion_hold=0.04))
+    router = Router(
+        RouterConfig(ready_dwell=0.0),
+        policies={"stairs57_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+    )
+    for tick in range(4):
+        state = _state(
+            tick * 0.02,
+            owner="stairs57" if tick >= 3 else "official",
+            segment_target_z=2.36,
+        )
+        router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
+
+    wheels = np.array(
+        [
+            [26.6, 30.2, 2.45],
+            [26.6, 29.8, 2.45],
+            [26.1, 30.2, 2.45],
+            [26.1, 29.8, 2.45],
+        ]
+    )
+    for tick in range(2):
+        state = _state(
+            1.0 + tick * 0.02,
+            owner="stairs57",
+            position=np.array([26.5, 29.955, 2.60]),
+            wheel_positions=wheels,
+            wheel_contacts=np.ones(4, dtype=bool),
+            segment_target_z=2.36,
+        )
+        out = router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
+    assert (router.mode, out.source) == (Mode.HANDOFF, Source.ROUTER)
+    assert "4/4 wheels" in out.reason
 
 
 def test_consecutive_stair_segments_keep_one_policy_history():
