@@ -22,6 +22,15 @@ strategy_router:
     # b824f7f adaptive-v3 runtime around the frozen 174D base+residual pair.
     climb_policy: gate16
     climb_segment: [15, 16]
+    # Gate16 remains the dedicated high-step jump. The 57D model1800 actor owns only
+    # non-Gate16 ascent segments, from the preceding strict waypoint through the upper
+    # waypoint. Consecutive 5->6->7 stays under one continuous policy history; ownership
+    # returns to the official actor immediately after the last configured target scores.
+    stairs57_enabled: true
+    stairs57_segments: [5, 6, 6, 7, 17, 18, 18, 19, 22, 23, 25, 26, 27, 28]
+    stairs57_command_forward: 0.35
+    stairs57_entry_speed_min: 0.25
+    stairs57_entry_speed_max: 0.45
     scripted_trajectory: ""
     # succeed | fail | never_finish | go_silent | raise | lie
     mock_scenario: succeed
