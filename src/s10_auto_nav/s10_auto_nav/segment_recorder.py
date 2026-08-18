@@ -195,6 +195,7 @@ class SegmentRecorder(Node):
         self._mode = "-"
         self._source = "-"
         self._status = ""
+        self._router_reason = ""
         self._active_policy = ""
         self._joint_owner = "unknown"
         self._joint_owner_actual = "unknown"
@@ -283,6 +284,7 @@ class SegmentRecorder(Node):
         self._joint_owner_actual = str(
             status.get("joint_owner_actual", self._joint_owner_actual)
         )
+        self._router_reason = str(status.get("reason", self._router_reason))
 
     def _on_transition(self, msg: String) -> None:
         self._transitions.append(msg.data)
@@ -370,6 +372,9 @@ class SegmentRecorder(Node):
 
         if self._waypoint_evidence.finished:
             self._stop("reached the end waypoint", reached=True)
+        elif settled and self._mode == "abort":
+            reason = self._router_reason or "unspecified safety failure"
+            self._stop(f"router abort: {reason}")
         elif settled and not self._stood_up and t >= self.grace + STAND_SECONDS:
             # The robot is placed crouched and the SDK stands it up, so the base can only
             # go up from where it was put. A base that has settled *below* its own spawn
@@ -473,6 +478,8 @@ def main() -> None:
     except (KeyboardInterrupt, ExternalShutdownException):
         # A run cut short from outside still has data worth keeping, and a partial CSV with
         # an honest "interrupted" outcome beats no file at all.
+        if node._outcome == "did not start" and node._rows:
+            node._outcome = "interrupted by external stop"
         node.write()
     except SystemExit:
         raise

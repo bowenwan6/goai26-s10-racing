@@ -59,6 +59,14 @@ def test_the_harness_does_not_stop_outside_the_scoring_radius():
     assert 'declare_parameter("score_radius", 0.18)' in source
 
 
+def test_the_harness_terminates_and_records_a_router_abort():
+    source = (
+        Path(__file__).resolve().parents[1] / "s10_auto_nav" / "segment_recorder.py"
+    ).read_text()
+    assert 'self._mode == "abort"' in source
+    assert 'self._stop(f"router abort: {reason}")' in source
+
+
 class _Verdict:
     """The verdict half of the recorder, with the ROS half left out.
 
