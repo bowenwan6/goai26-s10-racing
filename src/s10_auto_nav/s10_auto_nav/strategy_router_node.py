@@ -123,8 +123,8 @@ class StrategyRouterNode(Node):
         self.declare_parameter("climb_edge_center", [float("nan"), float("nan")])
         self.declare_parameter("climb_normal", [float("nan"), float("nan")])
         self.declare_parameter("climb_tangent", [float("nan"), float("nan")])
-        self.declare_parameter("advance_radius", 0.35)
-        self.declare_parameter("score_radius", 0.2)
+        self.declare_parameter("advance_radius", 0.18)
+        self.declare_parameter("score_radius", 0.18)
 
         self.declare_parameter("approach_enter", RouterConfig.approach_enter)
         self.declare_parameter("approach_speed_scale", RouterConfig.approach_speed_scale)

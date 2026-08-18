@@ -20,16 +20,17 @@ waypoint_follower:
   ros__parameters:
     control_rate: 50.0
 
-    # Two radii. score_radius is the contest's and is what "reached" means; advance_radius
+    # Two internal radii. score_radius is deliberately 0.02 m tighter than the contest's
+    # independent 0.20 m evaluator; advance_radius is
     # is only the outer bound at which an approach is considered to have begun, so that a
     # gate the robot has already passed its closest point to releases the cursor instead of
     # sending it back round. Advancing on advance_radius alone lost gates 17, 21 and 22 of
     # the continuous waypoint 16 to 32 run at closest approaches of 0.34, 0.32 and 0.34 m.
     # A strict ordered run gains nothing by abandoning an unscored gate: the entire tail
-    # is invalid afterwards. Keep the fallback radius at the scorer radius so the follower
+    # is invalid afterwards. Keep the fallback radius at the internal score radius so the follower
     # cannot reproduce escape16's 0.348 m advance at WP24.
-    advance_radius: 0.2
-    score_radius: 0.2
+    advance_radius: 0.18
+    score_radius: 0.18
 
     max_forward: 0.7
     max_lateral: 0.4
@@ -83,7 +84,7 @@ waypoint_follower:
     # segments that passed still passed, and four that did not began to. What it buys is the
     # run-in to a raised gate -- braking 1.4 m out arrives at the lip with no momentum, which
     # on this course is the difference between stepping up and stopping against it. What it
-    # costs is overshoot on the flat, which the 0.35 m advance radius already absorbs.
+    # costs is overshoot on the flat, which the strict 0.18 m capture now has to control.
     #
     # It is left at zero on the flat and applied only where it was measured to help. The
     # terrain classifier picks between the two from the live height map and lidar; there is

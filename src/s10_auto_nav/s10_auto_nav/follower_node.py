@@ -127,11 +127,11 @@ class WaypointFollowerNode(Node):
 
         self.declare_parameter("course_file", "")
         self.declare_parameter("control_rate", CONTROL_RATE_HZ)
-        self.declare_parameter("advance_radius", 0.2)
+        self.declare_parameter("advance_radius", 0.18)
         # The contest's radius, from course.yaml's own metadata. A knob rather than a
         # constant only so a stricter scorer can be raced against; it is not a tuning
         # parameter and raising it above 0.2 makes the follower claim gates it did not take.
-        self.declare_parameter("score_radius", 0.2)
+        self.declare_parameter("score_radius", 0.18)
         self.declare_parameter("max_forward", PursuitGains.max_forward)
         self.declare_parameter("max_lateral", PursuitGains.max_lateral)
         self.declare_parameter("max_yaw_rate", PursuitGains.max_yaw_rate)

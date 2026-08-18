@@ -99,15 +99,15 @@ class SegmentRecorder(Node):
         #
         # reach_radius ends the run. A strict experiment cannot stop at the historical
         # 0.35 m follower radius: doing so killed escape18 and escape20 while the corrected
-        # follower was still chasing the gate, making a proof of the 0.20 m result
-        # impossible. It therefore ships at the scoring radius too.
+        # follower was still chasing the gate, making a strict result impossible. It now
+        # ships at the project's 0.18 m internal acceptance radius too.
         #
-        # score_radius decides whether the gate was taken, and is the contest's, from
-        # course.yaml's own metadata. Run 18_19_baseline_seed0 ended "reached the end
+        # score_radius decides whether the gate was taken by this stricter local validation.
+        # The official simulator independently retains 0.20 m. Run 18_19_baseline_seed0 ended "reached the end
         # waypoint" with its closest approach to waypoint 19 at 0.348 m, which is not a point.
         # Every "reached" recorded before this was the 0.35 m answer wearing the 0.2 m name.
-        self.declare_parameter("reach_radius", 0.2)
-        self.declare_parameter("score_radius", 0.2)
+        self.declare_parameter("reach_radius", 0.18)
+        self.declare_parameter("score_radius", 0.18)
 
         course_file = str(self.get_parameter("course_file").value)
         if not course_file:

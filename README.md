@@ -28,7 +28,9 @@ and the wall-clock 1080p replay workflow described below. This baseline is now f
 acceptance result.
 
 The generated course contains **33 waypoints**, spans **224.21 m horizontally**, and gains
-**6.70 m**. Gates count only inside a **0.2 m horizontal radius** and must be taken in order.
+**6.70 m**. The official evaluator counts gates inside a **0.20 m horizontal radius** and in
+strict order. Ver1 navigation uses a tighter **0.18 m internal acceptance radius**, giving
+0.02 m of margin before the official threshold.
 
 The stable Gate 16 integration has completed one uninterrupted full-stack test run from
 **WP0 to WP32** (seed 6, replay capture enabled):
@@ -42,8 +44,8 @@ The stable Gate 16 integration has completed one uninterrupted full-stack test r
 | Maximum tilt | 57.3° |
 | Recorder stalls | 2 |
 
-This is a test-harness result: the same production stack ran continuously, but the segment
-harness supplies a deterministic start pose and records independent 0.2 m gate entries. It is
+This is the Ver0 test-harness result: the same production stack ran continuously, but the segment
+harness supplies a deterministic start pose and records independent 0.20 m gate entries. It is
 evidence of complete-course autonomy, not a claim about an official competition submission.
 
 ## What is actually deployed
@@ -186,8 +188,8 @@ The driver also writes an aggregate JSON file. `results/` is intentionally gitig
 
 The recorder's `reached` field says that the final target ended the run; it is not a substitute
 for independently checking every intermediate gate in strict order. For acceptance work,
-score the CSV against `src/s10_bringup/config/course.yaml` at the 0.2 m radius and retain the
-per-gate closest distances.
+score the CSV at the current 0.18 m internal radius and also retain the official simulator's
+independent 0.20 m events. Always retain the per-gate closest distances.
 
 ### One-shot real-time video
 
@@ -212,7 +214,7 @@ without rendering if the experiment fails, so a video file cannot disguise a fai
   set by `run_segment.py`.
 - A WP17 segment does **not** drive out of the WP16 pit. The harness finds legal ground on the
   WP17 storey, faces WP18, initializes the official crouched pose, and lets the SDK stand up.
-- Waypoints advance at the scorer's 0.2 m radius. The old 0.35 m follower radius is no longer
+- Waypoints advance only after entering the internal 0.18 m radius. The old 0.35 m follower radius is no longer
   used because it could invalidate the ordered tail.
 - `S10_USE_VIEWER=0` disables the viewer. Headless wall-clock time and accelerated MuJoCo
   simulation time are different measurements; reports must say which one they use.
@@ -258,8 +260,8 @@ Tuning lives in [`src/s10_bringup/config/nav.yaml`](src/s10_bringup/config/nav.y
 | `max_lateral` | 0.4 m/s | Lateral command ceiling |
 | `max_yaw_rate` | 0.7 rad/s | Yaw-rate ceiling |
 | `lookahead` | 1.4 m | Pure-pursuit target distance |
-| `score_radius` | 0.2 m | Gate acceptance radius |
-| `advance_radius` | 0.2 m | Outer approach/advance bound; intentionally no wider than scoring |
+| `score_radius` | 0.18 m | Internal gate acceptance radius; official evaluator remains 0.20 m |
+| `advance_radius` | 0.18 m | Outer approach/advance bound; intentionally no wider than internal scoring |
 | `pivot_threshold_deg` | 30° | Hold translation while a new leg is far off heading |
 | `stall_timeout` | 2.5 s | Fast low-speed wedge watchdog |
 | `progress_timeout` | 12.0 s | Slow no-progress watchdog for oscillating stalls |
