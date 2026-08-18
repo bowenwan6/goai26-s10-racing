@@ -25,6 +25,14 @@ BUNDLE = ROOT / "policy/gate16"
 
 def test_frozen_gate16_assets_match_manifest_and_graph_contract():
     manifest = json.loads((BUNDLE / "climb_policy_manifest.json").read_text())
+    assert manifest["format"] == "s10-gated-residual-front-tuck-symmetry-v4"
+    profile_ref = manifest["front_tuck_command_profile"]
+    profile = BUNDLE / profile_ref["file"]
+    assert profile.name == "front_tuck_command_profiles.json"
+    assert hashlib.sha256(profile.read_bytes()).hexdigest() == profile_ref["sha256"]
+    profile_data = json.loads(profile.read_text())
+    assert profile_data["version"] == 1
+    assert any(item["name"] == "v025_yaw0_precontact_tuck" for item in profile_data["profiles"])
     for filename, key in (
         ("policy.onnx", "base_sha256"),
         ("climb_residual.onnx", "residual_sha256"),
@@ -133,3 +141,11 @@ def test_gate16_uses_delegated_owner_and_waits_for_acknowledged_handoff():
     out = router.tick(state, (0.5, 0.0, 0.0), observation_from_state(state))
     assert router.mode is Mode.NAVIGATE
     assert out.source is Source.NAV
+
+
+def test_gate16_adapter_identifies_competition_v4_source():
+    policy = StableGate16Policy()
+    state = _state(0.0)
+    policy.start(observation_from_state(state))
+    action = policy.step(observation_from_state(state))
+    assert action.info == {"owner": "gate16", "profile": "competition_v4_b6535a4"}
