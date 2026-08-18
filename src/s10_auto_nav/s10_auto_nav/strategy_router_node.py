@@ -56,6 +56,7 @@ from __future__ import annotations
 import contextlib
 import json
 import math
+from collections import deque
 
 import numpy as np
 import rclpy
@@ -69,7 +70,12 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Bool, Float32, Float32MultiArray, String
 
 from s10_auto_nav.strategy.arbiter import JointArbiter
-from s10_auto_nav.strategy.gate16_policy import Gate16Config, StableGate16Policy
+from s10_auto_nav.strategy.gate16_policy import (
+    Gate16Config,
+    StableGate16Policy,
+    gate16_owner_request,
+    gate16_should_own,
+)
 from s10_auto_nav.strategy.mock_policy import MockClimbPolicy, MockScenario
 from s10_auto_nav.strategy.policy import ActionKind, PolicyObservation
 from s10_auto_nav.strategy.router import Mode, RobotState, Router, RouterConfig, Source
@@ -148,11 +154,19 @@ class StrategyRouterNode(Node):
         self.declare_parameter("align_yaw_rate", RouterConfig.align_yaw_rate)
         self.declare_parameter("max_lateral_error", RouterConfig.max_lateral_error)
         self.declare_parameter(
+            "max_heading_error_deg", math.degrees(RouterConfig.max_heading_error)
+        )
+        self.declare_parameter(
             "gate16_staging_tolerance", RouterConfig.gate16_staging_tolerance
         )
         self.declare_parameter("min_entry_speed", RouterConfig.min_entry_speed)
         self.declare_parameter("max_entry_speed", RouterConfig.max_entry_speed)
         self.declare_parameter("target_entry_speed", RouterConfig.target_entry_speed)
+        self.declare_parameter(
+            "gate16_prewarm_forward", RouterConfig.gate16_prewarm_forward
+        )
+        self.declare_parameter("climb_exit_forward", RouterConfig.climb_exit_forward)
+        self.declare_parameter("climb_exit_duration", RouterConfig.climb_exit_duration)
         self.declare_parameter("verify_clearance", RouterConfig.verify_clearance)
         self.declare_parameter("verify_hold", RouterConfig.verify_hold)
         self.declare_parameter("verify_timeout", RouterConfig.verify_timeout)
@@ -178,13 +192,21 @@ class StrategyRouterNode(Node):
             max_entry_yaw_rate=float(self.get_parameter("max_entry_yaw_rate").value),
             align_yaw_rate=float(self.get_parameter("align_yaw_rate").value),
             max_lateral_error=float(self.get_parameter("max_lateral_error").value),
+            max_heading_error=math.radians(
+                float(self.get_parameter("max_heading_error_deg").value)
+            ),
             gate16_staging_tolerance=float(
                 self.get_parameter("gate16_staging_tolerance").value
             ),
             min_entry_speed=float(self.get_parameter("min_entry_speed").value),
             max_entry_speed=float(self.get_parameter("max_entry_speed").value),
             target_entry_speed=float(self.get_parameter("target_entry_speed").value),
+            gate16_prewarm_forward=float(
+                self.get_parameter("gate16_prewarm_forward").value
+            ),
             align_speed=float(self.get_parameter("target_entry_speed").value),
+            climb_exit_forward=float(self.get_parameter("climb_exit_forward").value),
+            climb_exit_duration=float(self.get_parameter("climb_exit_duration").value),
             verify_clearance=float(self.get_parameter("verify_clearance").value),
             verify_hold=float(self.get_parameter("verify_hold").value),
             verify_timeout=float(self.get_parameter("verify_timeout").value),
@@ -294,6 +316,9 @@ class StrategyRouterNode(Node):
         self._obstacle_distance = math.inf
         self._lateral_error = 0.0
         self._heading_error = 0.0
+        # Five 50 Hz samples implement b824's measured-speed guard without opening the
+        # gate on one favourable point in the legged gait's velocity oscillation.
+        self._entry_forward_samples: deque[float] = deque(maxlen=5)
         self._history_seen = 0
 
         self.timer = self.create_timer(1.0 / rate, self._tick)
@@ -422,6 +447,7 @@ class StrategyRouterNode(Node):
             self._obstacle_distance = math.inf
             self._lateral_error = 0.0
             self._heading_error = 0.0
+            self._entry_forward_samples.clear()
             return
 
         heading = np.asarray(target.position[:2], float) - np.asarray(previous.position[:2], float)
@@ -457,7 +483,9 @@ class StrategyRouterNode(Node):
             edge, normal, _ = self._obstacle_frame
         forward_speed = None
         if normal is not None:
-            forward_speed = float(np.dot(self._linear_velocity[:2], normal))
+            raw_forward_speed = float(np.dot(self._linear_velocity[:2], normal))
+            self._entry_forward_samples.append(raw_forward_speed)
+            forward_speed = float(np.mean(self._entry_forward_samples))
         return RobotState(
             t=self._now(),
             segment=self._segment,
@@ -514,10 +542,17 @@ class StrategyRouterNode(Node):
         )
         out = self.router.tick(state, self._nav_command, observation)
 
-        # The climb policy holds /JOINTS_CMD only while it is actually driving, and hands it
-        # straight back. Granting on entry to CLIMB and revoking on every other mode is more
-        # robust than pairing grant/release across transitions, which is the version that
-        # leaks the grant when a transition is missed.
+        # The official actor owns the entire moving approach. Gate16 is requested only after
+        # CLIMB_READY proves distance, forward speed, yaw, yaw rate, lateral error and tilt;
+        # the SDK gate then performs the one permitted no-stop handoff and arms residual.
+        policy_name = self.router.policy_for(state.segment)
+        policy = self.router.policies.get(policy_name)
+        prewarm_gate16 = gate16_should_own(
+            policy, out.mode.value, prewarm_ready=self.router.gate16_prewarm_ready
+        )
+        gate16_request = gate16_owner_request(
+            policy, out.mode.value, prewarm_ready=self.router.gate16_prewarm_ready
+        )
         if out.mode is Mode.ABORT:
             self.arbiter.grant(JointArbiter.STOP)
         elif out.source is Source.POLICY and self.router.active_action_kind is ActionKind.JOINT:
@@ -527,7 +562,9 @@ class StrategyRouterNode(Node):
             out.source is Source.POLICY
             and self.router.active_action_kind is ActionKind.DELEGATED
         ):
-            self.arbiter.grant(JointArbiter.GATE16)
+            self.arbiter.grant(JointArbiter.GATE16_CLIMB)
+        elif prewarm_gate16:
+            self.arbiter.grant(gate16_request)
         else:
             self.arbiter.grant(JointArbiter.OFFICIAL)
         # Asked every tick rather than once per transition. The gate ignores a request for

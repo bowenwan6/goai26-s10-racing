@@ -61,8 +61,17 @@ def test_start_and_finish_are_labelled(course):
     np.testing.assert_allclose(positions[-1], [32.925, 18.45, 3.75], atol=1e-3)
 
 
-def test_gate16_commands_canonical_speed_but_accepts_measured_gait_envelope():
+def test_gate16_enforces_b824_canonical_moving_handoff():
     params = yaml.safe_load(GATE16_CONFIG.read_text())["strategy_router"]["ros__parameters"]
+    assert params["ready_distance_min"] == pytest.approx(0.60)
+    assert params["ready_distance_max"] == pytest.approx(0.65)
     assert params["target_entry_speed"] == pytest.approx(0.25)
-    assert params["min_entry_speed"] == pytest.approx(0.10)
-    assert params["max_entry_speed"] == pytest.approx(0.30)
+    assert params["gate16_prewarm_forward"] == pytest.approx(0.23)
+    assert params["ready_dwell"] == pytest.approx(0.0)
+    assert params["min_entry_speed"] == pytest.approx(0.23)
+    assert params["max_entry_speed"] == pytest.approx(0.27)
+    assert params["max_heading_error_deg"] == pytest.approx(2.5)
+    assert params["max_entry_yaw_rate"] == pytest.approx(0.05)
+    assert params["max_lateral_error"] == pytest.approx(0.08)
+    assert params["climb_exit_forward"] == pytest.approx(0.50)
+    assert params["climb_exit_duration"] == pytest.approx(0.80)
