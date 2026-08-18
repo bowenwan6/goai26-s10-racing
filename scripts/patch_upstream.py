@@ -353,8 +353,6 @@ EDITS = [
                         const float blend_alpha =
                             blend_phase * blend_phase * (3.0f - 2.0f * blend_phase);
                         UserCommand stairs57_user_command = *(uc_ptr_->GetUserCommand());
-                        stairs57_user_command.side_vel_scale = 0.0f;
-                        stairs57_user_command.turnning_vel_scale = 0.0f;
                         stairs57_command = stairs57_policy_->getRobotActionBlended(
                             rbs_[getrbsReadIndex()], stairs57_user_command,
                             &s10_policy_->GetLastAction(), blend_alpha).ConvertToMat();

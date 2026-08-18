@@ -138,6 +138,9 @@ class StrategyRouterNode(Node):
             "stairs57_segments", [5, 6, 6, 7, 17, 18, 18, 19, 22, 23, 25, 26, 27, 28]
         )
         self.declare_parameter("stairs57_command_forward", 0.35)
+        self.declare_parameter("stairs57_navigation_lateral_limit", 0.0)
+        self.declare_parameter("stairs57_navigation_yaw_rate_limit", 0.0)
+        self.declare_parameter("stairs57_navigation_lookahead", 0.8)
         self.declare_parameter("stairs57_entry_speed_min", 0.25)
         self.declare_parameter("stairs57_entry_speed_max", 0.45)
         self.declare_parameter("advance_radius", 0.18)
@@ -432,6 +435,15 @@ class StrategyRouterNode(Node):
                 Stairs57Config(
                     command_forward=float(
                         self.get_parameter("stairs57_command_forward").value
+                    ),
+                    navigation_lateral_limit=float(
+                        self.get_parameter("stairs57_navigation_lateral_limit").value
+                    ),
+                    navigation_yaw_rate_limit=float(
+                        self.get_parameter("stairs57_navigation_yaw_rate_limit").value
+                    ),
+                    navigation_lookahead=float(
+                        self.get_parameter("stairs57_navigation_lookahead").value
                     ),
                     entry_speed_min=float(
                         self.get_parameter("stairs57_entry_speed_min").value

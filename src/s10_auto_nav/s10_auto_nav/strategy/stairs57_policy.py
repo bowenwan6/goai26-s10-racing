@@ -26,6 +26,9 @@ class Stairs57Config:
     command_forward: float = 0.35
     command_lateral: float = 0.0
     command_yaw_rate: float = 0.0
+    navigation_lateral_limit: float = 0.0
+    navigation_yaw_rate_limit: float = 0.0
+    navigation_lookahead: float = 0.8
     entry_speed_min: float = 0.25
     entry_speed_max: float = 0.45
     completion_min_progress: float = 0.60
@@ -38,6 +41,10 @@ class Stairs57Config:
     def __post_init__(self) -> None:
         if not self.entry_speed_min <= self.command_forward <= self.entry_speed_max:
             raise ValueError("stairs57 command must remain inside its trained speed range")
+        if self.navigation_lateral_limit < 0.0 or self.navigation_yaw_rate_limit < 0.0:
+            raise ValueError("stairs57 navigation correction limits must be non-negative")
+        if self.navigation_lookahead <= 0.0:
+            raise ValueError("stairs57 navigation lookahead must be positive")
 
 
 class Stairs57Policy:
@@ -49,6 +56,7 @@ class Stairs57Policy:
     requires_moving_entry = True
     requires_physical_clear = False
     owns_entire_segment = True
+    handoff_requires_strict_target = True
     start_from_rest = True
     climb_timeout = 90.0
     climb_progress_window = 10.0

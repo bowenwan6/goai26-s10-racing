@@ -134,6 +134,59 @@ def test_stairs57_can_take_control_from_rest_after_alignment():
     assert (router.mode, out.command) == (Mode.CLIMB_READY, (0.35, 0.0, 0.0))
 
 
+def test_correction_capable_stairs_policy_aims_at_bounded_nearby_centreline_point():
+    policy = Stairs57Policy(
+        Stairs57Config(
+            navigation_lateral_limit=0.08,
+            navigation_yaw_rate_limit=0.10,
+            navigation_lookahead=0.8,
+        )
+    )
+    router = Router(
+        RouterConfig(ready_dwell=0.0),
+        policies={"stairs57_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+    )
+    for tick in range(4):
+        state = _state(
+            tick * 0.02,
+            owner="stairs57" if tick >= 3 else "official",
+            lateral_error=0.4 if tick >= 3 else 0.0,
+            heading_error=0.2 if tick >= 3 else 0.0,
+        )
+        out = router.tick(state, (0.7, -0.4, 0.7), observation_from_state(state))
+
+    assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
+    assert out.command == pytest.approx((0.35, -0.08, -0.10))
+
+
+def test_stairs57_progress_uses_odometry_when_waypoint_fraction_is_constant():
+    policy = Stairs57Policy()
+    router = Router(
+        RouterConfig(ready_dwell=0.0),
+        policies={"stairs57_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+    )
+    for tick in range(4):
+        state = _state(
+            tick * 0.02,
+            owner="stairs57" if tick >= 3 else "official",
+            travelled=0.5,
+        )
+        router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
+
+    for second in range(1, 13):
+        state = _state(
+            float(second),
+            owner="stairs57",
+            travelled=0.5,
+            position=np.array([25.8 + 0.10 * second, 29.955, 2.3]),
+        )
+        out = router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
+
+    assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
+
+
 def test_stairs57_alignment_does_not_consume_the_runway_while_turning():
     policy = Stairs57Policy()
     router = Router(
@@ -149,7 +202,7 @@ def test_stairs57_alignment_does_not_consume_the_runway_while_turning():
     assert out.command[2] > 0.0
 
 
-def test_stairs57_hands_back_after_four_wheels_hold_on_target_platform():
+def test_stairs57_waits_for_strict_target_after_wheels_reach_platform():
     policy = Stairs57Policy(Stairs57Config(completion_hold=0.04))
     router = Router(
         RouterConfig(ready_dwell=0.0),
@@ -182,8 +235,11 @@ def test_stairs57_hands_back_after_four_wheels_hold_on_target_platform():
             segment_target_z=2.36,
         )
         out = router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
+    assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
+
+    reached = _state(1.1, segment=(19, 20), owner="stairs57")
+    out = router.tick(reached, (0.7, 0.0, 0.0), observation_from_state(reached))
     assert (router.mode, out.source) == (Mode.HANDOFF, Source.ROUTER)
-    assert "4/4 wheels" in out.reason
 
 
 def test_consecutive_stair_segments_keep_one_policy_history():

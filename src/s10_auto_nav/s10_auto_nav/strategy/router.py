@@ -939,7 +939,9 @@ class Router:
                     self.mode, Source.NAV, command=nav_command, reason=self._last_reason
                 )
 
-        if hasattr(policy, "completion_candidate"):
+        if hasattr(policy, "completion_candidate") and not bool(
+            getattr(policy, "handoff_requires_strict_target", False)
+        ):
             complete, why = policy.completion_candidate(
                 state,
                 dt,
@@ -979,6 +981,21 @@ class Router:
                     np.asarray(state.position[:2], float)
                     - self._attempt.entry_position[:2],
                     np.asarray(state.obstacle_normal, float),
+                )
+            )
+        elif (
+            bool(getattr(policy, "is_stairs57_policy", False))
+            and self._attempt.entry_position is not None
+        ):
+            # /nav/progress is a waypoint-completion fraction, not metres travelled. It
+            # remains constant throughout a stair segment and used to cancel a robot that
+            # was visibly climbing after exactly one progress window. For stairs, measure
+            # physical displacement from the ownership point; the monotone best below
+            # rejects oscillation while allowing continuous rolling over many treads.
+            physical_progress = float(
+                np.linalg.norm(
+                    np.asarray(state.position[:2], float)
+                    - self._attempt.entry_position[:2]
                 )
             )
         if (
@@ -1031,6 +1048,35 @@ class Router:
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         if action.kind in (ActionKind.TWIST, ActionKind.DELEGATED):
+            command = action.twist or (0.0, 0.0, 0.0)
+            if (
+                action.kind is ActionKind.DELEGATED
+                and bool(getattr(policy, "is_stairs57_policy", False))
+                and policy.config.navigation_yaw_rate_limit > 0.0
+            ):
+                # Aim at a virtual point a short distance ahead on the segment centreline.
+                # This is the autonomous equivalent of tapping Q/E during the climb and is
+                # independent of whether the real target is an endpoint or an intermediate
+                # waypoint. Correction-capable checkpoints may also use a separately bounded
+                # lateral channel; both limits default to zero for model1800.
+                yaw_limit = policy.config.navigation_yaw_rate_limit
+                lateral_limit = policy.config.navigation_lateral_limit
+                desired_heading_error = math.atan2(
+                    -state.lateral_error,
+                    policy.config.navigation_lookahead,
+                )
+                yaw_command = desired_heading_error - state.heading_error
+                command = (
+                    command[0],
+                    float(
+                        np.clip(
+                            -state.lateral_error,
+                            -lateral_limit,
+                            lateral_limit,
+                        )
+                    ),
+                    float(np.clip(yaw_command, -yaw_limit, yaw_limit)),
+                )
             policy_detail = ""
             if action.kind is ActionKind.DELEGATED and action.info:
                 policy_detail = (
@@ -1040,7 +1086,7 @@ class Router:
             return RouterOutput(
                 self.mode,
                 Source.POLICY,
-                command=action.twist or (0.0, 0.0, 0.0),
+                command=command,
                 reason=(
                     "climbing"
                     if action.kind is ActionKind.TWIST
