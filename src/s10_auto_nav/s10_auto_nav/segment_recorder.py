@@ -42,7 +42,7 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool, Float32MultiArray, String
 
 from s10_auto_nav.waypoints import Course
 
@@ -200,6 +200,8 @@ class SegmentRecorder(Node):
         self._joint_owner = "unknown"
         self._joint_owner_actual = "unknown"
         self._wheel_speeds = np.full(4, np.nan)
+        self._wheel_positions = np.full((4, 3), np.nan)
+        self._wheel_contacts = np.zeros(4, dtype=bool)
         self._transitions: list[str] = []
         self._nav_finished = False
         self._terrain = "-"
@@ -236,6 +238,9 @@ class SegmentRecorder(Node):
         self.create_subscription(String, "/strategy/transition", self._on_transition, 20)
         self.create_subscription(String, "/nav/terrain", self._on_terrain, 10)
         self.create_subscription(JointsData, "/JOINTS_DATA", self._on_joints, 50)
+        self.create_subscription(
+            Float32MultiArray, "/perception/wheel_state", self._on_wheel_state, 20
+        )
 
         self._dt = 1.0 / float(self.get_parameter("record_rate").value)
         self.timer = self.create_timer(self._dt, self._tick)
@@ -296,6 +301,14 @@ class SegmentRecorder(Node):
         values = np.asarray([joints[index].velocity for index in (3, 7, 11, 15)], float)
         if np.all(np.isfinite(values)):
             self._wheel_speeds = values
+
+    def _on_wheel_state(self, msg: Float32MultiArray) -> None:
+        values = np.asarray(msg.data, dtype=float)
+        if values.size != 16 or not np.all(np.isfinite(values)):
+            return
+        rows = values.reshape(4, 4)
+        self._wheel_positions = rows[:, :3].copy()
+        self._wheel_contacts = rows[:, 3] > 0.5
 
     def _tick(self) -> None:
         if self._finished or self._odom is None:
@@ -364,6 +377,11 @@ class SegmentRecorder(Node):
                 "wheel_fr": round(float(self._wheel_speeds[1]), 3),
                 "wheel_hl": round(float(self._wheel_speeds[2]), 3),
                 "wheel_hr": round(float(self._wheel_speeds[3]), 3),
+                "wheel_z_fl": round(float(self._wheel_positions[0, 2]), 4),
+                "wheel_z_fr": round(float(self._wheel_positions[1, 2]), 4),
+                "wheel_z_hl": round(float(self._wheel_positions[2, 2]), 4),
+                "wheel_z_hr": round(float(self._wheel_positions[3, 2]), 4),
+                "wheel_contact_count": int(np.sum(self._wheel_contacts)),
             }
         )
 
