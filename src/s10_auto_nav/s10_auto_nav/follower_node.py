@@ -12,6 +12,7 @@ place. Detecting that and backing off recovers a run that would otherwise never 
 from __future__ import annotations
 
 import math
+import os
 
 import numpy as np
 import rclpy
@@ -43,6 +44,7 @@ class WaypointFollowerNode(Node):
         super().__init__("waypoint_follower")
 
         self.declare_parameter("course_file", "")
+        self.declare_parameter("start_waypoint", int(os.environ.get("S10_START_WAYPOINT", "1")))
         self.declare_parameter("control_rate", CONTROL_RATE_HZ)
         self.declare_parameter("advance_radius", 0.35)
         self.declare_parameter("max_forward", PursuitGains.max_forward)
@@ -59,8 +61,11 @@ class WaypointFollowerNode(Node):
             raise RuntimeError("Parameter 'course_file' is required")
 
         self.control_rate = float(self.get_parameter("control_rate").value)
+        start_waypoint = int(self.get_parameter("start_waypoint").value)
         self.course = Course.from_yaml(
-            course_file, advance_radius=float(self.get_parameter("advance_radius").value)
+            course_file,
+            advance_radius=float(self.get_parameter("advance_radius").value),
+            start_index=start_waypoint - 1,
         )
         self.controller = PurePursuitController(
             PursuitGains(
@@ -96,7 +101,8 @@ class WaypointFollowerNode(Node):
 
         self.timer = self.create_timer(1.0 / self.control_rate, self._control_step)
         self.get_logger().info(
-            f"Following {len(self.course)} waypoints from {course_file} "
+            f"Following {len(self.course)} waypoints from path waypoint {start_waypoint} "
+            f"in {course_file} "
             f"at {self.control_rate:.0f} Hz"
         )
 

@@ -78,3 +78,12 @@ def test_reset_restores_the_start():
     course.update(np.array([0.0, 0.0]))
     course.reset()
     assert course.cursor == 0
+
+
+def test_custom_start_index_is_preserved_by_reset():
+    course = straight_course(start_index=3)
+    assert course.cursor == 3
+    course.update(np.array([6.0, 0.0]))
+    assert course.cursor == 4
+    course.reset()
+    assert course.cursor == 3

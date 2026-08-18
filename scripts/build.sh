@@ -22,13 +22,21 @@ if [[ ! -f "${ROS_DISTRO_SETUP}" ]]; then
   exit 1
 fi
 
+# ROS setup files are not nounset-safe.
+set +u
 # shellcheck disable=SC1090
 source "${ROS_DISTRO_SETUP}"
+set -u
 
 cd "${REPO_ROOT}"
 echo "==> Building for platform: ${BUILD_PLATFORM}"
 
-colcon build \
+COLCON=(colcon)
+if [[ -x "${REPO_ROOT}/.venv/bin/python" ]]; then
+  COLCON=("${REPO_ROOT}/.venv/bin/python" -m colcon)
+fi
+
+"${COLCON[@]}" build \
   --base-paths src "${UPSTREAM_SRC}" \
   --symlink-install \
   --cmake-args "-DBUILD_PLATFORM=${BUILD_PLATFORM}" \
