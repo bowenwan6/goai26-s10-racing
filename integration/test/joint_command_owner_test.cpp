@@ -111,6 +111,40 @@ int main() {
         "Gate16 wheel velocity passes through instead of being discarded");
   Check(out(0, s10::JointCommandOwner::kColPos) != 0.5f,
         "the official matrix is not blended into Gate16");
+  Check(!gate.gate16_armed(), "Gate16 residual stays disarmed during base prewarm");
+  gate.RequestOwner("gate16_climb");
+  out = gate.Arbitrate(OfficialAction(0.5f), &gate16, Measured(0.1f), nullptr);
+  Check(gate.owner() == s10::JointOwner::kGate16,
+        "arming residual does not cause another actuator handover");
+  Check(gate.gate16_armed(), "the explicit climb request arms residual");
+  Check(out(0, s10::JointCommandOwner::kColPos) == -0.25f,
+        "the warm Gate16 command remains continuous across the arm edge");
+  gate.RequestOwner("official");
+  Check(!gate.gate16_armed(), "requesting the follower disarms residual immediately");
+
+  // ------------------------------------------------ the armed Gate16 handoff keeps rolling
+  gate.ResetForTest();
+  gate.RequestOwner("gate16_shadow");
+  out = gate.Arbitrate(OfficialAction(0.5f), nullptr, Measured(0.1f), nullptr);
+  Check(gate.owner() == s10::JointOwner::kOfficial && gate.gate16_shadow(),
+        "shadow warmup evaluates Gate16 without taking the actuators");
+  Check(out(0, s10::JointCommandOwner::kColPos) == 0.5f,
+        "the official command remains intact during shadow warmup");
+  gate.RequestOwner("gate16_climb");
+  out = gate.Arbitrate(OfficialAction(0.5f), nullptr, Measured(0.1f), nullptr);
+  Check(gate.owner() == s10::JointOwner::kOfficial,
+        "callback ordering waits briefly for a finite Gate16 command without stopping");
+  Check(out(0, s10::JointCommandOwner::kColPos) == 0.5f,
+        "the moving official command continues while that first action is pending");
+  out = gate.Arbitrate(OfficialAction(0.5f), &gate16, Measured(0.1f), nullptr);
+  Check(gate.owner() == s10::JointOwner::kGate16,
+        "an armed Gate16 request with a finite command transfers in one tick");
+  Check(out(3, s10::JointCommandOwner::kColVel) == 12.5f,
+        "the moving handoff does not insert a wheel-stopping hold");
+  const auto moving_transitions = gate.transitions();
+  Check(moving_transitions.size() == 1 &&
+            moving_transitions.front().find("armed moving climb handover") != std::string::npos,
+        "the exceptional transfer is explicit in the transition log");
 
   // ------------------------------------------------ a silent climb policy is a hold
   gate.ResetForTest();
