@@ -21,32 +21,32 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 
 ### Version status
 
-**Ver0 is the current stable baseline.** It contains the validated WP0→WP32 autonomous
-simulation stack, stable frontal Gate 16 controller integration, strict ordered-gate scoring,
-and the wall-clock 1080p replay workflow described below. This baseline is now frozen on
-`main`; the next development cycle will target **Ver1.0** without rewriting Ver0's recorded
-acceptance result.
+**Ver0 remains the stable `main` baseline.** The `bw-test-wp16-32-autonomy-adaptive-v3` branch is
+the current **Ver1.0 candidate**: it retains the WP0→WP32 autonomy stack, changes only Gate 16
+to the frozen adaptive-v3 runtime, uses strict 0.18 m internal gate acceptance, and has passed
+one complete continuous simulation run. It has not been promoted to `main` by this branch.
 
 The generated course contains **33 waypoints**, spans **224.21 m horizontally**, and gains
 **6.70 m**. The official evaluator counts gates inside a **0.20 m horizontal radius** and in
 strict order. Ver1 navigation uses a tighter **0.18 m internal acceptance radius**, giving
 0.02 m of margin before the official threshold.
 
-The stable Gate 16 integration has completed one uninterrupted full-stack test run from
-**WP0 to WP32** (seed 6, replay capture enabled):
+The adaptive-v3 candidate completed one uninterrupted full-stack test run from **WP0 to WP32**
+(seed 6, replay capture enabled):
 
 | Result | Value |
 |---|---:|
 | Ordered target gates | 33/33 (WP0–WP32) |
-| Recorder elapsed time | 977.37 s |
-| Distance travelled | 260.81 m |
-| Final WP32 distance | 0.182 m |
-| Maximum tilt | 57.3° |
-| Recorder stalls | 2 |
+| Recorder elapsed time | 1039.63 s |
+| Distance travelled | 270.25 m |
+| Final WP32 distance | 0.175 m |
+| Maximum tilt | 54.7° |
+| Recorder stalls | 0 |
 
-This is the Ver0 test-harness result: the same production stack ran continuously, but the segment
-harness supplies a deterministic start pose and records independent 0.20 m gate entries. It is
-evidence of complete-course autonomy, not a claim about an official competition submission.
+This is a Ver1 candidate test-harness result: the production stack ran continuously, while the
+segment harness supplied only the deterministic WP0 start pose and independent telemetry. All
+33 internal 0.18 m entries were observed in order; the official simulator also logged its 0.20 m
+events. It is evidence of complete-course simulation autonomy, not an official submission result.
 
 ## What is actually deployed
 
@@ -54,11 +54,19 @@ The official **57-dimensional proprioceptive locomotion policy** remains the nor
 Only WP15→WP16 uses the Gate 16 bundle: a 174D observation drives the frozen base and
 heightmap-gated residual ONNX pair at 50 Hz, producing a 16D joint command. The current
 development branch wraps those unchanged checkpoints in the frozen adaptive-v3 contract from
-`belsun/goai-s10-gate16-policy@b824f7f`: bounded policy-frame mirroring and the original
-heightmap residual gate. The bundle's staged command-profile asset is retained but disabled because
-the current SDK observation does not expose the verified front-wheel deck-height/contact signal it
-requires; approximating that signal caused repeatable tilt failures. The later competition-v4
-force-line, independent front-limb tuck, and delayed-residual additions are deliberately not used.
+`belsun/goai-s10-gate16-policy@b824f7f`: its bounded off-axis policy-frame mirror bands and the
+original heightmap residual gate. The strategy router executes the bundled command-profile JSON
+from measured wheel centres: `settle` begins only when both physical front wheels have cleared the
+edge and reached deck height, lasts 30 policy steps, and then changes to `push` until the router's
+independent four-wheel check succeeds. The formal near-zero entry stays in the stable native frame
+because center mirroring caused repeatable lateral divergence in the heterogeneous full-stack
+handoff. The failed heightmap-only support proxy, fixed yaw bias,
+front-limb action delta, and delayed-residual additions from competition-v4 are not used.
+The official controller owns the moving approach until the full `d=0.60–0.65 m`,
+`v=0.23–0.27 m/s`, `|yaw|≤5°` envelope is held. Gate 16 shadow inference cannot slow the
+approach; on the ownership edge its previous-action field is seeded by inverse-decoding the
+measured actuator state, avoiding a discontinuity between the unrelated official and Gate 16
+policy histories.
 After all four wheels are verified on the upper platform, the residual is disarmed and joint
 ownership returns to the official policy; the existing follower resumes at 0.5 m/s.
 
@@ -211,6 +219,11 @@ wall-clock video (for example, a 900 s run produces a 900 s video) without high-
 rendering perturbing control timing. The final MP4 is H.264, 1920x1080, 30 fps. The script exits
 without rendering if the experiment fails, so a video file cannot disguise a failed run.
 
+Offline rendering uses four deterministic workers by default; set `S10_RENDER_JOBS` to match
+available Docker memory. If capture has already succeeded and rendering was interrupted, rerun
+the same command with `S10_SKIP_CAPTURE=1` to resume from the retained replay without repeating
+the experiment. Before encoding, the script checks that every replay frame exists.
+
 ## Important run semantics
 
 - A normal race has no spawn override. Segment spawning happens only when `S10_SPAWN_XY` is
@@ -304,9 +317,9 @@ scripts/extract_waypoints.py --check
 scripts/patch_upstream.py --check
 ```
 
-For the WP0→WP32 acceptance revision, the navigation/perception suite passes **342 tests** and
-the training/observation contract suite passes **29 tests** (371 total); all five ROS packages
-also build cleanly.
+For the adaptive-v3 WP0→WP32 acceptance revision, the navigation/perception suite passes
+**348 tests** and the training/observation contract suite passes **29 tests** (377 total); the
+three affected ROS packages also build cleanly.
 
 Never hand-edit `src/s10_bringup/config/course.yaml`; regenerate it from the upstream scene.
 Never edit `upstream/` directly; put SDK integration in `integration/` and apply it through
