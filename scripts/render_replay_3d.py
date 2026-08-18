@@ -16,6 +16,79 @@ import numpy as np
 from s10_perception.png import write_png
 
 
+DEFAULT_OVERLAY_FONT = "/System/Library/Fonts/Supplemental/Arial.ttf"
+
+
+def _intervals(values: np.ndarray, timing: np.ndarray):
+    """Yield value/start/end runs on a timeline normalized to its first frame."""
+    if len(values) != len(timing):
+        raise ValueError("overlay values and timing must have equal lengths")
+    if not len(values):
+        return
+    origin = float(timing[0])
+    final_step = float(timing[-1] - timing[-2]) if len(timing) > 1 else 1.0 / 30.0
+    start = 0
+    for index in range(1, len(values) + 1):
+        if index < len(values) and values[index] == values[start]:
+            continue
+        end_time = float(timing[index] - origin) if index < len(timing) else float(
+            timing[-1] - origin + final_step
+        )
+        yield values[start], float(timing[start] - origin), end_time
+        start = index
+
+
+def _drawtext(
+    text: str,
+    x: int,
+    y: int,
+    start: float | None = None,
+    end: float | None = None,
+    font: str = DEFAULT_OVERLAY_FONT,
+):
+    safe = text.replace("\\", r"\\").replace("'", r"\'").replace(":", r"\:")
+    safe_font = font.replace("\\", r"\\").replace("'", r"\'").replace(":", r"\:")
+    item = (
+        f"drawtext=fontfile='{safe_font}':text='{safe}':x={x}:y={y}:"
+        "fontsize=34:fontcolor=white:"
+        "box=1:boxcolor=black@0.60:boxborderw=10"
+    )
+    if start is not None and end is not None:
+        item += f":enable='between(t\\,{start:.3f}\\,{end:.3f})'"
+    return item
+
+
+def _write_overlay_filter(trace, timing: np.ndarray, output: Path, font: str) -> None:
+    required = ("target_waypoint", "active_policy", "joint_owner")
+    missing = [key for key in required if key not in trace.files]
+    if missing:
+        raise ValueError(f"replay missing overlay metadata: {', '.join(missing)}")
+    waypoints = np.asarray(trace["target_waypoint"])
+    policies = np.asarray(trace["active_policy"]).astype(str)
+    owners = np.asarray(trace["joint_owner"]).astype(str)
+    if any(values.shape != timing.shape for values in (waypoints, policies, owners)):
+        raise ValueError("replay overlay metadata is not aligned with frame timing")
+
+    filters = [_drawtext("Elapsed %{pts:hms}", 24, 24, font=font)]
+    for waypoint, start, end in _intervals(waypoints, timing):
+        label = "Course complete" if int(waypoint) > 32 else f"Target WP{int(waypoint):02d}"
+        filters.append(_drawtext(label, 24, 78, start, end, font))
+    for policy, start, end in _intervals(policies, timing):
+        filters.append(_drawtext(f"Policy {policy}", 24, 132, start, end, font))
+    for owner, start, end in _intervals(owners, timing):
+        filters.append(_drawtext(f"Joint owner {owner}", 24, 186, start, end, font))
+
+    for index in range(1, len(waypoints)):
+        previous, current = int(waypoints[index - 1]), int(waypoints[index])
+        if current != previous + 1:
+            continue
+        event = float(timing[index] - timing[0])
+        filters.append(
+            _drawtext(f"WP{previous:02d} PASSED", 24, 250, event, event + 2.0, font)
+        )
+    output.write_text(",\n".join(filters) + "\n")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("replay", type=Path, help="replay.npz written by sim_node")
@@ -27,6 +100,11 @@ def main() -> int:
     parser.add_argument("--elevation", type=float, default=-24.0)
     parser.add_argument("--azimuth", type=float, default=90.0)
     parser.add_argument("--stride", type=int, default=1)
+    parser.add_argument(
+        "--overlay-font",
+        default=DEFAULT_OVERLAY_FONT,
+        help="host font path embedded in the ffmpeg overlay filter",
+    )
     parser.add_argument(
         "--timing",
         choices=("none", "wall", "simulation"),
@@ -121,6 +199,10 @@ def main() -> int:
             f"of {args.timing} time",
             flush=True,
         )
+        if args.timing == "wall" and args.stride == 1:
+            overlay = args.out / "overlay_filters.txt"
+            _write_overlay_filter(trace, timing, overlay, args.overlay_font)
+            print(f"wrote {overlay}", flush=True)
 
     renderer.close()
     return 0
