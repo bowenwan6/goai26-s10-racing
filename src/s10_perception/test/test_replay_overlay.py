@@ -4,6 +4,7 @@ import importlib.util
 import shutil
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -62,3 +63,21 @@ def test_overlay_contains_elapsed_policy_owner_target_and_pass_events(tmp_path):
             ],
             check=True,
         )
+
+
+def test_timing_manifest_uses_one_frame_for_unmeasured_final_sample(tmp_path):
+    timing = np.array([5.0, 5.1, 5.2, 5.3, 5.4])
+    args = SimpleNamespace(
+        out=tmp_path,
+        stride=1,
+        timing="wall",
+        overlay_font="/System/Library/Fonts/Supplemental/Arial.ttf",
+    )
+
+    RENDER._write_timing_files(args, _Trace(), timing, qpos_count=len(timing))
+
+    manifest = (tmp_path / "frames.ffconcat").read_text().splitlines()
+    assert manifest.count("file '00004.png'") == 2
+    assert manifest[-2] == "duration 0.033333333"
+    assert manifest[-1] == "file '00004.png'"
+    assert (tmp_path / "overlay_filters.txt").is_file()

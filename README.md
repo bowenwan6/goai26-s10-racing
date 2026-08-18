@@ -301,8 +301,8 @@ scripts/extract_waypoints.py --check
 scripts/patch_upstream.py --check
 ```
 
-For the WP0→WP32 acceptance revision, the navigation/perception suite passes **332 tests** and
-the training/observation contract suite passes **29 tests** (361 total); all five ROS packages
+For the WP0→WP32 acceptance revision, the navigation/perception suite passes **342 tests** and
+the training/observation contract suite passes **29 tests** (371 total); all five ROS packages
 also build cleanly.
 
 Never hand-edit `src/s10_bringup/config/course.yaml`; regenerate it from the upstream scene.
