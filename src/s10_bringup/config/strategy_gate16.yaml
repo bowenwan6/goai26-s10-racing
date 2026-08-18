@@ -1,4 +1,4 @@
-# Stable frontal Gate16 strategy configuration. This file is opt-in at launch.
+# Competition-v4 Gate16 strategy configuration. This file is opt-in at launch.
 #
 # This file is only read when the race is launched with strategy_router:=true. The default
 # scored run does not start this node at all, so nothing here can change it.
@@ -8,7 +8,7 @@
 # test exists in three files two of them are wrong and the third is the one in the run.
 #
 # The router is still opt-in at launch. When it is selected, this configuration enables the
-# frozen stable Gate16 actor for segment 15->16; mock and scripted remain test-only choices.
+# frozen-checkpoint v4 Gate16 actor for segment 15->16; mock and scripted remain test-only.
 
 strategy_router:
   ros__parameters:
@@ -19,7 +19,7 @@ strategy_router:
 
     climb_enabled: true
     measurement_only: false
-    # Stable frontal 174D base+residual. Adaptive mirroring and command profiles remain off.
+    # b6535a4 competition-v4 runtime around the frozen 174D base+residual pair.
     climb_policy: gate16
     climb_segment: [15, 16]
     scripted_trajectory: ""
@@ -53,9 +53,10 @@ strategy_router:
     ready_distance_min: 0.62
     ready_distance_max: 0.70
     ready_dwell: 0.10
-    min_entry_speed: 0.08
-    max_entry_speed: 0.20
-    target_entry_speed: 0.15
+    # Candidate's canonical measured handoff is 0.25 +/- 0.02 m/s near zero yaw.
+    min_entry_speed: 0.23
+    max_entry_speed: 0.27
+    target_entry_speed: 0.25
     max_entry_yaw_rate: 0.10
     align_yaw_rate: 0.70
     max_lateral_error: 0.25

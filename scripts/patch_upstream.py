@@ -53,6 +53,16 @@ def verify_gate16_assets() -> None:
         actual = hashlib.sha256((directory / name).read_bytes()).hexdigest()
         if actual != digest:
             raise SystemExit(f"Gate16 asset hash mismatch for {name}: {actual} != {digest}")
+    profile = manifest.get("front_tuck_command_profile")
+    if profile:
+        name = profile["file"]
+        if Path(name).name != name:
+            raise SystemExit(f"Gate16 profile must be bundle-local: {name}")
+        actual = hashlib.sha256((directory / name).read_bytes()).hexdigest()
+        if actual != profile["sha256"]:
+            raise SystemExit(
+                f"Gate16 profile hash mismatch for {name}: {actual} != {profile['sha256']}"
+            )
 
 #: Repository-owned integration files and essential frozen policy assets. Binary files are
 #: copied byte-for-byte and verified by the Gate16 runner before use.
@@ -65,6 +75,8 @@ FILES = {
     / "run_policy/gate16_perception_buffer.hpp",
     REPO_ROOT / "integration/gate16_skill_gate.hpp": SDK
     / "run_policy/gate16_skill_gate.hpp",
+    REPO_ROOT / "integration/gate16_policy_symmetry.hpp": SDK
+    / "run_policy/gate16_policy_symmetry.hpp",
     REPO_ROOT / "integration/gate16_policy_runner.hpp": SDK
     / "run_policy/gate16_policy_runner.hpp",
     REPO_ROOT / "policy/gate16/policy.onnx": SDK / "policy/gate16/policy.onnx",
@@ -72,6 +84,8 @@ FILES = {
     / "policy/gate16/climb_residual.onnx",
     REPO_ROOT / "policy/gate16/climb_policy_manifest.json": SDK
     / "policy/gate16/climb_policy_manifest.json",
+    REPO_ROOT / "policy/gate16/front_tuck_command_profiles.json": SDK
+    / "policy/gate16/front_tuck_command_profiles.json",
 }
 
 

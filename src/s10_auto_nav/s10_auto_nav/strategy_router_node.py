@@ -316,8 +316,9 @@ class StrategyRouterNode(Node):
                 )
             )
             self.get_logger().warning(
-                "Gate16 stable frontal policy enabled: SDK-local 174D base+residual, "
-                "constant command, adaptive mirroring and command profiles disabled"
+                "Gate16 competition-v4 policy enabled (source b6535a4): SDK-local "
+                "174D frozen base+residual with edge-timed engagement, independent "
+                "front support, command profiles and bounded policy-frame mirroring"
             )
         elif kind == "scripted":
             path = str(self.get_parameter("scripted_trajectory").value)

@@ -1,4 +1,4 @@
-"""Lifecycle adapter for the stable SDK-local Gate 16 policy.
+"""Lifecycle adapter for the competition-v4 SDK-local Gate 16 policy.
 
 The ONNX graphs and actuator decoding live in ``rl_deploy`` so they consume the calibrated
 ``RobotBasicState`` and produce wheel velocity targets without a ROS actuator round trip.
@@ -27,7 +27,7 @@ class Gate16Config:
 
 
 class StableGate16Policy:
-    """Remote handle for the frozen frontal base+residual actor."""
+    """Remote handle for the frozen-checkpoint, competition-v4 Gate16 actor."""
 
     action_kind = ActionKind.DELEGATED
     owner_name = "gate16"
@@ -49,7 +49,7 @@ class StableGate16Policy:
         self._started_at = float(observation.t)
         self._last_t = self._started_at
         self._status = PolicyStatus.RUNNING
-        self._reason = "stable frontal Gate16 actor requested"
+        self._reason = "Gate16 competition-v4 actor requested (source b6535a4)"
 
     def step(self, observation: PolicyObservation) -> PolicyAction:
         self._last_t = float(observation.t)
@@ -61,7 +61,7 @@ class StableGate16Policy:
                 float(self.config.command_lateral),
                 float(self.config.command_yaw_rate),
             ),
-            info={"owner": self.owner_name, "profile": "stable_v1_constant_command"},
+            info={"owner": self.owner_name, "profile": "competition_v4_b6535a4"},
         )
 
     def succeed(self, reason: str = "four wheels verified on upper platform") -> None:
@@ -86,5 +86,8 @@ class StableGate16Policy:
             self._status,
             self._reason,
             elapsed,
-            {"stable_gate16": True, "profile": "stable_v1_constant_command"},
+            {
+                "stable_gate16_checkpoint": True,
+                "profile": "competition_v4_b6535a4",
+            },
         )
