@@ -141,6 +141,15 @@ class StrategyRouterNode(Node):
         self.declare_parameter("stairs57_navigation_lateral_limit", 0.0)
         self.declare_parameter("stairs57_navigation_yaw_rate_limit", 0.0)
         self.declare_parameter("stairs57_navigation_lookahead", 0.8)
+        self.declare_parameter("stairs57_navigation_steering_source", "centreline")
+        self.declare_parameter("stairs57_navigation_target_yaw_gain", 1.8)
+        self.declare_parameter("stairs57_navigation_target_lateral_gain", 0.0)
+        self.declare_parameter("stairs57_activation_target_distance", 0.0)
+        self.declare_parameter("stairs57_near_target_settle_distance", 0.0)
+        self.declare_parameter("stairs57_near_target_settle_heading_deg", 60.0)
+        self.declare_parameter("stairs57_completion_hold", 0.25)
+        self.declare_parameter("stairs57_summit_slowdown_distance", 0.0)
+        self.declare_parameter("stairs57_summit_command_forward", 0.25)
         self.declare_parameter("stairs57_entry_speed_min", 0.25)
         self.declare_parameter("stairs57_entry_speed_max", 0.45)
         self.declare_parameter("advance_radius", 0.18)
@@ -184,6 +193,37 @@ class StrategyRouterNode(Node):
         )
         self.declare_parameter("climb_exit_forward", RouterConfig.climb_exit_forward)
         self.declare_parameter("climb_exit_duration", RouterConfig.climb_exit_duration)
+        self.declare_parameter(
+            "near_target_finish_forward", RouterConfig.near_target_finish_forward
+        )
+        self.declare_parameter(
+            "near_target_finish_duration", RouterConfig.near_target_finish_duration
+        )
+        self.declare_parameter(
+            "near_target_finish_forward_gain",
+            RouterConfig.near_target_finish_forward_gain,
+        )
+        self.declare_parameter(
+            "near_target_finish_reverse_limit",
+            RouterConfig.near_target_finish_reverse_limit,
+        )
+        self.declare_parameter(
+            "near_target_finish_max_speed", RouterConfig.near_target_finish_max_speed
+        )
+        self.declare_parameter(
+            "near_target_finish_lateral_gain",
+            RouterConfig.near_target_finish_lateral_gain,
+        )
+        self.declare_parameter(
+            "near_target_finish_lateral_limit",
+            RouterConfig.near_target_finish_lateral_limit,
+        )
+        self.declare_parameter(
+            "near_target_finish_yaw_limit", RouterConfig.near_target_finish_yaw_limit
+        )
+        self.declare_parameter(
+            "near_target_finish_yaw_gain", RouterConfig.near_target_finish_yaw_gain
+        )
         self.declare_parameter("verify_clearance", RouterConfig.verify_clearance)
         self.declare_parameter("verify_hold", RouterConfig.verify_hold)
         self.declare_parameter("verify_timeout", RouterConfig.verify_timeout)
@@ -235,6 +275,33 @@ class StrategyRouterNode(Node):
             align_speed=float(self.get_parameter("target_entry_speed").value),
             climb_exit_forward=float(self.get_parameter("climb_exit_forward").value),
             climb_exit_duration=float(self.get_parameter("climb_exit_duration").value),
+            near_target_finish_forward=float(
+                self.get_parameter("near_target_finish_forward").value
+            ),
+            near_target_finish_duration=float(
+                self.get_parameter("near_target_finish_duration").value
+            ),
+            near_target_finish_forward_gain=float(
+                self.get_parameter("near_target_finish_forward_gain").value
+            ),
+            near_target_finish_reverse_limit=float(
+                self.get_parameter("near_target_finish_reverse_limit").value
+            ),
+            near_target_finish_max_speed=float(
+                self.get_parameter("near_target_finish_max_speed").value
+            ),
+            near_target_finish_lateral_gain=float(
+                self.get_parameter("near_target_finish_lateral_gain").value
+            ),
+            near_target_finish_lateral_limit=float(
+                self.get_parameter("near_target_finish_lateral_limit").value
+            ),
+            near_target_finish_yaw_limit=float(
+                self.get_parameter("near_target_finish_yaw_limit").value
+            ),
+            near_target_finish_yaw_gain=float(
+                self.get_parameter("near_target_finish_yaw_gain").value
+            ),
             verify_clearance=float(self.get_parameter("verify_clearance").value),
             verify_hold=float(self.get_parameter("verify_hold").value),
             verify_timeout=float(self.get_parameter("verify_timeout").value),
@@ -347,6 +414,8 @@ class StrategyRouterNode(Node):
         self._finished = False
         self._segment = (0, 1)
         self._segment_target_z = None
+        self._segment_target_distance = math.inf
+        self._segment_target_heading_error = 0.0
         self._obstacle_distance = math.inf
         self._lateral_error = 0.0
         self._heading_error = 0.0
@@ -431,6 +500,9 @@ class StrategyRouterNode(Node):
             segments = [tuple(raw[i : i + 2]) for i in range(0, len(raw), 2)]
             if tuple(self.get_parameter("climb_segment").value) in segments:
                 raise RuntimeError("stairs57 must not replace the dedicated Gate16 segment")
+            activation_distance = float(
+                self.get_parameter("stairs57_activation_target_distance").value
+            )
             stairs = Stairs57Policy(
                 Stairs57Config(
                     command_forward=float(
@@ -445,11 +517,42 @@ class StrategyRouterNode(Node):
                     navigation_lookahead=float(
                         self.get_parameter("stairs57_navigation_lookahead").value
                     ),
+                    navigation_steering_source=str(
+                        self.get_parameter("stairs57_navigation_steering_source").value
+                    ),
+                    navigation_target_yaw_gain=float(
+                        self.get_parameter("stairs57_navigation_target_yaw_gain").value
+                    ),
+                    navigation_target_lateral_gain=float(
+                        self.get_parameter("stairs57_navigation_target_lateral_gain").value
+                    ),
+                    activation_target_distance=(
+                        activation_distance if activation_distance > 0.0 else math.inf
+                    ),
+                    near_target_settle_distance=float(
+                        self.get_parameter("stairs57_near_target_settle_distance").value
+                    ),
+                    near_target_settle_heading=math.radians(
+                        float(
+                            self.get_parameter(
+                                "stairs57_near_target_settle_heading_deg"
+                            ).value
+                        )
+                    ),
+                    summit_slowdown_distance=float(
+                        self.get_parameter("stairs57_summit_slowdown_distance").value
+                    ),
+                    summit_command_forward=float(
+                        self.get_parameter("stairs57_summit_command_forward").value
+                    ),
                     entry_speed_min=float(
                         self.get_parameter("stairs57_entry_speed_min").value
                     ),
                     entry_speed_max=float(
                         self.get_parameter("stairs57_entry_speed_max").value
+                    ),
+                    completion_hold=float(
+                        self.get_parameter("stairs57_completion_hold").value
                     ),
                 )
             )
@@ -527,6 +630,8 @@ class StrategyRouterNode(Node):
         if self.course.finished or cursor == 0:
             self._segment = (max(cursor - 1, 0), cursor)
             self._segment_target_z = None
+            self._segment_target_distance = math.inf
+            self._segment_target_heading_error = 0.0
             self._obstacle_distance = math.inf
             self._lateral_error = 0.0
             self._heading_error = 0.0
@@ -535,6 +640,14 @@ class StrategyRouterNode(Node):
         target = self.course.waypoints[cursor]
         self._segment = (previous.index, target.index)
         self._segment_target_z = float(target.position[2])
+        self._segment_target_distance = float(
+            np.linalg.norm(np.asarray(target.position[:2], float) - self._position[:2])
+        )
+        target_delta = np.asarray(target.position[:2], float) - self._position[:2]
+        target_yaw = math.atan2(float(target_delta[1]), float(target_delta[0]))
+        self._segment_target_heading_error = (
+            target_yaw - self._ypr[0] + math.pi
+        ) % (2.0 * math.pi) - math.pi
 
         if self._segment not in self.router.segment_policies:
             # Only configured policy segments carry router geometry. Everything else is
@@ -621,6 +734,8 @@ class StrategyRouterNode(Node):
             obstacle_edge=None if edge is None else np.asarray(edge, float).copy(),
             obstacle_normal=None if normal is None else np.asarray(normal, float).copy(),
             segment_target_z=self._segment_target_z,
+            segment_target_distance=self._segment_target_distance,
+            segment_target_heading_error=self._segment_target_heading_error,
             actual_joint_owner=self._actual_owner,
         )
 

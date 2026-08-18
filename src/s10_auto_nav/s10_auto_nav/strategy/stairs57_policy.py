@@ -29,6 +29,14 @@ class Stairs57Config:
     navigation_lateral_limit: float = 0.0
     navigation_yaw_rate_limit: float = 0.0
     navigation_lookahead: float = 0.8
+    navigation_steering_source: str = "centreline"
+    navigation_target_yaw_gain: float = 1.8
+    navigation_target_lateral_gain: float = 0.0
+    activation_target_distance: float = math.inf
+    near_target_settle_distance: float = 0.0
+    near_target_settle_heading: float = math.radians(60.0)
+    summit_slowdown_distance: float = 0.0
+    summit_command_forward: float = 0.25
     entry_speed_min: float = 0.25
     entry_speed_max: float = 0.45
     completion_min_progress: float = 0.60
@@ -45,6 +53,24 @@ class Stairs57Config:
             raise ValueError("stairs57 navigation correction limits must be non-negative")
         if self.navigation_lookahead <= 0.0:
             raise ValueError("stairs57 navigation lookahead must be positive")
+        if self.navigation_steering_source not in ("centreline", "follower", "target"):
+            raise ValueError("stairs57 steering source must be centreline, follower or target")
+        if self.navigation_target_yaw_gain < 0.0:
+            raise ValueError("stairs57 target yaw gain must be non-negative")
+        if self.navigation_target_lateral_gain < 0.0:
+            raise ValueError("stairs57 target lateral gain must be non-negative")
+        if math.isfinite(self.activation_target_distance) and self.activation_target_distance <= 0:
+            raise ValueError("stairs57 activation target distance must be positive")
+        if self.near_target_settle_distance < 0.0:
+            raise ValueError("stairs57 near-target settle distance must be non-negative")
+        if self.near_target_settle_heading <= 0.0:
+            raise ValueError("stairs57 near-target settle heading must be positive")
+        if self.summit_slowdown_distance < 0.0:
+            raise ValueError("stairs57 summit slowdown distance must be non-negative")
+        if self.summit_slowdown_distance > 0.0 and not (
+            self.entry_speed_min <= self.summit_command_forward <= self.command_forward
+        ):
+            raise ValueError("stairs57 summit command must remain inside its trained range")
 
 
 class Stairs57Policy:
@@ -76,10 +102,50 @@ class Stairs57Policy:
         self._last_t = 0.0
         self._reason = ""
         self._clear_for = 0.0
+        self._near_clear_for = 0.0
 
     def continue_segment(self) -> None:
         """Keep the learned action history but verify the next upper platform afresh."""
         self._clear_for = 0.0
+        self._near_clear_for = 0.0
+
+    def ready_to_start(self, state) -> bool:
+        """Keep the official actor on flat runways until the next stair approach."""
+        if not math.isfinite(self.config.activation_target_distance):
+            return True
+        distance = float(getattr(state, "segment_target_distance", math.inf))
+        return math.isfinite(distance) and distance <= self.config.activation_target_distance
+
+    def ready_to_settle(self, state, dt: float) -> bool:
+        """Detect a reached upper deck while the strict waypoint is still just ahead."""
+        if self.config.near_target_settle_distance <= 0.0:
+            self._near_clear_for = 0.0
+            return False
+        distance = float(getattr(state, "segment_target_distance", math.inf))
+        heading = float(getattr(state, "segment_target_heading_error", math.inf))
+        target_z = getattr(state, "segment_target_z", None)
+        wheels = getattr(state, "wheel_positions", None)
+        if (
+            not math.isfinite(distance)
+            or distance > self.config.near_target_settle_distance
+            or not math.isfinite(heading)
+            or abs(heading) > self.config.near_target_settle_heading
+            or target_z is None
+            or wheels is None
+        ):
+            self._near_clear_for = 0.0
+            return False
+        wheels = np.asarray(wheels, dtype=float)
+        position = np.asarray(state.position, dtype=float)
+        clear = bool(
+            wheels.shape == (4, 3)
+            and np.all(np.isfinite(wheels))
+            and np.all(wheels[:, 2] >= float(target_z) + self.config.completion_wheel_clearance)
+            and position[2] >= float(target_z) + self.config.completion_base_clearance
+            and state.tilt <= math.radians(self.config.completion_max_tilt_deg)
+        )
+        self._near_clear_for = self._near_clear_for + dt if clear else 0.0
+        return self._near_clear_for >= self.config.completion_hold
 
     def start(self, observation: PolicyObservation) -> None:
         self._started_at = float(observation.t)
