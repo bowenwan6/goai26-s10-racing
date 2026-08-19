@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-
 ROOT = Path(__file__).resolve().parents[3]
 INTEGRATION = ROOT / "integration"
 
@@ -22,16 +21,25 @@ def _compile_and_run(source: str) -> None:
         cpp = Path(tmp) / "smoke.cpp"
         binary = Path(tmp) / "smoke"
         cpp.write_text(source)
-        subprocess.run(
-            [compiler, "-std=c++17", "-Wall", "-Wextra", "-Werror", "-I", INTEGRATION, cpp, "-o", binary],
-            check=True,
-        )
+        command = [
+            compiler,
+            "-std=c++17",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-I",
+            INTEGRATION,
+            cpp,
+            "-o",
+            binary,
+        ]
+        subprocess.run(command, check=True)
         subprocess.run([binary], check=True)
 
 
 def test_v4_policy_frame_mirror_is_an_involution_and_uses_expected_bands():
     _compile_and_run(
-        r'''
+        r"""
 #include <array>
 #include <cassert>
 #include <utility>
@@ -53,13 +61,13 @@ int main() {
   assert(s10_policy::ShouldMirrorYawBands(5.0f, bands));
   assert(!s10_policy::ShouldMirrorYawBands(-20.0f, bands));
 }
-'''
+"""
     )
 
 
 def test_v4_skill_gate_measures_edge_and_enters_after_two_frames():
     _compile_and_run(
-        r'''
+        r"""
 #include <cassert>
 #include "gate16_skill_gate.hpp"
 int main() {
@@ -78,13 +86,13 @@ int main() {
   assert(entered.max_up_step > 0.37f);
   assert(entered.both_side_edges_visible);
 }
-'''
+"""
     )
 
 
 def test_v15_fast_adapter_fails_closed_on_low_confidence_geometry():
     _compile_and_run(
-        r'''
+        r"""
 #include <cassert>
 #include "gate16_skill_gate.hpp"
 int main() {
@@ -116,5 +124,5 @@ int main() {
   report.right_edge_distance = 0.85f;
   assert(!s10_policy::EntrySupportsFastAdapter(report, 2.0f, 0.25f, envelope));
 }
-'''
+"""
     )

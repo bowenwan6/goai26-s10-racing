@@ -45,7 +45,7 @@ class Body:
     def run(self, commit, pitch, seconds, velocity=0.0, sway=True) -> bool:
         """Drive for ``seconds``; return whether the commit still claims a step."""
         climbing = False
-        for _ in range(int(round(seconds / DT))):
+        for _ in range(round(seconds / DT)):
             self.t += DT if sway else 0.0
             self.centre += velocity * DT
             climbing = commit.update(pitch, self.xy, DT)

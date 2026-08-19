@@ -80,7 +80,14 @@ from s10_auto_nav.strategy.gate16_policy import (
 )
 from s10_auto_nav.strategy.mock_policy import MockClimbPolicy, MockScenario
 from s10_auto_nav.strategy.policy import ActionKind, PolicyObservation
-from s10_auto_nav.strategy.router import Mode, RobotState, Router, RouterConfig, Source
+from s10_auto_nav.strategy.router import (
+    Mode,
+    RobotState,
+    Router,
+    RouterConfig,
+    Source,
+    required_sensors_started,
+)
 from s10_auto_nav.strategy.scripted_policy import ScriptedClimbPolicy
 from s10_auto_nav.strategy.stairs57_policy import Stairs57Config, Stairs57Policy
 from s10_auto_nav.waypoints import Course
@@ -160,9 +167,7 @@ class StrategyRouterNode(Node):
         self.declare_parameter("align_enter", RouterConfig.align_enter)
         self.declare_parameter("align_timeout", RouterConfig.align_timeout)
         self.declare_parameter("climb_timeout", RouterConfig.climb_timeout)
-        self.declare_parameter(
-            "climb_progress_window", RouterConfig.climb_progress_window
-        )
+        self.declare_parameter("climb_progress_window", RouterConfig.climb_progress_window)
         self.declare_parameter("max_retries", RouterConfig.max_retries)
         self.declare_parameter("sensor_timeout", RouterConfig.sensor_timeout)
         # Run the state machine but leave the follower's command alone; see RouterConfig.
@@ -179,21 +184,13 @@ class StrategyRouterNode(Node):
         self.declare_parameter(
             "max_heading_error_deg", math.degrees(RouterConfig.max_heading_error)
         )
-        self.declare_parameter(
-            "gate16_staging_tolerance", RouterConfig.gate16_staging_tolerance
-        )
-        self.declare_parameter(
-            "gate16_staging_lead", RouterConfig.gate16_staging_lead
-        )
+        self.declare_parameter("gate16_staging_tolerance", RouterConfig.gate16_staging_tolerance)
+        self.declare_parameter("gate16_staging_lead", RouterConfig.gate16_staging_lead)
         self.declare_parameter("min_entry_speed", RouterConfig.min_entry_speed)
         self.declare_parameter("max_entry_speed", RouterConfig.max_entry_speed)
         self.declare_parameter("target_entry_speed", RouterConfig.target_entry_speed)
-        self.declare_parameter(
-            "gate16_prewarm_forward", RouterConfig.gate16_prewarm_forward
-        )
-        self.declare_parameter(
-            "gate16_fallback_enabled", RouterConfig.gate16_fallback_enabled
-        )
+        self.declare_parameter("gate16_prewarm_forward", RouterConfig.gate16_prewarm_forward)
+        self.declare_parameter("gate16_fallback_enabled", RouterConfig.gate16_fallback_enabled)
         self.declare_parameter(
             "gate16_fast_adapter_enabled", RouterConfig.gate16_fast_adapter_enabled
         )
@@ -269,9 +266,7 @@ class StrategyRouterNode(Node):
         self.declare_parameter("verify_clearance", RouterConfig.verify_clearance)
         self.declare_parameter("verify_hold", RouterConfig.verify_hold)
         self.declare_parameter("verify_timeout", RouterConfig.verify_timeout)
-        self.declare_parameter(
-            "verify_unready_dwell", RouterConfig.verify_unready_dwell
-        )
+        self.declare_parameter("verify_unready_dwell", RouterConfig.verify_unready_dwell)
         self.declare_parameter("verify_deck_z", RouterConfig.verify_deck_z)
         self.declare_parameter(
             "gate16_profile_file",
@@ -302,21 +297,13 @@ class StrategyRouterNode(Node):
             max_heading_error=math.radians(
                 float(self.get_parameter("max_heading_error_deg").value)
             ),
-            gate16_staging_tolerance=float(
-                self.get_parameter("gate16_staging_tolerance").value
-            ),
-            gate16_staging_lead=float(
-                self.get_parameter("gate16_staging_lead").value
-            ),
+            gate16_staging_tolerance=float(self.get_parameter("gate16_staging_tolerance").value),
+            gate16_staging_lead=float(self.get_parameter("gate16_staging_lead").value),
             min_entry_speed=float(self.get_parameter("min_entry_speed").value),
             max_entry_speed=float(self.get_parameter("max_entry_speed").value),
             target_entry_speed=float(self.get_parameter("target_entry_speed").value),
-            gate16_prewarm_forward=float(
-                self.get_parameter("gate16_prewarm_forward").value
-            ),
-            gate16_fallback_enabled=bool(
-                self.get_parameter("gate16_fallback_enabled").value
-            ),
+            gate16_prewarm_forward=float(self.get_parameter("gate16_prewarm_forward").value),
+            gate16_fallback_enabled=bool(self.get_parameter("gate16_fallback_enabled").value),
             gate16_fast_adapter_enabled=bool(
                 self.get_parameter("gate16_fast_adapter_enabled").value
             ),
@@ -342,11 +329,7 @@ class StrategyRouterNode(Node):
                 self.get_parameter("gate16_fallback_max_lateral_error").value
             ),
             gate16_fallback_max_heading_error=math.radians(
-                float(
-                    self.get_parameter(
-                        "gate16_fallback_max_heading_error_deg"
-                    ).value
-                )
+                float(self.get_parameter("gate16_fallback_max_heading_error_deg").value)
             ),
             gate16_fallback_max_yaw_rate=float(
                 self.get_parameter("gate16_fallback_max_yaw_rate").value
@@ -384,14 +367,10 @@ class StrategyRouterNode(Node):
             verify_clearance=float(self.get_parameter("verify_clearance").value),
             verify_hold=float(self.get_parameter("verify_hold").value),
             verify_timeout=float(self.get_parameter("verify_timeout").value),
-            verify_unready_dwell=float(
-                self.get_parameter("verify_unready_dwell").value
-            ),
+            verify_unready_dwell=float(self.get_parameter("verify_unready_dwell").value),
             verify_deck_z=float(self.get_parameter("verify_deck_z").value),
             climb_timeout=float(self.get_parameter("climb_timeout").value),
-            climb_progress_window=float(
-                self.get_parameter("climb_progress_window").value
-            ),
+            climb_progress_window=float(self.get_parameter("climb_progress_window").value),
             max_retries=int(self.get_parameter("max_retries").value),
             sensor_timeout=float(self.get_parameter("sensor_timeout").value),
         )
@@ -441,9 +420,7 @@ class StrategyRouterNode(Node):
             self._obstacle_frame = (edge, normal, tangent)
         self._climb_segment = tuple(int(v) for v in self.get_parameter("climb_segment").value)
         self._obstacle_frames = (
-            {self._climb_segment: self._obstacle_frame}
-            if self._obstacle_frame is not None
-            else {}
+            {self._climb_segment: self._obstacle_frame} if self._obstacle_frame is not None else {}
         )
 
         latched = QoSProfile(
@@ -502,6 +479,7 @@ class StrategyRouterNode(Node):
         # gate on one favourable point in the legged gait's velocity oscillation.
         self._entry_forward_samples: deque[float] = deque(maxlen=5)
         self._history_seen = 0
+        self._waiting_for_initial_sensors = True
 
         self.timer = self.create_timer(1.0 / rate, self._tick)
         self.get_logger().info(
@@ -522,9 +500,7 @@ class StrategyRouterNode(Node):
         if kind == "gate16":
             edge = tuple(float(v) for v in self.get_parameter("climb_edge_center").value)
             normal = tuple(float(v) for v in self.get_parameter("climb_normal").value)
-            fallback_enabled = bool(
-                self.get_parameter("gate16_fallback_enabled").value
-            )
+            fallback_enabled = bool(self.get_parameter("gate16_fallback_enabled").value)
             if (
                 len(edge) != 2
                 or len(normal) != 2
@@ -535,11 +511,7 @@ class StrategyRouterNode(Node):
                 Gate16Config(
                     command_forward=float(self.get_parameter("target_entry_speed").value),
                     fallback_command_forward=(
-                        float(
-                            self.get_parameter(
-                                "gate16_fallback_target_entry_speed"
-                            ).value
-                        )
+                        float(self.get_parameter("gate16_fallback_target_entry_speed").value)
                         if fallback_enabled
                         else None
                     ),
@@ -550,9 +522,7 @@ class StrategyRouterNode(Node):
                     front_clearance=float(self.get_parameter("verify_clearance").value),
                 )
             )
-            variant = (
-                "v1.5 confidence-fallback" if fallback_enabled else "adaptive-v3"
-            )
+            variant = "v1.5 confidence-fallback" if fallback_enabled else "adaptive-v3"
             profile_detail = (
                 "verified-wheel profiles over a stable-v1 fallback"
                 if fallback_enabled
@@ -589,9 +559,7 @@ class StrategyRouterNode(Node):
             policies["climb_policy"] = policy
             segment_policies[segment] = "climb_policy"
         elif kind:
-            raise RuntimeError(
-                f"unknown climb_policy '{kind}' (expected gate16, mock or scripted)"
-            )
+            raise RuntimeError(f"unknown climb_policy '{kind}' (expected gate16, mock or scripted)")
         if bool(self.get_parameter("stairs57_enabled").value):
             raw = [int(v) for v in self.get_parameter("stairs57_segments").value]
             if not raw or len(raw) % 2:
@@ -604,9 +572,7 @@ class StrategyRouterNode(Node):
             )
             stairs = Stairs57Policy(
                 Stairs57Config(
-                    command_forward=float(
-                        self.get_parameter("stairs57_command_forward").value
-                    ),
+                    command_forward=float(self.get_parameter("stairs57_command_forward").value),
                     navigation_lateral_limit=float(
                         self.get_parameter("stairs57_navigation_lateral_limit").value
                     ),
@@ -632,11 +598,7 @@ class StrategyRouterNode(Node):
                         self.get_parameter("stairs57_near_target_settle_distance").value
                     ),
                     near_target_settle_heading=math.radians(
-                        float(
-                            self.get_parameter(
-                                "stairs57_near_target_settle_heading_deg"
-                            ).value
-                        )
+                        float(self.get_parameter("stairs57_near_target_settle_heading_deg").value)
                     ),
                     summit_slowdown_distance=float(
                         self.get_parameter("stairs57_summit_slowdown_distance").value
@@ -644,15 +606,9 @@ class StrategyRouterNode(Node):
                     summit_command_forward=float(
                         self.get_parameter("stairs57_summit_command_forward").value
                     ),
-                    entry_speed_min=float(
-                        self.get_parameter("stairs57_entry_speed_min").value
-                    ),
-                    entry_speed_max=float(
-                        self.get_parameter("stairs57_entry_speed_max").value
-                    ),
-                    completion_hold=float(
-                        self.get_parameter("stairs57_completion_hold").value
-                    ),
+                    entry_speed_min=float(self.get_parameter("stairs57_entry_speed_min").value),
+                    entry_speed_max=float(self.get_parameter("stairs57_entry_speed_max").value),
+                    completion_hold=float(self.get_parameter("stairs57_completion_hold").value),
                 )
             )
             policies["stairs57_policy"] = stairs
@@ -744,9 +700,9 @@ class StrategyRouterNode(Node):
         )
         target_delta = np.asarray(target.position[:2], float) - self._position[:2]
         target_yaw = math.atan2(float(target_delta[1]), float(target_delta[0]))
-        self._segment_target_heading_error = (
-            target_yaw - self._ypr[0] + math.pi
-        ) % (2.0 * math.pi) - math.pi
+        self._segment_target_heading_error = (target_yaw - self._ypr[0] + math.pi) % (
+            2.0 * math.pi
+        ) - math.pi
 
         if self._segment not in self.router.segment_policies:
             # Only configured policy segments carry router geometry. Everything else is
@@ -827,9 +783,7 @@ class StrategyRouterNode(Node):
             wheel_positions=(
                 None if self._wheel_positions is None else self._wheel_positions.copy()
             ),
-            wheel_contacts=(
-                None if self._wheel_contacts is None else self._wheel_contacts.copy()
-            ),
+            wheel_contacts=(None if self._wheel_contacts is None else self._wheel_contacts.copy()),
             obstacle_edge=None if edge is None else np.asarray(edge, float).copy(),
             obstacle_normal=None if normal is None else np.asarray(normal, float).copy(),
             segment_target_z=self._segment_target_z,
@@ -839,6 +793,18 @@ class StrategyRouterNode(Node):
         )
 
     def _tick(self) -> None:
+        if not required_sensors_started(self._odom_time, self._lidar_time, self._heightmap_time):
+            # MuJoCo's first XML/model load can take several seconds on a clean machine. A
+            # never-received timestamp is not a runtime sensor outage: request the official
+            # owner and publish an explicit zero until the first complete sensor set arrives.
+            # Once it does, the router's unchanged 0.5 s stop / 3.0 s abort watchdog applies.
+            self.arbiter.grant(JointArbiter.OFFICIAL)
+            self._owner_pub.publish(String(data=self.arbiter.owner))
+            self.cmd_pub.publish(Twist())
+            return
+        if self._waiting_for_initial_sensors:
+            self._waiting_for_initial_sensors = False
+            self.get_logger().info("initial odometry, lidar and heightmap received")
         self._update_segment()
         state = self._state()
         observation = PolicyObservation(
@@ -881,19 +847,14 @@ class StrategyRouterNode(Node):
         elif out.source is Source.POLICY and self.router.active_action_kind is ActionKind.JOINT:
             self.arbiter.grant(JointArbiter.CLIMB)
             self.arbiter.forward(JointArbiter.CLIMB, out.joints)
-        elif (
-            out.source is Source.POLICY
-            and self.router.active_action_kind is ActionKind.DELEGATED
-        ):
+        elif out.source is Source.POLICY and self.router.active_action_kind is ActionKind.DELEGATED:
             owner_name = str(getattr(policy, "owner_name", ""))
             if owner_name == JointArbiter.STAIRS57:
                 self.arbiter.grant(JointArbiter.STAIRS57)
             elif owner_name == JointArbiter.GATE16:
                 self.arbiter.grant(gate16_request)
             else:
-                self.get_logger().error(
-                    f"delegated policy requested unknown owner '{owner_name}'"
-                )
+                self.get_logger().error(f"delegated policy requested unknown owner '{owner_name}'")
                 self.arbiter.grant(JointArbiter.STOP)
         elif prewarm_gate16:
             self.arbiter.grant(gate16_request)

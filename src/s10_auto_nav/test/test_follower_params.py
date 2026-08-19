@@ -42,33 +42,55 @@ def shipped() -> dict:
 def test_the_brake_distances_ship_in_nav_yaml():
     params = shipped()
     assert params["advance_radius"] == params["score_radius"] == 0.18
-    assert params["max_forward"] == 2.0
-    assert params["terrain_max_forward"] == 0.7
+    assert params["max_forward"] == 2.1
+    assert params["terrain_max_forward"] == 1.2
+    assert params["waypoint_speed_limit_indices"] == [16, 24, 25, 26, 27, 28, 29, 31, 32]
+    assert params["waypoint_speed_limit_values"] == [
+        0.7,
+        0.7,
+        0.7,
+        0.95,
+        0.7,
+        0.95,
+        0.7,
+        0.7,
+        0.7,
+    ]
     assert params["fast_flat_waypoints"] == [2, 10, 14, 22]
-    assert params["fast_flat_min_gate_distance"] == 3.0
-    assert params["fast_flat_max_heading_deg"] == 8.0
-    assert params["fast_flat_max_cross_track"] == 0.15
-    assert params["fast_flat_max_tilt_deg"] == 6.0
-    assert params["fast_flat_max_pitch_deg"] == 5.0
-    assert params["climb_speed"] == 0.7
+    assert params["fast_flat_min_gate_distance"] == 1.5
+    assert params["fast_flat_max_heading_deg"] == 7.0
+    assert params["fast_flat_max_cross_track"] == 0.26
+    assert params["fast_flat_max_tilt_deg"] == 13.0
+    assert params["fast_flat_max_pitch_deg"] == 6.0
+    assert params["climb_speed"] == 1.1
+    assert params["climb_progress_window"] == 1.5
+    assert params["climb_level_dwell"] == 0.7
+    assert params["climb_yaw_rate"] == 0.125
+    assert params["lookahead_speed_gain"] == 0.7
+    assert params["lateral_gain"] == 0.9
     assert params["pivot_threshold_deg"] == 30.0
+    assert params["align_falloff_deg"] == 60.0
+    assert params["min_speed_fraction"] == 0.15
+    assert params["forward_slew"] == 5.0
+    assert params["lateral_slew"] == 2.0
+    assert params["yaw_slew"] == 6.0
     assert params["corner_retreat_waypoints"] == [26, 27]
     assert params["corner_retreat_distance"] == 0.7
-    assert params["corner_retreat_speed"] == 0.3
-    assert params["corner_align_tolerance_deg"] == 10.0
+    assert params["corner_retreat_speed"] == 0.35
+    assert params["corner_align_tolerance_deg"] == 9.0
     assert params["committed_terrain_waypoints"] == [28, 30]
     assert params["committed_runup_waypoints"] == [28]
     assert params["committed_runup_trigger"] == 0.55
-    assert params["committed_runup_distance"] == 1.5
+    assert params["committed_runup_distance"] == 1.3
     assert params["committed_runup_timeout"] == 20.0
     assert params["route_hint_waypoints"] == [31, 32]
     assert params["route_hint_points"] == [29.35, 17.8, 30.55, 18.5]
-    assert params["route_hint_radius"] == 0.25
-    assert params["route_hint_speed"] == 0.5
+    assert params["route_hint_radius"] == 0.28
+    assert params["route_hint_speed"] == 0.75
     assert params["route_hint_max_tilt_deg"] == 12.0
-    assert params["route_hint_stable_hold"] == 0.5
+    assert params["route_hint_stable_hold"] == 0.4
     assert params["brake_distance"] == 0.0, "the flat default must still inherit the lookahead"
-    assert params["stair_brake_distance"] == 0.4
+    assert params["stair_brake_distance"] == 0.35
     assert params["barrier_escape_angle_deg"] == 60.0
     assert params["barrier_escape_distance"] == 1.2
     assert params["barrier_bypass_forward"] == 3.0
@@ -101,7 +123,9 @@ def test_router_and_follower_ship_with_the_same_strict_radius():
 
 def test_a_scored_gate_resets_command_slew_before_the_next_leg():
     source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
-    gate_change = source[source.index("if self.course.update") : source.index("if self.course.finished")]
+    gate_change = source[
+        source.index("if self.course.update") : source.index("if self.course.finished")
+    ]
     assert "self.controller.reset()" in gate_change
 
 
@@ -149,6 +173,27 @@ def node(tmp_path, request):
         follower.destroy_node()
     finally:
         rclpy.shutdown()
+
+
+@needs_ros
+@pytest.mark.params(
+    lookahead_speed_gain=0.65,
+    lateral_gain=1.1,
+    align_falloff_deg=52.0,
+    min_speed_fraction=0.22,
+    forward_slew=4.5,
+    lateral_slew=2.7,
+    yaw_slew=7.5,
+)
+def test_pursuit_tuning_parameters_reach_controller(node):
+    gains = node.controller.gains
+    assert gains.lookahead_speed_gain == pytest.approx(0.65)
+    assert gains.lateral_gain == pytest.approx(1.1)
+    assert math.degrees(gains.align_falloff) == pytest.approx(52.0)
+    assert gains.min_speed_fraction == pytest.approx(0.22)
+    assert gains.forward_slew == pytest.approx(4.5)
+    assert gains.lateral_slew == pytest.approx(2.7)
+    assert gains.yaw_slew == pytest.approx(7.5)
 
 
 @needs_ros
@@ -280,6 +325,29 @@ def test_fast_flat_limit_requires_the_whole_live_safety_envelope(node):
     node._tilt = 0.0
     node._yaw = node.fast_flat_max_heading + 0.01
     assert limit() == pytest.approx(0.7)
+
+
+@needs_ros
+def test_waypoint_speed_limit_overrides_only_the_configured_leg(node):
+    flat = TerrainVerdict(TerrainKind.FLAT, 1.0, "clear", TerrainKind.FLAT)
+    node.fast_flat_waypoints.clear()
+    node.terrain_max_forward = 1.2
+    node.waypoint_speed_limits = {0: 0.65}
+    node._pose_xy = np.array([0.0, 0.0])
+    node._yaw = 0.0
+
+    values = {
+        "target": np.array([4.0, 0.0]),
+        "carrot": np.array([4.0, 0.0]),
+        "gate_distance": 4.0,
+        "verdict": flat,
+        "lidar_scale": 1.0,
+        "terrain_scale": 1.0,
+    }
+    assert node.course.target.index == 0
+    assert node._forward_limit_for(**values) == pytest.approx(0.65)
+    node.course._cursor = 1
+    assert node._forward_limit_for(**values) == pytest.approx(1.2)
 
 
 @needs_ros
@@ -560,9 +628,12 @@ def test_brief_barrier_label_jitter_keeps_the_committed_side(node):
     assert side != 0
 
     for _ in range(90):
-        assert node._barrier_escape_side_for(
-            _verdict(TerrainKind.BLOCKED), 0.02, np.array([31.635, 15.465])
-        ) == side
+        assert (
+            node._barrier_escape_side_for(
+                _verdict(TerrainKind.BLOCKED), 0.02, np.array([31.635, 15.465])
+            )
+            == side
+        )
 
 
 @needs_ros
@@ -579,15 +650,11 @@ def test_sustained_clearance_releases_escape_once_per_gate(node):
     assert node._barrier_corner_target is not None
 
     for _ in range(150):
-        assert node._barrier_escape_side_for(
-            _verdict(TerrainKind.BLOCKED), 0.02, gate
-        ) == side
+        assert node._barrier_escape_side_for(_verdict(TerrainKind.BLOCKED), 0.02, gate) == side
 
     node._pose_xy += np.array([1.21, 0.0])
     for _ in range(101):
-        released = node._barrier_escape_side_for(
-            _verdict(TerrainKind.BLOCKED), 0.02, gate
-        )
+        released = node._barrier_escape_side_for(_verdict(TerrainKind.BLOCKED), 0.02, gate)
     assert released == 0
     assert node._barrier_escape_done
     assert node._barrier_escape_side_for(barrier, 0.02, gate) == 0
@@ -603,12 +670,11 @@ def test_a_short_barrier_leg_scales_the_escape_to_the_room_available(node):
     node._heightmap[8:, 5:] = -0.10
     gate = np.array([33.165, 15.180])
 
-    side = node._barrier_escape_side_for(
-        _verdict(TerrainKind.HIGH_BARRIER), 0.02, gate
-    )
+    side = node._barrier_escape_side_for(_verdict(TerrainKind.HIGH_BARRIER), 0.02, gate)
 
     assert side != 0
-    assert node._barrier_escape_required == pytest.approx(0.4 * np.linalg.norm(gate - node._pose_xy))
+    expected_escape = 0.4 * np.linalg.norm(gate - node._pose_xy)
+    assert node._barrier_escape_required == pytest.approx(expected_escape)
     assert node._barrier_escape_required < node.barrier_escape_distance
 
 

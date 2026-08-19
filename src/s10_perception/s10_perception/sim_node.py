@@ -220,9 +220,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             self._frame_qpos.append(self.data.qpos.copy())
             self._frame_waypoints.append(int(getattr(self, "track_next_index", -1)))
             self._frame_owners.append(self._actual_joint_owner)
-            displayed_policy = (
-                "WP16" if self._active_policy == "climb_policy" else "official"
-            )
+            displayed_policy = "WP16" if self._active_policy == "climb_policy" else "official"
             self._frame_policies.append(displayed_policy)
         else:
             self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
@@ -310,9 +308,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
                 if other >= 0 and int(self.model.geom_group[other]) == 0:
                     contacts[index] = 1.0
                     break
-        return np.column_stack((self.data.xpos[self.wheel_body_ids], contacts)).astype(
-            np.float32
-        )
+        return np.column_stack((self.data.xpos[self.wheel_body_ids], contacts)).astype(np.float32)
 
     def _publish_odometry(self, stamp) -> None:
         msg = Odometry()

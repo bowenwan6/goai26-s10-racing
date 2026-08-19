@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 import numpy as np
+import pytest
 
 from s10_auto_nav.waypoints import Waypoint
 

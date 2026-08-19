@@ -134,6 +134,8 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("score_radius", 0.18)
         self.declare_parameter("max_forward", PursuitGains.max_forward)
         self.declare_parameter("terrain_max_forward", PursuitGains.max_forward)
+        self.declare_parameter("waypoint_speed_limit_indices", [16, 24, 25, 26, 27, 28, 29, 31, 32])
+        self.declare_parameter("waypoint_speed_limit_values", [0.7] * 9)
         # A populated default makes rclpy declare INTEGER_ARRAY. An empty Python list is
         # inferred as BYTE_ARRAY and rejects the integer YAML override before startup.
         self.declare_parameter("fast_flat_waypoints", [2, 10, 14, 22])
@@ -145,8 +147,15 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("max_lateral", PursuitGains.max_lateral)
         self.declare_parameter("max_yaw_rate", PursuitGains.max_yaw_rate)
         self.declare_parameter("lookahead", PursuitGains.lookahead)
+        self.declare_parameter("lookahead_speed_gain", PursuitGains.lookahead_speed_gain)
         self.declare_parameter("yaw_gain", PursuitGains.yaw_gain)
+        self.declare_parameter("lateral_gain", PursuitGains.lateral_gain)
         self.declare_parameter("pivot_threshold_deg", math.degrees(PursuitGains.pivot_threshold))
+        self.declare_parameter("align_falloff_deg", math.degrees(PursuitGains.align_falloff))
+        self.declare_parameter("min_speed_fraction", PursuitGains.min_speed_fraction)
+        self.declare_parameter("forward_slew", PursuitGains.forward_slew)
+        self.declare_parameter("lateral_slew", PursuitGains.lateral_slew)
+        self.declare_parameter("yaw_slew", PursuitGains.yaw_slew)
         self.declare_parameter("corner_retreat_waypoints", [26, 27])
         self.declare_parameter("corner_retreat_distance", 0.7)
         self.declare_parameter("corner_retreat_speed", 0.3)
@@ -226,18 +235,36 @@ class WaypointFollowerNode(Node):
                 max_lateral=float(self.get_parameter("max_lateral").value),
                 max_yaw_rate=float(self.get_parameter("max_yaw_rate").value),
                 lookahead=float(self.get_parameter("lookahead").value),
+                lookahead_speed_gain=float(self.get_parameter("lookahead_speed_gain").value),
                 yaw_gain=float(self.get_parameter("yaw_gain").value),
+                lateral_gain=float(self.get_parameter("lateral_gain").value),
                 pivot_threshold=math.radians(
                     float(self.get_parameter("pivot_threshold_deg").value)
                 ),
+                align_falloff=math.radians(float(self.get_parameter("align_falloff_deg").value)),
+                min_speed_fraction=float(self.get_parameter("min_speed_fraction").value),
+                forward_slew=float(self.get_parameter("forward_slew").value),
+                lateral_slew=float(self.get_parameter("lateral_slew").value),
+                yaw_slew=float(self.get_parameter("yaw_slew").value),
                 brake_distance=_optional_positive(self.get_parameter("brake_distance").value),
             )
         )
         self.flat_brake_distance = self.controller.gains.brake_distance
         self.fast_flat_forward = self.controller.gains.max_forward
-        self.terrain_max_forward = float(
-            self.get_parameter("terrain_max_forward").value
-        )
+        self.terrain_max_forward = float(self.get_parameter("terrain_max_forward").value)
+        speed_limit_indices = [
+            int(value) for value in self.get_parameter("waypoint_speed_limit_indices").value
+        ]
+        speed_limit_values = [
+            float(value) for value in self.get_parameter("waypoint_speed_limit_values").value
+        ]
+        if len(speed_limit_indices) != len(speed_limit_values):
+            raise ValueError(
+                "waypoint_speed_limit_values must contain one speed per waypoint index"
+            )
+        if any(value <= 0.0 for value in speed_limit_values):
+            raise ValueError("waypoint speed limits must be positive")
+        self.waypoint_speed_limits = dict(zip(speed_limit_indices, speed_limit_values, strict=True))
         self.fast_flat_waypoints = {
             int(value) for value in self.get_parameter("fast_flat_waypoints").value
         }
@@ -262,9 +289,7 @@ class WaypointFollowerNode(Node):
         self.corner_retreat_waypoints = {
             int(value) for value in self.get_parameter("corner_retreat_waypoints").value
         }
-        self.corner_retreat_distance = float(
-            self.get_parameter("corner_retreat_distance").value
-        )
+        self.corner_retreat_distance = float(self.get_parameter("corner_retreat_distance").value)
         self.corner_retreat_speed = float(self.get_parameter("corner_retreat_speed").value)
         self.corner_align_tolerance = math.radians(
             float(self.get_parameter("corner_align_tolerance_deg").value)
@@ -275,18 +300,10 @@ class WaypointFollowerNode(Node):
         self.committed_runup_waypoints = {
             int(value) for value in self.get_parameter("committed_runup_waypoints").value
         }
-        self.committed_runup_trigger = float(
-            self.get_parameter("committed_runup_trigger").value
-        )
-        self.committed_runup_distance = float(
-            self.get_parameter("committed_runup_distance").value
-        )
-        self.committed_runup_timeout = float(
-            self.get_parameter("committed_runup_timeout").value
-        )
-        hint_waypoints = [
-            int(value) for value in self.get_parameter("route_hint_waypoints").value
-        ]
+        self.committed_runup_trigger = float(self.get_parameter("committed_runup_trigger").value)
+        self.committed_runup_distance = float(self.get_parameter("committed_runup_distance").value)
+        self.committed_runup_timeout = float(self.get_parameter("committed_runup_timeout").value)
+        hint_waypoints = [int(value) for value in self.get_parameter("route_hint_waypoints").value]
         hint_values = [float(value) for value in self.get_parameter("route_hint_points").value]
         if len(hint_values) != 2 * len(hint_waypoints):
             raise ValueError("route_hint_points must contain one XY pair per route waypoint")
@@ -299,9 +316,7 @@ class WaypointFollowerNode(Node):
         self.route_hint_max_tilt = math.radians(
             float(self.get_parameter("route_hint_max_tilt_deg").value)
         )
-        self.route_hint_stable_hold = float(
-            self.get_parameter("route_hint_stable_hold").value
-        )
+        self.route_hint_stable_hold = float(self.get_parameter("route_hint_stable_hold").value)
 
         self.stall_speed = float(self.get_parameter("stall_speed").value)
         self.stall_timeout = float(self.get_parameter("stall_timeout").value)
@@ -309,16 +324,10 @@ class WaypointFollowerNode(Node):
         self.recovery_duration = float(self.get_parameter("recovery_duration").value)
         self.step_commit = StepCommit(
             StepCommitConfig(
-                pitch_threshold=math.radians(
-                    float(self.get_parameter("climb_pitch_deg").value)
-                ),
+                pitch_threshold=math.radians(float(self.get_parameter("climb_pitch_deg").value)),
                 speed=float(self.get_parameter("climb_speed").value),
-                progress_distance=float(
-                    self.get_parameter("climb_progress_distance").value
-                ),
-                progress_window=float(
-                    self.get_parameter("climb_progress_window").value
-                ),
+                progress_distance=float(self.get_parameter("climb_progress_distance").value),
+                progress_window=float(self.get_parameter("climb_progress_window").value),
                 level_dwell=float(self.get_parameter("climb_level_dwell").value),
                 yaw_rate=float(self.get_parameter("climb_yaw_rate").value),
                 timeout=float(self.get_parameter("climb_timeout").value),
@@ -330,9 +339,7 @@ class WaypointFollowerNode(Node):
         self.avoidance_enabled = bool(self.get_parameter("avoidance_enabled").value)
         self.planner = LocalPlanner(
             AvoidanceConfig(
-                max_deviation=math.radians(
-                    float(self.get_parameter("max_deviation_deg").value)
-                ),
+                max_deviation=math.radians(float(self.get_parameter("max_deviation_deg").value)),
                 corridor_half_width=float(self.get_parameter("corridor_half_width").value),
                 probe_distance=float(self.get_parameter("probe_distance").value),
                 blocked_distance=float(self.get_parameter("blocked_distance").value),
@@ -341,30 +348,18 @@ class WaypointFollowerNode(Node):
                 barrier_escape_angle=math.radians(
                     float(self.get_parameter("barrier_escape_angle_deg").value)
                 ),
-                target_clearance_margin=float(
-                    self.get_parameter("target_clearance_margin").value
-                ),
+                target_clearance_margin=float(self.get_parameter("target_clearance_margin").value),
             )
         )
         self.blocked_timeout = float(self.get_parameter("blocked_timeout").value)
-        self.barrier_escape_distance = float(
-            self.get_parameter("barrier_escape_distance").value
-        )
-        self.barrier_bypass_forward = float(
-            self.get_parameter("barrier_bypass_forward").value
-        )
+        self.barrier_escape_distance = float(self.get_parameter("barrier_escape_distance").value)
+        self.barrier_bypass_forward = float(self.get_parameter("barrier_bypass_forward").value)
         self.barrier_bypass_gate_standoff = float(
             self.get_parameter("barrier_bypass_gate_standoff").value
         )
-        self.barrier_bypass_lateral = float(
-            self.get_parameter("barrier_bypass_lateral").value
-        )
-        self.barrier_clear_dwell = float(
-            self.get_parameter("barrier_clear_dwell").value
-        )
-        self.barrier_detour_attempts = int(
-            self.get_parameter("barrier_detour_attempts").value
-        )
+        self.barrier_bypass_lateral = float(self.get_parameter("barrier_bypass_lateral").value)
+        self.barrier_clear_dwell = float(self.get_parameter("barrier_clear_dwell").value)
+        self.barrier_detour_attempts = int(self.get_parameter("barrier_detour_attempts").value)
         self.max_step = float(self.get_parameter("max_step").value)
         self.max_drop = float(self.get_parameter("max_drop").value)
 
@@ -583,9 +578,7 @@ class WaypointFollowerNode(Node):
             return
 
         was_committing = self._committing
-        bypassing_barrier = (
-            self._barrier_side != 0 or self._barrier_bypass_target is not None
-        )
+        bypassing_barrier = self._barrier_side != 0 or self._barrier_bypass_target is not None
         committed_terrain = self.course.target.index in self.committed_terrain_waypoints
         suppressing_step_commit = bypassing_barrier and not self._barrier_final_phase
         if suppressing_step_commit or committed_terrain:
@@ -661,9 +654,7 @@ class WaypointFollowerNode(Node):
             self._backed_off = False
             self._note_barrier_detour_failed(verdict)
 
-        climbing_barrier = (
-            False if bypassing_barrier else self._climbing_a_barrier(verdict)
-        )
+        climbing_barrier = False if bypassing_barrier else self._climbing_a_barrier(verdict)
         charging = verdict.drive_at_it or climbing_barrier or committed_terrain
         if charging:
             # The lidar return and the rise underneath it are the same object, so steering
@@ -677,9 +668,7 @@ class WaypointFollowerNode(Node):
             target, scale = carrot, 1.0
             self._blocked_for = 0.0
         else:
-            barrier_side = self._barrier_escape_side_for(
-                verdict, dt, self.course.target.xy
-            )
+            barrier_side = self._barrier_escape_side_for(verdict, dt, self.course.target.xy)
             avoidance_carrot = carrot
             if barrier_side == 0 and self._barrier_bypass_target is not None:
                 if np.linalg.norm(self._pose_xy - self._barrier_bypass_target) <= 0.35:
@@ -802,30 +791,35 @@ class WaypointFollowerNode(Node):
         returns the accepted 0.7 m/s terrain ceiling before the next command is computed.
         """
         course_target = self.course.target
+        terrain_limit = (
+            self.terrain_max_forward
+            if course_target is None
+            else self.waypoint_speed_limits.get(course_target.index, self.terrain_max_forward)
+        )
         if course_target is None or course_target.index not in self.fast_flat_waypoints:
-            return self.terrain_max_forward
+            return terrain_limit
         if gate_distance < self.fast_flat_min_gate_distance:
-            return self.terrain_max_forward
+            return terrain_limit
         if self._strategy_mode not in {"", "navigate"}:
-            return self.terrain_max_forward
+            return terrain_limit
         if verdict.kind not in {TerrainKind.FLAT, TerrainKind.BLOCKED}:
-            return self.terrain_max_forward
+            return terrain_limit
         if lidar_scale < 0.999 or terrain_scale < 0.999:
-            return self.terrain_max_forward
+            return terrain_limit
         if np.linalg.norm(np.asarray(target) - np.asarray(carrot)) > 0.05:
-            return self.terrain_max_forward
+            return terrain_limit
         if abs(self._tilt) > self.fast_flat_max_tilt:
-            return self.terrain_max_forward
+            return terrain_limit
         if abs(self._pitch) > self.fast_flat_max_pitch:
-            return self.terrain_max_forward
+            return terrain_limit
 
         delta = np.asarray(target, float) - self._pose_xy
         heading_error = wrap_angle(math.atan2(delta[1], delta[0]) - self._yaw)
         cross_track = -math.sin(self._yaw) * delta[0] + math.cos(self._yaw) * delta[1]
         if abs(heading_error) > self.fast_flat_max_heading:
-            return self.terrain_max_forward
+            return terrain_limit
         if abs(cross_track) > self.fast_flat_max_cross_track:
-            return self.terrain_max_forward
+            return terrain_limit
         return self.fast_flat_forward
 
     def _log_state(
@@ -1054,9 +1048,7 @@ class WaypointFollowerNode(Node):
         # fell from the east edge. Keep the correction deliberately small: enough to hold
         # the centreline over several seconds, not enough to scrub a wheel sideways on the
         # final lip (the failure StepCommit's zero-lateral rule protects against).
-        lateral = float(
-            np.clip(self.controller.gains.lateral_gain * cross_track, -0.1, 0.1)
-        )
+        lateral = float(np.clip(self.controller.gains.lateral_gain * cross_track, -0.1, 0.1))
         self._committed_runup_elapsed += dt
 
         if self._committed_runup_phase == "back":
@@ -1162,9 +1154,7 @@ class WaypointFollowerNode(Node):
         self._barrier_corner_phase = False
         self._barrier_final_phase = False
 
-    def _barrier_escape_side_for(
-        self, verdict: TerrainVerdict, dt: float, gate: np.ndarray
-    ) -> int:
+    def _barrier_escape_side_for(self, verdict: TerrainVerdict, dt: float, gate: np.ndarray) -> int:
         """Return a stable escape side through brief terrain-classifier label changes.
 
         The measured waypoint-24 approach alternates HIGH_BARRIER and BLOCKED about once a
@@ -1191,7 +1181,8 @@ class WaypointFollowerNode(Node):
                 # through later yaw changes and classifier jitter.
                 delta = gate - self._pose_xy
                 gate_bearing = math.atan2(delta[1], delta[0])
-                if abs(wrap_angle(gate_bearing - self._yaw)) > self.controller.gains.pivot_threshold:
+                gate_heading_error = abs(wrap_angle(gate_bearing - self._yaw))
+                if gate_heading_error > self.controller.gains.pivot_threshold:
                     return 0
                 self._barrier_side = self.planner.barrier_escape_side(self._heightmap)
                 if self._barrier_side:
@@ -1202,9 +1193,7 @@ class WaypointFollowerNode(Node):
                             self.barrier_bypass_lateral,
                             max(0.5, 0.4 * gate_distance),
                         )
-                        self._barrier_escape_required = min(
-                            self.barrier_escape_distance, lateral
-                        )
+                        self._barrier_escape_required = min(self.barrier_escape_distance, lateral)
                         forward = min(
                             self.barrier_bypass_forward,
                             max(0.0, gate_distance - self.barrier_bypass_gate_standoff),
@@ -1212,9 +1201,7 @@ class WaypointFollowerNode(Node):
                         along = delta / gate_distance
                         left = np.array([-along[1], along[0]])
                         self._barrier_bypass_target = (
-                            self._pose_xy
-                            + forward * along
-                            + self._barrier_side * lateral * left
+                            self._pose_xy + forward * along + self._barrier_side * lateral * left
                         )
                         self._barrier_corner_target = (
                             gate - self.barrier_bypass_gate_standoff * along
@@ -1304,11 +1291,7 @@ class WaypointFollowerNode(Node):
         controller still brakes into a gate it is approaching rather than charging a point
         held permanently a full lookahead away.
         """
-        if (
-            not self.avoidance_enabled
-            or self._ranges is None
-            or self._scan_age > SENSOR_TIMEOUT_S
-        ):
+        if not self.avoidance_enabled or self._ranges is None or self._scan_age > SENSOR_TIMEOUT_S:
             self._blocked_for = 0.0
             return carrot, 1.0
 
@@ -1330,9 +1313,7 @@ class WaypointFollowerNode(Node):
         self._blocked_for = self._blocked_for + dt if steering.blocked else 0.0
 
         heading = self._yaw + steering.heading
-        redirected = self._pose_xy + distance * np.array(
-            [math.cos(heading), math.sin(heading)]
-        )
+        redirected = self._pose_xy + distance * np.array([math.cos(heading), math.sin(heading)])
         return redirected, steering.speed_scale
 
     def _classify_terrain(self, dt: float) -> TerrainVerdict:
@@ -1519,9 +1500,7 @@ class WaypointFollowerNode(Node):
         if self._stalled_for >= self.stall_timeout:
             self._trip_recovery(f"Stalled for {self._stalled_for:.1f}s", gate)
         elif self._no_progress_for >= self.progress_timeout:
-            self._trip_recovery(
-                f"No progress for {self._no_progress_for:.1f}s while driving", gate
-            )
+            self._trip_recovery(f"No progress for {self._no_progress_for:.1f}s while driving", gate)
 
     def _trip_recovery(self, why: str, gate: float | None) -> None:
         """Hand the follower to the recovery command and restart both watchdog clocks."""

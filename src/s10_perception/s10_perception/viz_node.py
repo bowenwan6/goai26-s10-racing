@@ -87,9 +87,7 @@ class PerceptionVizNode(Node):
         )
 
         self.create_subscription(Odometry, "/ground_truth/odom", self._odom_callback, 20)
-        self.create_subscription(
-            Float32MultiArray, "/perception/lidar", self._lidar_callback, 5
-        )
+        self.create_subscription(Float32MultiArray, "/perception/lidar", self._lidar_callback, 5)
         self.create_subscription(
             Float32MultiArray, "/perception/heightmap", self._heightmap_callback, 5
         )
@@ -125,9 +123,7 @@ class PerceptionVizNode(Node):
         base.transform.rotation = q
 
         # Same origin, heading only: yaw survives, pitch and roll are dropped.
-        yaw = math.atan2(
-            2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
-        )
+        yaw = math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
         level = TransformStamped()
         level.header.stamp = stamp
         level.header.frame_id = WORLD_FRAME

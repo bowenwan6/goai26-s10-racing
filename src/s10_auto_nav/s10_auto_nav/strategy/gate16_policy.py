@@ -23,14 +23,12 @@ from s10_auto_nav.strategy.policy import (
     PolicyStatus,
 )
 
-
 GATE16_ARMED_MODES = frozenset({"climb_ready", "climb", "verify_clear"})
+
+
 def gate16_should_own(policy, mode: str, *, prewarm_ready: bool = False) -> bool:
     """Own only after the router proves the complete moving-entry envelope."""
-    return bool(
-        getattr(policy, "is_gate16_policy", False)
-        and str(mode) in GATE16_ARMED_MODES
-    )
+    return bool(getattr(policy, "is_gate16_policy", False) and str(mode) in GATE16_ARMED_MODES)
 
 
 def gate16_owner_request(
@@ -46,10 +44,15 @@ def gate16_owner_request(
     physical history. ``gate16_climb`` takes ownership and arms residual together only after
     the router proves the moving-entry contract.
     """
-    if getattr(policy, "is_gate16_policy", False) and str(mode) in {
-        "approach",
-        "align",
-    } and not prewarm_ready:
+    if (
+        getattr(policy, "is_gate16_policy", False)
+        and str(mode)
+        in {
+            "approach",
+            "align",
+        }
+        and not prewarm_ready
+    ):
         # Build a warm candidate without taking actuator ownership before staging.
         return "gate16_shadow"
     if not gate16_should_own(policy, mode, prewarm_ready=prewarm_ready):
@@ -137,9 +140,7 @@ class StableGate16Policy:
         normal = np.asarray(self.config.obstacle_normal, dtype=float)
         return float(np.dot(np.asarray(observation.linear_velocity[:2], dtype=float), normal))
 
-    def _select_profile(
-        self, speed_mps: float, yaw_deg: float
-    ) -> _CommandProfile | None:
+    def _select_profile(self, speed_mps: float, yaw_deg: float) -> _CommandProfile | None:
         candidates: list[tuple[float, _CommandProfile]] = []
         for profile in self._profiles:
             speed_error = abs(speed_mps - profile.entry_speed_mps)
@@ -165,8 +166,7 @@ class StableGate16Policy:
         normal = np.asarray(self.config.obstacle_normal, dtype=float)
         forward_margin = (wheels[:2, :2] - edge) @ normal
         height_threshold = (
-            self.config.deck_z
-            + self.config.front_height_fraction * self.config.wheel_radius
+            self.config.deck_z + self.config.front_height_fraction * self.config.wheel_radius
         )
         return bool(
             np.all(forward_margin >= self.config.front_clearance)
@@ -193,9 +193,7 @@ class StableGate16Policy:
         self._reason = "Gate16 v1.5 actor requested (source 216b77a)"
         self._entry_speed = self._entry_speed_mps(observation)
         self._entry_yaw_deg_value = self._entry_yaw_deg(observation)
-        self._profile = self._select_profile(
-            self._entry_speed, self._entry_yaw_deg_value
-        )
+        self._profile = self._select_profile(self._entry_speed, self._entry_yaw_deg_value)
         self._entry_mode = (
             "fast_profile"
             if self._profile is not None
@@ -215,11 +213,14 @@ class StableGate16Policy:
 
     def step(self, observation: PolicyObservation) -> PolicyAction:
         self._last_t = float(observation.t)
-        if self._profile is not None and self._phase == "entry":
-            if self._both_front_supported(observation):
-                self._phase = "settle"
-                self._settle_steps = 0
-                print("Gate16 command profile phase: settle", flush=True)
+        if (
+            self._profile is not None
+            and self._phase == "entry"
+            and self._both_front_supported(observation)
+        ):
+            self._phase = "settle"
+            self._settle_steps = 0
+            print("Gate16 command profile phase: settle", flush=True)
         reported_phase = self._phase
         if self._phase == "settle":
             command_forward = self._profile.settle_forward_mps

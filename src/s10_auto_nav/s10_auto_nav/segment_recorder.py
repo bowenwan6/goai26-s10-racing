@@ -161,8 +161,9 @@ class SegmentRecorder(Node):
         # ships at the project's 0.18 m internal acceptance radius too.
         #
         # score_radius decides whether the gate was taken by this stricter local validation.
-        # The official simulator independently retains 0.20 m. Run 18_19_baseline_seed0 ended "reached the end
-        # waypoint" with its closest approach to waypoint 19 at 0.348 m, which is not a point.
+        # The official simulator independently retains 0.20 m. Run 18_19_baseline_seed0 ended
+        # "reached the end waypoint" with its closest approach to waypoint 19 at 0.348 m,
+        # which is not a point.
         # Every "reached" recorded before this was the 0.35 m answer wearing the 0.2 m name.
         self.declare_parameter("reach_radius", 0.18)
         self.declare_parameter("score_radius", 0.18)
@@ -185,9 +186,7 @@ class SegmentRecorder(Node):
         # Ours is the real course's, because that is what every other artefact is indexed by.
         self.targets = [w.position for w in self.course.waypoints]
         self.goal = np.asarray(self.targets[-1], dtype=float)
-        self._waypoint_evidence = OrderedWaypointEvidence(
-            self.course.waypoints, self.score_radius
-        )
+        self._waypoint_evidence = OrderedWaypointEvidence(self.course.waypoints, self.score_radius)
 
         self._odom = None
         self._cmd = Twist()
@@ -286,9 +285,7 @@ class SegmentRecorder(Node):
         active = str(status.get("active_policy", ""))
         self._active_policy = "WP16" if active == "climb_policy" else (active or "official")
         self._joint_owner = str(status.get("joint_owner", self._joint_owner))
-        self._joint_owner_actual = str(
-            status.get("joint_owner_actual", self._joint_owner_actual)
-        )
+        self._joint_owner_actual = str(status.get("joint_owner_actual", self._joint_owner_actual))
         self._router_reason = str(status.get("reason", self._router_reason))
 
     def _on_transition(self, msg: String) -> None:
