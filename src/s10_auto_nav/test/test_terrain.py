@@ -272,9 +272,7 @@ def test_the_same_rise_across_the_path_is_not_something_to_steer_around():
 
 def test_a_climbable_rise_across_the_path_is_still_a_staircase():
     """Climbing must still work: 0.14 is inside the band the scored legs actually used."""
-    stairs = replace(
-        WAYPOINT_24_PILLAR, relief_rise=0.14, rise_fraction=1.0, obstacle_distance=1.0
-    )
+    stairs = replace(WAYPOINT_24_PILLAR, relief_rise=0.14, rise_fraction=1.0, obstacle_distance=1.0)
     verdict = settle(TerrainClassifier(), stairs)
     assert verdict.kind is TerrainKind.STAIRS
     assert verdict.drive_at_it

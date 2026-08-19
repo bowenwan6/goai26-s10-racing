@@ -79,7 +79,7 @@ strategy_router:
     target_entry_speed: 0.25
     # The official actor owns the final runway. This value is its moving-entry command;
     # measured speed remains independently gated at 0.23--0.27 m/s.
-    # This does not change the tested global 0.7 speed limit.
+    # This does not bypass the follower's measured terrain and waypoint speed schedule.
     gate16_prewarm_forward: 0.25
     # Reserve 0.25 m after staging for the official actor to establish moving entry.
     # Gate16 shadow-evaluates but does not own until the full entry envelope is met.

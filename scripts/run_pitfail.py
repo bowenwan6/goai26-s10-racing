@@ -35,7 +35,7 @@ SHUTDOWN_GRACE = 8.0
 
 
 def _run_id(args, obstacle: dict, seed: int) -> str:
-    radius_tag = f"r{int(round(args.advance_radius * 100)):03d}"
+    radius_tag = f"r{round(args.advance_radius * 100):03d}"
     extra = f"_{args.tag}" if args.tag else ""
     return f"{args.experiment}_{obstacle['id']}_{radius_tag}{extra}_seed{seed:03d}"
 

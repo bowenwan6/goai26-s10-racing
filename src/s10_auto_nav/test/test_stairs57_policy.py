@@ -124,9 +124,7 @@ def test_segment_policy_owns_until_strict_target_then_waits_for_official_ack():
     out = router.tick(reached, (0.7, 0.0, 0.0), observation_from_state(reached))
     assert (router.mode, out.source) == (Mode.HANDOFF, Source.ROUTER)
     acknowledged = _state(1.02, segment=(19, 20), owner="official")
-    out = router.tick(
-        acknowledged, (0.7, 0.0, 0.0), observation_from_state(acknowledged)
-    )
+    out = router.tick(acknowledged, (0.7, 0.0, 0.0), observation_from_state(acknowledged))
     assert (router.mode, out.source) == (Mode.NAVIGATE, Source.NAV)
 
 
@@ -519,9 +517,7 @@ def test_near_target_upper_platform_hands_off_before_overshoot():
         segment_target_heading_error=math.pi,
         segment_target_z=2.2,
     )
-    out = router.tick(
-        overshot, (0.7, 0.0, 0.0), observation_from_state(overshot)
-    )
+    out = router.tick(overshot, (0.7, 0.0, 0.0), observation_from_state(overshot))
     assert out.command == pytest.approx((-0.20, 0.0, 0.70))
 
     fast_after_handoff = _state(
@@ -541,9 +537,7 @@ def test_near_target_upper_platform_hands_off_before_overshoot():
 
 
 def test_near_target_platform_requires_a_sustained_clearance_dwell():
-    policy = Stairs57Policy(
-        Stairs57Config(near_target_settle_distance=0.5, completion_hold=0.04)
-    )
+    policy = Stairs57Policy(Stairs57Config(near_target_settle_distance=0.5, completion_hold=0.04))
     wheels = np.array(
         [
             [27.0, 30.2, 2.25],

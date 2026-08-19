@@ -257,5 +257,5 @@ def test_the_pose_lands_on_the_storey_it_was_given(two_storey):
 def test_the_refusal_names_the_storey_it_could_not_find(two_storey):
     """A run that dies has to say which of the several right answers it wanted."""
     model, data = two_storey
-    with pytest.raises(ValueError, match="storey at z=1.500"):
+    with pytest.raises(ValueError, match=r"storey at z=1\.500"):
         SpawnOverride(x=0.0, y=0.0, yaw=0.0, z_ref=1.5).pose(model, data, JOINT_INIT)

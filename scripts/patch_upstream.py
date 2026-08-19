@@ -72,11 +72,11 @@ def verify_stairs57_assets() -> None:
     actual = hashlib.sha256(model.read_bytes()).hexdigest()
     if actual != manifest["sha256"]:
         raise SystemExit(
-            f"stairs57 asset hash mismatch for {model.name}: "
-            f"{actual} != {manifest['sha256']}"
+            f"stairs57 asset hash mismatch for {model.name}: {actual} != {manifest['sha256']}"
         )
     if manifest["observation_dim"] != 57 or manifest["action_dim"] != 16:
         raise SystemExit("stairs57 manifest must retain the official 57D->16D contract")
+
 
 #: Repository-owned integration files and essential frozen policy assets. Binary files are
 #: copied byte-for-byte and verified by the Gate16 runner before use.
@@ -87,15 +87,12 @@ FILES = {
     / "interface/user_command/joint_command_owner.hpp",
     REPO_ROOT / "integration/gate16_perception_buffer.hpp": SDK
     / "run_policy/gate16_perception_buffer.hpp",
-    REPO_ROOT / "integration/gate16_skill_gate.hpp": SDK
-    / "run_policy/gate16_skill_gate.hpp",
+    REPO_ROOT / "integration/gate16_skill_gate.hpp": SDK / "run_policy/gate16_skill_gate.hpp",
     REPO_ROOT / "integration/gate16_policy_symmetry.hpp": SDK
     / "run_policy/gate16_policy_symmetry.hpp",
-    REPO_ROOT / "integration/gate16_policy_runner.hpp": SDK
-    / "run_policy/gate16_policy_runner.hpp",
+    REPO_ROOT / "integration/gate16_policy_runner.hpp": SDK / "run_policy/gate16_policy_runner.hpp",
     REPO_ROOT / "policy/gate16/policy.onnx": SDK / "policy/gate16/policy.onnx",
-    REPO_ROOT / "policy/gate16/climb_residual.onnx": SDK
-    / "policy/gate16/climb_residual.onnx",
+    REPO_ROOT / "policy/gate16/climb_residual.onnx": SDK / "policy/gate16/climb_residual.onnx",
     REPO_ROOT / "policy/gate16/climb_policy_manifest.json": SDK
     / "policy/gate16/climb_policy_manifest.json",
     REPO_ROOT / "policy/gate16/front_tuck_command_profiles.json": SDK
@@ -258,7 +255,7 @@ EDITS = [
         path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
         anchor=(
             "                s10_policy_ = std::make_shared<S10PolicyRunner>"
-            "(\"s10_policy\", model_path.string());\n"
+            '("s10_policy", model_path.string());\n'
         ),
         addition="""                auto gate16_path = fs::canonical(
                     base / ".." / ".." / "policy" / "gate16" / "policy.onnx");
@@ -271,7 +268,7 @@ EDITS = [
         path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
         anchor=(
             "                gate16_policy_ = std::make_shared<Gate16PolicyRunner>(\n"
-            "                    \"gate16_stable\", gate16_path.string());\n"
+            '                    "gate16_stable", gate16_path.string());\n'
         ),
         addition="""                auto stairs57_path = fs::canonical(
                     base / ".." / ".." / "policy" / "stairs57" / "policy.onnx");

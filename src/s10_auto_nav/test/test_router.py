@@ -25,9 +25,17 @@ from s10_auto_nav.strategy.router import (
     RouterConfig,
     Source,
     observation_from_state,
+    required_sensors_started,
 )
 
 SEGMENT = (15, 16)
+
+
+def test_initial_sensor_readiness_distinguishes_never_received_from_runtime_stale():
+    assert not required_sensors_started(0.0, 0.0, 0.0)
+    assert not required_sensors_started(1.0, 0.0, 1.0)
+    assert not required_sensors_started(1.0, math.inf, 1.0)
+    assert required_sensors_started(1.0, 1.1, 1.2)
 
 
 def state(t: float, **kw) -> RobotState:

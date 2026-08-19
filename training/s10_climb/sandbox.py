@@ -46,18 +46,34 @@ TRACK_XML = Path(
 SIM_TIMESTEP = 0.001
 
 #: Upstream's standing pose, JOINT_INIT["S10"] from mujoco_simulation_ros2.py.
-JOINT_INIT = np.array([-0.438, -1.16, 2.76, 0.0,
-                       0.438, -1.16, 2.76, 0.0,
-                       -0.438, 1.16, -2.76, 0.0,
-                       0.438, 1.16, -2.76, 0.0], dtype=np.float64)
+JOINT_INIT = np.array(
+    [
+        -0.438,
+        -1.16,
+        2.76,
+        0.0,
+        0.438,
+        -1.16,
+        2.76,
+        0.0,
+        -0.438,
+        1.16,
+        -2.76,
+        0.0,
+        0.438,
+        1.16,
+        -2.76,
+        0.0,
+    ],
+    dtype=np.float64,
+)
 
 #: Gains the policy runner deploys, per leg: hipx, hipy, knee, wheel.
 POLICY_KP = np.tile([80.0, 80.0, 80.0, 0.0], 4)
 POLICY_KD = np.tile([2.0, 2.0, 2.0, 0.6], 4)
 
 LEGS = ("fl", "fr", "hl", "hr")
-JOINT_NAMES = [f"{leg}_{part}_joint"
-               for leg in LEGS for part in ("hipx", "hipy", "knee", "wheel")]
+JOINT_NAMES = [f"{leg}_{part}_joint" for leg in LEGS for part in ("hipx", "hipy", "knee", "wheel")]
 
 
 def gains(kp: float, kd: float | None = None) -> tuple[np.ndarray, np.ndarray]:
@@ -153,5 +169,5 @@ class Sandbox:
 
     def hold(self, seconds: float, pos_cmd, **kwargs) -> None:
         """Track one fixed target for a while."""
-        for _ in range(int(round(seconds / self.model.opt.timestep))):
+        for _ in range(round(seconds / self.model.opt.timestep)):
             self.step(pos_cmd, **kwargs)

@@ -110,21 +110,139 @@ def test_steers_around_a_wall_across_the_goal_bearing():
 #: the pose the robot arrives at after gate 10. Facing south, having come down the leg
 #: from gate 10; the goal is gate 12, roughly west.
 GATE11_FACING_SOUTH = [
-    12.0, 12.0, 2.77, 1.86, 1.41, 1.15, 0.97, 0.85, 0.76, 0.70, 0.65, 0.61, 0.59, 0.62,
-    0.93, 1.85, 12.0, 12.0, 12.0, 12.0, 12.0, 3.32, 3.32, 12.0, 12.0, 12.0, 12.0, 12.0,
-    12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 2.20, 2.26, 12.0,
-    12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 1.68, 1.80,
-    12.0, 12.0, 12.0, 12.0, 3.92, 12.0, 12.0, 12.0,
+    12.0,
+    12.0,
+    2.77,
+    1.86,
+    1.41,
+    1.15,
+    0.97,
+    0.85,
+    0.76,
+    0.70,
+    0.65,
+    0.61,
+    0.59,
+    0.62,
+    0.93,
+    1.85,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    3.32,
+    3.32,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    2.20,
+    2.26,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    1.68,
+    1.80,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    3.92,
+    12.0,
+    12.0,
+    12.0,
 ]
 
 #: The same spot after turning to face the goal. The block's east face is 0.34 m off the
 #: nose, which is what pure pursuit drove into.
 GATE11_FACING_WEST = [
-    12.0, 12.0, 12.0, 12.0, 1.91, 1.81, 10.35, 12.0, 12.0, 12.0, 12.0, 3.88, 4.01, 6.46,
-    12.0, 12.0, 12.0, 4.32, 1.75, 1.17, 0.89, 0.72, 0.61, 0.54, 0.48, 0.44, 0.41, 0.39,
-    0.37, 0.36, 0.35, 0.34, 0.34, 12.0, 12.0, 12.0, 12.0, 12.0, 3.24, 12.0, 12.0, 12.0,
-    12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 2.51,
-    2.54, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    1.91,
+    1.81,
+    10.35,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    3.88,
+    4.01,
+    6.46,
+    12.0,
+    12.0,
+    12.0,
+    4.32,
+    1.75,
+    1.17,
+    0.89,
+    0.72,
+    0.61,
+    0.54,
+    0.48,
+    0.44,
+    0.41,
+    0.39,
+    0.37,
+    0.36,
+    0.35,
+    0.34,
+    0.34,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    3.24,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    2.51,
+    2.54,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
+    12.0,
 ]
 
 BEAM_ANGLES = np.linspace(-math.pi, math.pi, N_BEAMS, endpoint=False)
@@ -277,7 +395,7 @@ def test_ground_clearance_ignores_an_overhead_deck():
     under the first arch for five minutes.
     """
     grid = np.full((13, 9), -0.42)
-    grid[-4:, :] = 1.0                     # the deck, as the sampler clips it
+    grid[-4:, :] = 1.0  # the deck, as the sampler clips it
     assert ground_clearance(grid, max_step=0.35, max_drop=0.5) == pytest.approx(1.0)
 
 
@@ -309,13 +427,13 @@ def test_ground_clearance_is_full_on_the_courses_own_steps():
 
 def test_ground_clearance_drops_for_a_step():
     grid = np.full((13, 9), -0.42)
-    grid[-3:, :] = -0.42 + 0.30            # a 0.30 m step in the far rows
+    grid[-3:, :] = -0.42 + 0.30  # a 0.30 m step in the far rows
     assert ground_clearance(grid, max_step=0.35, max_drop=0.5) < 0.9
 
 
 def test_ground_clearance_drops_for_a_hole():
     grid = np.full((13, 9), -0.42)
-    grid[-3:, :] = -1.0                    # a drop-off ahead
+    grid[-3:, :] = -1.0  # a drop-off ahead
     assert ground_clearance(grid, max_step=0.35, max_drop=0.5) < 0.9
 
 
@@ -327,22 +445,22 @@ def test_ground_clearance_ignores_a_parapet_beside_the_wheels():
     creeping alongside it.
     """
     grid = np.full((13, 9), -0.42)
-    grid[:, -1] = -0.42 + 0.55             # parapet down the right-hand edge
-    grid[:4, -2] = -0.42 + 0.79            # and its taller post behind the robot
+    grid[:, -1] = -0.42 + 0.55  # parapet down the right-hand edge
+    grid[:4, -2] = -0.42 + 0.79  # and its taller post behind the robot
     assert ground_clearance(grid, max_step=0.35, max_drop=0.5) == pytest.approx(1.0)
 
 
 def test_ground_clearance_still_brakes_for_a_step_across_the_corridor():
     """Narrowing the judged strip must not blind it to what is genuinely in the way."""
     grid = np.full((13, 9), -0.42)
-    grid[-3:, :] = -0.42 + 0.55            # spans the full width, wheels included
+    grid[-3:, :] = -0.42 + 0.55  # spans the full width, wheels included
     assert ground_clearance(grid, max_step=0.35, max_drop=0.5) < 0.9
 
 
 def test_ground_clearance_never_reaches_zero():
     """Zero is unrecoverable: a stopped robot sees a frozen height map and stays stopped."""
     grid = np.full((13, 9), -0.42)
-    grid[6:, :] = -0.42 + 0.55             # a step well past anything walkable
+    grid[6:, :] = -0.42 + 0.55  # a step well past anything walkable
     assert ground_clearance(grid, max_step=0.35, max_drop=0.5) > 0.0
 
 
@@ -371,7 +489,7 @@ def test_something_standing_beside_the_path_does_not():
     where the measured 0.20 comes from.
     """
     grid = np.full((13, 9), -0.43)
-    grid[6:, :3] = -0.43 + 0.32            # column 2 is the corridor's left-hand edge
+    grid[6:, :3] = -0.43 + 0.32  # column 2 is the corridor's left-hand edge
     relief = terrain_relief(grid)
     assert relief.rise > 0.12, "the rise is real; it is the width that is wrong"
     assert relief.rise_fraction <= 0.4

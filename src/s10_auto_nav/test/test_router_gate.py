@@ -94,7 +94,7 @@ def hold(router: Router, *, seconds: float, t0: float = 0.0, **kw) -> list:
     """Feed one unchanging state for ``seconds``; return every output."""
     outs = []
     t = t0
-    for _ in range(int(round(seconds / DT))):
+    for _ in range(round(seconds / DT)):
         s = state(t, **kw)
         outs.append(router.tick(s, NAV, observation_from_state(s)))
         t += DT
@@ -105,7 +105,7 @@ def align_dwell(router: Router, **kw) -> float:
     """Seconds spent in ALIGN before the gate opened; ``inf`` if it never did."""
     entered = None
     t = 0.0
-    for _ in range(int(round(RouterConfig.align_timeout / DT))):
+    for _ in range(round(RouterConfig.align_timeout / DT)):
         s = state(t, **kw)
         router.tick(s, NAV, observation_from_state(s))
         if entered is None and router.mode is Mode.ALIGN:
