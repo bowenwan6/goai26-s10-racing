@@ -109,7 +109,7 @@ def _write_timing_files(args, trace, timing: np.ndarray, qpos_count: int) -> Non
     concat.write_text("\n".join(lines) + "\n")
     elapsed = 0.0 if not indices else timing[indices[-1]] - timing[indices[0]]
     print(f"wrote {concat} for {elapsed:.3f}s of {args.timing} time", flush=True)
-    if args.timing == "wall" and args.stride == 1:
+    if args.timing != "none":
         overlay = args.out / "overlay_filters.txt"
         _write_overlay_filter(trace, timing, overlay, args.overlay_font)
         print(f"wrote {overlay}", flush=True)
