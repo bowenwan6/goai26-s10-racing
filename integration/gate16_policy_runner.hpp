@@ -111,14 +111,30 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
   };
   std::vector<FrontTuckProfile> command_profiles_;
   int active_profile_index_ = -1;
-  int front_support_frames_ = 0;
+  int left_front_support_frames_ = 0;
+  int right_front_support_frames_ = 0;
   int settle_frames_ = 0;
+  bool left_front_supported_ = false;
+  bool right_front_supported_ = false;
   bool front_supported_ = false;
   bool climb_armed_ = false;
+  float supported_front_hipy_delta_ = 0.0f;
+  float supported_front_knee_delta_ = 0.0f;
+  float supported_forward_floor_mps_ = 0.0f;
+  float supported_policy_frame_yaw_bias_rps_ = 0.0f;
+  float residual_engage_edge_distance_m_ =
+      std::numeric_limits<float>::infinity();
+  bool residual_engaged_ = false;
+  s10_policy::FastAdapterEnvelope fast_adapter_envelope_;
+  bool fast_adapter_active_ = true;
+  bool fast_adapter_allow_mirroring_ = true;
+  float front_support_edge_x_ = 0.40f;
+  int front_support_confirm_frames_ = 2;
+  int rear_push_hold_frames_ = 180;
+  bool rear_push_hold_on_each_side_ = true;
+  float fallback_forward_cap_mps_ = 0.0f;
 
   static constexpr float kRadiansToDegrees = 57.29577951308232f;
-  static constexpr float kFrontSupportEdgeX = 0.40f;
-  static constexpr int kFrontSupportConfirmFrames = 2;
   static constexpr int kSettleFrames = 30;
 
   static int ValidateSession(Ort::Session& session, const std::string& label) {
@@ -266,7 +282,65 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
         }
         command_profiles_.push_back(std::move(profile));
       }
-      std::cout << "S10 adaptive-v3 climb config loaded: "
+      if (manifest.contains("full_stack_runtime")) {
+        const auto& runtime = manifest.at("full_stack_runtime");
+        const auto deltas = runtime.value(
+            "supported_front_tuck_action_delta", nlohmann::json::array());
+        if (deltas.is_array() && deltas.size() == 2) {
+          supported_front_hipy_delta_ = deltas.at(0).get<float>();
+          supported_front_knee_delta_ = deltas.at(1).get<float>();
+        }
+        supported_forward_floor_mps_ = runtime.value(
+            "aggressive_supported_forward_floor_mps", 0.0f);
+        supported_policy_frame_yaw_bias_rps_ = runtime.value(
+            "supported_policy_frame_yaw_bias_rps", 0.0f);
+        residual_engage_edge_distance_m_ = runtime.value(
+            "residual_engage_edge_distance_m",
+            std::numeric_limits<float>::infinity());
+        front_support_edge_x_ =
+            runtime.value("front_support_edge_distance_m", 0.40f);
+        front_support_confirm_frames_ =
+            runtime.value("front_support_confirm_policy_steps", 2);
+        rear_push_hold_frames_ =
+            runtime.value("rear_push_hold_policy_steps", 180);
+        rear_push_hold_on_each_side_ =
+            runtime.value("rear_push_hold_on_each_side", true);
+        fallback_forward_cap_mps_ =
+            runtime.value("fallback_max_forward_mps", 0.0f);
+        if (runtime.contains("confidence_gated_fast_adapter")) {
+          const auto& fast = runtime.at("confidence_gated_fast_adapter");
+          fast_adapter_envelope_.confidence_gate_enabled =
+              fast.value("enabled", false);
+          fast_adapter_envelope_.min_edge_heading_samples =
+              fast.value("min_edge_heading_samples", 0);
+          fast_adapter_envelope_.min_edge_heading_peak_step =
+              fast.value("min_edge_heading_peak_step_m", 0.0f);
+          fast_adapter_envelope_.max_abs_entry_yaw_deg =
+              fast.value("max_abs_entry_yaw_deg", 90.0f);
+          fast_adapter_envelope_.min_entry_speed_mps =
+              fast.value("min_entry_speed_mps", 0.0f);
+          fast_adapter_envelope_.max_entry_speed_mps = fast.value(
+              "max_entry_speed_mps", std::numeric_limits<float>::infinity());
+          fast_adapter_envelope_.max_side_edge_skew_m = fast.value(
+              "max_side_edge_skew_m", std::numeric_limits<float>::infinity());
+          fast_adapter_allow_mirroring_ =
+              fast.value("allow_policy_mirroring", true);
+        }
+        if (residual_engage_edge_distance_m_ <= 0.0f ||
+            front_support_edge_x_ <= 0.0f ||
+            front_support_confirm_frames_ < 1 || rear_push_hold_frames_ < 0 ||
+            fallback_forward_cap_mps_ < 0.0f ||
+            fast_adapter_envelope_.min_edge_heading_samples < 0 ||
+            fast_adapter_envelope_.min_edge_heading_peak_step < 0.0f ||
+            fast_adapter_envelope_.max_abs_entry_yaw_deg < 0.0f ||
+            fast_adapter_envelope_.min_entry_speed_mps < 0.0f ||
+            fast_adapter_envelope_.max_entry_speed_mps <
+                fast_adapter_envelope_.min_entry_speed_mps ||
+            fast_adapter_envelope_.max_side_edge_skew_m < 0.0f) {
+          throw std::runtime_error("invalid confidence-gated fast-adapter limits");
+        }
+      }
+      std::cout << "S10 v1.5 confidence-fallback climb config loaded: "
                 << command_profiles_.size() << " command profiles, "
                 << mirror_yaw_bands_deg_.size() << " mirror bands" << std::endl;
     } catch (const std::exception& error) {
@@ -282,7 +356,7 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
       const auto& profile = command_profiles_[index];
       const float speed_error = std::abs(speed_mps - profile.entry_speed_mps);
       const float yaw_error = std::abs(yaw_deg - profile.entry_yaw_deg);
-      if (speed_error > profile.speed_tolerance_mps ||
+      if (speed_error > std::max(profile.speed_tolerance_mps, 0.061f) ||
           yaw_error > profile.yaw_tolerance_deg) {
         continue;
       }
@@ -298,30 +372,43 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
 
   void BeginClimb(const s10_policy::SkillGateReport& gate,
                   const UserCommand& command, float base_yaw_rad) {
-    // This isolated runner is deployed only for the measured Gate16 lip, whose normal is
-    // world +X. Use the calibrated base yaw that the router actually gated instead of a
-    // five-column, 0.15 m height-map line fit. The failed full run was physically at -4 deg
-    // but the fit reported -11.3 deg, selecting the wrong profile and mirror frame.
     const float heightmap_heading_deg =
         -gate.edge_heading_rad * kRadiansToDegrees;
-    climb_entry_heading_error_deg_ = base_yaw_rad * kRadiansToDegrees;
-    mirror_policy_frame_ = ShouldMirrorPolicyFrame(climb_entry_heading_error_deg_);
+    const float base_heading_deg = base_yaw_rad * kRadiansToDegrees;
     float entry_speed_mps = std::abs(command.forward_vel_scale);
-    // The follower may still have one pre-gate cruise command in flight. Clamp that
-    // transient to the 0.25 m/s handoff used by the deployed climb controller.
     if (entry_speed_mps > 0.30f) entry_speed_mps = 0.25f;
-    active_profile_index_ = SelectCommandProfile(
-        entry_speed_mps, climb_entry_heading_error_deg_);
-    front_support_frames_ = 0;
+
+    // v1.5 uses the height-map fit only as a confidence signal.  The policy transform
+    // itself keeps the calibrated base yaw that the router gated; this preserves the
+    // existing fix for a noisy five-column edge fit while still failing safely to the
+    // native release behavior when the perception evidence is weak.
+    fast_adapter_active_ = s10_policy::EntrySupportsFastAdapter(
+        gate, heightmap_heading_deg, entry_speed_mps, fast_adapter_envelope_);
+    climb_entry_heading_error_deg_ = base_heading_deg;
+    mirror_policy_frame_ =
+        fast_adapter_active_ && fast_adapter_allow_mirroring_ &&
+        ShouldMirrorPolicyFrame(climb_entry_heading_error_deg_);
+    active_profile_index_ =
+        fast_adapter_active_
+            ? SelectCommandProfile(entry_speed_mps,
+                                   climb_entry_heading_error_deg_)
+            : -1;
+    left_front_support_frames_ = 0;
+    right_front_support_frames_ = 0;
     settle_frames_ = 0;
+    left_front_supported_ = false;
+    right_front_supported_ = false;
     front_supported_ = false;
+    residual_engaged_ = !fast_adapter_active_;
     std::cout << "S10 climb entry speed=" << entry_speed_mps
-              << " yaw=" << climb_entry_heading_error_deg_
+              << " base_yaw=" << climb_entry_heading_error_deg_
               << " heightmap_yaw=" << heightmap_heading_deg
               << " valid=" << (gate.edge_heading_valid ? "yes" : "no")
               << " samples=" << gate.edge_heading_samples
               << " peak_step=" << gate.edge_heading_peak_step
               << " policy_frame=" << (mirror_policy_frame_ ? "mirrored" : "native")
+              << " fast_adapter="
+              << (fast_adapter_active_ ? "yes" : "fallback")
               << " profile="
               << (active_profile_index_ >= 0
                       ? command_profiles_[active_profile_index_].name
@@ -329,60 +416,121 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
               << std::endl;
   }
 
+  void UpdateResidualEngagement(const s10_policy::SkillGateReport& gate) {
+    if (residual_engaged_) return;
+    const bool delay_until_edge =
+        std::isfinite(residual_engage_edge_distance_m_);
+    const bool edge_is_close =
+        std::min(gate.left_edge_distance, gate.right_edge_distance) <=
+        residual_engage_edge_distance_m_;
+    if (!delay_until_edge || edge_is_close) {
+      residual_engaged_ = true;
+      std::cout << "S10 climb residual engaged: edge=("
+                << gate.left_edge_distance << "," << gate.right_edge_distance
+                << ") threshold=" << residual_engage_edge_distance_m_
+                << std::endl;
+    }
+  }
+
   void UpdateFrontSupport(const s10_policy::SkillGateReport& gate) {
-    if (front_supported_) {
+    const bool was_both_supported = front_supported_;
+    const auto update_side = [this](float edge_distance, int& support_frames,
+                                    bool& supported, const char* side) {
+      if (supported) return;
+      const bool side_at_edge =
+          std::isfinite(edge_distance) && edge_distance <= front_support_edge_x_;
+      support_frames = side_at_edge ? support_frames + 1 : 0;
+      if (support_frames >= front_support_confirm_frames_) {
+        supported = true;
+        if (rear_push_hold_on_each_side_) {
+          skill_gate_.HoldActiveForAdditionalFrames(rear_push_hold_frames_);
+        }
+        std::cout << "S10 " << side
+                  << " front support event: immediate tuck edge="
+                  << edge_distance << std::endl;
+      }
+    };
+    update_side(gate.left_edge_distance, left_front_support_frames_,
+                left_front_supported_, "left");
+    update_side(gate.right_edge_distance, right_front_support_frames_,
+                right_front_supported_, "right");
+    front_supported_ = left_front_supported_ && right_front_supported_;
+    if (front_supported_ && was_both_supported) {
       ++settle_frames_;
       return;
     }
-    const bool both_at_edge = gate.both_side_edges_visible &&
-                              gate.left_edge_distance <= kFrontSupportEdgeX &&
-                              gate.right_edge_distance <= kFrontSupportEdgeX;
-    front_support_frames_ = both_at_edge ? front_support_frames_ + 1 : 0;
-    if (front_support_frames_ >= kFrontSupportConfirmFrames) {
-      front_supported_ = true;
+    if (front_supported_) {
       settle_frames_ = 0;
-      std::cout << "S10 adaptive-v3 both-front support: edge=("
-                << gate.left_edge_distance << "," << gate.right_edge_distance
-                << ")" << std::endl;
+      skill_gate_.HoldActiveForAdditionalFrames(rear_push_hold_frames_);
+      std::cout << "S10 both-front support event: force line established"
+                << std::endl;
     }
   }
 
   void EndClimb() {
     active_profile_index_ = -1;
-    front_support_frames_ = 0;
+    left_front_support_frames_ = 0;
+    right_front_support_frames_ = 0;
     settle_frames_ = 0;
+    left_front_supported_ = false;
+    right_front_supported_ = false;
     front_supported_ = false;
+    residual_engaged_ = false;
+    fast_adapter_active_ = true;
     climb_entry_heading_error_deg_ = 0.0f;
     mirror_policy_frame_ = false;
   }
 
   Vec3f ApplyCommandProfile(const Vec3f& original,
                             bool climb_active) const {
-    if (!climb_active || !front_supported_ || active_profile_index_ < 0) {
-      return original;
+    if (!climb_active) return original;
+    if (!fast_adapter_active_) {
+      Vec3f fallback = original;
+      if (fallback_forward_cap_mps_ > 0.0f) {
+        fallback(0) = std::clamp(original(0), -fallback_forward_cap_mps_,
+                                 fallback_forward_cap_mps_);
+      }
+      return fallback;
     }
+    if (!front_supported_) return original;
     Vec3f adjusted = original;
-    const auto& profile = command_profiles_[active_profile_index_];
-    adjusted(0) = settle_frames_ < kSettleFrames
-                      ? profile.settle_forward_mps
-                      : profile.push_forward_mps;
+    float profiled_forward = original(0);
+    if (active_profile_index_ >= 0) {
+      const auto& profile = command_profiles_[active_profile_index_];
+      profiled_forward = settle_frames_ < kSettleFrames
+                             ? profile.settle_forward_mps
+                             : profile.push_forward_mps;
+    }
+    adjusted(0) = std::max(profiled_forward, supported_forward_floor_mps_);
+    adjusted(1) = 0.0f;
+    adjusted(2) = settle_frames_ < kSettleFrames
+                      ? (mirror_policy_frame_
+                             ? -supported_policy_frame_yaw_bias_rps_
+                             : supported_policy_frame_yaw_bias_rps_)
+                      : 0.0f;
     return adjusted;
   }
 
-  void ApplyPrecontactFrontTuck(VecXf& action, bool climb_active,
-                                const s10_policy::SkillGateReport& gate) const {
-    if (!climb_active || front_supported_ || active_profile_index_ < 0) {
+  void ApplySupportedFrontTuck(VecXf& action) const {
+    if ((!left_front_supported_ && !right_front_supported_) ||
+        (front_supported_ && settle_frames_ >= kSettleFrames)) {
       return;
     }
-    const auto& profile = command_profiles_[active_profile_index_];
-    const bool front_height_ready = gate.both_side_edges_visible &&
-                                    gate.left_edge_distance <= kFrontSupportEdgeX + 0.15f &&
-                                    gate.right_edge_distance <= kFrontSupportEdgeX + 0.15f;
-    if (!front_height_ready) return;
-    action(1) += profile.front_hipy_delta;
-    action(2) += profile.front_knee_delta;
-    action(4) += profile.front_hipy_delta;
-    action(5) += profile.front_knee_delta;
+    float hipy_delta = supported_front_hipy_delta_;
+    float knee_delta = supported_front_knee_delta_;
+    if (active_profile_index_ >= 0) {
+      const auto& profile = command_profiles_[active_profile_index_];
+      if (profile.front_hipy_delta != 0.0f) hipy_delta = profile.front_hipy_delta;
+      if (profile.front_knee_delta != 0.0f) knee_delta = profile.front_knee_delta;
+    }
+    if (left_front_supported_) {
+      action(1) += hipy_delta;
+      action(2) += knee_delta;
+    }
+    if (right_front_supported_) {
+      action(4) += hipy_delta;
+      action(5) += knee_delta;
+    }
   }
 
  public:
@@ -541,7 +689,8 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
           BeginClimb(gate, uc, ro.base_rpy(2));
         }
         if (gate.active) {
-          UpdateFrontSupport(gate);
+          UpdateResidualEngagement(gate);
+          if (fast_adapter_active_) UpdateFrontSupport(gate);
         }
         if (!gate.active && previous_gate_state_) EndClimb();
         if (gate.active != previous_gate_state_) {
@@ -559,7 +708,7 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
 
     current_action_eigen = InferInPolicyFrame(base_session_, current_observation_);
     if (residual_available_) {
-      if (gate.active) {
+      if (gate.active && residual_engaged_) {
         const VecXf residual =
             InferInPolicyFrame(residual_session_, current_observation_);
         for (int i = 0; i < action_dim; ++i) {
@@ -568,7 +717,7 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
         }
       }
     }
-    ApplyPrecontactFrontTuck(current_action_eigen, gate.active, gate);
+    ApplySupportedFrontTuck(current_action_eigen);
     for (int i = 0; i < action_dim; ++i) {
       current_action_eigen(i) = std::clamp(
           current_action_eigen(i), -action_guard_[i], action_guard_[i]);

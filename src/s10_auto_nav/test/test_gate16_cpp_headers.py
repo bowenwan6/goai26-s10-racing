@@ -80,3 +80,37 @@ int main() {
 }
 '''
     )
+
+
+def test_v15_fast_adapter_fails_closed_on_low_confidence_geometry():
+    _compile_and_run(
+        r'''
+#include <cassert>
+#include "gate16_skill_gate.hpp"
+int main() {
+  s10_policy::FastAdapterEnvelope envelope;
+  envelope.confidence_gate_enabled = true;
+  envelope.min_edge_heading_samples = 4;
+  envelope.min_edge_heading_peak_step = 0.20f;
+  envelope.max_abs_entry_yaw_deg = 8.0f;
+  envelope.min_entry_speed_mps = 0.18f;
+  envelope.max_entry_speed_mps = 0.28f;
+  envelope.max_side_edge_skew_m = 0.20f;
+
+  s10_policy::SkillGateReport report;
+  report.edge_heading_valid = true;
+  report.both_side_edges_visible = true;
+  report.edge_heading_samples = 4;
+  report.edge_heading_peak_step = 0.377f;
+  report.left_edge_distance = 0.60f;
+  report.right_edge_distance = 0.62f;
+  assert(s10_policy::EntrySupportsFastAdapter(report, 2.0f, 0.25f, envelope));
+  report.edge_heading_samples = 3;
+  assert(!s10_policy::EntrySupportsFastAdapter(report, 2.0f, 0.25f, envelope));
+  report.edge_heading_samples = 4;
+  assert(!s10_policy::EntrySupportsFastAdapter(report, 9.0f, 0.25f, envelope));
+  report.right_edge_distance = 0.85f;
+  assert(!s10_policy::EntrySupportsFastAdapter(report, 2.0f, 0.25f, envelope));
+}
+'''
+    )
