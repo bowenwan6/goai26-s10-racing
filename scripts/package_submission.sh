@@ -63,6 +63,7 @@ required=(
   docker/Dockerfile
   docker/requirements.lock
   docs/SUBMISSION.md
+  docs/TECHNICAL_DESIGN.md
   docs/THIRD_PARTY.md
   docs/OPEN_SOURCE_PLAN.md
   scripts/setup_upstream.sh

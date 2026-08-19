@@ -22,7 +22,9 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 Judge-facing submission details are collected in
 [`docs/SUBMISSION.md`](docs/SUBMISSION.md). Dependency, data and model provenance are disclosed in
 [`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md), and the required post-competition scope is described
-in [`docs/OPEN_SOURCE_PLAN.md`](docs/OPEN_SOURCE_PLAN.md).
+in [`docs/OPEN_SOURCE_PLAN.md`](docs/OPEN_SOURCE_PLAN.md). The complete implementation-linked
+architecture, policy contracts, safety design and evidence record are in
+[`docs/TECHNICAL_DESIGN.md`](docs/TECHNICAL_DESIGN.md).
 
 ### Version status
 
@@ -65,16 +67,21 @@ heightmap-gated residual ONNX pair at 50 Hz, producing a 16D joint command. The 
 ports the v1.5 confidence-fallback contract from
 `goai-s10-gate16-policy@216b77a`: the confidence-gated fast adapter remains available in code,
 but the competition configuration disables it and explicitly binds both router and SDK runner
-to the stable frontal fallback. The strategy router executes the bundled command-profile JSON
-from measured wheel centres: `settle` begins only when both physical front wheels have cleared the
-edge and reached deck height, lasts 30 policy steps, and then changes to `push` until the router's
-independent four-wheel check succeeds. The policy stays in its native frontal frame; adaptive
-mirroring is not enabled by the competition configuration.
-The official controller owns the moving approach until the full `d=0.60–0.65 m`,
-`v=0.23–0.27 m/s`, `|yaw|≤5°` envelope is held. Gate 16 shadow inference cannot slow the
-approach; on the ownership edge its previous-action field is seeded by inverse-decoding the
-measured actuator state, avoiding a discontinuity between the unrelated official and Gate 16
-policy histories.
+to the stable frontal fallback. The low-level Gate 16 runner executes the bundled command-profile JSON
+only when the confidence adapter is enabled: its front-support phases are inferred from left/right
+height-map edge distance, not from physical wheel contact. The accepted competition configuration
+forces stable fallback, so those fast-profile phases are not selected. Independently, the router
+uses simulated wheel centres, deck height and contacts to prove all four wheels are clear before
+handoff. The policy stays in its native frontal frame; adaptive mirroring is not enabled by the
+competition configuration.
+The official controller owns the moving approach. In the accepted forced-fallback configuration,
+ownership changes only after `d=0.62–0.70 m`, measured `v=0.08–0.20 m/s`, `|yaw|≤6°`, lateral
+error ≤0.25 m and `|yaw_rate|≤0.10 rad/s` hold for 0.10 s; the target command is 0.18 m/s and
+the low-level fallback cap is 0.15 m/s. The narrower `d=0.60–0.65 m`, `v=0.23–0.27 m/s`,
+`|yaw|≤5°` fast window remains configured but cannot be selected while the fast adapter is
+disabled. Gate 16 shadow inference cannot slow the approach; on the ownership edge its
+previous-action field is seeded by inverse-decoding the measured actuator state, avoiding a
+discontinuity between the unrelated official and Gate 16 policy histories.
 After all four wheels are verified on the upper platform, the residual is disarmed and joint
 ownership returns to the official policy; the existing follower resumes at 0.5 m/s.
 
