@@ -94,6 +94,15 @@ waypoint_follower:
     committed_runup_trigger: 0.55
     committed_runup_distance: 1.3
     committed_runup_timeout: 20.0
+    # WP28->29 is a level z=3.760 m upper-deck corridor in the MuJoCo ray cast, including
+    # the centreline and +/-0.30 m samples. The local height map nevertheless sees the
+    # lower storey and overhead spiral, reports a nonexistent 0.73-0.79 m rise and steers
+    # the robot into the side structure. After a stable WP28 exit, reject cross-storey
+    # height-derived terrain labels. Horizontal lidar still vets every heading and
+    # BLOCKED/UNSTABLE/UNKNOWN retain their ordinary safety behaviour.
+    same_level_corridor_waypoints: [29]
+    same_level_corridor_max_tilt_deg: 12.0
+    same_level_corridor_stable_hold: 0.4
     # WP30->31 starts beside the upper-deck drop and a pillar. WP31->32 crosses a two-tier
     # wall whose south end is y=19.124; a 0.45 m body envelope must first pass west of the
     # wall at y=18.5. These measured body-clear points shape the legs without advancing or
