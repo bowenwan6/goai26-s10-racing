@@ -306,6 +306,7 @@ EDITS = [
                         }
                         gate16_policy_->SetActuatorOwnership(
                             owner.owner() == s10::JointOwner::kGate16);
+                        gate16_policy_->SetForceFallback(owner.gate16_fallback());
                         gate16_policy_->SetClimbArmed(owner.gate16_armed());
                         gate16_command = gate16_policy_->getRobotAction(
                             rbs_[getrbsReadIndex()], *(uc_ptr_->GetUserCommand())).ConvertToMat();
@@ -389,6 +390,25 @@ EDITS = [
                         gate16_policy_->SetClimbArmed(owner.gate16_armed());
 """,
         marker="SetActuatorOwnership",
+        mode="replace",
+    ),
+    # Upgrade already-patched workspaces so the router's attempt-level fallback choice is
+    # not reclassified by the runner's independent height-map confidence check.
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor=(
+            "                        gate16_policy_->SetActuatorOwnership(\n"
+            "                            owner.owner() == s10::JointOwner::kGate16);\n"
+            "                        gate16_policy_->SetClimbArmed(owner.gate16_armed());\n"
+        ),
+        addition=(
+            "                        gate16_policy_->SetActuatorOwnership(\n"
+            "                            owner.owner() == s10::JointOwner::kGate16);\n"
+            "                        gate16_policy_->SetForceFallback(\n"
+            "                            owner.gate16_fallback());\n"
+            "                        gate16_policy_->SetClimbArmed(owner.gate16_armed());\n"
+        ),
+        marker="owner.gate16_fallback()",
         mode="replace",
     ),
     # The stair actor shares the official 57D observation/action contract. Preserve the
@@ -547,12 +567,20 @@ def main() -> int:
 
     if args.check:
         missing = [d for d in FILES.values() if not (root / d).is_file()]
+        outdated = [
+            destination
+            for source, destination in FILES.items()
+            if (root / destination).is_file()
+            and (root / destination).read_bytes() != source.read_bytes()
+        ]
         pending = [e.path for e in EDITS if not e.is_applied(root)]
-        if not missing and not pending:
+        if not missing and not outdated and not pending:
             print(f"{root} is patched")
             return 0
         for destination in missing:
             print(f"Missing: {destination}", file=sys.stderr)
+        for destination in outdated:
+            print(f"Outdated: {destination}", file=sys.stderr)
         for path in dict.fromkeys(pending):
             print(f"Unpatched: {path}", file=sys.stderr)
         return 1

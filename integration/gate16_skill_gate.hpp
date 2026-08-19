@@ -34,6 +34,45 @@ struct SkillGateReport {
   bool both_side_edges_visible = false;
 };
 
+struct FastAdapterEnvelope {
+  bool confidence_gate_enabled = false;
+  int min_edge_heading_samples = 0;
+  float min_edge_heading_peak_step = 0.0f;
+  float max_abs_entry_yaw_deg = 90.0f;
+  float min_entry_speed_mps = 0.0f;
+  float max_entry_speed_mps = std::numeric_limits<float>::infinity();
+  float max_side_edge_skew_m = std::numeric_limits<float>::infinity();
+};
+
+inline bool EntrySupportsFastAdapter(const SkillGateReport& report,
+                                     float entry_yaw_deg,
+                                     float entry_speed_mps,
+                                     const FastAdapterEnvelope& envelope) {
+  if (!envelope.confidence_gate_enabled) return true;
+  if (!report.edge_heading_valid || !report.both_side_edges_visible ||
+      report.edge_heading_samples < envelope.min_edge_heading_samples ||
+      report.edge_heading_peak_step < envelope.min_edge_heading_peak_step ||
+      !std::isfinite(report.left_edge_distance) ||
+      !std::isfinite(report.right_edge_distance) ||
+      !std::isfinite(entry_yaw_deg) || !std::isfinite(entry_speed_mps)) {
+    return false;
+  }
+  return std::abs(entry_yaw_deg) <= envelope.max_abs_entry_yaw_deg &&
+         entry_speed_mps >= envelope.min_entry_speed_mps &&
+         entry_speed_mps <= envelope.max_entry_speed_mps &&
+         std::abs(report.left_edge_distance - report.right_edge_distance) <=
+             envelope.max_side_edge_skew_m;
+}
+
+inline bool ShouldUseFastAdapter(const SkillGateReport& report,
+                                 float entry_yaw_deg,
+                                 float entry_speed_mps,
+                                 const FastAdapterEnvelope& envelope,
+                                 bool fallback_forced) {
+  return !fallback_forced && EntrySupportsFastAdapter(
+                                 report, entry_yaw_deg, entry_speed_mps, envelope);
+}
+
 class HeightmapSkillGate {
  public:
   static constexpr int kRows = 13;
