@@ -15,7 +15,6 @@ import numpy as np
 
 from s10_perception.png import write_png
 
-
 DEFAULT_OVERLAY_FONT = "/System/Library/Fonts/Supplemental/Arial.ttf"
 
 
@@ -31,8 +30,10 @@ def _intervals(values: np.ndarray, timing: np.ndarray):
     for index in range(1, len(values) + 1):
         if index < len(values) and values[index] == values[start]:
             continue
-        end_time = float(timing[index] - origin) if index < len(timing) else float(
-            timing[-1] - origin + final_step
+        end_time = (
+            float(timing[index] - origin)
+            if index < len(timing)
+            else float(timing[-1] - origin + final_step)
         )
         yield values[start], float(timing[start] - origin), end_time
         start = index
@@ -83,9 +84,7 @@ def _write_overlay_filter(trace, timing: np.ndarray, output: Path, font: str) ->
         if current != previous + 1:
             continue
         event = float(timing[index] - timing[0])
-        filters.append(
-            _drawtext(f"WP{previous:02d} PASSED", 24, 250, event, event + 2.0, font)
-        )
+        filters.append(_drawtext(f"WP{previous:02d} PASSED", 24, 250, event, event + 2.0, font))
     output.write_text(",\n".join(filters) + "\n")
 
 
@@ -183,8 +182,7 @@ def main() -> int:
     frame_stop = len(all_indices) if args.frame_stop is None else args.frame_stop
     if not args.frame_start <= frame_stop <= len(all_indices):
         parser.error(
-            f"frame range [{args.frame_start}, {frame_stop}) is outside "
-            f"[0, {len(all_indices)})"
+            f"frame range [{args.frame_start}, {frame_stop}) is outside [0, {len(all_indices)})"
         )
     if args.manifest_only:
         if timing is None:
@@ -193,8 +191,7 @@ def main() -> int:
         return 0
 
     xml = (
-        args.repo
-        / "upstream/goai_embodied_future_material/src/S10_sdk_deploy/"
+        args.repo / "upstream/goai_embodied_future_material/src/S10_sdk_deploy/"
         "S10_description/s10_mjcf/mjcf/S10_track.xml"
     )
     if not xml.is_file():
@@ -203,9 +200,7 @@ def main() -> int:
     model = mujoco.MjModel.from_xml_path(str(xml))
     data = mujoco.MjData(model)
     if qpos.ndim != 2 or qpos.shape[1] != model.nq:
-        raise SystemExit(
-            f"replay qpos shape {qpos.shape} is incompatible with model nq={model.nq}"
-        )
+        raise SystemExit(f"replay qpos shape {qpos.shape} is incompatible with model nq={model.nq}")
 
     base_body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "base_link")
     if base_body_id < 0:
@@ -219,9 +214,7 @@ def main() -> int:
     camera.elevation = args.elevation
     camera.azimuth = args.azimuth
 
-    selected = [
-        (number, all_indices[number]) for number in range(args.frame_start, frame_stop)
-    ]
+    selected = [(number, all_indices[number]) for number in range(args.frame_start, frame_stop)]
     count = len(selected)
     for shard_number, (number, source_index) in enumerate(selected):
         data.qpos[:] = qpos[source_index]

@@ -193,9 +193,7 @@ class Stairs57Policy:
             wheels = np.asarray(wheels, dtype=float)
             contacts = np.asarray(contacts, dtype=bool)
             valid = (
-                wheels.shape == (4, 3)
-                and contacts.shape == (4,)
-                and np.all(np.isfinite(wheels))
+                wheels.shape == (4, 3) and contacts.shape == (4,) and np.all(np.isfinite(wheels))
             )
             wheel_threshold = float(target_z) + self.config.completion_wheel_clearance
             upper = valid and bool(np.all(wheels[:, 2] >= wheel_threshold))
@@ -213,8 +211,7 @@ class Stairs57Policy:
             base_threshold = float(target_z) + self.config.completion_base_clearance
             clear = enough_progress and stable and position[2] >= base_threshold
             why = (
-                f"base above z={base_threshold:.2f}m with stable attitude, "
-                f"progress={progress:.2f}m"
+                f"base above z={base_threshold:.2f}m with stable attitude, progress={progress:.2f}m"
             )
 
         self._clear_for = self._clear_for + dt if clear else 0.0

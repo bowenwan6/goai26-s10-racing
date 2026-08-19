@@ -105,6 +105,6 @@ def test_the_upper_decks_are_where_the_course_says_they_are(course_scene):
         x, y, z = waypoints[index]
         yaw = _approach_yaw(waypoints, index)
         assert level_ground(model, data, x, y, yaw, z) == pytest.approx(z, abs=0.15)
-        assert level_ground(model, data, x, y, yaw, 0.0) == pytest.approx(
-            0.479, abs=0.05
-        ), "the storey underneath is still there; this test would be vacuous without it"
+        assert level_ground(model, data, x, y, yaw, 0.0) == pytest.approx(0.479, abs=0.05), (
+            "the storey underneath is still there; this test would be vacuous without it"
+        )

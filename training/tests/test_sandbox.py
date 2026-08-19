@@ -8,17 +8,17 @@ worked in search does nothing on the course.
 
 import numpy as np
 import pytest
-
 from s10_climb.sandbox import (
     JOINT_INIT,
-    SIM_TIMESTEP,
     JOINT_NAMES,
     POLICY_KD,
     POLICY_KP,
+    SIM_TIMESTEP,
     Sandbox,
     find_track_xml,
     gains,
 )
+
 
 def _has_track():
     try:
@@ -37,9 +37,7 @@ pytestmark = pytest.mark.skipif(
 
 def test_joint_order_is_the_actuator_order():
     """The simulator indexes ctrl by actuator, so a reordering here mislabels every torque."""
-    assert JOINT_NAMES[:4] == [
-        "fl_hipx_joint", "fl_hipy_joint", "fl_knee_joint", "fl_wheel_joint"
-    ]
+    assert JOINT_NAMES[:4] == ["fl_hipx_joint", "fl_hipy_joint", "fl_knee_joint", "fl_wheel_joint"]
     assert len(JOINT_NAMES) == 16
     assert JOINT_NAMES[3::4] == [f"{leg}_wheel_joint" for leg in ("fl", "fr", "hl", "hr")]
 
@@ -60,7 +58,7 @@ def test_wheels_are_velocity_controlled():
     assert list(POLICY_KP[3::4]) == [0.0] * 4
     assert all(POLICY_KD[3::4] > 0.0)
 
-    kp, kd = gains(300.0)
+    kp, _kd = gains(300.0)
     assert list(kp[3::4]) == [0.0] * 4
     assert list(kp[::4]) == [300.0] * 4
 
@@ -98,9 +96,7 @@ def test_control_law_is_the_simulators():
     target = JOINT_INIT.copy()
     target[1] += 0.10
     kp, kd = gains(150.0)
-    expected = np.clip(
-        kp * (target - box.q) + kd * (0.0 - box.dq), box.torque_lo, box.torque_hi
-    )
+    expected = np.clip(kp * (target - box.q) + kd * (0.0 - box.dq), box.torque_lo, box.torque_hi)
     box.step(target, kp=kp, kd=kd)
     assert np.allclose(box.data.ctrl, expected)
 

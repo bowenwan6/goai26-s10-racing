@@ -123,7 +123,9 @@ def test_router_and_follower_ship_with_the_same_strict_radius():
 
 def test_a_scored_gate_resets_command_slew_before_the_next_leg():
     source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
-    gate_change = source[source.index("if self.course.update") : source.index("if self.course.finished")]
+    gate_change = source[
+        source.index("if self.course.update") : source.index("if self.course.finished")
+    ]
     assert "self.controller.reset()" in gate_change
 
 
@@ -626,9 +628,12 @@ def test_brief_barrier_label_jitter_keeps_the_committed_side(node):
     assert side != 0
 
     for _ in range(90):
-        assert node._barrier_escape_side_for(
-            _verdict(TerrainKind.BLOCKED), 0.02, np.array([31.635, 15.465])
-        ) == side
+        assert (
+            node._barrier_escape_side_for(
+                _verdict(TerrainKind.BLOCKED), 0.02, np.array([31.635, 15.465])
+            )
+            == side
+        )
 
 
 @needs_ros
@@ -645,15 +650,11 @@ def test_sustained_clearance_releases_escape_once_per_gate(node):
     assert node._barrier_corner_target is not None
 
     for _ in range(150):
-        assert node._barrier_escape_side_for(
-            _verdict(TerrainKind.BLOCKED), 0.02, gate
-        ) == side
+        assert node._barrier_escape_side_for(_verdict(TerrainKind.BLOCKED), 0.02, gate) == side
 
     node._pose_xy += np.array([1.21, 0.0])
     for _ in range(101):
-        released = node._barrier_escape_side_for(
-            _verdict(TerrainKind.BLOCKED), 0.02, gate
-        )
+        released = node._barrier_escape_side_for(_verdict(TerrainKind.BLOCKED), 0.02, gate)
     assert released == 0
     assert node._barrier_escape_done
     assert node._barrier_escape_side_for(barrier, 0.02, gate) == 0
@@ -669,12 +670,11 @@ def test_a_short_barrier_leg_scales_the_escape_to_the_room_available(node):
     node._heightmap[8:, 5:] = -0.10
     gate = np.array([33.165, 15.180])
 
-    side = node._barrier_escape_side_for(
-        _verdict(TerrainKind.HIGH_BARRIER), 0.02, gate
-    )
+    side = node._barrier_escape_side_for(_verdict(TerrainKind.HIGH_BARRIER), 0.02, gate)
 
     assert side != 0
-    assert node._barrier_escape_required == pytest.approx(0.4 * np.linalg.norm(gate - node._pose_xy))
+    expected_escape = 0.4 * np.linalg.norm(gate - node._pose_xy)
+    assert node._barrier_escape_required == pytest.approx(expected_escape)
     assert node._barrier_escape_required < node.barrier_escape_distance
 
 

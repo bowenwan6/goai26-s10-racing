@@ -240,5 +240,5 @@ def hold_trajectory(q0: np.ndarray, seconds: float, frame_dt: float = 0.02) -> n
     It exercises the whole 16-dimensional path -- adapter, arbiter, ``/JOINTS_CMD`` -- while
     asking the robot to do nothing, so a failure is unambiguously the plumbing.
     """
-    frames = max(1, int(round(seconds / frame_dt)))
+    frames = max(1, round(seconds / frame_dt))
     return np.tile(np.asarray(q0, float).reshape(1, 16), (frames, 1))

@@ -24,7 +24,6 @@ from s10_auto_nav.strategy.router import (
     observation_from_state,
 )
 
-
 ROOT = Path(__file__).resolve().parents[3]
 BUNDLE = ROOT / "policy/gate16"
 
@@ -258,16 +257,15 @@ def test_gate16_base_owns_only_after_official_far_field_alignment():
     ):
         assert not gate16_should_own(policy, mode.value)
     assert not gate16_should_own(policy, Mode.ALIGN.value, prewarm_ready=True)
-    assert gate16_owner_request(
-        policy, Mode.ALIGN.value, prewarm_ready=True
-    ) == "official"
+    assert gate16_owner_request(policy, Mode.ALIGN.value, prewarm_ready=True) == "official"
     assert gate16_owner_request(policy, Mode.APPROACH.value) == "gate16_shadow"
     assert gate16_owner_request(policy, Mode.ALIGN.value) == "gate16_shadow"
     for mode in (Mode.CLIMB_READY, Mode.CLIMB, Mode.VERIFY_CLEAR):
         assert gate16_owner_request(policy, mode.value) == "gate16_climb"
-        assert gate16_owner_request(
-            policy, mode.value, entry_mode="stable_fallback"
-        ) == "gate16_climb_fallback"
+        assert (
+            gate16_owner_request(policy, mode.value, entry_mode="stable_fallback")
+            == "gate16_climb_fallback"
+        )
     assert gate16_owner_request(policy, Mode.HANDOFF.value) == "official"
 
 
@@ -336,9 +334,10 @@ def test_official_actor_aligns_position_and_yaw_before_gate16_prewarm():
     out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
     assert router.gate16_prewarm_ready
     assert np.isclose(out.command[0], 0.25)
-    assert gate16_owner_request(
-        policy, out.mode.value, prewarm_ready=router.gate16_prewarm_ready
-    ) == "official"
+    assert (
+        gate16_owner_request(policy, out.mode.value, prewarm_ready=router.gate16_prewarm_ready)
+        == "official"
+    )
 
 
 def test_v15_prefers_fast_contract_for_strict_staging_pose():
@@ -380,9 +379,7 @@ def test_v15_prefers_fast_contract_for_strict_staging_pose():
 
 
 def test_v15_uses_stable_contract_for_normal_imperfect_staging_pose():
-    policy = StableGate16Policy(
-        Gate16Config(command_forward=0.25, fallback_command_forward=0.15)
-    )
+    policy = StableGate16Policy(Gate16Config(command_forward=0.25, fallback_command_forward=0.15))
     router = Router(
         RouterConfig(
             ready_distance_min=0.60,
@@ -450,9 +447,7 @@ def test_v15_uses_stable_contract_for_normal_imperfect_staging_pose():
 
 
 def test_v15_competition_default_does_not_admit_fast_adapter():
-    policy = StableGate16Policy(
-        Gate16Config(command_forward=0.25, fallback_command_forward=0.18)
-    )
+    policy = StableGate16Policy(Gate16Config(command_forward=0.25, fallback_command_forward=0.18))
     router = Router(
         RouterConfig(
             ready_distance_min=0.60,
