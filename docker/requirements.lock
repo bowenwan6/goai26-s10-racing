@@ -1,0 +1,15 @@
+# Exact versions in the accepted 2026-08-19 container, including the wheels pulled transitively
+# by MuJoCo and ONNX Runtime.  Keeping those dependencies explicit prevents a later resolver run
+# from changing the evaluator environment while retaining the architecture-specific wheel choice.
+numpy==1.26.4
+mujoco==3.11.0
+scipy==1.17.1
+onnxruntime==1.28.0
+absl-py==2.5.0
+etils[epath]==1.14.0
+flatbuffers==25.12.19
+fsspec==2026.7.0
+glfw==2.10.2
+protobuf==7.35.1
+PyOpenGL==3.1.10
+typing_extensions==4.16.0
