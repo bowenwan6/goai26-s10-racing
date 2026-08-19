@@ -100,6 +100,7 @@ def test_stairs57_is_fail_closed_and_never_maps_gate16():
 
 def test_gate16_v15_keeps_stable_v1_as_bounded_fallback():
     params = yaml.safe_load(GATE16_CONFIG.read_text())["strategy_router"]["ros__parameters"]
+    assert params["gate16_fast_adapter_enabled"] is False
     assert params["gate16_fallback_enabled"] is True
     assert params["gate16_fallback_ready_distance_min"] == pytest.approx(0.62)
     assert params["gate16_fallback_ready_distance_max"] == pytest.approx(0.70)

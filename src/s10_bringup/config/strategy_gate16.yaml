@@ -85,8 +85,10 @@ strategy_router:
     # Gate16 shadow-evaluates but does not own until the full entry envelope is met.
     gate16_staging_lead: 0.25
     # v1.5 selects one contract at the far staging point and holds it for the attempt.
-    # Strict pose uses adaptive-v3 at 0.25 m/s. A normal but imperfect arrival uses the
-    # stable ver1 entry instead of timing out or forcing the fast profile out of distribution.
+    # The adaptive path remains available for explicit experiments, but its seed-8 focused
+    # run timed out while straddling the lip. Competition defaults every attempt to the
+    # stable frontal fallback until the fast path passes multi-seed validation.
+    gate16_fast_adapter_enabled: false
     gate16_fallback_enabled: true
     gate16_fallback_ready_distance_min: 0.62
     gate16_fallback_ready_distance_max: 0.70

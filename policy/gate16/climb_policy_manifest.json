@@ -140,6 +140,7 @@
     "fallback_low_level_forward_cap_mps": 0.15,
     "fallback_owner_request": "gate16_climb_fallback",
     "fallback_mode_precedence": "a router-selected stable fallback cannot be upgraded by low-level heightmap confidence",
+    "competition_fast_adapter_enabled": false,
     "base_owner_prewarms_before_residual": false,
     "shadow_condition": "evaluate the unarmed Gate16 base from APPROACH at 3.0 m while official remains sole actuator owner",
     "prewarm_condition": "shadow-evaluate until the router selects and proves either the fast or stable-fallback entry envelope",
