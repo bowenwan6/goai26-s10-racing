@@ -50,11 +50,21 @@ waypoint_follower:
     max_yaw_rate: 0.7
 
     lookahead: 1.4
+    lookahead_speed_gain: 0.5
     yaw_gain: 1.8
+    lateral_gain: 0.9
     # A 75-degree threshold let the WP26->27 right-angle turn translate north while
     # rotating and walk off the narrow elevated deck. Hold position until a new leg is
     # within 30 degrees of the nose, then resume normal pursuit.
     pivot_threshold_deg: 30.0
+    align_falloff_deg: 60.0
+    min_speed_fraction: 0.15
+    # Command-rate limits are part of the policy interface. They ship at the previously
+    # hard-coded values and are exposed here so segmented trials can tune acceleration
+    # without changing controller code between candidates.
+    forward_slew: 3.0
+    lateral_slew: 2.0
+    yaw_slew: 6.0
     # WP26 and WP27 are right-angle gates on a narrow elevated transfer deck. The learned
     # policy drifts roughly 0.6 m in the old travel direction under a pure yaw command, so
     # score each gate, retreat over the known-safe incoming path, and turn with margin.

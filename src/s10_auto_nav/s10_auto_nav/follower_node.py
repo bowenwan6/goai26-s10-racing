@@ -145,8 +145,15 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("max_lateral", PursuitGains.max_lateral)
         self.declare_parameter("max_yaw_rate", PursuitGains.max_yaw_rate)
         self.declare_parameter("lookahead", PursuitGains.lookahead)
+        self.declare_parameter("lookahead_speed_gain", PursuitGains.lookahead_speed_gain)
         self.declare_parameter("yaw_gain", PursuitGains.yaw_gain)
+        self.declare_parameter("lateral_gain", PursuitGains.lateral_gain)
         self.declare_parameter("pivot_threshold_deg", math.degrees(PursuitGains.pivot_threshold))
+        self.declare_parameter("align_falloff_deg", math.degrees(PursuitGains.align_falloff))
+        self.declare_parameter("min_speed_fraction", PursuitGains.min_speed_fraction)
+        self.declare_parameter("forward_slew", PursuitGains.forward_slew)
+        self.declare_parameter("lateral_slew", PursuitGains.lateral_slew)
+        self.declare_parameter("yaw_slew", PursuitGains.yaw_slew)
         self.declare_parameter("corner_retreat_waypoints", [26, 27])
         self.declare_parameter("corner_retreat_distance", 0.7)
         self.declare_parameter("corner_retreat_speed", 0.3)
@@ -226,10 +233,23 @@ class WaypointFollowerNode(Node):
                 max_lateral=float(self.get_parameter("max_lateral").value),
                 max_yaw_rate=float(self.get_parameter("max_yaw_rate").value),
                 lookahead=float(self.get_parameter("lookahead").value),
+                lookahead_speed_gain=float(
+                    self.get_parameter("lookahead_speed_gain").value
+                ),
                 yaw_gain=float(self.get_parameter("yaw_gain").value),
+                lateral_gain=float(self.get_parameter("lateral_gain").value),
                 pivot_threshold=math.radians(
                     float(self.get_parameter("pivot_threshold_deg").value)
                 ),
+                align_falloff=math.radians(
+                    float(self.get_parameter("align_falloff_deg").value)
+                ),
+                min_speed_fraction=float(
+                    self.get_parameter("min_speed_fraction").value
+                ),
+                forward_slew=float(self.get_parameter("forward_slew").value),
+                lateral_slew=float(self.get_parameter("lateral_slew").value),
+                yaw_slew=float(self.get_parameter("yaw_slew").value),
                 brake_distance=_optional_positive(self.get_parameter("brake_distance").value),
             )
         )

@@ -51,7 +51,14 @@ def test_the_brake_distances_ship_in_nav_yaml():
     assert params["fast_flat_max_tilt_deg"] == 6.0
     assert params["fast_flat_max_pitch_deg"] == 5.0
     assert params["climb_speed"] == 0.7
+    assert params["lookahead_speed_gain"] == 0.5
+    assert params["lateral_gain"] == 0.9
     assert params["pivot_threshold_deg"] == 30.0
+    assert params["align_falloff_deg"] == 60.0
+    assert params["min_speed_fraction"] == 0.15
+    assert params["forward_slew"] == 3.0
+    assert params["lateral_slew"] == 2.0
+    assert params["yaw_slew"] == 6.0
     assert params["corner_retreat_waypoints"] == [26, 27]
     assert params["corner_retreat_distance"] == 0.7
     assert params["corner_retreat_speed"] == 0.3
@@ -149,6 +156,27 @@ def node(tmp_path, request):
         follower.destroy_node()
     finally:
         rclpy.shutdown()
+
+
+@needs_ros
+@pytest.mark.params(
+    lookahead_speed_gain=0.65,
+    lateral_gain=1.1,
+    align_falloff_deg=52.0,
+    min_speed_fraction=0.22,
+    forward_slew=4.5,
+    lateral_slew=2.7,
+    yaw_slew=7.5,
+)
+def test_pursuit_tuning_parameters_reach_controller(node):
+    gains = node.controller.gains
+    assert gains.lookahead_speed_gain == pytest.approx(0.65)
+    assert gains.lateral_gain == pytest.approx(1.1)
+    assert math.degrees(gains.align_falloff) == pytest.approx(52.0)
+    assert gains.min_speed_fraction == pytest.approx(0.22)
+    assert gains.forward_slew == pytest.approx(4.5)
+    assert gains.lateral_slew == pytest.approx(2.7)
+    assert gains.yaw_slew == pytest.approx(7.5)
 
 
 @needs_ros
