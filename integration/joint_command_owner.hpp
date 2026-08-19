@@ -35,7 +35,7 @@
  * driving.
  *
  * Topics
- *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "gate16_shadow" | "gate16" | "gate16_climb" | "stairs57" | "stop"
+ *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "gate16_shadow" | "gate16" | "gate16_climb" | "gate16_climb_fallback" | "stairs57" | "stop"
  *   subscribe  /strategy/climb_joints   std_msgs/Float32MultiArray   16 joint position targets
  *   subscribe  /perception/heightmap    std_msgs/Float32MultiArray   Gate16 raw 13x9 grid
  *   publish    /joints/owner            std_msgs/String              who is actually driving
@@ -337,6 +337,9 @@ class JointCommandOwner {
   /** Whether to evaluate Gate16 at 50 Hz without granting actuator ownership. */
   bool gate16_shadow() const { return gate16_shadow_.load(); }
 
+  /** Whether the router selected the stable-v1 contract for this armed attempt. */
+  bool gate16_fallback() const { return gate16_fallback_.load(); }
+
   /**
    * Ask for an owner by name. Anything else is ignored.
    *
@@ -348,13 +351,16 @@ class JointCommandOwner {
     if (name == "official") {
       gate16_armed_.store(false);
       gate16_shadow_.store(false);
+      gate16_fallback_.store(false);
       requested_.store(JointOwner::kOfficial);
     } else if (name == "climb") {
       gate16_armed_.store(false);
       gate16_shadow_.store(false);
+      gate16_fallback_.store(false);
       requested_.store(JointOwner::kClimb);
     } else if (name == "gate16") {
       gate16_armed_.store(false);
+      gate16_fallback_.store(false);
       // Evaluate the first finite base action before the no-stop staging handoff. Once
       // ownership transfers this flag is harmless; residual remains separately disarmed.
       gate16_shadow_.store(true);
@@ -362,18 +368,27 @@ class JointCommandOwner {
     } else if (name == "gate16_shadow") {
       gate16_armed_.store(false);
       gate16_shadow_.store(true);
+      gate16_fallback_.store(false);
       requested_.store(JointOwner::kOfficial);
     } else if (name == "gate16_climb") {
       gate16_armed_.store(true);
       gate16_shadow_.store(true);
+      gate16_fallback_.store(false);
+      requested_.store(JointOwner::kGate16);
+    } else if (name == "gate16_climb_fallback") {
+      gate16_armed_.store(true);
+      gate16_shadow_.store(true);
+      gate16_fallback_.store(true);
       requested_.store(JointOwner::kGate16);
     } else if (name == "stairs57") {
       gate16_armed_.store(false);
       gate16_shadow_.store(false);
+      gate16_fallback_.store(false);
       requested_.store(JointOwner::kStairs57);
     } else if (name == "stop") {
       gate16_armed_.store(false);
       gate16_shadow_.store(false);
+      gate16_fallback_.store(false);
       requested_.store(JointOwner::kStopped);
     } else if (node_) {
       RCLCPP_WARN(node_->get_logger(), "ignoring unknown joint owner request '%s'", name.c_str());
@@ -404,6 +419,7 @@ class JointCommandOwner {
     requested_.store(JointOwner::kOfficial);
     gate16_armed_.store(false);
     gate16_shadow_.store(false);
+    gate16_fallback_.store(false);
     climb_.resize(0);
     climb_stamp_ = -1.0;
     owner_since_ = Now();
@@ -491,6 +507,7 @@ class JointCommandOwner {
   std::atomic<JointOwner> requested_{JointOwner::kOfficial};
   std::atomic<bool> gate16_armed_{false};
   std::atomic<bool> gate16_shadow_{false};
+  std::atomic<bool> gate16_fallback_{false};
   double hold_started_{0.0};
   //: When the current owner got the joints. The climb timeout runs from this or from the last
   //: command, whichever is later, so a fresh owner is given the same window as a live one.

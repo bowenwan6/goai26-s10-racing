@@ -191,6 +191,48 @@ class StrategyRouterNode(Node):
         self.declare_parameter(
             "gate16_prewarm_forward", RouterConfig.gate16_prewarm_forward
         )
+        self.declare_parameter(
+            "gate16_fallback_enabled", RouterConfig.gate16_fallback_enabled
+        )
+        self.declare_parameter(
+            "gate16_fast_adapter_enabled", RouterConfig.gate16_fast_adapter_enabled
+        )
+        self.declare_parameter(
+            "gate16_fallback_ready_distance_min",
+            RouterConfig.gate16_fallback_ready_distance_min,
+        )
+        self.declare_parameter(
+            "gate16_fallback_ready_distance_max",
+            RouterConfig.gate16_fallback_ready_distance_max,
+        )
+        self.declare_parameter(
+            "gate16_fallback_ready_dwell",
+            RouterConfig.gate16_fallback_ready_dwell,
+        )
+        self.declare_parameter(
+            "gate16_fallback_min_entry_speed",
+            RouterConfig.gate16_fallback_min_entry_speed,
+        )
+        self.declare_parameter(
+            "gate16_fallback_max_entry_speed",
+            RouterConfig.gate16_fallback_max_entry_speed,
+        )
+        self.declare_parameter(
+            "gate16_fallback_target_entry_speed",
+            RouterConfig.gate16_fallback_target_entry_speed,
+        )
+        self.declare_parameter(
+            "gate16_fallback_max_lateral_error",
+            RouterConfig.gate16_fallback_max_lateral_error,
+        )
+        self.declare_parameter(
+            "gate16_fallback_max_heading_error_deg",
+            math.degrees(RouterConfig.gate16_fallback_max_heading_error),
+        )
+        self.declare_parameter(
+            "gate16_fallback_max_yaw_rate",
+            RouterConfig.gate16_fallback_max_yaw_rate,
+        )
         self.declare_parameter("climb_exit_forward", RouterConfig.climb_exit_forward)
         self.declare_parameter("climb_exit_duration", RouterConfig.climb_exit_duration)
         self.declare_parameter(
@@ -271,6 +313,43 @@ class StrategyRouterNode(Node):
             target_entry_speed=float(self.get_parameter("target_entry_speed").value),
             gate16_prewarm_forward=float(
                 self.get_parameter("gate16_prewarm_forward").value
+            ),
+            gate16_fallback_enabled=bool(
+                self.get_parameter("gate16_fallback_enabled").value
+            ),
+            gate16_fast_adapter_enabled=bool(
+                self.get_parameter("gate16_fast_adapter_enabled").value
+            ),
+            gate16_fallback_ready_distance_min=float(
+                self.get_parameter("gate16_fallback_ready_distance_min").value
+            ),
+            gate16_fallback_ready_distance_max=float(
+                self.get_parameter("gate16_fallback_ready_distance_max").value
+            ),
+            gate16_fallback_ready_dwell=float(
+                self.get_parameter("gate16_fallback_ready_dwell").value
+            ),
+            gate16_fallback_min_entry_speed=float(
+                self.get_parameter("gate16_fallback_min_entry_speed").value
+            ),
+            gate16_fallback_max_entry_speed=float(
+                self.get_parameter("gate16_fallback_max_entry_speed").value
+            ),
+            gate16_fallback_target_entry_speed=float(
+                self.get_parameter("gate16_fallback_target_entry_speed").value
+            ),
+            gate16_fallback_max_lateral_error=float(
+                self.get_parameter("gate16_fallback_max_lateral_error").value
+            ),
+            gate16_fallback_max_heading_error=math.radians(
+                float(
+                    self.get_parameter(
+                        "gate16_fallback_max_heading_error_deg"
+                    ).value
+                )
+            ),
+            gate16_fallback_max_yaw_rate=float(
+                self.get_parameter("gate16_fallback_max_yaw_rate").value
             ),
             align_speed=float(self.get_parameter("target_entry_speed").value),
             climb_exit_forward=float(self.get_parameter("climb_exit_forward").value),
@@ -443,6 +522,9 @@ class StrategyRouterNode(Node):
         if kind == "gate16":
             edge = tuple(float(v) for v in self.get_parameter("climb_edge_center").value)
             normal = tuple(float(v) for v in self.get_parameter("climb_normal").value)
+            fallback_enabled = bool(
+                self.get_parameter("gate16_fallback_enabled").value
+            )
             if (
                 len(edge) != 2
                 or len(normal) != 2
@@ -452,6 +534,15 @@ class StrategyRouterNode(Node):
             policy = StableGate16Policy(
                 Gate16Config(
                     command_forward=float(self.get_parameter("target_entry_speed").value),
+                    fallback_command_forward=(
+                        float(
+                            self.get_parameter(
+                                "gate16_fallback_target_entry_speed"
+                            ).value
+                        )
+                        if fallback_enabled
+                        else None
+                    ),
                     profile_file=str(self.get_parameter("gate16_profile_file").value),
                     obstacle_edge=edge,
                     obstacle_normal=normal,
@@ -459,10 +550,18 @@ class StrategyRouterNode(Node):
                     front_clearance=float(self.get_parameter("verify_clearance").value),
                 )
             )
+            variant = (
+                "v1.5 confidence-fallback" if fallback_enabled else "adaptive-v3"
+            )
+            profile_detail = (
+                "verified-wheel profiles over a stable-v1 fallback"
+                if fallback_enabled
+                else "verified-wheel command profiles"
+            )
             self.get_logger().warning(
-                "Gate16 adaptive-v3 policy enabled (source b824f7f): SDK-local "
+                f"Gate16 {variant} policy enabled (source 216b77a): SDK-local "
                 "174D frozen base+residual with explicit arm, shadow history and "
-                "bounded policy-frame mirroring and verified-wheel command profiles"
+                f"{profile_detail}"
             )
             policies["climb_policy"] = policy
             segment_policies[segment] = "climb_policy"
@@ -772,7 +871,10 @@ class StrategyRouterNode(Node):
             policy, out.mode.value, prewarm_ready=self.router.gate16_prewarm_ready
         )
         gate16_request = gate16_owner_request(
-            policy, out.mode.value, prewarm_ready=self.router.gate16_prewarm_ready
+            policy,
+            out.mode.value,
+            prewarm_ready=self.router.gate16_prewarm_ready,
+            entry_mode=self.router.gate16_entry_mode,
         )
         if out.mode is Mode.ABORT:
             self.arbiter.grant(JointArbiter.STOP)
@@ -787,7 +889,7 @@ class StrategyRouterNode(Node):
             if owner_name == JointArbiter.STAIRS57:
                 self.arbiter.grant(JointArbiter.STAIRS57)
             elif owner_name == JointArbiter.GATE16:
-                self.arbiter.grant(JointArbiter.GATE16_CLIMB)
+                self.arbiter.grant(gate16_request)
             else:
                 self.get_logger().error(
                     f"delegated policy requested unknown owner '{owner_name}'"

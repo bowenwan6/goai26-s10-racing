@@ -1,4 +1,4 @@
-"""Lifecycle adapter for the adaptive-v3 SDK-local Gate 16 policy.
+"""Lifecycle adapter for the v1.5 confidence-fallback SDK-local Gate 16 policy.
 
 The ONNX graphs and actuator decoding live in ``rl_deploy`` so they consume the calibrated
 ``RobotBasicState`` and produce wheel velocity targets without a ROS actuator round trip.
@@ -33,7 +33,13 @@ def gate16_should_own(policy, mode: str, *, prewarm_ready: bool = False) -> bool
     )
 
 
-def gate16_owner_request(policy, mode: str, *, prewarm_ready: bool = False) -> str:
+def gate16_owner_request(
+    policy,
+    mode: str,
+    *,
+    prewarm_ready: bool = False,
+    entry_mode: str | None = None,
+) -> str:
     """Return the two-phase SDK request for this router mode.
 
     Shadow inference keeps the ONNX sessions warm, but its actions are never treated as
@@ -48,12 +54,15 @@ def gate16_owner_request(policy, mode: str, *, prewarm_ready: bool = False) -> s
         return "gate16_shadow"
     if not gate16_should_own(policy, mode, prewarm_ready=prewarm_ready):
         return "official"
+    if entry_mode == "stable_fallback":
+        return "gate16_climb_fallback"
     return "gate16_climb"
 
 
 @dataclass
 class Gate16Config:
     command_forward: float = 0.25
+    fallback_command_forward: float | None = None
     command_lateral: float = 0.0
     command_yaw_rate: float = 0.0
     profile_file: str = ""
@@ -78,7 +87,7 @@ class _CommandProfile:
 
 
 class StableGate16Policy:
-    """Remote handle for the frozen-checkpoint, adaptive-v3 Gate16 actor."""
+    """Remote handle for the frozen-checkpoint Gate16 v1.5 actor."""
 
     action_kind = ActionKind.DELEGATED
     owner_name = "gate16"
@@ -175,21 +184,32 @@ class StableGate16Policy:
         self._settle_steps = 0
         self._entry_speed = 0.0
         self._entry_yaw_deg_value = 0.0
+        self._entry_mode = "unmatched"
 
     def start(self, observation: PolicyObservation) -> None:
         self._started_at = float(observation.t)
         self._last_t = self._started_at
         self._status = PolicyStatus.RUNNING
-        self._reason = "Gate16 adaptive-v3 actor requested (source b824f7f)"
+        self._reason = "Gate16 v1.5 actor requested (source 216b77a)"
         self._entry_speed = self._entry_speed_mps(observation)
         self._entry_yaw_deg_value = self._entry_yaw_deg(observation)
         self._profile = self._select_profile(
             self._entry_speed, self._entry_yaw_deg_value
         )
+        self._entry_mode = (
+            "fast_profile"
+            if self._profile is not None
+            else (
+                "stable_fallback"
+                if self.config.fallback_command_forward is not None
+                else "unmatched"
+            )
+        )
         print(
             "Gate16 command profile selected: "
             f"{self._profile.name if self._profile is not None else 'unmatched'} "
-            f"speed={self._entry_speed:.3f} yaw={self._entry_yaw_deg_value:.3f}",
+            f"mode={self._entry_mode} speed={self._entry_speed:.3f} "
+            f"yaw={self._entry_yaw_deg_value:.3f}",
             flush=True,
         )
 
@@ -209,9 +229,16 @@ class StableGate16Policy:
                 print("Gate16 command profile phase: push", flush=True)
         elif self._phase == "push":
             command_forward = self._profile.push_forward_mps
+        elif self.config.fallback_command_forward is not None and self._profile is None:
+            command_forward = self.config.fallback_command_forward
         else:
             command_forward = self.config.command_forward
         profile_name = self._profile.name if self._profile is not None else "unmatched"
+        runtime = (
+            "confidence_fallback_v1_5"
+            if self.config.fallback_command_forward is not None
+            else "adaptive_v3_b824f7f"
+        )
         return PolicyAction(
             ActionKind.DELEGATED,
             self._status,
@@ -222,7 +249,8 @@ class StableGate16Policy:
             ),
             info={
                 "owner": self.owner_name,
-                "runtime": "adaptive_v3_b824f7f",
+                "runtime": runtime,
+                "entry_mode": self._entry_mode,
                 "profile": profile_name,
                 "phase": reported_phase,
                 "entry_speed_mps": self._entry_speed,
@@ -254,7 +282,12 @@ class StableGate16Policy:
             elapsed,
             {
                 "stable_gate16_checkpoint": True,
-                "profile": "adaptive_v3_b824f7f",
+                "profile": (
+                    "confidence_fallback_v1_5"
+                    if self.config.fallback_command_forward is not None
+                    else "adaptive_v3_b824f7f"
+                ),
+                "entry_mode": self._entry_mode,
                 "command_profile": (
                     self._profile.name if self._profile is not None else "unmatched"
                 ),
