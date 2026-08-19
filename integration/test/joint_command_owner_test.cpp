@@ -117,10 +117,18 @@ int main() {
   Check(gate.owner() == s10::JointOwner::kGate16,
         "arming residual does not cause another actuator handover");
   Check(gate.gate16_armed(), "the explicit climb request arms residual");
+  Check(!gate.gate16_fallback(), "the fast climb request does not force fallback");
   Check(out(0, s10::JointCommandOwner::kColPos) == -0.25f,
         "the warm Gate16 command remains continuous across the arm edge");
   gate.RequestOwner("official");
   Check(!gate.gate16_armed(), "requesting the follower disarms residual immediately");
+
+  gate.RequestOwner("gate16_climb_fallback");
+  Check(gate.gate16_armed() && gate.gate16_fallback(),
+        "the stable request atomically arms climb and forces low-level fallback");
+  gate.RequestOwner("official");
+  Check(!gate.gate16_fallback(),
+        "returning official clears the fallback latch before the next attempt");
 
   // ------------------------------------------------ the armed Gate16 handoff keeps rolling
   gate.ResetForTest();

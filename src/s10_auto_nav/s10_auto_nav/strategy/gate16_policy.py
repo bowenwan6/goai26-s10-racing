@@ -33,7 +33,13 @@ def gate16_should_own(policy, mode: str, *, prewarm_ready: bool = False) -> bool
     )
 
 
-def gate16_owner_request(policy, mode: str, *, prewarm_ready: bool = False) -> str:
+def gate16_owner_request(
+    policy,
+    mode: str,
+    *,
+    prewarm_ready: bool = False,
+    entry_mode: str | None = None,
+) -> str:
     """Return the two-phase SDK request for this router mode.
 
     Shadow inference keeps the ONNX sessions warm, but its actions are never treated as
@@ -48,6 +54,8 @@ def gate16_owner_request(policy, mode: str, *, prewarm_ready: bool = False) -> s
         return "gate16_shadow"
     if not gate16_should_own(policy, mode, prewarm_ready=prewarm_ready):
         return "official"
+    if entry_mode == "stable_fallback":
+        return "gate16_climb_fallback"
     return "gate16_climb"
 
 

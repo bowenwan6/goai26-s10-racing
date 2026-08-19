@@ -865,7 +865,10 @@ class StrategyRouterNode(Node):
             policy, out.mode.value, prewarm_ready=self.router.gate16_prewarm_ready
         )
         gate16_request = gate16_owner_request(
-            policy, out.mode.value, prewarm_ready=self.router.gate16_prewarm_ready
+            policy,
+            out.mode.value,
+            prewarm_ready=self.router.gate16_prewarm_ready,
+            entry_mode=self.router.gate16_entry_mode,
         )
         if out.mode is Mode.ABORT:
             self.arbiter.grant(JointArbiter.STOP)
@@ -880,7 +883,7 @@ class StrategyRouterNode(Node):
             if owner_name == JointArbiter.STAIRS57:
                 self.arbiter.grant(JointArbiter.STAIRS57)
             elif owner_name == JointArbiter.GATE16:
-                self.arbiter.grant(JointArbiter.GATE16_CLIMB)
+                self.arbiter.grant(gate16_request)
             else:
                 self.get_logger().error(
                     f"delegated policy requested unknown owner '{owner_name}'"

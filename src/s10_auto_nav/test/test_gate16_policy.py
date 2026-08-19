@@ -46,6 +46,7 @@ def test_frozen_gate16_assets_match_manifest_and_graph_contract():
     assert integration["entry_distance_m"] == [0.60, 0.65]
     assert integration["entry_speed_mps"] == [0.23, 0.27]
     assert integration["base_owner_prewarms_before_residual"] is False
+    assert integration["fallback_owner_request"] == "gate16_climb_fallback"
     runtime = manifest["full_stack_runtime"]
     assert runtime["fallback_max_forward_mps"] == 0.15
     assert runtime["confidence_gated_fast_adapter"]["enabled"] is True
@@ -264,6 +265,9 @@ def test_gate16_base_owns_only_after_official_far_field_alignment():
     assert gate16_owner_request(policy, Mode.ALIGN.value) == "gate16_shadow"
     for mode in (Mode.CLIMB_READY, Mode.CLIMB, Mode.VERIFY_CLEAR):
         assert gate16_owner_request(policy, mode.value) == "gate16_climb"
+        assert gate16_owner_request(
+            policy, mode.value, entry_mode="stable_fallback"
+        ) == "gate16_climb_fallback"
     assert gate16_owner_request(policy, Mode.HANDOFF.value) == "official"
 
 
@@ -458,7 +462,9 @@ def test_v15_runner_preserves_owner_safety_and_confidence_fallback():
     assert "residual_available_ && climb_armed_" in source
     assert "S10 climb residual " in source
     assert "S10 v1.5 confidence-fallback climb config loaded" in source
-    assert "EntrySupportsFastAdapter" in source
+    assert "fallback_forced_by_router_" in source
+    assert "ShouldUseFastAdapter" in source
+    assert "SetForceFallback" in source
     assert "fast_adapter=" in source
     assert "fallback_forward_cap_mps_" in source
     assert "residual_engaged_ = !fast_adapter_active_" in source

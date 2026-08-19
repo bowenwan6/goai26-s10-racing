@@ -105,6 +105,10 @@ int main() {
   report.left_edge_distance = 0.60f;
   report.right_edge_distance = 0.62f;
   assert(s10_policy::EntrySupportsFastAdapter(report, 2.0f, 0.25f, envelope));
+  assert(s10_policy::ShouldUseFastAdapter(
+      report, 2.0f, 0.25f, envelope, false));
+  assert(!s10_policy::ShouldUseFastAdapter(
+      report, 2.0f, 0.25f, envelope, true));
   report.edge_heading_samples = 3;
   assert(!s10_policy::EntrySupportsFastAdapter(report, 2.0f, 0.25f, envelope));
   report.edge_heading_samples = 4;
