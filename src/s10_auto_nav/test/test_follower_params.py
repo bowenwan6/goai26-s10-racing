@@ -83,6 +83,9 @@ def test_the_brake_distances_ship_in_nav_yaml():
     assert params["committed_runup_trigger"] == 0.55
     assert params["committed_runup_distance"] == 1.3
     assert params["committed_runup_timeout"] == 20.0
+    assert params["same_level_corridor_waypoints"] == [29]
+    assert params["same_level_corridor_max_tilt_deg"] == 12.0
+    assert params["same_level_corridor_stable_hold"] == 0.4
     assert params["route_hint_waypoints"] == [31, 32]
     assert params["route_hint_points"] == [29.35, 17.8, 30.55, 18.5]
     assert params["route_hint_radius"] == 0.28
@@ -258,6 +261,54 @@ def test_committed_terrain_never_turns_a_failed_charge_into_an_infinite_push(nod
     assert node._committed_runup_phase == "back"
     assert node._committed_runup_attempts == node.step_commit.config.attempts + 1
     assert command.forward == pytest.approx(-node.step_commit.config.speed)
+
+
+@needs_ros
+def test_same_level_corridor_rejects_cross_storey_height_but_keeps_safety_vetoes(node):
+    node.same_level_corridor_waypoints = {1}
+    node.course._cursor = 1
+    node._tilt = 0.0
+
+    for _ in range(21):
+        active = node._update_same_level_corridor(0.02)
+    assert active
+
+    for kind in (
+        TerrainKind.HIGH_BARRIER,
+        TerrainKind.DROP,
+        TerrainKind.RAMP,
+        TerrainKind.STAIRS,
+    ):
+        corrected, rejected = node._same_level_corridor_verdict(_verdict(kind))
+        assert rejected
+        assert corrected.kind is TerrainKind.FLAT
+        assert f"raw {kind.value}" in corrected.reason
+
+    for kind in (TerrainKind.BLOCKED, TerrainKind.UNSTABLE, TerrainKind.UNKNOWN):
+        retained, rejected = node._same_level_corridor_verdict(_verdict(kind))
+        assert not rejected
+        assert retained.kind is kind
+
+
+@needs_ros
+def test_same_level_corridor_cannot_mask_an_ascent(node):
+    node.same_level_corridor_waypoints = {1}
+    node.course._cursor = 1
+    node.course.waypoints[0].position[2] = 0.0
+    node.course.waypoints[1].position[2] = 0.23
+    node._tilt = 0.0
+
+    assert not node._update_same_level_corridor(1.0)
+    verdict = _verdict(TerrainKind.HIGH_BARRIER)
+    retained, rejected = node._same_level_corridor_verdict(verdict)
+    assert not rejected
+    assert retained is verdict
+
+
+def test_same_level_corridor_suppresses_step_commit_without_disabling_lidar_source():
+    source = (REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py").read_text()
+    assert "suppressing_step_commit or committed_terrain or same_level_corridor" in source
+    assert "target, scale = self._avoidance_target" in source
 
 
 @needs_ros
