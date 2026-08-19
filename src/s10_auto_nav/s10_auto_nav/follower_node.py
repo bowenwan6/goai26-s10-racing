@@ -134,6 +134,8 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("score_radius", 0.18)
         self.declare_parameter("max_forward", PursuitGains.max_forward)
         self.declare_parameter("terrain_max_forward", PursuitGains.max_forward)
+        self.declare_parameter("waypoint_speed_limit_indices", [16, 24, 25, 26, 27, 28, 29, 31, 32])
+        self.declare_parameter("waypoint_speed_limit_values", [0.7] * 9)
         # A populated default makes rclpy declare INTEGER_ARRAY. An empty Python list is
         # inferred as BYTE_ARRAY and rejects the integer YAML override before startup.
         self.declare_parameter("fast_flat_waypoints", [2, 10, 14, 22])
@@ -258,6 +260,21 @@ class WaypointFollowerNode(Node):
         self.terrain_max_forward = float(
             self.get_parameter("terrain_max_forward").value
         )
+        speed_limit_indices = [
+            int(value)
+            for value in self.get_parameter("waypoint_speed_limit_indices").value
+        ]
+        speed_limit_values = [
+            float(value)
+            for value in self.get_parameter("waypoint_speed_limit_values").value
+        ]
+        if len(speed_limit_indices) != len(speed_limit_values):
+            raise ValueError(
+                "waypoint_speed_limit_values must contain one speed per waypoint index"
+            )
+        if any(value <= 0.0 for value in speed_limit_values):
+            raise ValueError("waypoint speed limits must be positive")
+        self.waypoint_speed_limits = dict(zip(speed_limit_indices, speed_limit_values))
         self.fast_flat_waypoints = {
             int(value) for value in self.get_parameter("fast_flat_waypoints").value
         }
@@ -822,30 +839,37 @@ class WaypointFollowerNode(Node):
         returns the accepted 0.7 m/s terrain ceiling before the next command is computed.
         """
         course_target = self.course.target
+        terrain_limit = (
+            self.terrain_max_forward
+            if course_target is None
+            else self.waypoint_speed_limits.get(
+                course_target.index, self.terrain_max_forward
+            )
+        )
         if course_target is None or course_target.index not in self.fast_flat_waypoints:
-            return self.terrain_max_forward
+            return terrain_limit
         if gate_distance < self.fast_flat_min_gate_distance:
-            return self.terrain_max_forward
+            return terrain_limit
         if self._strategy_mode not in {"", "navigate"}:
-            return self.terrain_max_forward
+            return terrain_limit
         if verdict.kind not in {TerrainKind.FLAT, TerrainKind.BLOCKED}:
-            return self.terrain_max_forward
+            return terrain_limit
         if lidar_scale < 0.999 or terrain_scale < 0.999:
-            return self.terrain_max_forward
+            return terrain_limit
         if np.linalg.norm(np.asarray(target) - np.asarray(carrot)) > 0.05:
-            return self.terrain_max_forward
+            return terrain_limit
         if abs(self._tilt) > self.fast_flat_max_tilt:
-            return self.terrain_max_forward
+            return terrain_limit
         if abs(self._pitch) > self.fast_flat_max_pitch:
-            return self.terrain_max_forward
+            return terrain_limit
 
         delta = np.asarray(target, float) - self._pose_xy
         heading_error = wrap_angle(math.atan2(delta[1], delta[0]) - self._yaw)
         cross_track = -math.sin(self._yaw) * delta[0] + math.cos(self._yaw) * delta[1]
         if abs(heading_error) > self.fast_flat_max_heading:
-            return self.terrain_max_forward
+            return terrain_limit
         if abs(cross_track) > self.fast_flat_max_cross_track:
-            return self.terrain_max_forward
+            return terrain_limit
         return self.fast_flat_forward
 
     def _log_state(

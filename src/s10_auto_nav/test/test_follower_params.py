@@ -44,6 +44,8 @@ def test_the_brake_distances_ship_in_nav_yaml():
     assert params["advance_radius"] == params["score_radius"] == 0.18
     assert params["max_forward"] == 2.0
     assert params["terrain_max_forward"] == 0.7
+    assert params["waypoint_speed_limit_indices"] == [16, 24, 25, 26, 27, 28, 29, 31, 32]
+    assert params["waypoint_speed_limit_values"] == [0.7] * 9
     assert params["fast_flat_waypoints"] == [2, 10, 14, 22]
     assert params["fast_flat_min_gate_distance"] == 3.0
     assert params["fast_flat_max_heading_deg"] == 8.0
@@ -308,6 +310,29 @@ def test_fast_flat_limit_requires_the_whole_live_safety_envelope(node):
     node._tilt = 0.0
     node._yaw = node.fast_flat_max_heading + 0.01
     assert limit() == pytest.approx(0.7)
+
+
+@needs_ros
+def test_waypoint_speed_limit_overrides_only_the_configured_leg(node):
+    flat = TerrainVerdict(TerrainKind.FLAT, 1.0, "clear", TerrainKind.FLAT)
+    node.fast_flat_waypoints.clear()
+    node.terrain_max_forward = 1.2
+    node.waypoint_speed_limits = {0: 0.65}
+    node._pose_xy = np.array([0.0, 0.0])
+    node._yaw = 0.0
+
+    values = {
+        "target": np.array([4.0, 0.0]),
+        "carrot": np.array([4.0, 0.0]),
+        "gate_distance": 4.0,
+        "verdict": flat,
+        "lidar_scale": 1.0,
+        "terrain_scale": 1.0,
+    }
+    assert node.course.target.index == 0
+    assert node._forward_limit_for(**values) == pytest.approx(0.65)
+    node.course._cursor = 1
+    assert node._forward_limit_for(**values) == pytest.approx(1.2)
 
 
 @needs_ros
