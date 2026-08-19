@@ -195,6 +195,9 @@ class StrategyRouterNode(Node):
             "gate16_fallback_enabled", RouterConfig.gate16_fallback_enabled
         )
         self.declare_parameter(
+            "gate16_fast_adapter_enabled", RouterConfig.gate16_fast_adapter_enabled
+        )
+        self.declare_parameter(
             "gate16_fallback_ready_distance_min",
             RouterConfig.gate16_fallback_ready_distance_min,
         )
@@ -313,6 +316,9 @@ class StrategyRouterNode(Node):
             ),
             gate16_fallback_enabled=bool(
                 self.get_parameter("gate16_fallback_enabled").value
+            ),
+            gate16_fast_adapter_enabled=bool(
+                self.get_parameter("gate16_fast_adapter_enabled").value
             ),
             gate16_fallback_ready_distance_min=float(
                 self.get_parameter("gate16_fallback_ready_distance_min").value

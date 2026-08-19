@@ -187,6 +187,9 @@ class RouterConfig:
     #: stable-v1 moving-entry contract at the far staging point when pose confidence is
     #: outside the fast envelope. The selected contract is fixed for the attempt.
     gate16_fallback_enabled: bool = False
+    #: Keep the probability-sensitive adaptive path behind an explicit experiment switch.
+    #: Competition configuration uses stable fallback for every Gate16 attempt.
+    gate16_fast_adapter_enabled: bool = False
     gate16_fallback_ready_distance_min: float = 0.62
     gate16_fallback_ready_distance_max: float = 0.70
     gate16_fallback_ready_dwell: float = 0.10
@@ -802,6 +805,12 @@ class Router:
             )
         entry_speed = state.speed if state.forward_speed is None else state.forward_speed
         fast_in_envelope = (
+            (
+                not gate16
+                or not c.gate16_fallback_enabled
+                or c.gate16_fast_adapter_enabled
+            )
+            and
             ready_min <= state.obstacle_distance <= ready_max
             and abs(state.lateral_error) <= c.max_lateral_error
             and abs(state.heading_error) <= c.max_heading_error
@@ -880,6 +889,8 @@ class Router:
             distance_error = state.obstacle_distance - staging_distance
             staged = abs(distance_error) <= c.gate16_staging_tolerance
             fast_aligned = (
+                (not c.gate16_fallback_enabled or c.gate16_fast_adapter_enabled)
+                and
                 abs(state.heading_error) <= c.max_heading_error
                 and abs(state.lateral_error) <= c.max_lateral_error
             )

@@ -352,6 +352,7 @@ def test_v15_prefers_fast_contract_for_strict_staging_pose():
             max_entry_speed=0.27,
             target_entry_speed=0.25,
             gate16_fallback_enabled=True,
+            gate16_fast_adapter_enabled=True,
         ),
         policies={"gate16": policy},
         segment_policies={(15, 16): "gate16"},
@@ -446,6 +447,32 @@ def test_v15_uses_stable_contract_for_normal_imperfect_staging_pose():
     assert router.mode is Mode.CLIMB
     assert out.command == (0.15, 0.0, 0.0)
     assert "stable_fallback" in out.reason
+
+
+def test_v15_competition_default_does_not_admit_fast_adapter():
+    policy = StableGate16Policy(
+        Gate16Config(command_forward=0.25, fallback_command_forward=0.18)
+    )
+    router = Router(
+        RouterConfig(
+            ready_distance_min=0.60,
+            ready_distance_max=0.65,
+            ready_dwell=0.0,
+            min_entry_speed=0.23,
+            max_entry_speed=0.27,
+            target_entry_speed=0.25,
+            gate16_fallback_enabled=True,
+            gate16_fast_adapter_enabled=False,
+            gate16_fallback_target_entry_speed=0.18,
+        ),
+        policies={"gate16": policy},
+        segment_policies={(15, 16): "gate16"},
+    )
+    router.mode = Mode.ALIGN
+    staged = replace(_state(0.02), obstacle_distance=0.90)
+    out = router.tick(staged, (0.7, 0.0, 0.0), observation_from_state(staged))
+    assert router.gate16_entry_mode == "stable_fallback"
+    assert np.isclose(out.command[0], 0.18)
 
 
 def test_v15_runner_preserves_owner_safety_and_confidence_fallback():
