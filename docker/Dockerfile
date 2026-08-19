@@ -5,7 +5,10 @@
 # and aarch64, so this builds and runs natively on Apple Silicon as well as on an x86 box.
 # Pick the matching value with the BUILD_PLATFORM argument to scripts/build.sh.
 
-FROM ros:jazzy-ros-base
+# Pin the multi-architecture image index used for the accepted 2026-08-19 run.  Keeping the
+# human-readable Jazzy tag makes the platform obvious; the digest prevents a later rebuild from
+# silently changing ROS or Ubuntu underneath the submitted code.
+FROM ros:jazzy-ros-base@sha256:da725acf8b0f9f30c683e33ffbdcd6482d077af96d6fdc7688c5f4f280b7d923
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -27,16 +30,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libosmesa6 \
     && rm -rf /var/lib/apt/lists/*
 
-# numpy is pinned below 2.0 by the SDK README; MuJoCo is the simulator itself.
+# NumPy must remain below 2.0 for the SDK; MuJoCo is the simulator itself.
 # scipy is imported by the upstream simulator but missing from the README's list.
 # onnxruntime runs the shipped policy outside the C++ controller, so a manoeuvre can be
 # designed against the same network the deployment uses; the SDK bundles only the C++ API.
 # Ubuntu 24.04 marks the system Python as externally managed, hence the override.
+COPY requirements.lock /tmp/s10-requirements.lock
 RUN pip3 install --no-cache-dir --break-system-packages \
-      "numpy<2.0" \
-      mujoco \
-      scipy \
-      onnxruntime
+      --requirement /tmp/s10-requirements.lock \
+    && rm /tmp/s10-requirements.lock
 
 # Software rasteriser: containers have no GPU, and the race runs headless anyway
 # (S10_USE_VIEWER=0). Set MUJOCO_GL=egl instead when a GPU is passed through.

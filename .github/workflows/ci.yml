@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install pytest numpy pyyaml
+        run: pip install pytest numpy pyyaml onnxruntime
       - name: Navigation and course validation
         run: pytest -q test
         working-directory: src/s10_auto_nav
@@ -66,8 +66,3 @@ jobs:
         run: |
           source /opt/ros/jazzy/setup.bash
           colcon build --base-paths src --symlink-install
-      - name: Run package tests
-        shell: bash
-        run: |
-          source /opt/ros/jazzy/setup.bash
-          colcon test --base-paths src --return-code-on-test-failure

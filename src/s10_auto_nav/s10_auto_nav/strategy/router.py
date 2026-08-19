@@ -150,6 +150,19 @@ def required_sensors_started(odom_time: float, lidar_time: float, heightmap_time
     )
 
 
+def obstacle_coordinates(position, yaw, edge, normal, tangent) -> tuple[float, float, float]:
+    """Pose in a measured obstacle frame: distance, lateral error and heading error."""
+    position = np.asarray(position, dtype=float)
+    edge = np.asarray(edge, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    tangent = np.asarray(tangent, dtype=float)
+    distance = float(np.dot(edge - position, normal))
+    lateral = float(np.dot(position - edge, tangent))
+    normal_yaw = math.atan2(float(normal[1]), float(normal[0]))
+    heading = (float(yaw) - normal_yaw + math.pi) % (2.0 * math.pi) - math.pi
+    return distance, lateral, heading
+
+
 @dataclass
 class RouterConfig:
     """Thresholds, dwell times and limits.
@@ -1496,6 +1509,7 @@ __all__ = [
     "Source",
     "field",
     "observation_from_state",
+    "obstacle_coordinates",
     "replace",
     "required_sensors_started",
 ]
