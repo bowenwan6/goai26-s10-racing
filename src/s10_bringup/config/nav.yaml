@@ -32,31 +32,33 @@ waypoint_follower:
     advance_radius: 0.18
     score_radius: 0.18
 
-    # The straight-flat actor passed WP9->10 at 2.0 for seeds 6/7/8 (actual p95 speed
-    # 2.25-2.34 m/s, max tilt 13.2 deg). 2.5 and 3.0 were faster but produced 24.0 and
-    # 28.1 deg flat-ground tilt, so they are rejected for a continuous run.
-    max_forward: 2.0
+    # TPE screening followed by independent seeds 6/7/8 kept 2.1 on the admitted flat
+    # legs. WP1->2 took 14.80-16.70 s and WP13->14 20.95-23.65 s, with 9.9 deg maximum
+    # tilt and no stalls. Earlier 2.5 and 3.0 probes produced 24-28 deg flat-ground tilt.
+    max_forward: 2.1
     # max_forward is admitted only on measured-clear, level course legs by the scheduler
     # below. Every turn, obstacle, ramp, stair, route hint and Gate16 approach retains the
-    # already accepted 0.7 ceiling. Values are target waypoint indices for each leg.
-    terrain_max_forward: 0.7
+    # independently seeded WP6->7 and WP22->23 runs accepted 1.2: 30.30-34.75 s with
+    # 38.6 deg maximum tilt and no stalls. Narrow and edge-adjacent legs remain capped by
+    # the paired waypoint limits below.
+    terrain_max_forward: 1.2
     # When terrain_max_forward is raised after segmented validation, keep the known narrow
     # decks, barrier final approaches, Gate16 entry and body-clear tail at their separately
     # validated ceiling. The paired arrays avoid a hidden waypoint-specific code branch and
     # keep every exception visible in the competition configuration.
     waypoint_speed_limit_indices: [16, 24, 25, 26, 27, 28, 29, 31, 32]
-    waypoint_speed_limit_values: [0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
+    waypoint_speed_limit_values: [0.7, 0.7, 0.7, 0.95, 0.7, 0.95, 0.7, 0.7, 0.7]
     fast_flat_waypoints: [2, 10, 14, 22]
-    fast_flat_min_gate_distance: 3.0
-    fast_flat_max_heading_deg: 8.0
-    fast_flat_max_cross_track: 0.15
-    fast_flat_max_tilt_deg: 6.0
-    fast_flat_max_pitch_deg: 5.0
+    fast_flat_min_gate_distance: 1.5
+    fast_flat_max_heading_deg: 7.0
+    fast_flat_max_cross_track: 0.26
+    fast_flat_max_tilt_deg: 13.0
+    fast_flat_max_pitch_deg: 6.0
     max_lateral: 0.4
     max_yaw_rate: 0.7
 
-    lookahead: 1.4
-    lookahead_speed_gain: 0.5
+    lookahead: 1.5
+    lookahead_speed_gain: 0.7
     yaw_gain: 1.8
     lateral_gain: 0.9
     # A 75-degree threshold let the WP26->27 right-angle turn translate north while
@@ -68,7 +70,7 @@ waypoint_follower:
     # Command-rate limits are part of the policy interface. They ship at the previously
     # hard-coded values and are exposed here so segmented trials can tune acceleration
     # without changing controller code between candidates.
-    forward_slew: 3.0
+    forward_slew: 5.0
     lateral_slew: 2.0
     yaw_slew: 6.0
     # WP26 and WP27 are right-angle gates on a narrow elevated transfer deck. The learned
@@ -76,8 +78,8 @@ waypoint_follower:
     # score each gate, retreat over the known-safe incoming path, and turn with margin.
     corner_retreat_waypoints: [26, 27]
     corner_retreat_distance: 0.7
-    corner_retreat_speed: 0.3
-    corner_align_tolerance_deg: 10.0
+    corner_retreat_speed: 0.35
+    corner_align_tolerance_deg: 9.0
     # WP27->28 is a validated spiral ramp, while the direct WP29->30 corridor is body-clear
     # in the 5 cm MuJoCo terrain cast. The stacked storey nevertheless makes their local
     # height maps alternate DROP/HIGH_BARRIER (WP30 reported a nonexistent 0.9-1.0 m drop).
@@ -90,7 +92,7 @@ waypoint_follower:
     # already traversed ramp until there is enough distance for a genuine momentum attempt;
     # 20 s bounds a reverse that cannot dislodge the chassis.
     committed_runup_trigger: 0.55
-    committed_runup_distance: 1.5
+    committed_runup_distance: 1.3
     committed_runup_timeout: 20.0
     # WP30->31 starts beside the upper-deck drop and a pillar. WP31->32 crosses a two-tier
     # wall whose south end is y=19.124; a 0.45 m body envelope must first pass west of the
@@ -98,12 +100,12 @@ waypoint_follower:
     # relaxing the strict waypoint cursor.
     route_hint_waypoints: [31, 32]
     route_hint_points: [29.35, 17.8, 30.55, 18.5]
-    route_hint_radius: 0.25
-    route_hint_speed: 0.5
+    route_hint_radius: 0.28
+    route_hint_speed: 0.75
     # A gate may score before the rear wheels have cleared its lip. In that pose the normal
     # terrain recovery must retain ownership; the connector arms only after settling.
     route_hint_max_tilt_deg: 12.0
-    route_hint_stable_hold: 0.5
+    route_hint_stable_hold: 0.4
 
     # Distance from the gate at which forward speed starts coming off. Zero means "use the
     # lookahead", which is what the brake did before this was a parameter, so the shipped
@@ -120,7 +122,7 @@ waypoint_follower:
     # no per-segment operator switch, and stair_brake_distance is never selected by waypoint
     # number. See TerrainClassifier and _brake_distance_for.
     brake_distance: 0.0
-    stair_brake_distance: 0.4
+    stair_brake_distance: 0.35
 
     # Stall watchdog, two clocks. The fast one is for wedging against a ledge while the gait
     # keeps cycling, which never trips a fall detector: under stall_speed for stall_timeout.
@@ -239,17 +241,14 @@ waypoint_follower:
     # well under the 14.5 degrees a 0.125 m step puts under a 0.5 m wheelbase.
     climb_pitch_deg: 8.0
 
-    # The policy's own ceiling, and the one number the step is actually sensitive to.
-    # Backing the base to a fixed start line and driving the y=20.5 drop repeatedly with
-    # nothing changed but the command: 0.50 wedged for the whole 20 s trial, 0.60 crossed
-    # in 7.1 s, 0.70 crossed in 4.3 s with 0.2 s of struggle. This read 0.5 for the run
-    # above, which is why that run lost fifty seconds -- pure pursuit was asking for 0.69
-    # on the approach and the commit *lowered* it just as the wheels reached the lip.
-    climb_speed: 0.7
+    # A bounded sweep found 1.2 unsafe (75 deg fall) and retained 1.1. WP25->29 passed for
+    # seeds 6/7/8 in 203.45-237.05 s with 53.8 deg maximum tilt. This is simulation evidence,
+    # not a claim about a hardware-trained command envelope, so 1.2 remains a hard rejection.
+    climb_speed: 1.1
 
     # Enough authority to hold a line, not enough to walk the wheels along the lip. The
     # thrash that lost the second run had yaw saturated at +/-0.70 alternating every second.
-    climb_yaw_rate: 0.15
+    climb_yaw_rate: 0.125
 
     # Pitch alone over-triggers: the approach to gate 1 holds a steady +8 degrees for four
     # seconds and the robot crosses it at 0.83 m/s wanting no help at all. What marks the
@@ -269,6 +268,8 @@ waypoint_follower:
     # wedge's 0.13 m of oscillation plus its drift inside one cycle, and a real crossing
     # covers it in under a second, having done 0.54 m in 1.8 s.
     climb_progress_distance: 0.25
+    climb_progress_window: 1.5
+    climb_level_dwell: 0.7
 
     # Push for this long, then reverse straight for a run-up and try again. It never hands
     # back to free steering while still pitched: an earlier version did, and the follower
