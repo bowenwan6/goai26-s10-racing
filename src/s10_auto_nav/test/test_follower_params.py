@@ -42,42 +42,55 @@ def shipped() -> dict:
 def test_the_brake_distances_ship_in_nav_yaml():
     params = shipped()
     assert params["advance_radius"] == params["score_radius"] == 0.18
-    assert params["max_forward"] == 2.0
-    assert params["terrain_max_forward"] == 0.7
+    assert params["max_forward"] == 2.1
+    assert params["terrain_max_forward"] == 1.2
     assert params["waypoint_speed_limit_indices"] == [16, 24, 25, 26, 27, 28, 29, 31, 32]
-    assert params["waypoint_speed_limit_values"] == [0.7] * 9
+    assert params["waypoint_speed_limit_values"] == [
+        0.7,
+        0.7,
+        0.7,
+        0.95,
+        0.7,
+        0.95,
+        0.7,
+        0.7,
+        0.7,
+    ]
     assert params["fast_flat_waypoints"] == [2, 10, 14, 22]
-    assert params["fast_flat_min_gate_distance"] == 3.0
-    assert params["fast_flat_max_heading_deg"] == 8.0
-    assert params["fast_flat_max_cross_track"] == 0.15
-    assert params["fast_flat_max_tilt_deg"] == 6.0
-    assert params["fast_flat_max_pitch_deg"] == 5.0
-    assert params["climb_speed"] == 0.7
-    assert params["lookahead_speed_gain"] == 0.5
+    assert params["fast_flat_min_gate_distance"] == 1.5
+    assert params["fast_flat_max_heading_deg"] == 7.0
+    assert params["fast_flat_max_cross_track"] == 0.26
+    assert params["fast_flat_max_tilt_deg"] == 13.0
+    assert params["fast_flat_max_pitch_deg"] == 6.0
+    assert params["climb_speed"] == 1.1
+    assert params["climb_progress_window"] == 1.5
+    assert params["climb_level_dwell"] == 0.7
+    assert params["climb_yaw_rate"] == 0.125
+    assert params["lookahead_speed_gain"] == 0.7
     assert params["lateral_gain"] == 0.9
     assert params["pivot_threshold_deg"] == 30.0
     assert params["align_falloff_deg"] == 60.0
     assert params["min_speed_fraction"] == 0.15
-    assert params["forward_slew"] == 3.0
+    assert params["forward_slew"] == 5.0
     assert params["lateral_slew"] == 2.0
     assert params["yaw_slew"] == 6.0
     assert params["corner_retreat_waypoints"] == [26, 27]
     assert params["corner_retreat_distance"] == 0.7
-    assert params["corner_retreat_speed"] == 0.3
-    assert params["corner_align_tolerance_deg"] == 10.0
+    assert params["corner_retreat_speed"] == 0.35
+    assert params["corner_align_tolerance_deg"] == 9.0
     assert params["committed_terrain_waypoints"] == [28, 30]
     assert params["committed_runup_waypoints"] == [28]
     assert params["committed_runup_trigger"] == 0.55
-    assert params["committed_runup_distance"] == 1.5
+    assert params["committed_runup_distance"] == 1.3
     assert params["committed_runup_timeout"] == 20.0
     assert params["route_hint_waypoints"] == [31, 32]
     assert params["route_hint_points"] == [29.35, 17.8, 30.55, 18.5]
-    assert params["route_hint_radius"] == 0.25
-    assert params["route_hint_speed"] == 0.5
+    assert params["route_hint_radius"] == 0.28
+    assert params["route_hint_speed"] == 0.75
     assert params["route_hint_max_tilt_deg"] == 12.0
-    assert params["route_hint_stable_hold"] == 0.5
+    assert params["route_hint_stable_hold"] == 0.4
     assert params["brake_distance"] == 0.0, "the flat default must still inherit the lookahead"
-    assert params["stair_brake_distance"] == 0.4
+    assert params["stair_brake_distance"] == 0.35
     assert params["barrier_escape_angle_deg"] == 60.0
     assert params["barrier_escape_distance"] == 1.2
     assert params["barrier_bypass_forward"] == 3.0
