@@ -292,6 +292,7 @@ PRE_EXISTING_DEFAULTS = {
     "max_retries": 3,
     "sensor_timeout": 0.5,
     "sensor_abort_timeout": 3.0,
+    "sensor_startup_timeout": 30.0,
     "fall_tilt": math.radians(60.0),
     "torque_ceiling": 50.0,
     "torque_grace": 1.0,

@@ -82,6 +82,7 @@ from s10_auto_nav.strategy.mock_policy import MockClimbPolicy, MockScenario
 from s10_auto_nav.strategy.policy import ActionKind, PolicyObservation
 from s10_auto_nav.strategy.router import Mode, RobotState, Router, RouterConfig, Source
 from s10_auto_nav.strategy.scripted_policy import ScriptedClimbPolicy
+from s10_auto_nav.strategy.stairs57_policy import Stairs57Config, Stairs57Policy
 from s10_auto_nav.waypoints import Course
 
 
@@ -131,6 +132,15 @@ class StrategyRouterNode(Node):
         self.declare_parameter("climb_edge_center", [float("nan"), float("nan")])
         self.declare_parameter("climb_normal", [float("nan"), float("nan")])
         self.declare_parameter("climb_tangent", [float("nan"), float("nan")])
+        self.declare_parameter("stairs57_enabled", False)
+        # Flat pairs because ROS parameters do not support nested integer arrays.
+        self.declare_parameter("stairs57_segments", [7, 8])
+        self.declare_parameter("stairs57_command_forward", 0.35)
+        self.declare_parameter("stairs57_entry_speed_min", 0.25)
+        self.declare_parameter("stairs57_entry_speed_max", 0.45)
+        self.declare_parameter("stairs57_entry_distance_min", RouterConfig.stairs57_entry_distance_min)
+        self.declare_parameter("stairs57_entry_distance_max", RouterConfig.stairs57_entry_distance_max)
+        self.declare_parameter("stairs57_entry_dwell", RouterConfig.stairs57_entry_dwell)
         self.declare_parameter("advance_radius", 0.18)
         self.declare_parameter("score_radius", 0.18)
 
@@ -144,6 +154,9 @@ class StrategyRouterNode(Node):
         )
         self.declare_parameter("max_retries", RouterConfig.max_retries)
         self.declare_parameter("sensor_timeout", RouterConfig.sensor_timeout)
+        self.declare_parameter(
+            "sensor_startup_timeout", RouterConfig.sensor_startup_timeout
+        )
         # Run the state machine but leave the follower's command alone; see RouterConfig.
         self.declare_parameter("router_shadow", RouterConfig.shadow)
         self.declare_parameter("measurement_only", RouterConfig.measurement_only)
@@ -250,6 +263,15 @@ class StrategyRouterNode(Node):
             gate16_staging_tolerance=float(
                 self.get_parameter("gate16_staging_tolerance").value
             ),
+            stairs57_entry_distance_min=float(
+                self.get_parameter("stairs57_entry_distance_min").value
+            ),
+            stairs57_entry_distance_max=float(
+                self.get_parameter("stairs57_entry_distance_max").value
+            ),
+            stairs57_entry_dwell=float(
+                self.get_parameter("stairs57_entry_dwell").value
+            ),
             gate16_staging_lead=float(
                 self.get_parameter("gate16_staging_lead").value
             ),
@@ -309,6 +331,9 @@ class StrategyRouterNode(Node):
             ),
             max_retries=int(self.get_parameter("max_retries").value),
             sensor_timeout=float(self.get_parameter("sensor_timeout").value),
+            sensor_startup_timeout=float(
+                self.get_parameter("sensor_startup_timeout").value
+            ),
         )
 
         policies, segment_policies = self._build_policies()
@@ -402,6 +427,7 @@ class StrategyRouterNode(Node):
         self._travelled = 0.0
         self._finished = False
         self._segment = (0, 1)
+        self._segment_target_z = None
         self._obstacle_distance = math.inf
         self._lateral_error = 0.0
         self._heading_error = 0.0
@@ -419,10 +445,13 @@ class StrategyRouterNode(Node):
     # -- construction ------------------------------------------------------
 
     def _build_policies(self):
-        if not bool(self.get_parameter("climb_enabled").value):
-            return {}, {}
-        segment = tuple(int(v) for v in self.get_parameter("climb_segment").value)
-        kind = str(self.get_parameter("climb_policy").value).lower()
+        policies = {}
+        segment_policies = {}
+        if bool(self.get_parameter("climb_enabled").value):
+            segment = tuple(int(v) for v in self.get_parameter("climb_segment").value)
+            kind = str(self.get_parameter("climb_policy").value).lower()
+        else:
+            kind = ""
         if kind == "gate16":
             edge = tuple(float(v) for v in self.get_parameter("climb_edge_center").value)
             normal = tuple(float(v) for v in self.get_parameter("climb_normal").value)
@@ -467,6 +496,8 @@ class StrategyRouterNode(Node):
                 "174D frozen base+residual with explicit arm, shadow history and "
                 f"{profile_detail}"
             )
+            policies["climb_policy"] = policy
+            segment_policies[segment] = "climb_policy"
         elif kind == "scripted":
             path = str(self.get_parameter("scripted_trajectory").value)
             if not path:
@@ -477,6 +508,8 @@ class StrategyRouterNode(Node):
                 f"{len(policy.trajectory)} recorded frames from {path}. It performs no "
                 "inference and must not be reported as a learned result."
             )
+            policies["climb_policy"] = policy
+            segment_policies[segment] = "climb_policy"
         elif kind == "mock":
             policy = MockClimbPolicy(
                 MockScenario(str(self.get_parameter("mock_scenario").value)),
@@ -486,11 +519,44 @@ class StrategyRouterNode(Node):
                 "climb policy is a MOCK. It does not climb anything; it exercises the "
                 "router's handling of a policy that succeeds, fails, hangs or lies."
             )
-        else:
+            policies["climb_policy"] = policy
+            segment_policies[segment] = "climb_policy"
+        elif kind:
             raise RuntimeError(
                 f"unknown climb_policy '{kind}' (expected gate16, mock or scripted)"
             )
-        return {"climb_policy": policy}, {segment: "climb_policy"}
+        if bool(self.get_parameter("stairs57_enabled").value):
+            raw = [int(v) for v in self.get_parameter("stairs57_segments").value]
+            if not raw or len(raw) % 2:
+                raise RuntimeError("stairs57_segments must contain one or more integer pairs")
+            segments = [tuple(raw[i : i + 2]) for i in range(0, len(raw), 2)]
+            if bool(self.get_parameter("climb_enabled").value) and tuple(
+                self.get_parameter("climb_segment").value
+            ) in segments:
+                raise RuntimeError("stairs57 must not replace the dedicated Gate16 segment")
+            stairs = Stairs57Policy(
+                Stairs57Config(
+                    command_forward=float(
+                        self.get_parameter("stairs57_command_forward").value
+                    ),
+                    entry_speed_min=float(
+                        self.get_parameter("stairs57_entry_speed_min").value
+                    ),
+                    entry_speed_max=float(
+                        self.get_parameter("stairs57_entry_speed_max").value
+                    ),
+                )
+            )
+            policies["stairs57_policy"] = stairs
+            for stairs_segment in segments:
+                if stairs_segment in segment_policies:
+                    raise RuntimeError(f"duplicate policy mapping for {stairs_segment}")
+                segment_policies[stairs_segment] = "stairs57_policy"
+            self.get_logger().warning(
+                "stairs57 model1800 enabled for ascent segments "
+                f"{segments} at {stairs.command_forward:.2f} m/s"
+            )
+        return policies, segment_policies
 
     # -- subscriptions -----------------------------------------------------
 
@@ -554,6 +620,7 @@ class StrategyRouterNode(Node):
         cursor = self.course.cursor
         if self.course.finished or cursor == 0:
             self._segment = (max(cursor - 1, 0), cursor)
+            self._segment_target_z = None
             self._obstacle_distance = math.inf
             self._lateral_error = 0.0
             self._heading_error = 0.0
@@ -561,11 +628,11 @@ class StrategyRouterNode(Node):
         previous = self.course.waypoints[cursor - 1]
         target = self.course.waypoints[cursor]
         self._segment = (previous.index, target.index)
+        self._segment_target_z = float(target.position[2])
 
-        if self._segment != self._climb_segment:
-            # Only the configured climb segment has an obstacle line. Everything else is
-            # ordinary driving and must read as "nothing ahead", or the router would arm on
-            # every waypoint in the course.
+        if self._segment not in self.router.segment_policies:
+            # Only configured policy segments carry router geometry. Everything else is
+            # ordinary driving and must read as "nothing ahead".
             self._obstacle_distance = math.inf
             self._lateral_error = 0.0
             self._heading_error = 0.0
@@ -578,13 +645,29 @@ class StrategyRouterNode(Node):
             self._obstacle_distance = math.inf
             return
         heading = heading / norm
-        if self._obstacle_frame is not None:
-            edge, normal, tangent = self._obstacle_frame
+        obstacle_frame = self._obstacle_frame if self._segment == self._climb_segment else None
+        if obstacle_frame is not None:
+            edge, normal, tangent = obstacle_frame
             (
                 self._obstacle_distance,
                 self._lateral_error,
                 self._heading_error,
             ) = _obstacle_coordinates(self._position[:2], self._ypr[0], edge, normal, tangent)
+            return
+        if self._segment != self._climb_segment:
+            # For continuous stairs the first-riser proxy is the target waypoint. The entry
+            # band is measured along the segment, which matches Jack's 5.5--5.8 m WP7->8
+            # observation and remains deterministic when the depth map is noisy.
+            edge = np.asarray(target.position[:2], float)
+            tangent = np.array([-heading[1], heading[0]])
+            self._obstacle_distance = float(np.dot(edge - self._position[:2], heading))
+            self._lateral_error = float(
+                np.dot(self._position[:2] - np.asarray(previous.position[:2], float), tangent)
+            )
+            target_yaw = math.atan2(float(heading[1]), float(heading[0]))
+            self._heading_error = (
+                self._ypr[0] - target_yaw + math.pi
+            ) % (2.0 * math.pi) - math.pi
             return
         if math.isnan(self._obstacle_x):
             edge = np.asarray(target.position[:2], float)
@@ -601,7 +684,7 @@ class StrategyRouterNode(Node):
     def _state(self) -> RobotState:
         yaw, pitch, roll = self._ypr
         edge = normal = None
-        if self._obstacle_frame is not None:
+        if self._segment == self._climb_segment and self._obstacle_frame is not None:
             edge, normal, _ = self._obstacle_frame
         forward_speed = None
         if normal is not None:
@@ -637,6 +720,7 @@ class StrategyRouterNode(Node):
             ),
             obstacle_edge=None if edge is None else np.asarray(edge, float).copy(),
             obstacle_normal=None if normal is None else np.asarray(normal, float).copy(),
+            segment_target_z=self._segment_target_z,
             actual_joint_owner=self._actual_owner,
         )
 
@@ -669,6 +753,7 @@ class StrategyRouterNode(Node):
         # window; Gate16 ownership and residual arm begin together only after CLIMB_READY.
         policy_name = self.router.policy_for(state.segment)
         policy = self.router.policies.get(policy_name)
+        stairs57_policy = bool(getattr(policy, "is_stairs57_policy", False))
         prewarm_gate16 = gate16_should_own(
             policy, out.mode.value, prewarm_ready=self.router.gate16_prewarm_ready
         )
@@ -684,7 +769,9 @@ class StrategyRouterNode(Node):
             out.source is Source.POLICY
             and self.router.active_action_kind is ActionKind.DELEGATED
         ):
-            self.arbiter.grant(JointArbiter.GATE16_CLIMB)
+            self.arbiter.grant(
+                JointArbiter.STAIRS57 if stairs57_policy else JointArbiter.GATE16_CLIMB
+            )
         elif prewarm_gate16:
             self.arbiter.grant(gate16_request)
         elif gate16_request == JointArbiter.GATE16_SHADOW:

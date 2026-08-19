@@ -26,6 +26,7 @@ from s10_auto_nav.strategy.router import (
     Source,
     observation_from_state,
 )
+from s10_auto_nav.strategy.stairs57_policy import Stairs57Policy
 
 SEGMENT = (15, 16)
 
@@ -547,6 +548,70 @@ def test_abort_is_terminal_and_holds_the_robot_still():
         assert out.mode is Mode.ABORT
         assert out.source is Source.ROUTER
         assert out.command == (0.0, 0.0, 0.0)
+
+
+def test_startup_waits_for_first_odometry_without_triggering_runtime_stale_abort():
+    router, _ = make_router(config=RouterConfig(sensor_startup_timeout=0.2))
+    for t in (1.0, 1.05, 1.10, 1.15):
+        out = router.tick(
+            state(t, odom_time=0.0, lidar_time=0.0, heightmap_time=0.0),
+            (0.7, 0.0, 0.0),
+        )
+        assert router.mode is Mode.NAVIGATE
+        assert out.source is Source.ROUTER
+        assert out.command == (0.0, 0.0, 0.0)
+
+    out = router.tick(
+        state(1.20, odom_time=1.20, lidar_time=1.20, heightmap_time=1.20),
+        (0.7, 0.0, 0.0),
+    )
+    assert router.mode is Mode.NAVIGATE
+    assert out.source is Source.NAV
+
+
+def test_stairs57_entry_band_survives_generic_approach_gate():
+    policy = Stairs57Policy()
+    router = Router(
+        RouterConfig(
+            stairs57_entry_distance_min=5.5,
+            stairs57_entry_distance_max=5.8,
+            stairs57_entry_dwell=0.04,
+        ),
+        policies={"stairs57_policy": policy},
+        segment_policies={(7, 8): "stairs57_policy"},
+    )
+    first = state(
+        1.0,
+        segment=(7, 8),
+        obstacle_distance=5.7,
+        actual_joint_owner="official",
+    )
+    out = router.tick(first, (0.7, 0.0, 0.0), observation_from_state(first))
+    assert router.mode is Mode.APPROACH
+    assert out.source is Source.NAV
+
+    second = state(
+        1.02,
+        segment=(7, 8),
+        obstacle_distance=5.7,
+        actual_joint_owner="official",
+    )
+    out = router.tick(second, (0.7, 0.0, 0.0), observation_from_state(second))
+    assert router.mode is Mode.ALIGN
+    assert out.source is Source.ROUTER
+    assert "rolling entry" in out.reason
+
+    correcting = state(
+        1.04,
+        segment=(7, 8),
+        obstacle_distance=5.7,
+        lateral_error=0.2,
+        actual_joint_owner="official",
+    )
+    out = router.tick(correcting, (0.7, 0.0, 0.0), observation_from_state(correcting))
+    assert router.mode is Mode.ALIGN
+    assert out.command[1] < 0.0
+
 
 
 # --------------------------------------------------------------- configuration

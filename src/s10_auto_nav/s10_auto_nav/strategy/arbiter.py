@@ -36,6 +36,7 @@ CLIMB = "climb"
 GATE16 = "gate16"
 GATE16_SHADOW = "gate16_shadow"
 GATE16_CLIMB = "gate16_climb"
+STAIRS57 = "stairs57"
 STOP = "stop"
 
 
@@ -51,6 +52,7 @@ class JointArbiter:
     GATE16 = GATE16
     GATE16_SHADOW = GATE16_SHADOW
     GATE16_CLIMB = GATE16_CLIMB
+    STAIRS57 = STAIRS57
     STOP = STOP
 
     def __init__(self, publish: Callable[[np.ndarray], None] | None = None):
@@ -60,7 +62,15 @@ class JointArbiter:
         self.refused = 0
 
     def grant(self, owner: str) -> None:
-        if owner not in (OFFICIAL, CLIMB, GATE16, GATE16_SHADOW, GATE16_CLIMB, STOP):
+        if owner not in (
+            OFFICIAL,
+            CLIMB,
+            GATE16,
+            GATE16_SHADOW,
+            GATE16_CLIMB,
+            STAIRS57,
+            STOP,
+        ):
             raise ValueError(f"unknown joint command owner: {owner}")
         self.owner = owner
 
