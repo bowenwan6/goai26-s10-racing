@@ -81,3 +81,19 @@ def test_timing_manifest_uses_one_frame_for_unmeasured_final_sample(tmp_path):
     assert manifest[-2] == "duration 0.033333333"
     assert manifest[-1] == "file '00004.png'"
     assert (tmp_path / "overlay_filters.txt").is_file()
+
+
+def test_simulation_timing_manifest_writes_overlay(tmp_path):
+    timing = np.array([0.02, 0.12, 0.22, 0.32, 0.42])
+    args = SimpleNamespace(
+        out=tmp_path,
+        stride=2,
+        timing="simulation",
+        overlay_font="/System/Library/Fonts/Supplemental/Arial.ttf",
+    )
+
+    RENDER._write_timing_files(args, _Trace(), timing, qpos_count=len(timing))
+
+    overlay = (tmp_path / "overlay_filters.txt").read_text()
+    assert "Elapsed" in overlay
+    assert "WP00 PASSED" in overlay
