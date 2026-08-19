@@ -16,6 +16,12 @@ START="${2:-0}"
 END="${3:-32}"
 SEED="${4:-6}"
 MAX_TIME="${5:-2400}"
+TIMING="${S10_VIDEO_TIMING:-wall}"
+
+[[ "${TIMING}" == "wall" || "${TIMING}" == "simulation" ]] || {
+  echo "error: S10_VIDEO_TIMING must be 'wall' or 'simulation'" >&2
+  exit 2
+}
 
 [[ "${OUTPUT_DIR}" = /* ]] || {
   echo "error: OUTPUT_DIR must be absolute" >&2
@@ -38,8 +44,9 @@ IMAGE="${IMAGE:-s10-racing:dev}"
 BUILD_VOLUME="${BUILD_VOLUME:-s10-racing-build}"
 RUN_NAME="$(printf '%02d_%02d_seed%s' "${START}" "${END}" "${SEED}")"
 RAW_DIR="${OUTPUT_DIR}/raw"
-FRAMES_DIR="${OUTPUT_DIR}/video/frames_1080p_realtime"
-MP4="${OUTPUT_DIR}/video/wp${START}_to_wp${END}_seed${SEED}_1080p_realtime.mp4"
+FRAMES_NAME="frames_1080p_${TIMING}"
+FRAMES_DIR="${OUTPUT_DIR}/video/${FRAMES_NAME}"
+MP4="${OUTPUT_DIR}/video/wp${START}_to_wp${END}_seed${SEED}_1080p_${TIMING}.mp4"
 
 mkdir -p "${RAW_DIR}" "${FRAMES_DIR}"
 
@@ -100,8 +107,8 @@ docker run --rm -i --name s10-realtime-manifest \
   "${IMAGE}" bash -lc \
   "source /opt/ros/jazzy/setup.bash && source /opt/s10-build/install/setup.bash && \
    scripts/render_replay_3d.py /evidence/raw/${RUN_NAME}_frames/replay.npz \
-   --out /evidence/video/frames_1080p_realtime --width 1920 --height 1080 \
-   --timing wall --overlay-font '${OVERLAY_FONT}' --manifest-only"
+   --out /evidence/video/${FRAMES_NAME} --width 1920 --height 1080 \
+   --timing ${TIMING} --overlay-font '${OVERLAY_FONT}' --manifest-only"
 
 render_pids=()
 for ((worker = 0; worker < RENDER_JOBS; worker++)); do
@@ -118,7 +125,7 @@ for ((worker = 0; worker < RENDER_JOBS; worker++)); do
     "${IMAGE}" bash -lc \
     "source /opt/ros/jazzy/setup.bash && source /opt/s10-build/install/setup.bash && \
      scripts/render_replay_3d.py /evidence/raw/${RUN_NAME}_frames/replay.npz \
-     --out /evidence/video/frames_1080p_realtime --width 1920 --height 1080 \
+     --out /evidence/video/${FRAMES_NAME} --width 1920 --height 1080 \
      --frame-start ${start} --frame-stop ${stop} --no-manifest" &
   render_pids+=("$!")
 done
@@ -140,9 +147,22 @@ for ((frame = 0; frame < FRAME_COUNT; frame++)); do
 done
 ((missing == 0)) || exit 1
 
+trim_args=()
+if [[ "${TIMING}" == "simulation" ]]; then
+  RUN_LOG="${RAW_DIR}/${RUN_NAME}.log"
+  OFFICIAL_DURATION="$(
+    sed -nE 's/.*Final waypoint reached.*elapsed=([0-9.]+)s.*/\1/p' "${RUN_LOG}" | tail -1
+  )"
+  [[ "${OFFICIAL_DURATION}" =~ ^[0-9]+([.][0-9]+)?$ ]] || {
+    echo "error: official simulator elapsed time not found in ${RUN_LOG}" >&2
+    exit 1
+  }
+  trim_args=(-t "${OFFICIAL_DURATION}")
+fi
+
 ffmpeg -y -f concat -safe 0 -i "${FRAMES_DIR}/frames.ffconcat" \
   -filter_script:v "${FRAMES_DIR}/overlay_filters.txt" \
   -c:v libx264 -preset slow -crf 15 -pix_fmt yuv420p -r 30 \
-  -vsync cfr -movflags +faststart "${MP4}"
+  -vsync cfr "${trim_args[@]}" -movflags +faststart "${MP4}"
 
 echo "video: ${MP4}"
