@@ -29,7 +29,16 @@ TIMING="${S10_VIDEO_TIMING:-wall}"
 }
 command -v docker >/dev/null || { echo "error: docker is required" >&2; exit 2; }
 command -v ffmpeg >/dev/null || { echo "error: ffmpeg is required on the host" >&2; exit 2; }
-OVERLAY_FONT="${S10_VIDEO_FONT:-/System/Library/Fonts/Supplemental/Arial.ttf}"
+if [[ -n "${S10_VIDEO_FONT:-}" ]]; then
+  OVERLAY_FONT="${S10_VIDEO_FONT}"
+elif [[ -f /System/Library/Fonts/Supplemental/Arial.ttf ]]; then
+  OVERLAY_FONT=/System/Library/Fonts/Supplemental/Arial.ttf
+elif [[ -f /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf ]]; then
+  OVERLAY_FONT=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+else
+  echo "error: no supported overlay font found (set S10_VIDEO_FONT)" >&2
+  exit 2
+fi
 [[ -f "${OVERLAY_FONT}" ]] || {
   echo "error: overlay font not found: ${OVERLAY_FONT} (set S10_VIDEO_FONT)" >&2
   exit 2
@@ -52,7 +61,8 @@ mkdir -p "${RAW_DIR}" "${FRAMES_DIR}"
 
 if [[ "${S10_SKIP_CAPTURE:-0}" != "1" ]]; then
   docker rm --force s10-realtime-capture >/dev/null 2>&1 || true
-  docker run --rm -i --name s10-realtime-capture --network host \
+  docker run --rm -i --name s10-realtime-capture \
+    --network "${DOCKER_NETWORK:-bridge}" \
     -v "${REPO_ROOT}:/ws" \
     -v "${BUILD_VOLUME}:/opt/s10-build" \
     -v "${OUTPUT_DIR}:/evidence" \

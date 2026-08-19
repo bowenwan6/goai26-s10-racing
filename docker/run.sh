@@ -41,11 +41,14 @@ BUILD_VOLUME="${BUILD_VOLUME:-s10-racing-build}"
 CONTAINER_NAME="${CONTAINER_NAME:-s10-dev-$$}"
 docker rm --force "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 
-# --network host keeps DDS discovery simple; without it the simulator and the controller
-# land in different network namespaces and never find each other.
+# Every runtime process started by the supplied scripts lives in this container, so Docker's
+# portable bridge network is sufficient for DDS discovery.  Set DOCKER_NETWORK=host only when
+# an external ROS tool must join the same DDS domain (Docker Desktop may require host-network
+# support to be enabled first).
+DOCKER_NETWORK="${DOCKER_NETWORK:-bridge}"
 exec docker run --rm "${tty_flags[@]}" \
   --name "${CONTAINER_NAME}" \
-  --network host \
+  --network "${DOCKER_NETWORK}" \
   --volume "${REPO_ROOT}:/ws" \
   --volume "${BUILD_VOLUME}:/opt/s10-build" \
   --workdir /ws \
@@ -54,5 +57,8 @@ exec docker run --rm "${tty_flags[@]}" \
   --env "S10_BUILD_BASE=/opt/s10-build/build" \
   --env "S10_INSTALL_BASE=/opt/s10-build/install" \
   --env "S10_LOG_BASE=/opt/s10-build/log" \
+  --env "S10_UPSTREAM_OFFLINE=${S10_UPSTREAM_OFFLINE:-0}" \
+  --env "S10_UPSTREAM_REF=${S10_UPSTREAM_REF:-13dd084be6cb5e2514098bc87e586d00dfe580b2}" \
+  --env "S10_UPSTREAM_URL=${S10_UPSTREAM_URL:-https://github.com/DeepRoboticsLab/goai_embodied_future_material.git}" \
   "${IMAGE}" \
   "${@:-/bin/bash}"
