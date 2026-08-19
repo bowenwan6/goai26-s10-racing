@@ -165,6 +165,14 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("committed_runup_trigger", 0.55)
         self.declare_parameter("committed_runup_distance", 1.5)
         self.declare_parameter("committed_runup_timeout", 20.0)
+        # A small number of fixed-course legs run beneath another storey. Their height map
+        # can therefore report the floor below or stairs overhead even though the scored
+        # chord is level. Once the previous gate has been reached and the chassis is stable,
+        # trust the measured level corridor for terrain only; lidar remains authoritative
+        # for real body-height obstacles.
+        self.declare_parameter("same_level_corridor_waypoints", [29])
+        self.declare_parameter("same_level_corridor_max_tilt_deg", 12.0)
+        self.declare_parameter("same_level_corridor_stable_hold", 0.4)
         # Body-clear staging points for legs whose straight chord starts beside a drop or
         # pillar. Entries are paired by index with XY coordinates in route_hint_points.
         self.declare_parameter("route_hint_waypoints", [31, 32])
@@ -310,6 +318,15 @@ class WaypointFollowerNode(Node):
         self.committed_runup_trigger = float(self.get_parameter("committed_runup_trigger").value)
         self.committed_runup_distance = float(self.get_parameter("committed_runup_distance").value)
         self.committed_runup_timeout = float(self.get_parameter("committed_runup_timeout").value)
+        self.same_level_corridor_waypoints = {
+            int(value) for value in self.get_parameter("same_level_corridor_waypoints").value
+        }
+        self.same_level_corridor_max_tilt = math.radians(
+            float(self.get_parameter("same_level_corridor_max_tilt_deg").value)
+        )
+        self.same_level_corridor_stable_hold = float(
+            self.get_parameter("same_level_corridor_stable_hold").value
+        )
         hint_waypoints = [int(value) for value in self.get_parameter("route_hint_waypoints").value]
         hint_values = [float(value) for value in self.get_parameter("route_hint_points").value]
         if len(hint_values) != 2 * len(hint_waypoints):
@@ -424,6 +441,8 @@ class WaypointFollowerNode(Node):
         self._committed_runup_phase: str | None = None
         self._committed_runup_elapsed = 0.0
         self._committed_runup_attempts = 0
+        self._same_level_corridor_active = False
+        self._same_level_corridor_stable_for = 0.0
         self._route_hints_completed: set[int] = set()
         self._route_hint_stable_for = 0.0
         self._corner_preview_active = False
@@ -504,6 +523,7 @@ class WaypointFollowerNode(Node):
         self.terrain_classifier.reset()
         self._reset_barrier_escape()
         self._reset_committed_runup()
+        self._reset_same_level_corridor()
         self._barrier_detours = 0
         self._climbing_barrier = False
         self._blocked_for = 0.0
@@ -543,6 +563,7 @@ class WaypointFollowerNode(Node):
             self.controller.reset()
             self._reset_barrier_escape()
             self._reset_committed_runup()
+            self._reset_same_level_corridor()
             reached = self.course.cursor - 1
             self._begin_corner_retreat(reached)
             self.get_logger().info(
@@ -599,8 +620,9 @@ class WaypointFollowerNode(Node):
         was_committing = self._committing
         bypassing_barrier = self._barrier_side != 0 or self._barrier_bypass_target is not None
         committed_terrain = self.course.target.index in self.committed_terrain_waypoints
+        same_level_corridor = self._update_same_level_corridor(dt)
         suppressing_step_commit = bypassing_barrier and not self._barrier_final_phase
-        if suppressing_step_commit or committed_terrain:
+        if suppressing_step_commit or committed_terrain or same_level_corridor:
             # A selected route around a height-map-confirmed wall is stronger evidence than
             # pitch alone. Contact with its corner can pitch the body 50+ degrees; treating
             # that as a stair replaced the bypass with a 0.7 m/s wall charge and caused the
@@ -660,7 +682,8 @@ class WaypointFollowerNode(Node):
             self._stall_reference = None
         else:
             self._update_stall_watchdog(dt)
-        verdict = self._classify_terrain(dt)
+        raw_verdict = self._classify_terrain(dt)
+        verdict, rejected_cross_storey = self._same_level_corridor_verdict(raw_verdict)
         self.terrain_pub.publish(String(data=f"{verdict.kind.value}:{verdict.confidence:.2f}"))
         self.controller.gains.brake_distance = self._brake_distance_for(verdict.kind)
 
@@ -774,7 +797,8 @@ class WaypointFollowerNode(Node):
         # they need. Lidar still vets every heading.
         terrain = (
             1.0
-            if self._barrier_side == 0 and self._barrier_bypass_target is not None
+            if rejected_cross_storey
+            or (self._barrier_side == 0 and self._barrier_bypass_target is not None)
             else self._terrain_scale_for(verdict, charging)
         )
         self.controller.gains.max_forward = self._forward_limit_for(
@@ -888,6 +912,8 @@ class WaypointFollowerNode(Node):
             mode = " TERRAIN_RUNUP"
         elif self._committed_runup_phase == "push":
             mode = " TERRAIN_PUSH"
+        elif self._same_level_corridor_active:
+            mode = " SAME_LEVEL_CORRIDOR"
         elif self._corner_preview_active:
             mode = " CORNER_PREVIEW"
         self.get_logger().info(
@@ -998,6 +1024,74 @@ class WaypointFollowerNode(Node):
         self._committed_runup_phase = None
         self._committed_runup_elapsed = 0.0
         self._committed_runup_attempts = 0
+
+    def _reset_same_level_corridor(self) -> None:
+        self._same_level_corridor_active = False
+        self._same_level_corridor_stable_for = 0.0
+
+    def _same_level_corridor_is_configured(self) -> bool:
+        """Whether the current leg is an explicitly verified level corridor.
+
+        The target allowlist alone is not enough: requiring the preceding and current
+        waypoint heights to agree prevents a configuration typo from masking a real ascent.
+        The ordered cursor also proves that the lower endpoint was actually reached.
+        """
+        target = self.course.target
+        if (
+            target is None
+            or target.index not in self.same_level_corridor_waypoints
+            or self.course.cursor <= 0
+        ):
+            return False
+        previous = self.course.waypoints[self.course.cursor - 1]
+        return abs(float(previous.position[2] - target.position[2])) <= 0.05
+
+    def _update_same_level_corridor(self, dt: float) -> bool:
+        """Latch the corridor after the chassis has cleared and settled at its entry."""
+        if not self._same_level_corridor_is_configured():
+            self._reset_same_level_corridor()
+            return False
+        if self._same_level_corridor_active:
+            return True
+        if self._tilt > self.same_level_corridor_max_tilt:
+            self._same_level_corridor_stable_for = 0.0
+            return False
+        self._same_level_corridor_stable_for += dt
+        if self._same_level_corridor_stable_for < self.same_level_corridor_stable_hold:
+            return False
+
+        self._same_level_corridor_active = True
+        self._reset_barrier_escape()
+        self.get_logger().info(
+            f"Verified same-level corridor active toward waypoint {self.course.target.index}; "
+            "height-map cross-storey returns will be rejected while lidar remains active"
+        )
+        return True
+
+    def _same_level_corridor_verdict(
+        self, verdict: TerrainVerdict
+    ) -> tuple[TerrainVerdict, bool]:
+        """Reject height-derived terrain modes on a proven level leg.
+
+        BLOCKED and UNSTABLE remain untouched. A real object is therefore still handled by
+        the lidar local planner, while attitude safety always keeps its immediate veto.
+        """
+        if not self._same_level_corridor_active or verdict.kind not in {
+            TerrainKind.DROP,
+            TerrainKind.HIGH_BARRIER,
+            TerrainKind.RAMP,
+            TerrainKind.STAIRS,
+        }:
+            return verdict, False
+        return (
+            TerrainVerdict(
+                TerrainKind.FLAT,
+                verdict.confidence,
+                f"verified same-level corridor rejected raw {verdict.kind.value}",
+                verdict.candidate,
+            ),
+            True,
+        )
 
     def _route_hint_command(self, dt: float) -> Command | None:
         """Follow one measured body-clear staging point before the ordered gate.
