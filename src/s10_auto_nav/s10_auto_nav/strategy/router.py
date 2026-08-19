@@ -137,6 +137,19 @@ class RobotState:
         return math.acos(max(-1.0, min(1.0, math.cos(self.pitch) * math.cos(self.roll))))
 
 
+def required_sensors_started(odom_time: float, lidar_time: float, heightmap_time: float) -> bool:
+    """Whether every input required by normal navigation has produced at least one sample.
+
+    A zero timestamp means "never received", not "three seconds stale".  Keeping this
+    distinction outside the age watchdog lets a slow first MuJoCo model load hold a safe zero
+    command without weakening the strict runtime stale-sensor timeout after startup.
+    """
+    return all(
+        math.isfinite(timestamp) and timestamp > 0.0
+        for timestamp in (odom_time, lidar_time, heightmap_time)
+    )
+
+
 @dataclass
 class RouterConfig:
     """Thresholds, dwell times and limits.
@@ -334,9 +347,7 @@ class Router:
         self._near_approach = Hysteresis(c.approach_enter, c.approach_exit, rising=False)
         self._near_align = Hysteresis(c.align_enter, c.align_exit, rising=False)
         self._in_envelope = Debounced(c.ready_dwell, c.unready_dwell)
-        self._gate16_fallback_envelope = Debounced(
-            c.gate16_fallback_ready_dwell, c.unready_dwell
-        )
+        self._gate16_fallback_envelope = Debounced(c.gate16_fallback_ready_dwell, c.unready_dwell)
         self._verified = Debounced(c.verify_hold, c.verify_unready_dwell)
         self._gate16_staging_complete = False
         self._gate16_prewarm_ready = False
@@ -620,8 +631,7 @@ class Router:
                 if self._resume_position is None
                 else float(
                     np.linalg.norm(
-                        np.asarray(state.position[:2], float)
-                        - self._resume_position[:2]
+                        np.asarray(state.position[:2], float) - self._resume_position[:2]
                     )
                 )
             )
@@ -642,9 +652,8 @@ class Router:
                 return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         if state.t < self._climb_exit_deadline:
-            if (
-                self._attempt.near_target_settling
-                and tuple(state.segment) == tuple(self._attempt.segment)
+            if self._attempt.near_target_settling and tuple(state.segment) == tuple(
+                self._attempt.segment
             ):
                 return RouterOutput(
                     self.mode,
@@ -683,10 +692,7 @@ class Router:
         done = tuple(state.segment) in self._cleared
         ready_to_start = bool(
             policy is not None
-            and (
-                not hasattr(policy, "ready_to_start")
-                or policy.ready_to_start(state)
-            )
+            and (not hasattr(policy, "ready_to_start") or policy.ready_to_start(state))
         )
         if segment_owned and ready_to_start and not done:
             self._retries = 0
@@ -751,26 +757,19 @@ class Router:
         policy = self.policies.get(name)
         gate16 = bool(getattr(policy, "is_gate16_policy", False))
         segment_owned = bool(getattr(policy, "owns_entire_segment", False))
-        requires_moving_entry = bool(
-            getattr(policy, "requires_moving_entry", gate16)
-        )
+        requires_moving_entry = bool(getattr(policy, "requires_moving_entry", gate16))
         command_forward, entry_speed_min, entry_speed_max, ready_min, ready_max = (
             self._policy_entry(policy)
         )
         if segment_owned:
             start_from_rest = bool(getattr(policy, "start_from_rest", False))
-            measured_forward = (
-                state.speed if state.forward_speed is None else state.forward_speed
-            )
+            measured_forward = state.speed if state.forward_speed is None else state.forward_speed
             heading_aligned = abs(state.heading_error) <= c.max_heading_error
             lateral_aligned = abs(state.lateral_error) <= c.max_lateral_error * 2.0
             in_envelope = (
                 lateral_aligned
                 and heading_aligned
-                and (
-                    start_from_rest
-                    or entry_speed_min <= measured_forward <= entry_speed_max
-                )
+                and (start_from_rest or entry_speed_min <= measured_forward <= entry_speed_max)
                 and abs(state.yaw_rate) <= c.max_entry_yaw_rate
                 and state.tilt <= c.max_entry_tilt
             )
@@ -785,9 +784,7 @@ class Router:
             if self._elapsed >= c.align_timeout:
                 self._go(Mode.RECOVER, f"could not align in {c.align_timeout:.0f}s")
                 return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
-            yaw = float(
-                np.clip(-state.heading_error * 2.0, -c.align_yaw_rate, c.align_yaw_rate)
-            )
+            yaw = float(np.clip(-state.heading_error * 2.0, -c.align_yaw_rate, c.align_yaw_rate))
             if start_from_rest:
                 # A segment test can spawn with 10--20 degrees of yaw error while the robot
                 # stands up. Correct that well before the first riser without consuming the
@@ -805,13 +802,8 @@ class Router:
             )
         entry_speed = state.speed if state.forward_speed is None else state.forward_speed
         fast_in_envelope = (
-            (
-                not gate16
-                or not c.gate16_fallback_enabled
-                or c.gate16_fast_adapter_enabled
-            )
-            and
-            ready_min <= state.obstacle_distance <= ready_max
+            (not gate16 or not c.gate16_fallback_enabled or c.gate16_fast_adapter_enabled)
+            and ready_min <= state.obstacle_distance <= ready_max
             and abs(state.lateral_error) <= c.max_lateral_error
             and abs(state.heading_error) <= c.max_heading_error
             and (
@@ -837,9 +829,7 @@ class Router:
             and abs(state.yaw_rate) <= c.gate16_fallback_max_yaw_rate
             and state.tilt <= c.max_entry_tilt
         )
-        fallback_ready = self._gate16_fallback_envelope.update(
-            fallback_in_envelope, dt
-        )
+        fallback_ready = self._gate16_fallback_envelope.update(fallback_in_envelope, dt)
 
         # Prefer the fast contract whenever both are possible. Once one is selected, do not
         # oscillate between speed targets while crossing the final 30 cm of runway.
@@ -848,11 +838,7 @@ class Router:
                 self._gate16_entry_mode = "fast_profile"
             elif fallback_ready:
                 self._gate16_entry_mode = "stable_fallback"
-        entry_ready = (
-            fast_ready
-            if self._gate16_entry_mode != "stable_fallback"
-            else fallback_ready
-        )
+        entry_ready = fast_ready if self._gate16_entry_mode != "stable_fallback" else fallback_ready
         if entry_ready:
             entry_mode = self._gate16_entry_mode or "default"
             self._go(Mode.CLIMB_READY, f"{entry_mode} entry envelope held")
@@ -890,23 +876,18 @@ class Router:
             staged = abs(distance_error) <= c.gate16_staging_tolerance
             fast_aligned = (
                 (not c.gate16_fallback_enabled or c.gate16_fast_adapter_enabled)
-                and
-                abs(state.heading_error) <= c.max_heading_error
+                and abs(state.heading_error) <= c.max_heading_error
                 and abs(state.lateral_error) <= c.max_lateral_error
             )
             fallback_aligned = bool(
                 c.gate16_fallback_enabled
-                and abs(state.heading_error)
-                <= c.gate16_fallback_max_heading_error
-                and abs(state.lateral_error)
-                <= c.gate16_fallback_max_lateral_error
+                and abs(state.heading_error) <= c.gate16_fallback_max_heading_error
+                and abs(state.lateral_error) <= c.gate16_fallback_max_lateral_error
             )
             if staged and (fast_aligned or fallback_aligned):
                 self._gate16_staging_complete = True
                 self._gate16_prewarm_ready = True
-                self._gate16_entry_mode = (
-                    "fast_profile" if fast_aligned else "stable_fallback"
-                )
+                self._gate16_entry_mode = "fast_profile" if fast_aligned else "stable_fallback"
             else:
                 # The official wheeled actor does not translate sideways reliably. Capture
                 # the centreline as a forward arc instead: steer into the cross-track error
@@ -935,12 +916,10 @@ class Router:
                 # policy warm-up runway is for speed/yaw settling, not lane acquisition.
                 lateral_aligned = abs(state.lateral_error) <= c.max_lateral_error
                 desired_heading = 0.0 if lateral_aligned else raw_capture_heading
-                heading_delta = (
-                    desired_heading - state.heading_error + math.pi
-                ) % (2.0 * math.pi) - math.pi
-                heading = float(
-                    np.clip(heading_delta * 3.0, -c.align_yaw_rate, c.align_yaw_rate)
-                )
+                heading_delta = (desired_heading - state.heading_error + math.pi) % (
+                    2.0 * math.pi
+                ) - math.pi
+                heading = float(np.clip(heading_delta * 3.0, -c.align_yaw_rate, c.align_yaw_rate))
                 heading_aligned = abs(state.heading_error) <= c.max_heading_error
                 if not lateral_aligned:
                     # 0.12 m/s was below the official actor's effective locomotion range in
@@ -983,19 +962,13 @@ class Router:
         # was written to avoid and it applies just as well here.
         fallback_selected = self._gate16_entry_mode == "stable_fallback"
         heading_tolerance = (
-            c.gate16_fallback_max_heading_error
-            if fallback_selected
-            else c.max_heading_error
+            c.gate16_fallback_max_heading_error if fallback_selected else c.max_heading_error
         )
         lateral_tolerance = (
-            c.gate16_fallback_max_lateral_error
-            if fallback_selected
-            else c.max_lateral_error
+            c.gate16_fallback_max_lateral_error if fallback_selected else c.max_lateral_error
         )
         ready_distance_min = (
-            c.gate16_fallback_ready_distance_min
-            if fallback_selected
-            else c.ready_distance_min
+            c.gate16_fallback_ready_distance_min if fallback_selected else c.ready_distance_min
         )
         heading = float(np.clip(-state.heading_error * 1.5, -c.align_yaw_rate, c.align_yaw_rate))
         lateral = 0.0
@@ -1004,20 +977,14 @@ class Router:
             lateral = float(np.clip(-state.lateral_error * 1.2, -c.align_lateral, c.align_lateral))
             if abs(state.lateral_error) <= lateral_tolerance * 2.0:
                 if state.obstacle_distance < ready_distance_min:
-                    entry_command = (
-                        self._gate16_entry_command() if gate16 else command_forward
-                    )
+                    entry_command = self._gate16_entry_command() if gate16 else command_forward
                     forward = -min(c.align_speed, entry_command)
                 elif requires_moving_entry:
-                    forward = (
-                        self._gate16_entry_command() if gate16 else command_forward
-                    )
+                    forward = self._gate16_entry_command() if gate16 else command_forward
                 else:
                     gap = state.obstacle_distance - c.align_enter * 0.5
                     forward = float(np.clip(gap * 0.8, -c.align_speed, c.align_speed))
-        active_envelope = (
-            self._gate16_fallback_envelope if fallback_selected else self._in_envelope
-        )
+        active_envelope = self._gate16_fallback_envelope if fallback_selected else self._in_envelope
         settling = " (settling)" if active_envelope.settling else ""
         return RouterOutput(
             self.mode,
@@ -1068,13 +1035,9 @@ class Router:
             gate16=bool(getattr(policy, "is_gate16_policy", False)),
             gate16_entry_mode=self._gate16_entry_mode or "default",
             delegated=getattr(policy, "action_kind", None) is ActionKind.DELEGATED,
-            requires_physical_clear=bool(
-                getattr(policy, "requires_physical_clear", False)
-            ),
+            requires_physical_clear=bool(getattr(policy, "requires_physical_clear", False)),
         )
-        mode_suffix = (
-            f" ({self._gate16_entry_mode})" if self._gate16_entry_mode else ""
-        )
+        mode_suffix = f" ({self._gate16_entry_mode})" if self._gate16_entry_mode else ""
         self._go(Mode.CLIMB, f"started {name}{mode_suffix}")
         # The delegated SDK actor starts on this same tick. Keep its command/profile input
         # at the selected moving-entry speed instead of injecting a one-frame stop.
@@ -1109,15 +1072,9 @@ class Router:
             next_name = self.policy_for(state.segment)
             next_ready = bool(
                 next_name == self._active_name
-                and (
-                    not hasattr(policy, "ready_to_start")
-                    or policy.ready_to_start(state)
-                )
+                and (not hasattr(policy, "ready_to_start") or policy.ready_to_start(state))
             )
-            if (
-                bool(getattr(policy, "owns_entire_segment", False))
-                and next_ready
-            ):
+            if bool(getattr(policy, "owns_entire_segment", False)) and next_ready:
                 self._attempt.started_at = state.t
                 self._attempt.start_travelled = state.travelled
                 self._attempt.best_travelled = state.travelled
@@ -1177,8 +1134,7 @@ class Router:
         ):
             physical_progress = float(
                 np.dot(
-                    np.asarray(state.position[:2], float)
-                    - self._attempt.entry_position[:2],
+                    np.asarray(state.position[:2], float) - self._attempt.entry_position[:2],
                     np.asarray(state.obstacle_normal, float),
                 )
             )
@@ -1193,25 +1149,19 @@ class Router:
             # rejects oscillation while allowing continuous rolling over many treads.
             physical_progress = float(
                 np.linalg.norm(
-                    np.asarray(state.position[:2], float)
-                    - self._attempt.entry_position[:2]
+                    np.asarray(state.position[:2], float) - self._attempt.entry_position[:2]
                 )
             )
         if (
             state.travelled > self._attempt.best_travelled + c.climb_progress_epsilon
-            or physical_progress
-            > self._attempt.best_physical_progress + c.climb_progress_epsilon
+            or physical_progress > self._attempt.best_physical_progress + c.climb_progress_epsilon
         ):
-            self._attempt.best_travelled = max(
-                self._attempt.best_travelled, state.travelled
-            )
+            self._attempt.best_travelled = max(self._attempt.best_travelled, state.travelled)
             self._attempt.best_physical_progress = max(
                 self._attempt.best_physical_progress, physical_progress
             )
             self._attempt.last_progress_at = state.t
-        progress_window = float(
-            getattr(policy, "climb_progress_window", c.climb_progress_window)
-        )
+        progress_window = float(getattr(policy, "climb_progress_window", c.climb_progress_window))
         if state.t - self._attempt.last_progress_at >= progress_window:
             self._cancel_active("no progress")
             self._go(Mode.RECOVER, f"no progress for {progress_window:.0f}s during climb")
@@ -1282,9 +1232,8 @@ class Router:
                     yaw_command = nav_command[2]
                 elif policy.config.navigation_steering_source == "target":
                     lateral_command = 0.0
-                    if (
-                        policy.config.navigation_target_lateral_gain > 0.0
-                        and math.isfinite(state.segment_target_distance)
+                    if policy.config.navigation_target_lateral_gain > 0.0 and math.isfinite(
+                        state.segment_target_distance
                     ):
                         lateral_command = (
                             policy.config.navigation_target_lateral_gain
@@ -1321,8 +1270,7 @@ class Router:
             ):
                 fraction = float(
                     np.clip(
-                        state.segment_target_distance
-                        / policy.config.summit_slowdown_distance,
+                        state.segment_target_distance / policy.config.summit_slowdown_distance,
                         0.0,
                         1.0,
                     )
@@ -1345,9 +1293,7 @@ class Router:
                 reason=(
                     "climbing"
                     if action.kind is ActionKind.TWIST
-                    else (
-                        f"climbing (actual owner {state.actual_joint_owner}{policy_detail})"
-                    )
+                    else (f"climbing (actual owner {state.actual_joint_owner}{policy_detail})")
                 ),
             )
         # No twist: a joint action is not a body velocity and must not be turned into one.
@@ -1389,9 +1335,7 @@ class Router:
         if past < 4:
             return False, f"only {past}/4 wheel centres past the edge"
         if self._attempt.requires_physical_clear:
-            deck_z = float(
-                getattr(self._active, "verification_deck_z", c.verify_deck_z)
-            )
+            deck_z = float(getattr(self._active, "verification_deck_z", c.verify_deck_z))
             deck_threshold = deck_z + c.verify_height_fraction * c.verify_wheel_radius
             high = int(np.sum(wheels[:, 2] >= deck_threshold))
             if high < 4:
@@ -1426,9 +1370,7 @@ class Router:
                 )
             self._go(Mode.HANDOFF, f"verified: {why}; returning official owner")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
-        verify_timeout = max(
-            self.config.verify_hold * 3.0, self.config.verify_timeout
-        )
+        verify_timeout = max(self.config.verify_hold * 3.0, self.config.verify_timeout)
         if self._elapsed >= verify_timeout:
             self._cancel_active("verification failed")
             self._go(Mode.RECOVER, f"verification failed: {why}")
@@ -1456,19 +1398,13 @@ class Router:
         """Hold navigation until the SDK confirms the reset official actor is in control."""
         if state.actual_joint_owner == "official":
             if self._attempt.near_target_settling:
-                self._climb_exit_deadline = (
-                    state.t + self.config.near_target_finish_duration
-                )
+                self._climb_exit_deadline = state.t + self.config.near_target_finish_duration
             else:
                 self._climb_exit_deadline = state.t + self.config.climb_exit_duration
             self._go(Mode.NAVIGATE, "official owner acknowledged; follower resumed")
             return RouterOutput(
                 self.mode,
-                (
-                    Source.ROUTER
-                    if self._attempt.near_target_settling
-                    else Source.NAV
-                ),
+                (Source.ROUTER if self._attempt.near_target_settling else Source.NAV),
                 command=(
                     self._near_target_finish_command(state)
                     if self._attempt.near_target_settling
@@ -1485,9 +1421,7 @@ class Router:
         c = self.config
         if self._attempt.gate16:
             wheels = (
-                None
-                if state.wheel_positions is None
-                else np.asarray(state.wheel_positions, float)
+                None if state.wheel_positions is None else np.asarray(state.wheel_positions, float)
             )
             safe_lower = bool(
                 wheels is not None
@@ -1555,12 +1489,13 @@ def observation_from_state(state: RobotState, *, joints: int = 16) -> PolicyObse
 
 __all__ = [
     "Mode",
-    "Source",
     "RobotState",
+    "Router",
     "RouterConfig",
     "RouterOutput",
-    "Router",
+    "Source",
+    "field",
     "observation_from_state",
     "replace",
-    "field",
+    "required_sensors_started",
 ]

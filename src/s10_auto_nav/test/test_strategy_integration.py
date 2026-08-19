@@ -37,6 +37,7 @@ LAUNCH_FILE = REPO / "src" / "s10_bringup" / "launch" / "race.launch.py"
 STRATEGY_YAML = REPO / "src" / "s10_bringup" / "config" / "strategy.yaml"
 FOLLOWER = REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py"
 ROUTER_NODE = REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "strategy_router_node.py"
+RUN_RACE = REPO / "scripts" / "run_race.sh"
 
 
 # --------------------------------------------------------------- the arbiter
@@ -97,6 +98,14 @@ def test_the_router_is_off_by_default():
     source = LAUNCH_FILE.read_text()
     window = source[source.index('"strategy_router",') :][:400]
     assert 'default_value="false"' in window
+
+
+def test_competition_wrapper_enables_the_validated_gate16_router_by_default():
+    """The evaluator-facing command must not silently run the official-only diagnostic."""
+    source = RUN_RACE.read_text()
+    assert "S10_STRATEGY_ROUTER:-1" in source
+    assert "strategy_router:=true" in source
+    assert "config/strategy_gate16.yaml" in source
 
 
 def test_the_follower_moves_rather_than_duplicating_its_output():
