@@ -83,6 +83,8 @@ class StableGate16Policy:
     action_kind = ActionKind.DELEGATED
     owner_name = "gate16"
     is_gate16_policy = True
+    requires_moving_entry = True
+    requires_physical_clear = True
 
     def __init__(self, config: Gate16Config | None = None):
         self.config = config or Gate16Config()
