@@ -19,6 +19,11 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 
 ## Current status
 
+Judge-facing submission details are collected in
+[`docs/SUBMISSION.md`](docs/SUBMISSION.md). Dependency, data and model provenance are disclosed in
+[`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md), and the required post-competition scope is described
+in [`docs/OPEN_SOURCE_PLAN.md`](docs/OPEN_SOURCE_PLAN.md).
+
 ### Version status
 
 `main` is the **Ver1.0 competition release**. It combines the reviewed Gate 16 v1.5
@@ -174,6 +179,11 @@ The two active Gate 16 ONNX files are part of this repository and are checked at
 | `policy/gate16/policy.onnx` | `5c1b388f951b282693b4497cd4fd2fd1b53fe1bcd989758c0af42f140a20fb16` |
 | `policy/gate16/climb_residual.onnx` | `de61441facb21f0301787b26f168f8447fdc0d83c337eeea884537bbf2468889` |
 
+The Docker base image is pinned by digest and the validated Python packages are locked in
+[`docker/requirements.lock`](docker/requirements.lock). Full licenses, model provenance and the
+one remaining contributor-license action are listed in
+[`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md).
+
 ## Reproduce with Docker (recommended)
 
 These commands keep all generated build output in a Docker volume. Only source code and pinned
@@ -211,6 +221,20 @@ enables `strategy_gate16.yaml`; after Gate 16, joint ownership returns to the of
 The official simulator prints ordered waypoint events and the final MuJoCo-clock elapsed time.
 Press `Ctrl-C` after the evaluator reports the final waypoint if the hosting evaluator does not
 terminate the process itself.
+
+### Visualize perception input
+
+The preliminary-round package requires the perception-control input to be visible as points or
+rays. On native Ubuntu 24.04 with a graphical desktop, the bundled RViz configuration shows the
+horizontal scan, lidar point cloud and body-frame height-map points while the same autonomy stack
+runs:
+
+```bash
+scripts/run_race.sh viz:=true rviz:=true
+```
+
+Keep visualization off for a timed headless lap. It adds display overhead but does not replace or
+change the inputs consumed by the controller.
 
 On a clean machine the first MuJoCo XML/model load may take several seconds. During that initial
 load the router explicitly commands zero and retains official joint ownership until odometry,
@@ -431,6 +455,21 @@ Never edit `upstream/` directly; put SDK integration in `integration/` and apply
 `scripts/patch_upstream.py`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions and review requirements.
+
+## Build the submission ZIP
+
+After the final reviewed branch is merged and pushed to `main`, create the compressed self-test
+code package directly from the clean Git revision. The output directory must be outside the
+repository:
+
+```bash
+scripts/package_submission.sh /absolute/path/to/resources/submission_20260820
+```
+
+The script rejects dirty tracked files and non-`main` revisions, excludes untracked SDK/build/log/
+video material by using `git archive`, tests the ZIP, checks required runtime files, and writes a
+SHA-256 sidecar plus a commit/evidence manifest. The MP4 is uploaded separately; see
+[`docs/SUBMISSION.md`](docs/SUBMISSION.md) for the exact filename and checksum.
 
 ## Acknowledgements
 
