@@ -120,6 +120,15 @@ class RobotState:
     wheel_contacts: np.ndarray | None = None
     obstacle_edge: np.ndarray | None = None
     obstacle_normal: np.ndarray | None = None
+    #: Ground/deck height at the segment's target waypoint. Segment stair policies use this
+    #: only to prove that all wheels reached the upper platform; it is not an entry trigger.
+    segment_target_z: float | None = None
+    #: Current XY distance to the segment target. Used only for bounded summit slowdown;
+    #: strict waypoint acceptance remains owned by the course/evaluator.
+    segment_target_distance: float = math.inf
+    #: Bearing error to the current waypoint itself, deliberately excluding any path
+    #: lookahead into the following segment.
+    segment_target_heading_error: float = 0.0
     actual_joint_owner: str = "unknown"
 
     @property
@@ -223,6 +232,15 @@ class RouterConfig:
     #: Canonical b824 post-climb cruise while the official follower settles back in.
     climb_exit_forward: float = 0.5
     climb_exit_duration: float = 0.8
+    near_target_finish_forward: float = 0.5
+    near_target_finish_duration: float = 10.0
+    near_target_finish_forward_gain: float = 1.0
+    near_target_finish_reverse_limit: float = 0.3
+    near_target_finish_max_speed: float = 0.7
+    near_target_finish_lateral_gain: float = 1.0
+    near_target_finish_lateral_limit: float = 0.25
+    near_target_finish_yaw_gain: float = 2.5
+    near_target_finish_yaw_limit: float = 0.7
 
     #: Recovery.
     recover_speed: float = 0.35
@@ -273,6 +291,9 @@ class _Attempt:
     entry_obstacle_distance: float = math.inf
     segment: tuple[int, int] = (-1, -1)
     gate16: bool = False
+    delegated: bool = False
+    requires_physical_clear: bool = False
+    near_target_settling: bool = False
 
 
 class Router:
@@ -328,6 +349,38 @@ class Router:
     def active_policy_name(self) -> str:
         return self._active_name
 
+    def _near_target_finish_command(self, state: RobotState) -> tuple[float, float, float]:
+        """Close a strict gate after the official actor acknowledges platform handoff."""
+        heading = state.segment_target_heading_error
+        distance = state.segment_target_distance
+        if state.speed > self.config.near_target_finish_max_speed:
+            return (0.0, 0.0, 0.0)
+        forward = self.config.near_target_finish_forward_gain * distance * math.cos(heading)
+        lateral = self.config.near_target_finish_lateral_gain * distance * math.sin(heading)
+        return (
+            float(
+                np.clip(
+                    forward,
+                    -self.config.near_target_finish_reverse_limit,
+                    self.config.near_target_finish_forward,
+                )
+            ),
+            float(
+                np.clip(
+                    lateral,
+                    -self.config.near_target_finish_lateral_limit,
+                    self.config.near_target_finish_lateral_limit,
+                )
+            ),
+            float(
+                np.clip(
+                    self.config.near_target_finish_yaw_gain * heading,
+                    -self.config.near_target_finish_yaw_limit,
+                    self.config.near_target_finish_yaw_limit,
+                )
+            ),
+        )
+
     @property
     def active_action_kind(self) -> ActionKind | None:
         return None if self._active is None else self._active.action_kind
@@ -343,6 +396,20 @@ class Router:
 
     def policy_for(self, segment: tuple[int, int]) -> str:
         return self.segment_policies.get(tuple(segment), "")
+
+    def _policy_entry(self, policy) -> tuple[float, float, float, float, float]:
+        """Return command, speed bounds and distance bounds for one policy.
+
+        Gate16 keeps the router defaults.  A compatible delegated actor may publish explicit
+        bounds, but cannot widen the router's heading, lateral, attitude or freshness gates.
+        """
+        c = self.config
+        command = float(getattr(policy, "command_forward", c.target_entry_speed))
+        speed_min = float(getattr(policy, "entry_speed_min", c.min_entry_speed))
+        speed_max = float(getattr(policy, "entry_speed_max", c.max_entry_speed))
+        distance_min = float(getattr(policy, "ready_distance_min", c.ready_distance_min))
+        distance_max = float(getattr(policy, "ready_distance_max", c.ready_distance_max))
+        return command, speed_min, speed_max, distance_min, distance_max
 
     def _go(self, mode: Mode, reason: str) -> None:
         if mode is self.mode:
@@ -375,6 +442,11 @@ class Router:
             # navigation input, but it is intentionally preempted during this low-level
             # manoeuvre and must not cancel a valid climb because one scan was delayed.
             return max(state.t - state.odom_time, state.t - state.heightmap_time)
+        if self._attempt.delegated and self.mode is Mode.CLIMB:
+            # The in-process 57D stair actor consumes the current SDK robot state and no
+            # height map.  Lidar and height-map delays must not revoke its ownership, while
+            # odometry still gives the router an independent stale-state stop condition.
+            return state.t - state.odom_time
         return max(
             state.t - state.odom_time, state.t - state.lidar_time, state.t - state.heightmap_time
         )
@@ -477,11 +549,10 @@ class Router:
         # This watchdog belongs to the low-level Gate 16 controller.  Applying its
         # deliberately conservative ceiling while the existing follower owns the robot
         # makes normal terrain contacts abort an otherwise healthy waypoint run.
-        gate16_owns_control = self._attempt.gate16 and self.mode in (
-            Mode.CLIMB,
-            Mode.VERIFY_CLEAR,
-        )
-        if not gate16_owns_control:
+        delegated_owns_control = (
+            self._attempt.gate16 or self._attempt.delegated
+        ) and self.mode in (Mode.CLIMB, Mode.VERIFY_CLEAR)
+        if not delegated_owns_control:
             self._torque_over_since = None
         elif self._torque_violation(state, dt):
             self._cancel_active("torque")
@@ -540,6 +611,24 @@ class Router:
                 return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         if state.t < self._climb_exit_deadline:
+            if (
+                self._attempt.near_target_settling
+                and tuple(state.segment) == tuple(self._attempt.segment)
+            ):
+                return RouterOutput(
+                    self.mode,
+                    Source.ROUTER,
+                    command=self._near_target_finish_command(state),
+                    reason="closing strict waypoint after platform handoff",
+                )
+            if self._attempt.near_target_settling:
+                self._climb_exit_deadline = -math.inf
+                return RouterOutput(
+                    self.mode,
+                    Source.NAV,
+                    command=nav_command,
+                    reason="near-target gate completed; follower resumed",
+                )
             return RouterOutput(
                 self.mode,
                 Source.NAV,
@@ -548,13 +637,35 @@ class Router:
             )
 
         name = self.policy_for(state.segment)
-        gate16 = bool(getattr(self.policies.get(name), "is_gate16_policy", False))
-        if gate16 and state.actual_joint_owner != "official":
+        policy = self.policies.get(name)
+        delegated = bool(
+            policy is not None and getattr(policy, "action_kind", None) is ActionKind.DELEGATED
+        )
+        if delegated and state.actual_joint_owner != "official":
             return RouterOutput(
                 self.mode,
                 Source.NAV,
                 command=nav_command,
                 reason=f"waiting for official owner ({state.actual_joint_owner})",
+            )
+        segment_owned = bool(getattr(policy, "owns_entire_segment", False))
+        done = tuple(state.segment) in self._cleared
+        ready_to_start = bool(
+            policy is not None
+            and (
+                not hasattr(policy, "ready_to_start")
+                or policy.ready_to_start(state)
+            )
+        )
+        if segment_owned and ready_to_start and not done:
+            self._retries = 0
+            self._go(Mode.ALIGN, f"segment {state.segment} uses {name} from its start")
+            return RouterOutput(
+                self.mode,
+                Source.NAV,
+                command=nav_command,
+                speed_scale=self.config.approach_speed_scale,
+                reason=self._last_reason,
             )
         near = self._near_approach.update(state.obstacle_distance)
         # The edge has to be *ahead*. `near` is a distance band and is equally satisfied by an
@@ -562,7 +673,6 @@ class Router:
         # successful climb. Both this and the cleared latch below are needed: the latch alone
         # would still let the router arm on an edge it had reversed past during RECOVER.
         ahead = state.obstacle_distance > -self.config.approach_behind
-        done = tuple(state.segment) in self._cleared
         if name and name in self.policies and near and ahead and not done:
             self._retries = 0
             self._go(Mode.APPROACH, f"segment {state.segment} uses {name}")
@@ -604,19 +714,71 @@ class Router:
         """
         c = self.config
         name = self.policy_for(state.segment)
+        policy = self.policies.get(name)
+        gate16 = bool(getattr(policy, "is_gate16_policy", False))
+        segment_owned = bool(getattr(policy, "owns_entire_segment", False))
         requires_moving_entry = bool(
-            getattr(self.policies.get(name), "is_gate16_policy", False)
+            getattr(policy, "requires_moving_entry", gate16)
         )
+        command_forward, entry_speed_min, entry_speed_max, ready_min, ready_max = (
+            self._policy_entry(policy)
+        )
+        if segment_owned:
+            start_from_rest = bool(getattr(policy, "start_from_rest", False))
+            measured_forward = (
+                state.speed if state.forward_speed is None else state.forward_speed
+            )
+            heading_aligned = abs(state.heading_error) <= c.max_heading_error
+            lateral_aligned = abs(state.lateral_error) <= c.max_lateral_error * 2.0
+            in_envelope = (
+                lateral_aligned
+                and heading_aligned
+                and (
+                    start_from_rest
+                    or entry_speed_min <= measured_forward <= entry_speed_max
+                )
+                and abs(state.yaw_rate) <= c.max_entry_yaw_rate
+                and state.tilt <= c.max_entry_tilt
+            )
+            if self._in_envelope.update(in_envelope, dt):
+                self._go(Mode.CLIMB_READY, "segment-policy entry envelope held")
+                return RouterOutput(
+                    self.mode,
+                    Source.ROUTER,
+                    command=(command_forward, 0.0, 0.0),
+                    reason=self._last_reason,
+                )
+            if self._elapsed >= c.align_timeout:
+                self._go(Mode.RECOVER, f"could not align in {c.align_timeout:.0f}s")
+                return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+            yaw = float(
+                np.clip(-state.heading_error * 2.0, -c.align_yaw_rate, c.align_yaw_rate)
+            )
+            if start_from_rest:
+                # A segment test can spawn with 10--20 degrees of yaw error while the robot
+                # stands up. Correct that well before the first riser without consuming the
+                # stair runway. Once inside the heading gate, stop steering and let yaw rate
+                # settle before handing over the actor.
+                forward = 0.0 if not heading_aligned else command_forward
+                yaw = yaw if not heading_aligned else 0.0
+            else:
+                forward = command_forward
+            return RouterOutput(
+                self.mode,
+                Source.ROUTER,
+                command=(forward, 0.0, yaw),
+                reason="aligning for stairs57 segment ownership",
+            )
         in_envelope = (
-            c.ready_distance_min <= state.obstacle_distance <= c.ready_distance_max
+            ready_min <= state.obstacle_distance <= ready_max
             and abs(state.lateral_error) <= c.max_lateral_error
             and abs(state.heading_error) <= c.max_heading_error
             and (
-                c.min_entry_speed
+                entry_speed_min
                 <= (state.speed if state.forward_speed is None else state.forward_speed)
-                <= c.max_entry_speed
+                <= entry_speed_max
                 if requires_moving_entry
-                else state.speed <= c.max_entry_speed
+                else state.speed <= entry_speed_max
             )
             and abs(state.yaw_rate) <= c.max_entry_yaw_rate
             and state.tilt <= c.max_entry_tilt
@@ -629,7 +791,7 @@ class Router:
             return RouterOutput(
                 self.mode,
                 Source.ROUTER,
-                command=(c.target_entry_speed, 0.0, 0.0),
+                command=(command_forward, 0.0, 0.0),
                 reason=self._last_reason,
             )
 
@@ -644,7 +806,7 @@ class Router:
         # Gate16 actor is requested only inside the configured staging band, after yaw and
         # lateral error are already small. The adaptive-v3 deployment uses about 1.50 m so
         # its recurrent-by-history 174D input settles before residual arm.
-        if requires_moving_entry and not self._gate16_prewarm_ready:
+        if gate16 and not self._gate16_prewarm_ready:
             if state.obstacle_edge is None or state.obstacle_normal is None:
                 self._go(Mode.RECOVER, "Gate16 staging has no obstacle frame")
                 return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
@@ -738,10 +900,10 @@ class Router:
         if abs(state.heading_error) <= c.max_heading_error * 2.0:
             lateral = float(np.clip(-state.lateral_error * 1.2, -c.align_lateral, c.align_lateral))
             if abs(state.lateral_error) <= c.max_lateral_error * 2.0:
-                if state.obstacle_distance < c.ready_distance_min:
-                    forward = -min(c.align_speed, c.target_entry_speed)
+                if state.obstacle_distance < ready_min:
+                    forward = -min(c.align_speed, command_forward)
                 elif requires_moving_entry:
-                    forward = c.gate16_prewarm_forward
+                    forward = command_forward
                 else:
                     gap = state.obstacle_distance - c.align_enter * 0.5
                     forward = float(np.clip(gap * 0.8, -c.align_speed, c.align_speed))
@@ -793,14 +955,19 @@ class Router:
             entry_obstacle_distance=state.obstacle_distance,
             segment=tuple(state.segment),
             gate16=bool(getattr(policy, "is_gate16_policy", False)),
+            delegated=getattr(policy, "action_kind", None) is ActionKind.DELEGATED,
+            requires_physical_clear=bool(
+                getattr(policy, "requires_physical_clear", False)
+            ),
         )
         self._go(Mode.CLIMB, f"started {name}")
         # The delegated SDK actor starts on this same tick. Keep its command/profile input
         # at the canonical 0.25 m/s instead of injecting a one-frame stop between states.
+        command_forward, _, _, _, _ = self._policy_entry(policy)
         return RouterOutput(
             self.mode,
             Source.ROUTER,
-            command=(self.config.target_entry_speed, 0.0, 0.0),
+            command=(command_forward, 0.0, 0.0),
             reason=self._last_reason,
         )
 
@@ -817,8 +984,67 @@ class Router:
             self._go(Mode.RECOVER, "climb without an active policy")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
+        if tuple(state.segment) != tuple(self._attempt.segment):
+            completed = tuple(self._attempt.segment)
+            self._cleared.add(completed)
+            next_name = self.policy_for(state.segment)
+            next_ready = bool(
+                next_name == self._active_name
+                and (
+                    not hasattr(policy, "ready_to_start")
+                    or policy.ready_to_start(state)
+                )
+            )
+            if (
+                bool(getattr(policy, "owns_entire_segment", False))
+                and next_ready
+            ):
+                self._attempt.started_at = state.t
+                self._attempt.start_travelled = state.travelled
+                self._attempt.best_travelled = state.travelled
+                self._attempt.last_progress_at = state.t
+                self._attempt.segment = tuple(state.segment)
+                if hasattr(policy, "continue_segment"):
+                    policy.continue_segment()
+            else:
+                if hasattr(policy, "succeed"):
+                    policy.succeed(f"strict waypoint completed segment {completed}")
+                delegated = self._attempt.delegated
+                self._cancel_active("strict target waypoint reached")
+                if delegated:
+                    self._go(Mode.HANDOFF, "stairs segment complete; returning official owner")
+                    return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+                self._go(Mode.NAVIGATE, "segment policy complete")
+                return RouterOutput(
+                    self.mode, Source.NAV, command=nav_command, reason=self._last_reason
+                )
+
+        if hasattr(policy, "completion_candidate") and not bool(
+            getattr(policy, "handoff_requires_strict_target", False)
+        ):
+            complete, why = policy.completion_candidate(
+                state,
+                dt,
+                self._attempt.entry_position,
+            )
+            if complete:
+                completed = tuple(self._attempt.segment)
+                self._cleared.add(completed)
+                self._resume_from = state.travelled
+                self._resume_position = np.asarray(state.position, float).copy()
+                self._resume_deadline = state.t + self.config.resume_timeout
+                if hasattr(policy, "succeed"):
+                    policy.succeed(why)
+                self._cancel_active("upper platform verified")
+                self._go(
+                    Mode.HANDOFF,
+                    f"stairs segment {completed} clear: {why}; returning official owner",
+                )
+                return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+
         elapsed = state.t - self._attempt.started_at
-        if elapsed >= c.climb_timeout:
+        climb_timeout = float(getattr(policy, "climb_timeout", c.climb_timeout))
+        if elapsed >= climb_timeout:
             self._cancel_active("timeout")
             self._policy_status = PolicyStatus.TIMED_OUT
             self._go(Mode.RECOVER, f"climb timed out after {elapsed:.1f}s")
@@ -837,6 +1063,21 @@ class Router:
                     np.asarray(state.obstacle_normal, float),
                 )
             )
+        elif (
+            bool(getattr(policy, "is_stairs57_policy", False))
+            and self._attempt.entry_position is not None
+        ):
+            # /nav/progress is a waypoint-completion fraction, not metres travelled. It
+            # remains constant throughout a stair segment and used to cancel a robot that
+            # was visibly climbing after exactly one progress window. For stairs, measure
+            # physical displacement from the ownership point; the monotone best below
+            # rejects oscillation while allowing continuous rolling over many treads.
+            physical_progress = float(
+                np.linalg.norm(
+                    np.asarray(state.position[:2], float)
+                    - self._attempt.entry_position[:2]
+                )
+            )
         if (
             state.travelled > self._attempt.best_travelled + c.climb_progress_epsilon
             or physical_progress
@@ -849,9 +1090,12 @@ class Router:
                 self._attempt.best_physical_progress, physical_progress
             )
             self._attempt.last_progress_at = state.t
-        elif state.t - self._attempt.last_progress_at >= c.climb_progress_window:
+        progress_window = float(
+            getattr(policy, "climb_progress_window", c.climb_progress_window)
+        )
+        if state.t - self._attempt.last_progress_at >= progress_window:
             self._cancel_active("no progress")
-            self._go(Mode.RECOVER, f"no progress for {c.climb_progress_window:.0f}s during climb")
+            self._go(Mode.RECOVER, f"no progress for {progress_window:.0f}s during climb")
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         try:
@@ -862,7 +1106,25 @@ class Router:
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         self._policy_status = action.status
-        if self._attempt.gate16:
+        if bool(getattr(policy, "is_stairs57_policy", False)):
+            if (
+                not self._attempt.near_target_settling
+                and hasattr(policy, "ready_to_settle")
+                and policy.ready_to_settle(state, dt)
+            ):
+                self._attempt.near_target_settling = True
+            if self._attempt.near_target_settling:
+                completed = tuple(self._attempt.segment)
+                self._cleared.add(completed)
+                if hasattr(policy, "succeed"):
+                    policy.succeed("near-target upper platform verified")
+                self._cancel_active("near-target upper platform verified")
+                self._go(
+                    Mode.HANDOFF,
+                    f"stairs segment {completed} reached upper platform; returning official owner",
+                )
+                return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
+        if self._attempt.requires_physical_clear:
             clear, why = self._physically_clear(state)
             if clear:
                 self._go(Mode.VERIFY_CLEAR, f"four-wheel candidate: {why}")
@@ -884,6 +1146,72 @@ class Router:
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         if action.kind in (ActionKind.TWIST, ActionKind.DELEGATED):
+            command = action.twist or (0.0, 0.0, 0.0)
+            if (
+                action.kind is ActionKind.DELEGATED
+                and bool(getattr(policy, "is_stairs57_policy", False))
+                and policy.config.navigation_yaw_rate_limit > 0.0
+            ):
+                # Correction-capable checkpoints can follow a nearby centreline point, reuse
+                # the official follower's live steering, or aim at the current strict target.
+                # Learned joints remain the sole actuator owner while the router feeds them
+                # bounded Q/E-like body commands.
+                yaw_limit = policy.config.navigation_yaw_rate_limit
+                lateral_limit = policy.config.navigation_lateral_limit
+                if policy.config.navigation_steering_source == "follower":
+                    lateral_command = nav_command[1]
+                    yaw_command = nav_command[2]
+                elif policy.config.navigation_steering_source == "target":
+                    lateral_command = 0.0
+                    if (
+                        policy.config.navigation_target_lateral_gain > 0.0
+                        and math.isfinite(state.segment_target_distance)
+                    ):
+                        lateral_command = (
+                            policy.config.navigation_target_lateral_gain
+                            * state.segment_target_distance
+                            * math.sin(state.segment_target_heading_error)
+                        )
+                    yaw_command = (
+                        policy.config.navigation_target_yaw_gain
+                        * state.segment_target_heading_error
+                    )
+                else:
+                    lateral_command = -state.lateral_error
+                    desired_heading_error = math.atan2(
+                        -state.lateral_error,
+                        policy.config.navigation_lookahead,
+                    )
+                    yaw_command = desired_heading_error - state.heading_error
+                command = (
+                    command[0],
+                    float(
+                        np.clip(
+                            lateral_command,
+                            -lateral_limit,
+                            lateral_limit,
+                        )
+                    ),
+                    float(np.clip(yaw_command, -yaw_limit, yaw_limit)),
+                )
+            if (
+                action.kind is ActionKind.DELEGATED
+                and bool(getattr(policy, "is_stairs57_policy", False))
+                and policy.config.summit_slowdown_distance > 0.0
+                and math.isfinite(state.segment_target_distance)
+            ):
+                fraction = float(
+                    np.clip(
+                        state.segment_target_distance
+                        / policy.config.summit_slowdown_distance,
+                        0.0,
+                        1.0,
+                    )
+                )
+                slowed_forward = policy.config.summit_command_forward + fraction * (
+                    command[0] - policy.config.summit_command_forward
+                )
+                command = (slowed_forward, command[1], command[2])
             policy_detail = ""
             if action.kind is ActionKind.DELEGATED and action.info:
                 policy_detail = (
@@ -893,7 +1221,7 @@ class Router:
             return RouterOutput(
                 self.mode,
                 Source.POLICY,
-                command=action.twist or (0.0, 0.0, 0.0),
+                command=command,
                 reason=(
                     "climbing"
                     if action.kind is ActionKind.TWIST
@@ -940,8 +1268,11 @@ class Router:
             past = int(np.sum(forward_margin >= 0.0))
         if past < 4:
             return False, f"only {past}/4 wheel centres past the edge"
-        if self._attempt.gate16:
-            deck_threshold = c.verify_deck_z + c.verify_height_fraction * c.verify_wheel_radius
+        if self._attempt.requires_physical_clear:
+            deck_z = float(
+                getattr(self._active, "verification_deck_z", c.verify_deck_z)
+            )
+            deck_threshold = deck_z + c.verify_height_fraction * c.verify_wheel_radius
             high = int(np.sum(wheels[:, 2] >= deck_threshold))
             if high < 4:
                 return False, f"only {high}/4 wheel centres above the deck threshold"
@@ -1004,12 +1335,25 @@ class Router:
     def _handoff(self, state, nav_command, observation, dt) -> RouterOutput:
         """Hold navigation until the SDK confirms the reset official actor is in control."""
         if state.actual_joint_owner == "official":
-            self._climb_exit_deadline = state.t + self.config.climb_exit_duration
+            if self._attempt.near_target_settling:
+                self._climb_exit_deadline = (
+                    state.t + self.config.near_target_finish_duration
+                )
+            else:
+                self._climb_exit_deadline = state.t + self.config.climb_exit_duration
             self._go(Mode.NAVIGATE, "official owner acknowledged; follower resumed")
             return RouterOutput(
                 self.mode,
-                Source.NAV,
-                command=(self.config.climb_exit_forward, 0.0, 0.0),
+                (
+                    Source.ROUTER
+                    if self._attempt.near_target_settling
+                    else Source.NAV
+                ),
+                command=(
+                    self._near_target_finish_command(state)
+                    if self._attempt.near_target_settling
+                    else (self.config.climb_exit_forward, 0.0, 0.0)
+                ),
                 reason=self._last_reason,
             )
         if self._elapsed >= 2.0:

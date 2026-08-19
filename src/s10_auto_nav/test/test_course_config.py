@@ -76,3 +76,23 @@ def test_gate16_enforces_b824_canonical_moving_handoff():
     assert params["max_lateral_error"] == pytest.approx(0.08)
     assert params["climb_exit_forward"] == pytest.approx(0.50)
     assert params["climb_exit_duration"] == pytest.approx(0.80)
+
+
+def test_stairs57_is_fail_closed_and_never_maps_gate16():
+    params = yaml.safe_load(GATE16_CONFIG.read_text())["strategy_router"]["ros__parameters"]
+    raw = params["stairs57_segments"]
+    segments = {tuple(raw[i : i + 2]) for i in range(0, len(raw), 2)}
+    assert params["stairs57_enabled"] is False
+    assert params["stairs57_command_forward"] == pytest.approx(0.35)
+    assert params["stairs57_entry_speed_min"] == pytest.approx(0.25)
+    assert params["stairs57_entry_speed_max"] == pytest.approx(0.45)
+    assert (15, 16) not in segments
+    assert segments == {
+        (5, 6),
+        (6, 7),
+        (17, 18),
+        (18, 19),
+        (22, 23),
+        (25, 26),
+        (27, 28),
+    }

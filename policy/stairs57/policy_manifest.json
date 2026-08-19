@@ -1,0 +1,22 @@
+{
+  "name": "s10_stairs_up_57d_model1800",
+  "purpose": "continuous stair ascent",
+  "source_bundle": "s10_stairs_up_57d_model1800_teammate(1)",
+  "onnx": "policy.onnx",
+  "sha256": "232f698bc8ab4f89d84c3cd37101d3b2693af43ff336d4d965bcfc9aa4d917a0",
+  "input_name": "obs",
+  "input_dtype": "float32",
+  "observation_dim": 57,
+  "output_name": "actions",
+  "output_dtype": "float32",
+  "action_dim": 16,
+  "control_hz": 50,
+  "heightmap": false,
+  "command_speed_training_mps": [0.25, 0.45],
+  "command_speed_competition_mps": 0.35,
+  "validated_regular_stair_matrix": "33/33 (11 riser heights x 3 tread depths)",
+  "current_sdk_validation": "blocked: shape-compatible graph fell at 61-68 degrees in isolated WP18->19 and WP17->18 full-stack runs",
+  "activation_default": false,
+  "competition_segments": [[5, 6], [6, 7], [17, 18], [18, 19], [22, 23], [25, 26], [27, 28]],
+  "integration_rule": "load beside the official 57D actor and select only through the in-process single-owner gate"
+}

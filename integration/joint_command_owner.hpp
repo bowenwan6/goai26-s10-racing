@@ -35,7 +35,7 @@
  * driving.
  *
  * Topics
- *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "gate16_shadow" | "gate16" | "gate16_climb" | "stop"
+ *   subscribe  /strategy/joint_owner    std_msgs/String              "official" | "climb" | "gate16_shadow" | "gate16" | "gate16_climb" | "stairs57" | "stop"
  *   subscribe  /strategy/climb_joints   std_msgs/Float32MultiArray   16 joint position targets
  *   subscribe  /perception/heightmap    std_msgs/Float32MultiArray   Gate16 raw 13x9 grid
  *   publish    /joints/owner            std_msgs/String              who is actually driving
@@ -72,8 +72,9 @@ enum class JointOwner : uint8_t {
   kOfficial = 0,  //!< the shipped locomotion policy; the default and the fallback
   kClimb = 1,     //!< a climb policy driving joint targets over ROS
   kGate16 = 2,    //!< the in-process 174D Gate 16 policy, including wheel velocities
-  kSafeHold = 3,  //!< nobody: the robot is held where it is, stiffly enough to stay there
-  kStopped = 4,   //!< nobody, and deliberately so, until something asks otherwise
+  kStairs57 = 3,  //!< the in-process 57D continuous stair-ascent policy
+  kSafeHold = 4,  //!< nobody: the robot is held where it is, stiffly enough to stay there
+  kStopped = 5,   //!< nobody, and deliberately so, until something asks otherwise
 };
 
 inline const char* OwnerName(JointOwner owner) {
@@ -84,6 +85,8 @@ inline const char* OwnerName(JointOwner owner) {
       return "climb";
     case JointOwner::kGate16:
       return "gate16";
+    case JointOwner::kStairs57:
+      return "stairs57";
     case JointOwner::kSafeHold:
       return "safe_hold";
     case JointOwner::kStopped:
@@ -198,6 +201,7 @@ class JointCommandOwner {
    * @return the command to publish. Never the sum, average or interleaving of two sources.
    */
   MatXf Arbitrate(const MatXf& official, const MatXf* gate16,
+                  const MatXf* stairs57,
                   const VecXf& measured_pos, bool* reset_official) {
     if (reset_official) *reset_official = false;
     std::lock_guard<std::mutex> guard(state_);
@@ -208,10 +212,15 @@ class JointCommandOwner {
     const bool finite_gate16 =
         gate16 != nullptr && gate16->rows() == measured_pos.size() &&
         gate16->cols() == 5 && gate16->allFinite();
+    const bool finite_stairs57 =
+        stairs57 != nullptr && stairs57->rows() == measured_pos.size() &&
+        stairs57->cols() == 5 && stairs57->allFinite();
 
     const bool moving_gate16_request =
         owner_ == JointOwner::kOfficial && requested == JointOwner::kGate16 &&
         (gate16_armed_.load() || gate16_shadow_.load());
+    const bool moving_stairs57_request =
+        owner_ == JointOwner::kOfficial && requested == JointOwner::kStairs57;
 
     // The frozen Gate16 contract requires d=0.60--0.65 m at 0.25 m/s and explicitly
     // forbids stopping at the lip. The router proves that envelope before sending the
@@ -232,6 +241,12 @@ class JointCommandOwner {
         Transition(JointOwner::kSafeHold, "handover requested");
         hold_started_ = now;
       }
+    } else if (moving_stairs57_request && finite_stairs57) {
+      // The 57D stair actor is trained for continuous commanded motion. Its runner is reset
+      // when the request starts, and this finite first action transfers atomically without
+      // inserting an out-of-distribution stop on the first tread.
+      Transition(JointOwner::kStairs57, "armed moving stairs57 handover");
+      holding_towards_ = JointOwner::kSafeHold;
     } else if (requested != owner_ && requested != holding_towards_) {
       Transition(JointOwner::kSafeHold, "handover requested");
       holding_towards_ = requested;
@@ -281,6 +296,14 @@ class JointCommandOwner {
           command = Hold(measured_pos);
         }
         break;
+      case JointOwner::kStairs57:
+        if (finite_stairs57) {
+          command = *stairs57;
+        } else {
+          Transition(JointOwner::kSafeHold, "stairs57 command invalid");
+          command = Hold(measured_pos);
+        }
+        break;
       case JointOwner::kSafeHold:
       case JointOwner::kStopped:
         command = Hold(measured_pos);
@@ -293,13 +316,20 @@ class JointCommandOwner {
 
   MatXf Arbitrate(const MatXf& official, const VecXf& measured_pos,
                   bool* reset_official) {
-    return Arbitrate(official, nullptr, measured_pos, reset_official);
+    return Arbitrate(official, nullptr, nullptr, measured_pos, reset_official);
+  }
+
+  MatXf Arbitrate(const MatXf& official, const MatXf* gate16,
+                  const VecXf& measured_pos, bool* reset_official) {
+    return Arbitrate(official, gate16, nullptr, measured_pos, reset_official);
   }
 
   JointOwner owner() const {
     std::lock_guard<std::mutex> guard(state_);
     return owner_;
   }
+
+  JointOwner requested_owner() const { return requested_.load(); }
 
   /** Whether the already-warm Gate16 actor may evaluate its height-map residual. */
   bool gate16_armed() const { return gate16_armed_.load(); }
@@ -337,6 +367,10 @@ class JointCommandOwner {
       gate16_armed_.store(true);
       gate16_shadow_.store(true);
       requested_.store(JointOwner::kGate16);
+    } else if (name == "stairs57") {
+      gate16_armed_.store(false);
+      gate16_shadow_.store(false);
+      requested_.store(JointOwner::kStairs57);
     } else if (name == "stop") {
       gate16_armed_.store(false);
       gate16_shadow_.store(false);

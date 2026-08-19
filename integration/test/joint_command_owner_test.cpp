@@ -146,6 +146,29 @@ int main() {
             moving_transitions.front().find("armed moving climb handover") != std::string::npos,
         "the exceptional transfer is explicit in the transition log");
 
+  // ------------------------------------------------ stairs57 is a distinct atomic owner
+  gate.ResetForTest();
+  types::MatXf stairs57 = OfficialAction(-0.4f);
+  stairs57(3, s10::JointCommandOwner::kColKp) = 0.0f;
+  stairs57(3, s10::JointCommandOwner::kColKd) = 0.6f;
+  stairs57(3, s10::JointCommandOwner::kColVel) = 8.0f;
+  gate.RequestOwner("stairs57");
+  out = gate.Arbitrate(
+      OfficialAction(0.5f), nullptr, &stairs57, Measured(0.1f), nullptr);
+  Check(gate.owner() == s10::JointOwner::kStairs57,
+        "a finite stairs57 command transfers atomically from official ownership");
+  Check(out(0, s10::JointCommandOwner::kColPos) == -0.4f,
+        "stairs57 is the sole leg-command source after transfer");
+  Check(out(3, s10::JointCommandOwner::kColVel) == 8.0f,
+        "stairs57 wheel velocity passes through unchanged");
+  gate.RequestOwner("official");
+  bool stairs_saw_reset = false;
+  Settle(gate, s10::JointCommandOwner::kHandoverS + 0.1, 0.5f, 0.1f,
+         &stairs_saw_reset);
+  Check(gate.owner() == s10::JointOwner::kOfficial,
+        "stairs57 returns through the safe hold to official ownership");
+  Check(stairs_saw_reset, "the official 57D history resets after stairs57 ownership");
+
   // ------------------------------------------------ a silent climb policy is a hold
   gate.ResetForTest();
   gate.RequestOwner("climb");
