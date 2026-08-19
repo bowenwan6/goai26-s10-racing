@@ -111,3 +111,11 @@ telemetry, replay frames or video. See `THIRD_PARTY.md` for dependency/data boun
 The public track page and handbook do not publish a Patrol-specific ZIP filename, maximum upload
 size or portal field schema. The logged-in submission page and the organizer's latest email or
 competition-group notice take precedence for those mechanical details.
+
+## Technical design record
+
+The judge-facing system description is consolidated in [`TECHNICAL_DESIGN.md`](TECHNICAL_DESIGN.md).
+It records the architecture, ROS/data contracts, exact Gate 16 174D observation and 16D action
+mapping, policy ownership and handoff, safety behavior, measured timestamps, negative evidence and
+known hardware-transfer risks. Current implementation and accepted raw evidence take precedence
+over historical planning notes.
