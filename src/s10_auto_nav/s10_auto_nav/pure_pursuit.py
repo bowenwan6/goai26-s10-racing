@@ -149,6 +149,62 @@ class PurePursuitController:
 
         return self._slew(Command(forward=forward, lateral=lateral, yaw_rate=yaw_rate), dt)
 
+    def compute_corner_preview(
+        self,
+        position_xy: np.ndarray,
+        yaw: float,
+        gate_xy: np.ndarray,
+        exit_xy: np.ndarray,
+        preview_fraction: float,
+        speed_limit: float,
+        dt: float,
+    ) -> Command:
+        """Keep translating through a gate while turning toward its verified exit.
+
+        Ordinary pursuit couples body heading and translation, so a sharp waypoint change
+        spends several seconds rotating in place.  A wheel-legged S10 can instead keep its
+        *world-frame* velocity pointed at the current scoring gate while its body yaws toward
+        the next body-clear corridor.  The gate remains the translational target and therefore
+        cannot be cut; only the attitude is previewed.
+
+        ``preview_fraction`` is deliberately supplied by the caller.  The follower owns the
+        course-specific admission checks (known waypoint, clear perception and stable attitude),
+        while this controller owns command limits and slew continuity.
+        """
+        g = self.gains
+        gate_delta = np.asarray(gate_xy, float) - np.asarray(position_xy, float)
+        gate_distance = float(np.linalg.norm(gate_delta))
+        if gate_distance < 1e-6:
+            return self._slew(Command(), dt)
+
+        path_yaw = math.atan2(gate_delta[1], gate_delta[0])
+        exit_delta = np.asarray(exit_xy, float) - np.asarray(gate_xy, float)
+        if float(np.linalg.norm(exit_delta)) < 1e-6:
+            exit_yaw = path_yaw
+        else:
+            exit_yaw = math.atan2(exit_delta[1], exit_delta[0])
+
+        fraction = float(np.clip(preview_fraction, 0.0, 1.0))
+        corner = wrap_angle(exit_yaw - path_yaw)
+        desired_yaw = path_yaw + fraction * corner
+        yaw_error = wrap_angle(desired_yaw - yaw)
+
+        # Brake against the current gate exactly as normal pursuit does.  The smaller
+        # competition preview ceiling is an additional bound, never a speed increase.
+        brake = g.lookahead if g.brake_distance is None else g.brake_distance
+        speed = min(
+            max(0.0, float(speed_limit)),
+            g.max_forward * min(1.0, gate_distance / max(brake, 1e-6)),
+        )
+        path_error = wrap_angle(path_yaw - yaw)
+        forward = float(np.clip(speed * math.cos(path_error), -speed_limit, speed_limit))
+        lateral = float(np.clip(speed * math.sin(path_error), -g.max_lateral, g.max_lateral))
+        yaw_rate = float(np.clip(g.yaw_gain * yaw_error, -g.max_yaw_rate, g.max_yaw_rate))
+        return self._slew(
+            Command(forward=forward, lateral=lateral, yaw_rate=yaw_rate),
+            dt,
+        )
+
     def _slew(self, target: Command, dt: float) -> Command:
         g = self.gains
         forward = _rate_limit(self._last.forward, target.forward, g.forward_slew * dt)

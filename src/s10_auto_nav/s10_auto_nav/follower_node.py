@@ -173,6 +173,13 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("route_hint_speed", 0.5)
         self.declare_parameter("route_hint_max_tilt_deg", 12.0)
         self.declare_parameter("route_hint_stable_hold", 0.5)
+        # Selected broad, measured-clear corners may turn toward the following corridor
+        # while their world-frame translation still closes on the current strict gate.
+        # The global pivot threshold remains conservative for every unlisted edge/deck.
+        self.declare_parameter("corner_preview_waypoints", [13, 19, 20, 21, 22, 23])
+        self.declare_parameter("corner_preview_distance", 0.8)
+        self.declare_parameter("corner_preview_speed", 0.45)
+        self.declare_parameter("corner_preview_max_tilt_deg", 10.0)
         # Approach braking. Zero means "inherit the lookahead", which is what the brake did
         # before the knob existed, so the shipped default changes nothing. The stair value
         # is selected automatically by the terrain classifier, not by the operator: see
@@ -317,6 +324,16 @@ class WaypointFollowerNode(Node):
             float(self.get_parameter("route_hint_max_tilt_deg").value)
         )
         self.route_hint_stable_hold = float(self.get_parameter("route_hint_stable_hold").value)
+        self.corner_preview_waypoints = {
+            int(value) for value in self.get_parameter("corner_preview_waypoints").value
+        }
+        self.corner_preview_distance = float(
+            self.get_parameter("corner_preview_distance").value
+        )
+        self.corner_preview_speed = float(self.get_parameter("corner_preview_speed").value)
+        self.corner_preview_max_tilt = math.radians(
+            float(self.get_parameter("corner_preview_max_tilt_deg").value)
+        )
 
         self.stall_speed = float(self.get_parameter("stall_speed").value)
         self.stall_timeout = float(self.get_parameter("stall_timeout").value)
@@ -409,6 +426,7 @@ class WaypointFollowerNode(Node):
         self._committed_runup_attempts = 0
         self._route_hints_completed: set[int] = set()
         self._route_hint_stable_for = 0.0
+        self._corner_preview_active = False
         #: Set by every path that backs the robot off, cleared by the tick that reads it.
         #: The reader needs a terrain verdict that the setters run too early to have.
         self._backed_off = False
@@ -505,6 +523,7 @@ class WaypointFollowerNode(Node):
             return  # No pose yet; stay silent rather than command blind.
 
         dt = 1.0 / self.control_rate
+        self._corner_preview_active = False
         self._scan_age += dt
         self._heightmap_age += dt
 
@@ -766,8 +785,19 @@ class WaypointFollowerNode(Node):
             lidar_scale=scale,
             terrain_scale=terrain,
         )
-        command = self.controller.compute(self._pose_xy, self._yaw, target, dt)
-        published = self._apply_speed_scale(command, min(scale, terrain), dt)
+        preview = self._corner_preview_command(
+            gate_distance=gate_distance,
+            lidar_scale=scale,
+            terrain_scale=terrain,
+            verdict=verdict,
+            dt=dt,
+        )
+        if preview is None:
+            command = self.controller.compute(self._pose_xy, self._yaw, target, dt)
+            published = self._apply_speed_scale(command, min(scale, terrain), dt)
+        else:
+            published = preview
+            self._speed_scale = 1.0
         self._last_forward = published.forward
         self._publish(published)
         self._log_state(published, scale, terrain, climbing, dt, verdict)
@@ -858,6 +888,8 @@ class WaypointFollowerNode(Node):
             mode = " TERRAIN_RUNUP"
         elif self._committed_runup_phase == "push":
             mode = " TERRAIN_PUSH"
+        elif self._corner_preview_active:
+            mode = " CORNER_PREVIEW"
         self.get_logger().info(
             f"wp {self.course.cursor}/{len(self.course)} {gate} "
             f"at ({self._pose_xy[0]:.1f},{self._pose_xy[1]:.1f}) "
@@ -1006,6 +1038,57 @@ class WaypointFollowerNode(Node):
             forward=float(np.clip(command.forward, -self.route_hint_speed, self.route_hint_speed)),
             lateral=float(np.clip(command.lateral, -self.route_hint_speed, self.route_hint_speed)),
             yaw_rate=command.yaw_rate,
+        )
+
+    def _preview_fraction(self, distance: float) -> float:
+        span = max(self.corner_preview_distance - self.course.score_radius, 1e-6)
+        return float(
+            np.clip((self.corner_preview_distance - distance) / span, 0.0, 1.0)
+        )
+
+    def _corner_preview_command(
+        self,
+        *,
+        gate_distance: float,
+        lidar_scale: float,
+        terrain_scale: float,
+        verdict: TerrainVerdict,
+        dt: float,
+    ) -> Command | None:
+        """Preview only a measured-clear exit without relaxing gate acceptance.
+
+        Perception retains veto authority.  A blocked candidate, terrain throttle, unstable
+        attitude, active barrier route or non-navigation owner returns to ordinary pursuit.
+        This is therefore continuity for an already clear fixed corridor, not an avoidance
+        bypass.
+        """
+        target = self.course.target
+        if (
+            target is None
+            or target.index not in self.corner_preview_waypoints
+            or self.course.cursor + 1 >= len(self.course.waypoints)
+            or gate_distance > self.corner_preview_distance
+            or abs(self._tilt) > self.corner_preview_max_tilt
+            or self._strategy_mode not in {"", "navigate"}
+            or verdict.kind not in {TerrainKind.FLAT, TerrainKind.BLOCKED}
+            or lidar_scale < 0.999
+            or terrain_scale < 0.999
+            or self._barrier_side != 0
+            or self._barrier_bypass_target is not None
+        ):
+            return None
+
+        following = self.course.waypoints[self.course.cursor + 1]
+        exit_xy = self.route_hints.get(following.index, following.xy)
+        self._corner_preview_active = True
+        return self.controller.compute_corner_preview(
+            self._pose_xy,
+            self._yaw,
+            target.xy,
+            exit_xy,
+            self._preview_fraction(gate_distance),
+            self.corner_preview_speed,
+            dt,
         )
 
     def _committed_runup_command(self, dt: float) -> Command | None:
