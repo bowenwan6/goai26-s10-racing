@@ -160,3 +160,57 @@ def test_a_shorter_brake_distance_keeps_more_speed_on_the_run_in():
     )
     assert shipped.forward == pytest.approx(gains.max_forward * 0.6 / gains.lookahead, rel=1e-3)
     assert braked_late.forward == pytest.approx(gains.max_forward, rel=1e-3)
+
+
+def test_corner_preview_keeps_world_translation_pointed_at_the_current_gate():
+    """Turning the body early must not turn the path away from the strict gate."""
+    controller = PurePursuitController()
+    command = None
+    for _ in range(200):
+        command = controller.compute_corner_preview(
+            np.array([0.0, 0.0]),
+            math.pi / 2,
+            np.array([0.5, 0.0]),
+            np.array([0.5, 2.0]),
+            1.0,
+            0.45,
+            DT,
+        )
+
+    assert command is not None
+    # Facing north while the gate remains east requires a rightward body-frame command.
+    assert abs(command.forward) < 1e-6
+    assert command.lateral < -0.24
+    assert abs(command.yaw_rate) < 1e-6
+
+
+def test_corner_preview_respects_speed_and_slew_limits():
+    gains = PursuitGains(forward_slew=1.0, lateral_slew=1.0, yaw_slew=1.0)
+    controller = PurePursuitController(gains)
+    first = controller.compute_corner_preview(
+        np.array([0.0, 0.0]),
+        0.0,
+        np.array([0.5, 0.0]),
+        np.array([0.5, 2.0]),
+        1.0,
+        0.45,
+        DT,
+    )
+    assert abs(first.forward) <= DT + 1e-9
+    assert abs(first.lateral) <= DT + 1e-9
+    assert abs(first.yaw_rate) <= DT + 1e-9
+
+    settled_command = first
+    for _ in range(200):
+        settled_command = controller.compute_corner_preview(
+            np.array([0.0, 0.0]),
+            0.0,
+            np.array([0.5, 0.0]),
+            np.array([0.5, 2.0]),
+            1.0,
+            0.45,
+            DT,
+        )
+    assert abs(settled_command.forward) <= 0.45 + 1e-9
+    assert abs(settled_command.lateral) <= gains.max_lateral + 1e-9
+    assert abs(settled_command.yaw_rate) <= gains.max_yaw_rate + 1e-9
