@@ -40,6 +40,12 @@ waypoint_follower:
     # below. Every turn, obstacle, ramp, stair, route hint and Gate16 approach retains the
     # already accepted 0.7 ceiling. Values are target waypoint indices for each leg.
     terrain_max_forward: 0.7
+    # When terrain_max_forward is raised after segmented validation, keep the known narrow
+    # decks, barrier final approaches, Gate16 entry and body-clear tail at their separately
+    # validated ceiling. The paired arrays avoid a hidden waypoint-specific code branch and
+    # keep every exception visible in the competition configuration.
+    waypoint_speed_limit_indices: [16, 24, 25, 26, 27, 28, 29, 31, 32]
+    waypoint_speed_limit_values: [0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
     fast_flat_waypoints: [2, 10, 14, 22]
     fast_flat_min_gate_distance: 3.0
     fast_flat_max_heading_deg: 8.0
