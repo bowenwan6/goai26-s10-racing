@@ -86,6 +86,7 @@ from s10_auto_nav.strategy.router import (
     Router,
     RouterConfig,
     Source,
+    obstacle_coordinates,
     required_sensors_started,
 )
 from s10_auto_nav.strategy.scripted_policy import ScriptedClimbPolicy
@@ -99,19 +100,6 @@ def _yaw_pitch_roll(q) -> tuple[float, float, float]:
     pitch = math.asin(max(-1.0, min(1.0, 2.0 * (w * y - z * x))))
     roll = math.atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y))
     return yaw, pitch, roll
-
-
-def _obstacle_coordinates(position, yaw, edge, normal, tangent) -> tuple[float, float, float]:
-    """Pose in a measured obstacle frame: distance, lateral error, heading error."""
-    position = np.asarray(position, dtype=float)
-    edge = np.asarray(edge, dtype=float)
-    normal = np.asarray(normal, dtype=float)
-    tangent = np.asarray(tangent, dtype=float)
-    distance = float(np.dot(edge - position, normal))
-    lateral = float(np.dot(position - edge, tangent))
-    normal_yaw = math.atan2(float(normal[1]), float(normal[0]))
-    heading = (float(yaw) - normal_yaw + math.pi) % (2.0 * math.pi) - math.pi
-    return distance, lateral, heading
 
 
 class StrategyRouterNode(Node):
@@ -726,7 +714,7 @@ class StrategyRouterNode(Node):
                 self._obstacle_distance,
                 self._lateral_error,
                 self._heading_error,
-            ) = _obstacle_coordinates(self._position[:2], self._ypr[0], edge, normal, tangent)
+            ) = obstacle_coordinates(self._position[:2], self._ypr[0], edge, normal, tangent)
             return
         tangent = np.array([-heading[1], heading[0]])
         self._lateral_error = float(
