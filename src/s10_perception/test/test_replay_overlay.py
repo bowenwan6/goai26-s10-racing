@@ -8,7 +8,6 @@ from types import SimpleNamespace
 
 import numpy as np
 
-
 ROOT = Path(__file__).resolve().parents[3]
 SPEC = importlib.util.spec_from_file_location(
     "render_replay_3d", ROOT / "scripts" / "render_replay_3d.py"
@@ -34,9 +33,7 @@ class _Trace:
 def test_overlay_contains_elapsed_policy_owner_target_and_pass_events(tmp_path):
     output = tmp_path / "overlay_filters.txt"
     font = "/System/Library/Fonts/Supplemental/Arial.ttf"
-    RENDER._write_overlay_filter(
-        _Trace(), np.array([5.0, 5.1, 5.2, 5.3, 5.4]), output, font
-    )
+    RENDER._write_overlay_filter(_Trace(), np.array([5.0, 5.1, 5.2, 5.3, 5.4]), output, font)
     text = output.read_text()
     assert "Elapsed" in text
     assert f"fontfile='{font}'" in text

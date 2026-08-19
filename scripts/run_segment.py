@@ -139,9 +139,7 @@ def run_once(args, waypoints: list[dict], seed: int, course_path: Path) -> dict:
         command.append(f"nav_params:={args.nav_params}")
     if args.router_params:
         command.append(f"router_params:={args.router_params}")
-    stack = subprocess.Popen(
-        command, env=env, stdout=log, stderr=log, start_new_session=True
-    )
+    stack = subprocess.Popen(command, env=env, stdout=log, stderr=log, start_new_session=True)
 
     # The recorder ends the run; this is only the backstop for a stack that never got as far
     # as recording anything, which is a harness failure rather than a robot one.

@@ -162,9 +162,8 @@ class LocalPlanner:
         # cheap, giving up progress toward the gate is not.
         deviation = np.abs(np.array([wrap_angle(h - goal_bearing) for h in headings]))
 
-        score = (
-            cfg.clearance_weight * (clearance / cfg.probe_distance)
-            - cfg.deviation_weight * (deviation / cfg.max_deviation)
+        score = cfg.clearance_weight * (clearance / cfg.probe_distance) - cfg.deviation_weight * (
+            deviation / cfg.max_deviation
         )
 
         # Prefer the goal bearing when scores tie, rather than whichever end of the sweep
@@ -317,7 +316,7 @@ def _wheel_corridor(grid: np.ndarray) -> np.ndarray:
     if grid.ndim != 2 or grid.shape[1] < 3:
         return grid
     n_y = grid.shape[1]
-    keep = max(1, int(round(n_y * WHEEL_CORRIDOR_FRACTION)))
+    keep = max(1, round(n_y * WHEEL_CORRIDOR_FRACTION))
     # Trim the same number of columns from each side, so widen by one rather than sit
     # off-centre when the arithmetic does not divide evenly.
     if (n_y - keep) % 2:

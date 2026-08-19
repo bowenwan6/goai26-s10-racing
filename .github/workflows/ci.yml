@@ -45,7 +45,7 @@ jobs:
         run: pytest -q tests
         working-directory: training
         env:
-          PYTHONPATH: ${{ github.workspace }}/training
+          PYTHONPATH: ${{ github.workspace }}/training:${{ github.workspace }}/src/s10_auto_nav
 
   build:
     name: colcon build

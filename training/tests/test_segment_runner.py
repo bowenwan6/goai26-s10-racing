@@ -25,10 +25,22 @@ from s10_rl.observation import POLICY_ORDER, ROBOT_ORDER
 #: ``dof_default_eigen_robot`` from run_policy/s10_policy_runner.hpp, copied by hand. The
 #: point of the check is that it is an independent transcription, so it must not be imported.
 SDK_DEFAULT_ROBOT = [
-    0.0, -0.3, 0.6, 0.0,
-    0.0, -0.3, 0.6, 0.0,
-    0.0, 0.3, -0.6, 0.0,
-    0.0, 0.3, -0.6, 0.0,
+    0.0,
+    -0.3,
+    0.6,
+    0.0,
+    0.0,
+    -0.3,
+    0.6,
+    0.0,
+    0.0,
+    0.3,
+    -0.6,
+    0.0,
+    0.0,
+    0.3,
+    -0.6,
+    0.0,
 ]
 #: ``action_scale_robot`` from the same header.
 SDK_ACTION_SCALE = [0.125, 0.25, 0.25, 5.0] * 4
@@ -67,9 +79,7 @@ def test_the_wheel_channels_are_the_ones_the_sdk_treats_as_velocity():
 def _straight_course(n: int, spacing: float = 5.0):
     from s10_auto_nav.waypoints import Course, Waypoint
 
-    return Course(
-        [Waypoint(index=i, position=np.array([i * spacing, 0.0, 0.0])) for i in range(n)]
-    )
+    return Course([Waypoint(index=i, position=np.array([i * spacing, 0.0, 0.0])) for i in range(n)])
 
 
 @pytest.mark.parametrize("n_waypoints", [2, 3])
