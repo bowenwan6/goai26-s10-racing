@@ -1,7 +1,7 @@
 {
-  "format": "s10-gated-residual-front-tuck-symmetry-v3",
+  "format": "s10-gated-residual-front-tuck-v1.5",
   "source_repository": "https://github.com/belsun/goai-s10-gate16-policy",
-  "source_commit": "b824f7ff18ef2ca07c78a2826b44a449ac40bdd2",
+  "source_commit": "216b77affa550359e73f4e71944d2853c64959ef",
   "asset_bundle_commit": "b6535a48bf3d72f3ab2f3e37f8b555eb15aa3e64",
   "observation_dim": 174,
   "action_dim": 16,
@@ -77,46 +77,71 @@
       "both_front_wheels_supported",
       "front_tuck_m"
     ],
-    "execution_owner": "strategy_router_ros_adapter_with_verified_wheel_support",
-    "runner_applies_profile": false,
-    "ros_adapter_applies_profile": true,
-    "phase_semantics": {
-      "settle": "after both physical front wheel centres clear the edge by 0.02 m and exceed deck_z + 0.70 * wheel_radius, override observation vx for 30 policy steps",
-      "push": "after the 30-step settle window until the router independently verifies all four wheels clear"
-    },
-    "unmatched_behavior": "keep the frozen entry command and do not extrapolate a profile",
+    "execution_owner": "gate16_policy_runner",
+    "runner_applies_profile": true,
+    "unmatched_behavior": "use frozen release policy without the fast adapter",
     "front_wheel_forward_sign": "negative"
   },
   "policy_symmetry": {
-    "mode": "mirror_obstacle_relative_yaw_bands",
+    "mode": "disabled_by_v1_5_fast_adapter",
     "yaw_bands_deg": [
       [
         -27.5,
         -22.5
       ],
       [
+        -7.5,
+        7.5
+      ],
+      [
         17.5,
         90.0
       ]
     ],
-    "handoff_input": "calibrated base yaw relative to the fixed Gate16 +X normal, frozen on armed heightmap-gate entry",
-    "input_lifetime": "freeze from CLIMB handoff through CLIMB_EXIT",
-    "runner_api": "stable-native canonical window plus b824 adaptive-v3 off-axis mirror bands + explicit router residual arm + heightmap edge timing",
-    "canonical_override": "abs(entry_yaw)<=7.5 deg uses native after full-stack center mirroring caused repeatable lateral divergence; off-axis b824 bands remain unchanged",
     "onnx_graphs_unchanged": true
   },
+  "full_stack_runtime": {
+    "residual_engage_edge_distance_m": 0.7,
+    "front_support_edge_distance_m": 0.4,
+    "front_support_confirm_policy_steps": 3,
+    "supported_front_tuck_action_delta": [0.075, -0.15],
+    "aggressive_supported_forward_floor_mps": 0.25,
+    "supported_policy_frame_yaw_bias_rps": 0.0,
+    "rear_push_hold_policy_steps": 45,
+    "rear_push_hold_on_each_side": false,
+    "fallback_max_forward_mps": 0.15,
+    "confidence_gated_fast_adapter": {
+      "enabled": true,
+      "min_edge_heading_samples": 4,
+      "min_edge_heading_peak_step_m": 0.2,
+      "max_abs_entry_yaw_deg": 8.0,
+      "min_entry_speed_mps": 0.18,
+      "max_entry_speed_mps": 0.28,
+      "max_side_edge_skew_m": 0.2,
+      "allow_policy_mirroring": false
+    },
+    "competition_navigation": {
+      "gate16_fast_handoff_forward_mps": 0.25,
+      "gate16_fallback_handoff_forward_mps": 0.15,
+      "max_forward_mps": 0.7,
+      "climb_exit_forward_mps": 0.5,
+      "climb_exit_duration_s": 0.8
+    }
+  },
   "racing_integration": {
-    "canonical_handoff_source": "b824f7ff18ef2ca07c78a2826b44a449ac40bdd2",
+    "canonical_handoff_source": "216b77affa550359e73f4e71944d2853c64959ef",
     "entry_distance_m": [0.60, 0.65],
     "entry_speed_mps": [0.23, 0.27],
     "entry_heading_abs_max_deg": 5.0,
     "entry_heading_source": "calibrated base yaw relative to measured Gate16 +X normal",
-    "base_owner_prewarms_before_residual": true,
+    "fallback_entry_distance_m": [0.62, 0.70],
+    "fallback_entry_speed_mps": [0.08, 0.20],
+    "fallback_target_command_mps": 0.18,
+    "fallback_low_level_forward_cap_mps": 0.15,
+    "base_owner_prewarms_before_residual": false,
     "shadow_condition": "evaluate the unarmed Gate16 base from APPROACH at 3.0 m while official remains sole actuator owner",
-    "prewarm_condition": "warm Gate16 base takes ownership at the 0.90 m staging point with abs(yaw)<=2.5 deg and abs(lateral)<=0.08 m",
-    "prewarm_forward_command_mps": 0.23,
-    "prewarm_forward_calibration": "full-stack obstacle-normal progress bracket: command 0.18 produced approximately 0.19 m/s and command 0.25 produced approximately 0.27 m/s",
-    "residual_arm_request": "gate16_climb only after CLIMB_READY proves the entry contract",
+    "prewarm_condition": "shadow-evaluate until the router selects and proves either the fast or stable-fallback entry envelope",
+    "residual_arm_request": "gate16_climb after CLIMB_READY; the runner confidence-gates the contact adapter and immediately enables the release residual on fallback",
     "safe_hold_location": "aligned staging point, nominally 0.90 m before the lip"
   }
 }

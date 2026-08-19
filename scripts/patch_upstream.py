@@ -547,12 +547,20 @@ def main() -> int:
 
     if args.check:
         missing = [d for d in FILES.values() if not (root / d).is_file()]
+        outdated = [
+            destination
+            for source, destination in FILES.items()
+            if (root / destination).is_file()
+            and (root / destination).read_bytes() != source.read_bytes()
+        ]
         pending = [e.path for e in EDITS if not e.is_applied(root)]
-        if not missing and not pending:
+        if not missing and not outdated and not pending:
             print(f"{root} is patched")
             return 0
         for destination in missing:
             print(f"Missing: {destination}", file=sys.stderr)
+        for destination in outdated:
+            print(f"Outdated: {destination}", file=sys.stderr)
         for path in dict.fromkeys(pending):
             print(f"Unpatched: {path}", file=sys.stderr)
         return 1
