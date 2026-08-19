@@ -79,6 +79,12 @@ def test_granting_an_unknown_owner_is_an_error():
         JointArbiter().grant("dagger")
 
 
+def test_arbiter_accepts_explicit_gate16_fallback_request():
+    arbiter = JointArbiter()
+    arbiter.grant(JointArbiter.GATE16_CLIMB_FALLBACK)
+    assert arbiter.owner == "gate16_climb_fallback"
+
+
 # --------------------------------------------------------------- launch wiring
 
 

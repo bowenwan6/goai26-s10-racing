@@ -36,6 +36,7 @@ CLIMB = "climb"
 GATE16 = "gate16"
 GATE16_SHADOW = "gate16_shadow"
 GATE16_CLIMB = "gate16_climb"
+GATE16_CLIMB_FALLBACK = "gate16_climb_fallback"
 STAIRS57 = "stairs57"
 STOP = "stop"
 
@@ -52,6 +53,7 @@ class JointArbiter:
     GATE16 = GATE16
     GATE16_SHADOW = GATE16_SHADOW
     GATE16_CLIMB = GATE16_CLIMB
+    GATE16_CLIMB_FALLBACK = GATE16_CLIMB_FALLBACK
     STAIRS57 = STAIRS57
     STOP = STOP
 
@@ -68,6 +70,7 @@ class JointArbiter:
             GATE16,
             GATE16_SHADOW,
             GATE16_CLIMB,
+            GATE16_CLIMB_FALLBACK,
             STAIRS57,
             STOP,
         ):

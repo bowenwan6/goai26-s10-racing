@@ -1,4 +1,4 @@
-# Adaptive-v3 b824 Gate16 strategy configuration. This file is opt-in at launch.
+# Gate16 v1.5 confidence-fallback strategy configuration. This file is opt-in at launch.
 #
 # This file is only read when the race is launched with strategy_router:=true. The default
 # scored run does not start this node at all, so nothing here can change it.
@@ -8,7 +8,7 @@
 # test exists in three files two of them are wrong and the third is the one in the run.
 #
 # The router is still opt-in at launch. When it is selected, this configuration enables the
-# frozen-checkpoint adaptive-v3 actor for segment 15->16; mock and scripted remain test-only.
+# frozen-checkpoint v1.5 actor for segment 15->16; mock and scripted remain test-only.
 
 strategy_router:
   ros__parameters:
@@ -19,7 +19,7 @@ strategy_router:
 
     climb_enabled: true
     measurement_only: false
-    # b824f7f adaptive-v3 runtime around the frozen 174D base+residual pair.
+    # 216b77a v1.5 confidence fallback around the unchanged 174D base+residual pair.
     climb_policy: gate16
     climb_segment: [15, 16]
     # Gate16 remains the dedicated high-step jump. The 57D model1800 actor owns only
@@ -84,6 +84,21 @@ strategy_router:
     # Reserve 0.25 m after staging for the official actor to establish moving entry.
     # Gate16 shadow-evaluates but does not own until the full entry envelope is met.
     gate16_staging_lead: 0.25
+    # v1.5 selects one contract at the far staging point and holds it for the attempt.
+    # The adaptive path remains available for explicit experiments, but its seed-8 focused
+    # run timed out while straddling the lip. Competition defaults every attempt to the
+    # stable frontal fallback until the fast path passes multi-seed validation.
+    gate16_fast_adapter_enabled: false
+    gate16_fallback_enabled: true
+    gate16_fallback_ready_distance_min: 0.62
+    gate16_fallback_ready_distance_max: 0.70
+    gate16_fallback_ready_dwell: 0.10
+    gate16_fallback_min_entry_speed: 0.08
+    gate16_fallback_max_entry_speed: 0.20
+    gate16_fallback_target_entry_speed: 0.18
+    gate16_fallback_max_lateral_error: 0.25
+    gate16_fallback_max_heading_error_deg: 6.0
+    gate16_fallback_max_yaw_rate: 0.10
     max_entry_yaw_rate: 0.05
     align_yaw_rate: 0.70
     max_lateral_error: 0.08
