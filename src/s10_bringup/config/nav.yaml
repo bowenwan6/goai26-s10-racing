@@ -106,6 +106,14 @@ waypoint_follower:
     # terrain recovery must retain ownership; the connector arms only after settling.
     route_hint_max_tilt_deg: 12.0
     route_hint_stable_hold: 0.4
+    # Preserve translation through selected broad corners while previewing the next
+    # body-clear corridor. The current gate remains the world-frame translation target,
+    # so this cannot relax or skip the strict 0.18 m acceptance check. Every unlisted
+    # transition retains the conservative 30 degree in-place pivot.
+    corner_preview_waypoints: [13, 19, 20, 21, 22, 23]
+    corner_preview_distance: 0.8
+    corner_preview_speed: 0.7
+    corner_preview_max_tilt_deg: 10.0
 
     # Distance from the gate at which forward speed starts coming off. Zero means "use the
     # lookahead", which is what the brake did before this was a parameter, so the shipped

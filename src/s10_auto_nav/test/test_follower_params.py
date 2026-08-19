@@ -89,6 +89,10 @@ def test_the_brake_distances_ship_in_nav_yaml():
     assert params["route_hint_speed"] == 0.75
     assert params["route_hint_max_tilt_deg"] == 12.0
     assert params["route_hint_stable_hold"] == 0.4
+    assert params["corner_preview_waypoints"] == [13, 19, 20, 21, 22, 23]
+    assert params["corner_preview_distance"] == 0.8
+    assert params["corner_preview_speed"] == 0.7
+    assert params["corner_preview_max_tilt_deg"] == 10.0
     assert params["brake_distance"] == 0.0, "the flat default must still inherit the lookahead"
     assert params["stair_brake_distance"] == 0.35
     assert params["barrier_escape_angle_deg"] == 60.0
