@@ -64,6 +64,15 @@ inline bool EntrySupportsFastAdapter(const SkillGateReport& report,
              envelope.max_side_edge_skew_m;
 }
 
+inline bool ShouldUseFastAdapter(const SkillGateReport& report,
+                                 float entry_yaw_deg,
+                                 float entry_speed_mps,
+                                 const FastAdapterEnvelope& envelope,
+                                 bool fallback_forced) {
+  return !fallback_forced && EntrySupportsFastAdapter(
+                                 report, entry_yaw_deg, entry_speed_mps, envelope);
+}
+
 class HeightmapSkillGate {
  public:
   static constexpr int kRows = 13;

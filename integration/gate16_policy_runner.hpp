@@ -127,6 +127,7 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
   bool residual_engaged_ = false;
   s10_policy::FastAdapterEnvelope fast_adapter_envelope_;
   bool fast_adapter_active_ = true;
+  bool fallback_forced_by_router_ = false;
   bool fast_adapter_allow_mirroring_ = true;
   float front_support_edge_x_ = 0.40f;
   int front_support_confirm_frames_ = 2;
@@ -382,8 +383,9 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
     // itself keeps the calibrated base yaw that the router gated; this preserves the
     // existing fix for a noisy five-column edge fit while still failing safely to the
     // native release behavior when the perception evidence is weak.
-    fast_adapter_active_ = s10_policy::EntrySupportsFastAdapter(
-        gate, heightmap_heading_deg, entry_speed_mps, fast_adapter_envelope_);
+    fast_adapter_active_ = s10_policy::ShouldUseFastAdapter(
+        gate, heightmap_heading_deg, entry_speed_mps, fast_adapter_envelope_,
+        fallback_forced_by_router_);
     climb_entry_heading_error_deg_ = base_heading_deg;
     mirror_policy_frame_ =
         fast_adapter_active_ && fast_adapter_allow_mirroring_ &&
@@ -409,6 +411,8 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
               << " policy_frame=" << (mirror_policy_frame_ ? "mirrored" : "native")
               << " fast_adapter="
               << (fast_adapter_active_ ? "yes" : "fallback")
+              << " forced_by_router="
+              << (fallback_forced_by_router_ ? "yes" : "no")
               << " profile="
               << (active_profile_index_ >= 0
                       ? command_profiles_[active_profile_index_].name
@@ -658,6 +662,17 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
       seed_action_history_on_next_tick_ = true;
     }
     actuator_owned_ = owned;
+  }
+
+  /** Bind the router's attempt-level entry contract to the low-level adapter choice.
+
+      Height-map confidence may further reject the fast adapter, but it may never upgrade a
+      router-selected stable fallback back to the fast path. */
+  void SetForceFallback(bool forced) {
+    if (forced == fallback_forced_by_router_) return;
+    fallback_forced_by_router_ = forced;
+    std::cout << "S10 climb fallback " << (forced ? "forced" : "released")
+              << " by router" << std::endl;
   }
 
   RobotAction getRobotAction(const RobotBasicState& ro, const UserCommand& uc) override {
