@@ -38,6 +38,8 @@ from pathlib import Path
 
 import yaml
 
+from runtime_fingerprint import check_fingerprint
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COURSE = REPO_ROOT / "src/s10_bringup/config/course.yaml"
 INSTALL = Path(os.environ.get("S10_INSTALL_BASE", REPO_ROOT / "install"))
@@ -199,6 +201,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if not (INSTALL / "setup.bash").is_file():
         print(f"error: workspace not built at {INSTALL}; run scripts/build.sh", file=sys.stderr)
+        return 2
+    try:
+        check_fingerprint(INSTALL)
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as error:
+        print(f"error: {error}", file=sys.stderr)
         return 2
 
     waypoints = load_waypoints()

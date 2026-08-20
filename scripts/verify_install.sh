@@ -55,6 +55,9 @@ set +u
 source "${S10_INSTALL_BASE}/setup.bash"
 set -u
 
+python3 "${REPO_ROOT}/scripts/runtime_fingerprint.py" check \
+  --install-base "${S10_INSTALL_BASE}"
+
 for package in s10_sdk_deploy s10_perception s10_auto_nav s10_bringup; do
   ros2 pkg prefix "${package}" >/dev/null
   echo "ok: ROS package ${package}"
