@@ -232,13 +232,14 @@ bounded; it cannot silently skip the current waypoint.
 |---|---|---|
 | All normal segments | Organizer's official 57D proprioceptive ONNX actor | Deployed |
 | WP15→WP16 only | Frozen Gate 16 174D base + height-gated residual | Deployed |
-| Short/continuous stairs model | Team-supplied 57D actor | Shipped but disabled |
+| Five selected stair-ascent legs | `stairs_stable` 57D actor | Deployed with height handoff |
 
-The segment mapping is declared once in `strategy_gate16.yaml` as `climb_segment: [15, 16]`.
-The accepted log records actual ownership changing to Gate 16 for that segment and returning via
-safe hold to the official owner immediately afterward. The experimental stairs actor is
-`stairs57_enabled: false`; focused trials with the current decoder fell at 61–68°, so it did not
-contribute to the accepted result.
+The segment mapping is declared once in `strategy_gate16.yaml`. Gate 16 owns only WP15→16.
+Using zero-based official log indices, `stairs_stable` owns WP6→7, WP17→18, WP22→23,
+WP25→26 and WP27→28, and releases as soon as target-platform
+height, stable attitude and the configured 0.25 s hold are satisfied; the official policy closes
+each waypoint. Human-counted WP5→6 and WP6→7 are config segments WP4→5 and WP5→6 and remain
+official-owned; config WP18→19 is excluded because it needs normal navigation steering.
 
 ### 6.2 Gate 16 asset identity
 
@@ -543,7 +544,7 @@ report success proportion with failure locations rather than selecting only the 
 | Height-map validity | −1 can mean clipped terrain or void | Add explicit validity mask and hardware calibration |
 | Torque compliance | Software watchdog differs from organizer rule | Telemetry-based rule checker and real-device torque validation |
 | Generalization | Several route mechanisms use measured course geometry | Test altered obstacle layouts and quantify sensitivity |
-| Experimental stairs57 actor | Shape-compatible but unsafe in focused runs | Reproduce original runner/normalization before enabling |
+| `stairs_stable` generalization | Seed-8 WP6→7 passed; isolated WP17→19 passed but continuous WP16→32 missed WP18 by 0.32 m | Tune entry alignment, then run full-course multi-seed validation |
 | Fast/mirrored Gate 16 path | Code retained, competition-disabled | Shadow mode, focused ±yaw validation, then multi-seed gate |
 | Model licensing | Team bundles lacked standalone licenses | Obtain contributor-approved license/permission before wider distribution |
 | Architecture validation | Clean ARM64 Docker build verified; other hosts intended | Re-run the exact image and full course on judge target architecture |
@@ -592,7 +593,7 @@ raw accepted-run evidence take precedence over historical plans.
 - accepted seed-6 full log and JSON telemetry;
 - seed-6 validation report and official timestamp extraction;
 - continuous 720p MP4 and SHA-256 record;
-- focused Gate 16 and stairs57 reports;
+- focused Gate 16 and stairs_stable reports;
 - seed-8 and seed-10 failure logs/videos;
 - chronological engineering plan and experiment log.
 

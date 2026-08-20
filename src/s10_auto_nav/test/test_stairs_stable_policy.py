@@ -18,10 +18,10 @@ from s10_auto_nav.strategy.router import (
     Source,
     observation_from_state,
 )
-from s10_auto_nav.strategy.stairs57_policy import Stairs57Config, Stairs57Policy
+from s10_auto_nav.strategy.stairs_stable_policy import StairsStableConfig, StairsStablePolicy
 
 ROOT = Path(__file__).resolve().parents[3]
-BUNDLE = ROOT / "policy/stairs57"
+BUNDLE = ROOT / "policy/stairs_stable"
 STAIRS_SEGMENT = (18, 19)
 
 
@@ -52,7 +52,7 @@ def _state(t: float, *, segment=STAIRS_SEGMENT, owner="official", **changes):
     return RobotState(**values)
 
 
-def test_stairs57_asset_hash_and_graph_contract():
+def test_stairs_stable_asset_hash_and_graph_contract():
     manifest = json.loads((BUNDLE / "policy_manifest.json").read_text())
     model = BUNDLE / manifest["onnx"]
     assert hashlib.sha256(model.read_bytes()).hexdigest() == manifest["sha256"]
@@ -76,14 +76,14 @@ def test_stairs57_asset_hash_and_graph_contract():
     assert np.all(np.isfinite(action))
 
 
-def test_stairs57_rejects_a_command_outside_its_training_range():
+def test_stairs_stable_rejects_a_command_outside_its_training_range():
     with pytest.raises(ValueError):
-        Stairs57Config(command_forward=0.50)
+        StairsStableConfig(command_forward=0.50)
 
 
-def test_stairs57_rejects_summit_speed_outside_its_training_range():
+def test_stairs_stable_rejects_summit_speed_outside_its_training_range():
     with pytest.raises(ValueError):
-        Stairs57Config(
+        StairsStableConfig(
             command_forward=0.25,
             entry_speed_min=0.15,
             summit_slowdown_distance=1.5,
@@ -91,23 +91,23 @@ def test_stairs57_rejects_summit_speed_outside_its_training_range():
         )
 
 
-def test_stairs57_is_delegated_and_carries_the_035_observation_command():
-    policy = Stairs57Policy()
+def test_stairs_stable_is_delegated_and_carries_the_035_observation_command():
+    policy = StairsStablePolicy()
     state = _state(1.0)
     observation = observation_from_state(state)
     policy.start(observation)
     action = policy.step(observation)
     assert action.kind is ActionKind.DELEGATED
     assert action.twist == pytest.approx((0.35, 0.0, 0.0))
-    assert action.info["owner"] == "stairs57"
+    assert action.info["owner"] == "stairs_stable"
 
 
 def test_segment_policy_owns_until_strict_target_then_waits_for_official_ack():
-    policy = Stairs57Policy()
+    policy = StairsStablePolicy()
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     state = _state(0.0)
     out = router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
@@ -116,11 +116,11 @@ def test_segment_policy_owns_until_strict_target_then_waits_for_official_ack():
     assert router.mode is Mode.CLIMB_READY
     out = router.tick(_state(0.04), (0.7, 0.0, 0.0), observation_from_state(_state(0.04)))
     assert router.mode is Mode.CLIMB
-    state = _state(0.06, owner="stairs57")
+    state = _state(0.06, owner="stairs_stable")
     out = router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
     assert out.source is Source.POLICY
 
-    reached = _state(1.0, segment=(19, 20), owner="stairs57")
+    reached = _state(1.0, segment=(19, 20), owner="stairs_stable")
     out = router.tick(reached, (0.7, 0.0, 0.0), observation_from_state(reached))
     assert (router.mode, out.source) == (Mode.HANDOFF, Source.ROUTER)
     acknowledged = _state(1.02, segment=(19, 20), owner="official")
@@ -128,12 +128,12 @@ def test_segment_policy_owns_until_strict_target_then_waits_for_official_ack():
     assert (router.mode, out.source) == (Mode.NAVIGATE, Source.NAV)
 
 
-def test_stairs57_can_take_control_from_rest_after_alignment():
-    policy = Stairs57Policy()
+def test_stairs_stable_can_take_control_from_rest_after_alignment():
+    policy = StairsStablePolicy()
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     state = _state(0.0, speed=0.0, forward_speed=0.0)
     router.tick(state, (0.0, 0.0, 0.0), observation_from_state(state))
@@ -143,8 +143,8 @@ def test_stairs57_can_take_control_from_rest_after_alignment():
 
 
 def test_correction_capable_stairs_policy_aims_at_bounded_nearby_centreline_point():
-    policy = Stairs57Policy(
-        Stairs57Config(
+    policy = StairsStablePolicy(
+        StairsStableConfig(
             navigation_lateral_limit=0.08,
             navigation_yaw_rate_limit=0.10,
             navigation_lookahead=0.8,
@@ -152,13 +152,13 @@ def test_correction_capable_stairs_policy_aims_at_bounded_nearby_centreline_poin
     )
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             lateral_error=0.4 if tick >= 3 else 0.0,
             heading_error=0.2 if tick >= 3 else 0.0,
         )
@@ -168,9 +168,9 @@ def test_correction_capable_stairs_policy_aims_at_bounded_nearby_centreline_poin
     assert out.command == pytest.approx((0.35, -0.08, -0.10))
 
 
-def test_stairs57_slows_linearly_near_the_summit_without_changing_steering():
-    policy = Stairs57Policy(
-        Stairs57Config(
+def test_stairs_stable_slows_linearly_near_the_summit_without_changing_steering():
+    policy = StairsStablePolicy(
+        StairsStableConfig(
             command_forward=0.25,
             entry_speed_min=0.15,
             navigation_lateral_limit=0.08,
@@ -182,13 +182,13 @@ def test_stairs57_slows_linearly_near_the_summit_without_changing_steering():
     )
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             lateral_error=0.04 if tick >= 3 else 0.0,
             segment_target_distance=0.75 if tick >= 3 else 2.0,
         )
@@ -198,9 +198,9 @@ def test_stairs57_slows_linearly_near_the_summit_without_changing_steering():
     assert out.command == pytest.approx((0.20, -0.04, math.atan2(-0.04, 0.5)))
 
 
-def test_stairs57_can_reuse_bounded_official_follower_steering():
-    policy = Stairs57Policy(
-        Stairs57Config(
+def test_stairs_stable_can_reuse_bounded_official_follower_steering():
+    policy = StairsStablePolicy(
+        StairsStableConfig(
             navigation_lateral_limit=0.0,
             navigation_yaw_rate_limit=0.20,
             navigation_steering_source="follower",
@@ -208,20 +208,20 @@ def test_stairs57_can_reuse_bounded_official_follower_steering():
     )
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
-        state = _state(tick * 0.02, owner="stairs57" if tick >= 3 else "official")
+        state = _state(tick * 0.02, owner="stairs_stable" if tick >= 3 else "official")
         out = router.tick(state, (0.7, 0.4, 0.7), observation_from_state(state))
 
     assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
     assert out.command == pytest.approx((0.35, 0.0, 0.20))
 
 
-def test_stairs57_target_steering_cannot_look_through_the_current_waypoint():
-    policy = Stairs57Policy(
-        Stairs57Config(
+def test_stairs_stable_target_steering_cannot_look_through_the_current_waypoint():
+    policy = StairsStablePolicy(
+        StairsStableConfig(
             navigation_lateral_limit=0.0,
             navigation_yaw_rate_limit=0.20,
             navigation_steering_source="target",
@@ -230,13 +230,13 @@ def test_stairs57_target_steering_cannot_look_through_the_current_waypoint():
     )
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             segment_target_heading_error=-0.15,
         )
         # The official follower is already steering toward the following waypoint, but the
@@ -247,9 +247,9 @@ def test_stairs57_target_steering_cannot_look_through_the_current_waypoint():
     assert out.command == pytest.approx((0.35, 0.0, -0.20))
 
 
-def test_stairs57_target_steering_can_add_bounded_body_lateral_correction():
-    policy = Stairs57Policy(
-        Stairs57Config(
+def test_stairs_stable_target_steering_can_add_bounded_body_lateral_correction():
+    policy = StairsStablePolicy(
+        StairsStableConfig(
             navigation_lateral_limit=0.08,
             navigation_yaw_rate_limit=0.25,
             navigation_steering_source="target",
@@ -259,13 +259,13 @@ def test_stairs57_target_steering_can_add_bounded_body_lateral_correction():
     )
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             segment_target_distance=2.0,
             segment_target_heading_error=0.20,
         )
@@ -275,17 +275,17 @@ def test_stairs57_target_steering_can_add_bounded_body_lateral_correction():
     assert out.command == pytest.approx((0.35, 0.08, 0.25))
 
 
-def test_stairs57_progress_uses_odometry_when_waypoint_fraction_is_constant():
-    policy = Stairs57Policy()
+def test_stairs_stable_progress_uses_odometry_when_waypoint_fraction_is_constant():
+    policy = StairsStablePolicy()
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             travelled=0.5,
         )
         router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
@@ -293,7 +293,7 @@ def test_stairs57_progress_uses_odometry_when_waypoint_fraction_is_constant():
     for second in range(1, 13):
         state = _state(
             float(second),
-            owner="stairs57",
+            owner="stairs_stable",
             travelled=0.5,
             position=np.array([25.8 + 0.10 * second, 29.955, 2.3]),
         )
@@ -302,12 +302,12 @@ def test_stairs57_progress_uses_odometry_when_waypoint_fraction_is_constant():
     assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
 
 
-def test_stairs57_alignment_does_not_consume_the_runway_while_turning():
-    policy = Stairs57Policy()
+def test_stairs_stable_alignment_does_not_consume_the_runway_while_turning():
+    policy = StairsStablePolicy()
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     state = _state(0.0, heading_error=math.radians(-15.0))
     router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
@@ -317,17 +317,17 @@ def test_stairs57_alignment_does_not_consume_the_runway_while_turning():
     assert out.command[2] > 0.0
 
 
-def test_stairs57_waits_for_strict_target_after_wheels_reach_platform():
-    policy = Stairs57Policy(Stairs57Config(completion_hold=0.04))
+def test_stairs_stable_waits_for_strict_target_after_wheels_reach_platform():
+    policy = StairsStablePolicy(StairsStableConfig(completion_hold=0.04))
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             segment_target_z=2.36,
         )
         router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
@@ -343,7 +343,7 @@ def test_stairs57_waits_for_strict_target_after_wheels_reach_platform():
     for tick in range(2):
         state = _state(
             1.0 + tick * 0.02,
-            owner="stairs57",
+            owner="stairs_stable",
             position=np.array([26.5, 29.955, 2.60]),
             wheel_positions=wheels,
             wheel_contacts=np.ones(4, dtype=bool),
@@ -352,44 +352,44 @@ def test_stairs57_waits_for_strict_target_after_wheels_reach_platform():
         out = router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
     assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
 
-    reached = _state(1.1, segment=(19, 20), owner="stairs57")
+    reached = _state(1.1, segment=(19, 20), owner="stairs_stable")
     out = router.tick(reached, (0.7, 0.0, 0.0), observation_from_state(reached))
     assert (router.mode, out.source) == (Mode.HANDOFF, Source.ROUTER)
 
 
 def test_consecutive_stair_segments_keep_one_policy_history():
-    policy = Stairs57Policy()
+    policy = StairsStablePolicy()
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={(5, 6): "stairs57_policy", (6, 7): "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={(5, 6): "stairs_stable_policy", (6, 7): "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
             segment=(5, 6),
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
         )
         router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
     resets = policy.reset_count
-    continued = _state(1.0, segment=(6, 7), owner="stairs57")
+    continued = _state(1.0, segment=(6, 7), owner="stairs_stable")
     out = router.tick(continued, (0.7, 0.0, 0.0), observation_from_state(continued))
     assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
     assert policy.reset_count == resets
 
 
 def test_flat_landing_hands_off_then_rearms_same_policy_near_next_rise():
-    policy = Stairs57Policy(Stairs57Config(activation_target_distance=7.7))
+    policy = StairsStablePolicy(StairsStableConfig(activation_target_distance=7.7))
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={(17, 18): "stairs57_policy", (18, 19): "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={(17, 18): "stairs_stable_policy", (18, 19): "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
             segment=(17, 18),
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             segment_target_distance=7.0,
         )
         router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
@@ -397,7 +397,7 @@ def test_flat_landing_hands_off_then_rearms_same_policy_near_next_rise():
     landing = _state(
         1.0,
         segment=(18, 19),
-        owner="stairs57",
+        owner="stairs_stable",
         segment_target_distance=8.5,
     )
     out = router.tick(landing, (0.5, 0.0, 0.0), observation_from_state(landing))
@@ -436,21 +436,21 @@ def test_flat_landing_hands_off_then_rearms_same_policy_near_next_rise():
 
 
 def test_near_target_upper_platform_hands_off_before_overshoot():
-    policy = Stairs57Policy(
-        Stairs57Config(
+    policy = StairsStablePolicy(
+        StairsStableConfig(
             near_target_settle_distance=0.5,
             completion_hold=0.0,
         )
     )
     router = Router(
         RouterConfig(ready_dwell=0.0),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
             segment_target_distance=2.0,
             segment_target_z=2.2,
         )
@@ -466,7 +466,7 @@ def test_near_target_upper_platform_hands_off_before_overshoot():
     )
     fast = _state(
         1.0,
-        owner="stairs57",
+        owner="stairs_stable",
         position=np.array([26.8, 29.955, 2.40]),
         speed=1.0,
         segment_target_distance=0.4,
@@ -537,7 +537,7 @@ def test_near_target_upper_platform_hands_off_before_overshoot():
 
 
 def test_near_target_platform_requires_a_sustained_clearance_dwell():
-    policy = Stairs57Policy(Stairs57Config(near_target_settle_distance=0.5, completion_hold=0.04))
+    policy = StairsStablePolicy(StairsStableConfig(near_target_settle_distance=0.5, completion_hold=0.04))
     wheels = np.array(
         [
             [27.0, 30.2, 2.25],
@@ -568,23 +568,23 @@ def test_near_target_platform_requires_a_sustained_clearance_dwell():
     assert not policy.ready_to_settle(unsafe, 0.02)
 
 
-def test_stairs57_runtime_does_not_depend_on_lidar_or_heightmap_freshness():
-    policy = Stairs57Policy()
+def test_stairs_stable_runtime_does_not_depend_on_lidar_or_heightmap_freshness():
+    policy = StairsStablePolicy()
     router = Router(
         RouterConfig(ready_dwell=0.0, sensor_timeout=0.1),
-        policies={"stairs57_policy": policy},
-        segment_policies={STAIRS_SEGMENT: "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={STAIRS_SEGMENT: "stairs_stable_policy"},
     )
     for tick in range(4):
         state = _state(
             tick * 0.02,
-            owner="stairs57" if tick >= 3 else "official",
+            owner="stairs_stable" if tick >= 3 else "official",
         )
         router.tick(state, (0.7, 0.0, 0.0), observation_from_state(state))
 
     state = _state(
         1.0,
-        owner="stairs57",
+        owner="stairs_stable",
         odom_time=1.0,
         lidar_time=0.0,
         heightmap_time=0.0,
@@ -593,10 +593,10 @@ def test_stairs57_runtime_does_not_depend_on_lidar_or_heightmap_freshness():
     assert (router.mode, out.source) == (Mode.CLIMB, Source.POLICY)
 
 
-def test_stairs57_never_owns_the_gate16_segment():
-    policy = Stairs57Policy()
+def test_stairs_stable_never_owns_the_gate16_segment():
+    policy = StairsStablePolicy()
     router = Router(
-        policies={"stairs57_policy": policy},
-        segment_policies={(18, 19): "stairs57_policy"},
+        policies={"stairs_stable_policy": policy},
+        segment_policies={(18, 19): "stairs_stable_policy"},
     )
     assert router.policy_for((15, 16)) == ""
