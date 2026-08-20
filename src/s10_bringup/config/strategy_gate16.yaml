@@ -22,18 +22,21 @@ strategy_router:
     # 216b77a v1.5 confidence fallback around the unchanged 174D base+residual pair.
     climb_policy: gate16
     climb_segment: [15, 16]
-    # Gate16 remains the dedicated high-step jump. The 57D model1800 actor owns only
-    # non-Gate16 ascent segments, from the preceding strict waypoint through the upper
-    # waypoint. Consecutive 5->6->7 stays under one continuous policy history; ownership
-    # returns to the official actor immediately after the last configured target scores.
-    # Fail closed. The 57D observation and 16D action contracts match the training runner,
-    # but continuous WP17->WP19 multi-seed validation is not repeatable and summit landings
-    # can still exceed the fall limit. Do not arm it until the focused 3/3 gate passes.
-    stairs57_enabled: false
-    stairs57_segments: [5, 6, 6, 7, 17, 18, 18, 19, 22, 23, 25, 26, 27, 28]
-    stairs57_command_forward: 0.35
-    stairs57_entry_speed_min: 0.25
-    stairs57_entry_speed_max: 0.45
+    # Segment indices are zero-based, matching the official WP0->WP32 log. stairs_stable owns
+    # five selected stair ascents. Human-counted WP5->6 and WP6->7 map to 4->5 and 5->6 here
+    # and retain the official policy; human-counted WP7->8 maps to 6->7 and uses stairs_stable.
+    # WP18->19 stays official-owned because it needs normal lateral/yaw navigation.
+    #
+    # Release actuator ownership before the strict target scores once the robot is within
+    # 0.50 m, all wheel centres and the base are above the target platform, attitude is
+    # stable, and that state holds for 0.25 s. The official policy then closes the waypoint.
+    stairs_stable_enabled: true
+    stairs_stable_segments: [6, 7, 17, 18, 22, 23, 25, 26, 27, 28]
+    stairs_stable_command_forward: 0.35
+    stairs_stable_near_target_settle_distance: 0.50
+    stairs_stable_completion_hold: 0.25
+    stairs_stable_entry_speed_min: 0.25
+    stairs_stable_entry_speed_max: 0.45
     scripted_trajectory: ""
     # succeed | fail | never_finish | go_silent | raise | lie
     mock_scenario: succeed

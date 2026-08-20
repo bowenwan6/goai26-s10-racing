@@ -90,7 +90,7 @@ from s10_auto_nav.strategy.router import (
     required_sensors_started,
 )
 from s10_auto_nav.strategy.scripted_policy import ScriptedClimbPolicy
-from s10_auto_nav.strategy.stairs57_policy import Stairs57Config, Stairs57Policy
+from s10_auto_nav.strategy.stairs_stable_policy import StairsStableConfig, StairsStablePolicy
 from s10_auto_nav.waypoints import Course
 
 
@@ -127,26 +127,26 @@ class StrategyRouterNode(Node):
         self.declare_parameter("climb_edge_center", [float("nan"), float("nan")])
         self.declare_parameter("climb_normal", [float("nan"), float("nan")])
         self.declare_parameter("climb_tangent", [float("nan"), float("nan")])
-        self.declare_parameter("stairs57_enabled", False)
+        self.declare_parameter("stairs_stable_enabled", False)
         # Flat pairs because ROS parameters do not support nested integer arrays.
         self.declare_parameter(
-            "stairs57_segments", [5, 6, 6, 7, 17, 18, 18, 19, 22, 23, 25, 26, 27, 28]
+            "stairs_stable_segments", [6, 7, 17, 18, 22, 23, 25, 26, 27, 28]
         )
-        self.declare_parameter("stairs57_command_forward", 0.35)
-        self.declare_parameter("stairs57_navigation_lateral_limit", 0.0)
-        self.declare_parameter("stairs57_navigation_yaw_rate_limit", 0.0)
-        self.declare_parameter("stairs57_navigation_lookahead", 0.8)
-        self.declare_parameter("stairs57_navigation_steering_source", "centreline")
-        self.declare_parameter("stairs57_navigation_target_yaw_gain", 1.8)
-        self.declare_parameter("stairs57_navigation_target_lateral_gain", 0.0)
-        self.declare_parameter("stairs57_activation_target_distance", 0.0)
-        self.declare_parameter("stairs57_near_target_settle_distance", 0.0)
-        self.declare_parameter("stairs57_near_target_settle_heading_deg", 60.0)
-        self.declare_parameter("stairs57_completion_hold", 0.25)
-        self.declare_parameter("stairs57_summit_slowdown_distance", 0.0)
-        self.declare_parameter("stairs57_summit_command_forward", 0.25)
-        self.declare_parameter("stairs57_entry_speed_min", 0.25)
-        self.declare_parameter("stairs57_entry_speed_max", 0.45)
+        self.declare_parameter("stairs_stable_command_forward", 0.35)
+        self.declare_parameter("stairs_stable_navigation_lateral_limit", 0.0)
+        self.declare_parameter("stairs_stable_navigation_yaw_rate_limit", 0.0)
+        self.declare_parameter("stairs_stable_navigation_lookahead", 0.8)
+        self.declare_parameter("stairs_stable_navigation_steering_source", "centreline")
+        self.declare_parameter("stairs_stable_navigation_target_yaw_gain", 1.8)
+        self.declare_parameter("stairs_stable_navigation_target_lateral_gain", 0.0)
+        self.declare_parameter("stairs_stable_activation_target_distance", 0.0)
+        self.declare_parameter("stairs_stable_near_target_settle_distance", 0.5)
+        self.declare_parameter("stairs_stable_near_target_settle_heading_deg", 60.0)
+        self.declare_parameter("stairs_stable_completion_hold", 0.25)
+        self.declare_parameter("stairs_stable_summit_slowdown_distance", 0.0)
+        self.declare_parameter("stairs_stable_summit_command_forward", 0.25)
+        self.declare_parameter("stairs_stable_entry_speed_min", 0.25)
+        self.declare_parameter("stairs_stable_entry_speed_max", 0.45)
         self.declare_parameter("advance_radius", 0.18)
         self.declare_parameter("score_radius", 0.18)
 
@@ -548,64 +548,64 @@ class StrategyRouterNode(Node):
             segment_policies[segment] = "climb_policy"
         elif kind:
             raise RuntimeError(f"unknown climb_policy '{kind}' (expected gate16, mock or scripted)")
-        if bool(self.get_parameter("stairs57_enabled").value):
-            raw = [int(v) for v in self.get_parameter("stairs57_segments").value]
+        if bool(self.get_parameter("stairs_stable_enabled").value):
+            raw = [int(v) for v in self.get_parameter("stairs_stable_segments").value]
             if not raw or len(raw) % 2:
-                raise RuntimeError("stairs57_segments must contain one or more integer pairs")
+                raise RuntimeError("stairs_stable_segments must contain one or more integer pairs")
             segments = [tuple(raw[i : i + 2]) for i in range(0, len(raw), 2)]
             if tuple(self.get_parameter("climb_segment").value) in segments:
-                raise RuntimeError("stairs57 must not replace the dedicated Gate16 segment")
+                raise RuntimeError("stairs_stable must not replace the dedicated Gate16 segment")
             activation_distance = float(
-                self.get_parameter("stairs57_activation_target_distance").value
+                self.get_parameter("stairs_stable_activation_target_distance").value
             )
-            stairs = Stairs57Policy(
-                Stairs57Config(
-                    command_forward=float(self.get_parameter("stairs57_command_forward").value),
+            stairs = StairsStablePolicy(
+                StairsStableConfig(
+                    command_forward=float(self.get_parameter("stairs_stable_command_forward").value),
                     navigation_lateral_limit=float(
-                        self.get_parameter("stairs57_navigation_lateral_limit").value
+                        self.get_parameter("stairs_stable_navigation_lateral_limit").value
                     ),
                     navigation_yaw_rate_limit=float(
-                        self.get_parameter("stairs57_navigation_yaw_rate_limit").value
+                        self.get_parameter("stairs_stable_navigation_yaw_rate_limit").value
                     ),
                     navigation_lookahead=float(
-                        self.get_parameter("stairs57_navigation_lookahead").value
+                        self.get_parameter("stairs_stable_navigation_lookahead").value
                     ),
                     navigation_steering_source=str(
-                        self.get_parameter("stairs57_navigation_steering_source").value
+                        self.get_parameter("stairs_stable_navigation_steering_source").value
                     ),
                     navigation_target_yaw_gain=float(
-                        self.get_parameter("stairs57_navigation_target_yaw_gain").value
+                        self.get_parameter("stairs_stable_navigation_target_yaw_gain").value
                     ),
                     navigation_target_lateral_gain=float(
-                        self.get_parameter("stairs57_navigation_target_lateral_gain").value
+                        self.get_parameter("stairs_stable_navigation_target_lateral_gain").value
                     ),
                     activation_target_distance=(
                         activation_distance if activation_distance > 0.0 else math.inf
                     ),
                     near_target_settle_distance=float(
-                        self.get_parameter("stairs57_near_target_settle_distance").value
+                        self.get_parameter("stairs_stable_near_target_settle_distance").value
                     ),
                     near_target_settle_heading=math.radians(
-                        float(self.get_parameter("stairs57_near_target_settle_heading_deg").value)
+                        float(self.get_parameter("stairs_stable_near_target_settle_heading_deg").value)
                     ),
                     summit_slowdown_distance=float(
-                        self.get_parameter("stairs57_summit_slowdown_distance").value
+                        self.get_parameter("stairs_stable_summit_slowdown_distance").value
                     ),
                     summit_command_forward=float(
-                        self.get_parameter("stairs57_summit_command_forward").value
+                        self.get_parameter("stairs_stable_summit_command_forward").value
                     ),
-                    entry_speed_min=float(self.get_parameter("stairs57_entry_speed_min").value),
-                    entry_speed_max=float(self.get_parameter("stairs57_entry_speed_max").value),
-                    completion_hold=float(self.get_parameter("stairs57_completion_hold").value),
+                    entry_speed_min=float(self.get_parameter("stairs_stable_entry_speed_min").value),
+                    entry_speed_max=float(self.get_parameter("stairs_stable_entry_speed_max").value),
+                    completion_hold=float(self.get_parameter("stairs_stable_completion_hold").value),
                 )
             )
-            policies["stairs57_policy"] = stairs
+            policies["stairs_stable_policy"] = stairs
             for stairs_segment in segments:
                 if stairs_segment in segment_policies:
                     raise RuntimeError(f"duplicate policy mapping for {stairs_segment}")
-                segment_policies[stairs_segment] = "stairs57_policy"
+                segment_policies[stairs_segment] = "stairs_stable_policy"
             self.get_logger().warning(
-                "stairs57 model1800 enabled for ascent segments "
+                "stairs_stable enabled for ascent segments "
                 f"{segments} at {stairs.command_forward:.2f} m/s"
             )
         return policies, segment_policies
@@ -837,8 +837,8 @@ class StrategyRouterNode(Node):
             self.arbiter.forward(JointArbiter.CLIMB, out.joints)
         elif out.source is Source.POLICY and self.router.active_action_kind is ActionKind.DELEGATED:
             owner_name = str(getattr(policy, "owner_name", ""))
-            if owner_name == JointArbiter.STAIRS57:
-                self.arbiter.grant(JointArbiter.STAIRS57)
+            if owner_name == JointArbiter.STAIRS_STABLE:
+                self.arbiter.grant(JointArbiter.STAIRS_STABLE)
             elif owner_name == JointArbiter.GATE16:
                 self.arbiter.grant(gate16_request)
             else:

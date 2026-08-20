@@ -811,7 +811,7 @@ class Router:
                 self.mode,
                 Source.ROUTER,
                 command=(forward, 0.0, yaw),
-                reason="aligning for stairs57 segment ownership",
+                reason="aligning for stairs_stable segment ownership",
             )
         entry_speed = state.speed if state.forward_speed is None else state.forward_speed
         fast_in_envelope = (
@@ -1152,7 +1152,7 @@ class Router:
                 )
             )
         elif (
-            bool(getattr(policy, "is_stairs57_policy", False))
+            bool(getattr(policy, "is_stairs_stable_policy", False))
             and self._attempt.entry_position is not None
         ):
             # /nav/progress is a waypoint-completion fraction, not metres travelled. It
@@ -1188,7 +1188,7 @@ class Router:
             return RouterOutput(self.mode, Source.ROUTER, reason=self._last_reason)
 
         self._policy_status = action.status
-        if bool(getattr(policy, "is_stairs57_policy", False)):
+        if bool(getattr(policy, "is_stairs_stable_policy", False)):
             if (
                 not self._attempt.near_target_settling
                 and hasattr(policy, "ready_to_settle")
@@ -1231,7 +1231,7 @@ class Router:
             command = action.twist or (0.0, 0.0, 0.0)
             if (
                 action.kind is ActionKind.DELEGATED
-                and bool(getattr(policy, "is_stairs57_policy", False))
+                and bool(getattr(policy, "is_stairs_stable_policy", False))
                 and policy.config.navigation_yaw_rate_limit > 0.0
             ):
                 # Correction-capable checkpoints can follow a nearby centreline point, reuse
@@ -1277,7 +1277,7 @@ class Router:
                 )
             if (
                 action.kind is ActionKind.DELEGATED
-                and bool(getattr(policy, "is_stairs57_policy", False))
+                and bool(getattr(policy, "is_stairs_stable_policy", False))
                 and policy.config.summit_slowdown_distance > 0.0
                 and math.isfinite(state.segment_target_distance)
             ):

@@ -118,17 +118,17 @@ def verify_gate16_assets() -> None:
             )
 
 
-def verify_stairs57_assets() -> None:
-    directory = REPO_ROOT / "policy/stairs57"
+def verify_stairs_stable_assets() -> None:
+    directory = REPO_ROOT / "policy/stairs_stable"
     manifest = json.loads((directory / "policy_manifest.json").read_text())
     model = directory / manifest["onnx"]
     actual = hashlib.sha256(model.read_bytes()).hexdigest()
     if actual != manifest["sha256"]:
         raise SystemExit(
-            f"stairs57 asset hash mismatch for {model.name}: {actual} != {manifest['sha256']}"
+            f"stairs_stable asset hash mismatch for {model.name}: {actual} != {manifest['sha256']}"
         )
     if manifest["observation_dim"] != 57 or manifest["action_dim"] != 16:
-        raise SystemExit("stairs57 manifest must retain the official 57D->16D contract")
+        raise SystemExit("stairs_stable manifest must retain the official 57D->16D contract")
 
 
 #: Repository-owned integration files and essential frozen policy assets. Binary files are
@@ -150,9 +150,9 @@ FILES = {
     / "policy/gate16/climb_policy_manifest.json",
     REPO_ROOT / "policy/gate16/front_tuck_command_profiles.json": SDK
     / "policy/gate16/front_tuck_command_profiles.json",
-    REPO_ROOT / "policy/stairs57/policy.onnx": SDK / "policy/stairs57/policy.onnx",
-    REPO_ROOT / "policy/stairs57/policy_manifest.json": SDK
-    / "policy/stairs57/policy_manifest.json",
+    REPO_ROOT / "policy/stairs_stable/policy.onnx": SDK / "policy/stairs_stable/policy.onnx",
+    REPO_ROOT / "policy/stairs_stable/policy_manifest.json": SDK
+    / "policy/stairs_stable/policy_manifest.json",
 }
 
 
@@ -297,12 +297,12 @@ EDITS = [
         path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
         anchor="        bool gate16_running_ = false;\n",
         addition=(
-            "        std::shared_ptr<S10PolicyRunner> stairs57_policy_;\n"
-            "        bool stairs57_running_ = false;\n"
-            "        int stairs57_blend_step_ = 0;\n"
-            "        static constexpr int kStairs57BlendSteps = 20;  // 0.4 s at 50 Hz\n"
+            "        std::shared_ptr<S10PolicyRunner> stairs_stable_policy_;\n"
+            "        bool stairs_stable_running_ = false;\n"
+            "        int stairs_stable_blend_step_ = 0;\n"
+            "        static constexpr int kStairsStableBlendSteps = 20;  // 0.4 s at 50 Hz\n"
         ),
-        marker="stairs57_running_",
+        marker="stairs_stable_running_",
     ),
     Edit(
         path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
@@ -323,12 +323,12 @@ EDITS = [
             "                gate16_policy_ = std::make_shared<Gate16PolicyRunner>(\n"
             '                    "gate16_stable", gate16_path.string());\n'
         ),
-        addition="""                auto stairs57_path = fs::canonical(
-                    base / ".." / ".." / "policy" / "stairs57" / "policy.onnx");
-                stairs57_policy_ = std::make_shared<S10PolicyRunner>(
-                    "stairs57_model1800", stairs57_path.string());
+        addition="""                auto stairs_stable_path = fs::canonical(
+                    base / ".." / ".." / "policy" / "stairs_stable" / "policy.onnx");
+                stairs_stable_policy_ = std::make_shared<S10PolicyRunner>(
+                    "stairs_stable", stairs_stable_path.string());
 """,
-        marker="stairs57_model1800",
+        marker='"stairs_stable", stairs_stable_path.string()',
     ),
     Edit(
         path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
@@ -386,39 +386,39 @@ EDITS = [
                         gate16_running_ = false;
                     }
 
-                    MatXf stairs57_command;
-                    const MatXf* stairs57_ptr = nullptr;
-                    if (owner.owner() == s10::JointOwner::kStairs57 ||
-                        owner.requested_owner() == s10::JointOwner::kStairs57) {
-                        if (!stairs57_running_) {
+                    MatXf stairs_stable_command;
+                    const MatXf* stairs_stable_ptr = nullptr;
+                    if (owner.owner() == s10::JointOwner::kStairsStable ||
+                        owner.requested_owner() == s10::JointOwner::kStairsStable) {
+                        if (!stairs_stable_running_) {
                             // Both policies use the official 57D/16D S10 contract. Seed the
                             // stair actor with the action currently driving the robot, then
                             // retain the actual blended action as its recurrent history.
-                            stairs57_policy_->OnEnter(s10_policy_->GetLastAction());
-                            stairs57_running_ = true;
-                            stairs57_blend_step_ = 0;
+                            stairs_stable_policy_->OnEnter(s10_policy_->GetLastAction());
+                            stairs_stable_running_ = true;
+                            stairs_stable_blend_step_ = 0;
                         }
                         const float blend_phase = std::min(
-                            1.0f, static_cast<float>(stairs57_blend_step_) /
-                                      static_cast<float>(kStairs57BlendSteps));
+                            1.0f, static_cast<float>(stairs_stable_blend_step_) /
+                                      static_cast<float>(kStairsStableBlendSteps));
                         const float blend_alpha =
                             blend_phase * blend_phase * (3.0f - 2.0f * blend_phase);
-                        UserCommand stairs57_user_command = *(uc_ptr_->GetUserCommand());
-                        stairs57_command = stairs57_policy_->getRobotActionBlended(
-                            rbs_[getrbsReadIndex()], stairs57_user_command,
+                        UserCommand stairs_stable_user_command = *(uc_ptr_->GetUserCommand());
+                        stairs_stable_command = stairs_stable_policy_->getRobotActionBlended(
+                            rbs_[getrbsReadIndex()], stairs_stable_user_command,
                             &s10_policy_->GetLastAction(), blend_alpha).ConvertToMat();
-                        if (stairs57_blend_step_ < kStairs57BlendSteps) {
-                            ++stairs57_blend_step_;
+                        if (stairs_stable_blend_step_ < kStairsStableBlendSteps) {
+                            ++stairs_stable_blend_step_;
                         }
-                        stairs57_ptr = &stairs57_command;
+                        stairs_stable_ptr = &stairs_stable_command;
                     } else {
-                        stairs57_running_ = false;
-                        stairs57_blend_step_ = 0;
+                        stairs_stable_running_ = false;
+                        stairs_stable_blend_step_ = 0;
                     }
 
                     bool reset_official = false;
 """,
-        marker="stairs57_ptr",
+        marker="stairs_stable_ptr",
         mode="replace",
     ),
     Edit(
@@ -427,9 +427,9 @@ EDITS = [
                             res, gate16_ptr, rbs_[getrbsReadIndex()].joint_pos,
                             &reset_official);""",
         addition="""                    MatXf gated = owner.Arbitrate(
-                            res, gate16_ptr, stairs57_ptr,
+                            res, gate16_ptr, stairs_stable_ptr,
                             rbs_[getrbsReadIndex()].joint_pos, &reset_official);""",
-        marker="gate16_ptr, stairs57_ptr",
+        marker="gate16_ptr, stairs_stable_ptr",
         mode="replace",
     ),
     Edit(
@@ -606,10 +606,13 @@ def main() -> int:
 
     root = resolve_upstream(args.upstream.resolve())
     verify_gate16_assets()
-    verify_stairs57_assets()
+    verify_stairs_stable_assets()
 
     if args.revert:
-        subprocess.run(["git", "-C", str(root), "checkout", "--", "."], check=True)
+        subprocess.run(
+            ["git", "-c", f"safe.directory={root}", "-C", str(root), "checkout", "--", "."],
+            check=True,
+        )
         for destination in FILES.values():
             (root / destination).unlink(missing_ok=True)
         print(f"Reverted {root} to a pristine checkout")

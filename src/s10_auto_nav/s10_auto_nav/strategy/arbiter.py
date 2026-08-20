@@ -37,7 +37,7 @@ GATE16 = "gate16"
 GATE16_SHADOW = "gate16_shadow"
 GATE16_CLIMB = "gate16_climb"
 GATE16_CLIMB_FALLBACK = "gate16_climb_fallback"
-STAIRS57 = "stairs57"
+STAIRS_STABLE = "stairs_stable"
 STOP = "stop"
 
 
@@ -54,7 +54,7 @@ class JointArbiter:
     GATE16_SHADOW = GATE16_SHADOW
     GATE16_CLIMB = GATE16_CLIMB
     GATE16_CLIMB_FALLBACK = GATE16_CLIMB_FALLBACK
-    STAIRS57 = STAIRS57
+    STAIRS_STABLE = STAIRS_STABLE
     STOP = STOP
 
     def __init__(self, publish: Callable[[np.ndarray], None] | None = None):
@@ -71,7 +71,7 @@ class JointArbiter:
             GATE16_SHADOW,
             GATE16_CLIMB,
             GATE16_CLIMB_FALLBACK,
-            STAIRS57,
+            STAIRS_STABLE,
             STOP,
         ):
             raise ValueError(f"unknown joint command owner: {owner}")
