@@ -207,6 +207,10 @@ waypoint_follower:
     # hysteresis, not an avoidance override: the normal 0.8 m body corridor and attitude
     # veto remain authoritative and immediately release an unsafe commitment.
     barrier_heading_commit_time: 0.75
+    # Suppress counterproductive reverse recovery only long enough to execute the initial
+    # side commitment. A merely marginal 0.8 m corridor can command too little motion to
+    # clear the edge; after this grace, the unchanged no-progress watchdog may recover.
+    barrier_stall_grace: 8.0
     barrier_commit_hard_clearance: 0.8
     barrier_commit_min_speed_fraction: 0.15
     barrier_commit_max_tilt_deg: 12.0
