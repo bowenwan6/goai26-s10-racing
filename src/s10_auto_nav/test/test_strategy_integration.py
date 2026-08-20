@@ -38,6 +38,8 @@ STRATEGY_YAML = REPO / "src" / "s10_bringup" / "config" / "strategy.yaml"
 FOLLOWER = REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py"
 ROUTER_NODE = REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "strategy_router_node.py"
 RUN_RACE = REPO / "scripts" / "run_race.sh"
+SIM_NODE = REPO / "src" / "s10_perception" / "s10_perception" / "sim_node.py"
+SEGMENT_LAUNCH = REPO / "src" / "s10_bringup" / "launch" / "segment.launch.py"
 
 
 # --------------------------------------------------------------- the arbiter
@@ -93,6 +95,17 @@ def test_launch_file_parses():
     ast.parse(LAUNCH_FILE.read_text())
 
 
+def test_simulation_consumers_share_the_mujoco_clock():
+    launch = LAUNCH_FILE.read_text()
+    segment = SEGMENT_LAUNCH.read_text()
+    simulator = SIM_NODE.read_text()
+    assert 'DeclareLaunchArgument(\n                "use_sim_time"' in launch
+    assert launch.count('"use_sim_time": ParameterValue(use_sim_time') >= 2
+    assert '"use_sim_time": ParameterValue(' in segment
+    assert 'self.create_publisher(Clock, "/clock"' in simulator
+    assert "seconds = float(self.timestamp)" in simulator
+
+
 def test_the_router_is_off_by_default():
     """The scored run must be exactly what it was before the router existed."""
     source = LAUNCH_FILE.read_text()
@@ -116,7 +129,7 @@ def test_the_follower_moves_rather_than_duplicating_its_output():
     assert "/strategy/nav_cmd_vel" in source
     # The router node is conditional; the follower is not. If that were reversed, turning the
     # router off would leave nothing publishing /cmd_vel at all.
-    router_block = source[source.index('executable="strategy_router"') :][:400]
+    router_block = source[source.index('executable="strategy_router"') :][:800]
     assert "condition=IfCondition(router)" in router_block
 
 

@@ -67,6 +67,14 @@ def test_the_harness_terminates_and_records_a_router_abort():
     assert 'self._stop(f"router abort: {reason}")' in source
 
 
+def test_the_harness_uses_the_official_ros_simulation_clock():
+    source = (
+        Path(__file__).resolve().parents[1] / "s10_auto_nav" / "segment_recorder.py"
+    ).read_text()
+    assert "self.get_clock().now().nanoseconds" in source
+    assert "time.monotonic()" not in source
+
+
 class _Verdict:
     """The verdict half of the recorder, with the ROS half left out.
 

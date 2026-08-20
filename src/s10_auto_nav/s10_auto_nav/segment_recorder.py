@@ -30,7 +30,6 @@ import contextlib
 import csv
 import json
 import math
-import time
 from pathlib import Path
 
 import numpy as np
@@ -311,7 +310,10 @@ class SegmentRecorder(Node):
         if self._finished or self._odom is None:
             return
 
-        now = time.monotonic()
+        # This node opts into MuJoCo /clock in segment.launch.py. Report and enforce the
+        # same official simulation timeline as the scorer and replay, independent of host
+        # load or rendering speed.
+        now = self.get_clock().now().nanoseconds * 1e-9
         if self._t0 is None:
             self._t0 = now
         t = now - self._t0

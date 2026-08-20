@@ -34,6 +34,7 @@ import numpy as np
 import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.executors import ExternalShutdownException
+from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension, String
 
@@ -98,6 +99,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         self._wheel_geoms = [self._descendant_geoms(int(body)) for body in self.wheel_body_ids]
 
         self.odom_pub = self.create_publisher(Odometry, "/ground_truth/odom", 50)
+        self.clock_pub = self.create_publisher(Clock, "/clock", 10)
         self.scan_pub = self.create_publisher(LaserScan, "/scan", 10)
         self.lidar_pub = self.create_publisher(Float32MultiArray, "/perception/lidar", 10)
         self.heightmap_pub = self.create_publisher(Float32MultiArray, "/perception/heightmap", 10)
@@ -265,6 +267,20 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
 
     def _publish_robot_state(self, step: int) -> None:
         """Extend upstream's state publication with our own sensors."""
+        if step % PERCEPTION_DECIMATION == 0:
+            # Navigation dwell/timeout logic must advance in MuJoCo time. On a loaded x86
+            # runner one simulated second can take several wall seconds; using wall time
+            # made Gate16 consume its 40 s alignment budget before the robot had received
+            # enough physics steps to align. The simulator itself stays on the steady wall
+            # clock that drives its loop; only consumers opt into this standard ROS clock.
+            seconds = float(self.timestamp)
+            clock = Clock()
+            clock.clock.sec = int(seconds)
+            clock.clock.nanosec = int(round((seconds - int(seconds)) * 1e9))
+            if clock.clock.nanosec >= 1_000_000_000:
+                clock.clock.sec += 1
+                clock.clock.nanosec -= 1_000_000_000
+            self.clock_pub.publish(clock)
         super()._publish_robot_state(step)
         if step % PERCEPTION_DECIMATION == 0:
             self._publish_perception()

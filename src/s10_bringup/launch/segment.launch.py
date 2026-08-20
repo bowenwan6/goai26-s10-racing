@@ -31,6 +31,7 @@ from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -55,6 +56,9 @@ def generate_launch_description() -> LaunchDescription:
                 "end_waypoint": LaunchConfiguration("end_waypoint"),
                 "seed": LaunchConfiguration("seed"),
                 "max_time": LaunchConfiguration("max_time"),
+                "use_sim_time": ParameterValue(
+                    LaunchConfiguration("use_sim_time"), value_type=bool
+                ),
             }
         ],
     )
@@ -68,6 +72,7 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument("end_waypoint", default_value="1"),
             DeclareLaunchArgument("seed", default_value="0"),
             DeclareLaunchArgument("max_time", default_value="120.0"),
+            DeclareLaunchArgument("use_sim_time", default_value="true"),
             DeclareLaunchArgument(
                 "nav_params",
                 default_value=PathJoinSubstitution([bringup_share, "config", "nav.yaml"]),
@@ -86,6 +91,7 @@ def generate_launch_description() -> LaunchDescription:
                     "nav_params": LaunchConfiguration("nav_params"),
                     "router_params": LaunchConfiguration("router_params"),
                     "strategy_router": LaunchConfiguration("strategy_router"),
+                    "use_sim_time": LaunchConfiguration("use_sim_time"),
                 }.items(),
             ),
             recorder,
