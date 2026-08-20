@@ -113,6 +113,7 @@ def run_once(args, waypoints: list[dict], seed: int, course_path: Path) -> dict:
     if args.video:
         env["S10_SEGMENT_VIDEO"] = str(out_dir / f"{name}_frames")
         env["S10_SEGMENT_VIDEO_HZ"] = str(args.video_hz)
+        env["S10_SEGMENT_VIDEO_MODE"] = args.video_mode
 
     log = (out_dir / f"{name}.log").open("w")
     policy = subprocess.Popen(
@@ -210,6 +211,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--router", action="store_true", help="insert the strategy router")
     parser.add_argument("--video", action="store_true")
     parser.add_argument("--video-hz", type=float, default=10.0)
+    parser.add_argument(
+        "--video-mode",
+        choices=("replay", "frames"),
+        default="replay",
+        help="record lightweight replay states by default; frames renders during control",
+    )
     args = parser.parse_args(argv)
     args.tag = f"_{args.tag}" if args.tag else ""
 
