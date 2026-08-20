@@ -270,6 +270,48 @@ class LocalPlanner:
             blocked=blocked,
         )
 
+    def vet_committed_corridor(
+        self,
+        ranges: np.ndarray,
+        angles: np.ndarray,
+        heading: float,
+        *,
+        travel_distance: float,
+        hard_stop_distance: float,
+        min_speed_fraction: float,
+    ) -> Steering:
+        """Safety-vet one already selected world-frame corridor without replanning it.
+
+        A height-map-confirmed bypass is a route decision. Feeding it back through the
+        general heading search every tick lets wall returns replace that decision with a
+        stop/pivot/reverse loop. This check keeps the chosen heading fixed while retaining
+        a genuine body-height collision veto and a clearance-based speed taper.
+        """
+        cfg = self.cfg
+        if not 0.0 < hard_stop_distance < cfg.probe_distance:
+            raise ValueError("hard_stop_distance must be inside the lidar probe")
+        if not 0.0 <= min_speed_fraction <= 1.0:
+            raise ValueError("min_speed_fraction must be in [0, 1]")
+
+        chosen_clearance = float(
+            self.clearances(ranges, angles, np.asarray([wrap_angle(heading)]))[0]
+        )
+        horizon = max(0.0, float(travel_distance)) + cfg.target_clearance_margin
+        if chosen_clearance > horizon:
+            chosen_clearance = cfg.probe_distance
+        blocked = chosen_clearance < hard_stop_distance
+        span = max(cfg.full_speed_clearance - hard_stop_distance, 1e-6)
+        openness = (chosen_clearance - hard_stop_distance) / span
+        speed_scale = min_speed_fraction + (1.0 - min_speed_fraction) * float(
+            np.clip(openness, 0.0, 1.0)
+        )
+        return Steering(
+            heading=wrap_angle(heading),
+            clearance=chosen_clearance,
+            speed_scale=0.0 if blocked else speed_scale,
+            blocked=blocked,
+        )
+
 
 #: Residual above which a height map cell is not treated as ground at all, metres. The
 #: course runs under arches whose decks sit ~2.3 m up; a downward ray that starts above one
