@@ -104,8 +104,9 @@ def test_the_brake_distances_ship_in_nav_yaml():
     assert params["barrier_bypass_gate_standoff"] == 0.6
     assert params["barrier_bypass_lateral"] == 1.2
     assert params["barrier_clear_dwell"] == 2.0
-    assert params["barrier_commit_hard_clearance"] == 0.45
-    assert params["barrier_commit_min_speed_fraction"] == 0.45
+    assert params["barrier_heading_commit_time"] == 0.75
+    assert params["barrier_commit_hard_clearance"] == 0.8
+    assert params["barrier_commit_min_speed_fraction"] == 0.15
     assert params["barrier_commit_max_tilt_deg"] == 12.0
     assert params["target_clearance_margin"] == 0.25
 
