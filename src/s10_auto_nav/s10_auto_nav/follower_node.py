@@ -221,8 +221,9 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("barrier_bypass_gate_standoff", 0.6)
         self.declare_parameter("barrier_bypass_lateral", 1.2)
         self.declare_parameter("barrier_clear_dwell", 2.0)
-        self.declare_parameter("barrier_commit_hard_clearance", 0.45)
-        self.declare_parameter("barrier_commit_min_speed_fraction", 0.45)
+        self.declare_parameter("barrier_heading_commit_time", 0.75)
+        self.declare_parameter("barrier_commit_hard_clearance", 0.8)
+        self.declare_parameter("barrier_commit_min_speed_fraction", 0.15)
         self.declare_parameter("barrier_commit_max_tilt_deg", 12.0)
         self.declare_parameter("target_clearance_margin", AvoidanceConfig.target_clearance_margin)
         self.declare_parameter("blocked_timeout", 0.4)
@@ -396,6 +397,9 @@ class WaypointFollowerNode(Node):
         )
         self.barrier_bypass_lateral = float(self.get_parameter("barrier_bypass_lateral").value)
         self.barrier_clear_dwell = float(self.get_parameter("barrier_clear_dwell").value)
+        self.barrier_heading_commit_time = float(
+            self.get_parameter("barrier_heading_commit_time").value
+        )
         self.barrier_commit_hard_clearance = float(
             self.get_parameter("barrier_commit_hard_clearance").value
         )
@@ -447,6 +451,8 @@ class WaypointFollowerNode(Node):
         self._barrier_corner_target: np.ndarray | None = None
         self._barrier_corner_phase = False
         self._barrier_final_phase = False
+        self._barrier_heading_world: float | None = None
+        self._barrier_heading_elapsed = 0.0
         self._corner_retreat_target: np.ndarray | None = None
         self._corner_incoming_yaw: float | None = None
         self._corner_outgoing_yaw: float | None = None
@@ -684,12 +690,10 @@ class WaypointFollowerNode(Node):
 
         gate_distance = float(np.linalg.norm(self.course.target.xy - self._pose_xy))
         near_scoring_gate = gate_distance <= 0.5
-        barrier_corridor_committed = bool(
-            self._barrier_side != 0
-            and self._barrier_bypass_target is not None
-            and abs(self._tilt) <= self.barrier_commit_max_tilt
+        barrier_heading_committed = bool(
+            self._barrier_side != 0 and abs(self._tilt) <= self.barrier_commit_max_tilt
         )
-        if self._barrier_final_phase or near_scoring_gate or barrier_corridor_committed:
+        if self._barrier_final_phase or near_scoring_gate or barrier_heading_committed:
             # Inside the final body-clear corridor, reversing is strictly harmful. At
             # escape21 the robot reached 0.213 m, then the low-speed watchdog repeatedly
             # pushed it back out because the ordinary flat-ground taper was below the gait's
@@ -775,14 +779,6 @@ class WaypointFollowerNode(Node):
                     self.stair_brake_distance or self.flat_brake_distance
                 )
                 target, scale = avoidance_carrot, 1.0
-            elif barrier_corridor_committed:
-                # The height map and the first lidar check have already selected this
-                # body-clear corridor. Keep tracking its fixed world-frame target instead
-                # of asking the generic planner to choose a new heading on every gait tick.
-                # A dedicated direct-heading check below still stops for a real close
-                # obstacle; excessive tilt returns here through the generic safe path.
-                avoidance_carrot = self._barrier_bypass_target
-                target, scale = self._committed_barrier_target(avoidance_carrot, dt)
             else:
                 target, scale = self._avoidance_target(avoidance_carrot, dt, barrier_side)
 
@@ -823,7 +819,6 @@ class WaypointFollowerNode(Node):
         terrain = (
             1.0
             if rejected_cross_storey
-            or barrier_corridor_committed
             or (self._barrier_side == 0 and self._barrier_bypass_target is not None)
             else self._terrain_scale_for(verdict, charging)
         )
@@ -1356,6 +1351,8 @@ class WaypointFollowerNode(Node):
         self._barrier_corner_target = None
         self._barrier_corner_phase = False
         self._barrier_final_phase = False
+        self._barrier_heading_world = None
+        self._barrier_heading_elapsed = 0.0
 
     def _barrier_escape_side_for(self, verdict: TerrainVerdict, dt: float, gate: np.ndarray) -> int:
         """Return a stable escape side through brief terrain-classifier label changes.
@@ -1505,10 +1502,41 @@ class WaypointFollowerNode(Node):
 
         goal_bearing = wrap_angle(math.atan2(delta[1], delta[0]) - self._yaw)
         if barrier_side:
-            steering = self.planner.plan_barrier_escape(
-                self._ranges, self._beam_angles, goal_bearing, barrier_side
+            holding = bool(
+                self._barrier_heading_world is not None
+                and self._barrier_heading_elapsed < self.barrier_heading_commit_time
+                and abs(self._tilt) <= self.barrier_commit_max_tilt
             )
+            if holding:
+                committed_heading = wrap_angle(self._barrier_heading_world - self._yaw)
+                steering = self.planner.vet_committed_corridor(
+                    self._ranges,
+                    self._beam_angles,
+                    committed_heading,
+                    travel_distance=distance,
+                    hard_stop_distance=self.barrier_commit_hard_clearance,
+                    min_speed_fraction=self.barrier_commit_min_speed_fraction,
+                )
+                if steering.blocked:
+                    # A short commitment is hysteresis, not an override. Release it
+                    # immediately when its swept body corridor is no longer safe.
+                    self._barrier_heading_world = None
+                    self._barrier_heading_elapsed = 0.0
+                    steering = self.planner.plan_barrier_escape(
+                        self._ranges, self._beam_angles, goal_bearing, barrier_side
+                    )
+                else:
+                    self._barrier_heading_elapsed += dt
+            else:
+                steering = self.planner.plan_barrier_escape(
+                    self._ranges, self._beam_angles, goal_bearing, barrier_side
+                )
+                if not steering.blocked and abs(self._tilt) <= self.barrier_commit_max_tilt:
+                    self._barrier_heading_world = self._yaw + steering.heading
+                    self._barrier_heading_elapsed = 0.0
         else:
+            self._barrier_heading_world = None
+            self._barrier_heading_elapsed = 0.0
             steering = self.planner.plan(
                 self._ranges, self._beam_angles, goal_bearing, travel_distance=distance
             )
@@ -1518,31 +1546,6 @@ class WaypointFollowerNode(Node):
         heading = self._yaw + steering.heading
         redirected = self._pose_xy + distance * np.array([math.cos(heading), math.sin(heading)])
         return redirected, steering.speed_scale
-
-    def _committed_barrier_target(
-        self, target: np.ndarray, dt: float
-    ) -> tuple[np.ndarray, float]:
-        """Follow a fixed bypass target while preserving a hard lidar collision veto."""
-        if not self.avoidance_enabled or self._ranges is None or self._scan_age > SENSOR_TIMEOUT_S:
-            self._blocked_for = 0.0
-            return target, 1.0
-
-        delta = np.asarray(target, float) - self._pose_xy
-        distance = float(np.linalg.norm(delta))
-        if distance < 1e-6:
-            self._blocked_for = 0.0
-            return target, 1.0
-        bearing = wrap_angle(math.atan2(delta[1], delta[0]) - self._yaw)
-        steering = self.planner.vet_committed_corridor(
-            self._ranges,
-            self._beam_angles,
-            bearing,
-            travel_distance=distance,
-            hard_stop_distance=self.barrier_commit_hard_clearance,
-            min_speed_fraction=self.barrier_commit_min_speed_fraction,
-        )
-        self._blocked_for = self._blocked_for + dt if steering.blocked else 0.0
-        return target, steering.speed_scale
 
     def _classify_terrain(self, dt: float) -> TerrainVerdict:
         """Assemble one reading from what the follower already has, and ask what is ahead.
