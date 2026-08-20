@@ -85,11 +85,12 @@ discontinuity between the unrelated official and Gate 16 policy histories.
 After all four wheels are verified on the upper platform, the residual is disarmed and joint
 ownership returns to the official policy; the existing follower resumes at 0.5 m/s.
 
-The delivered `policy/stairs57/policy.onnx` is staged behind a separate single-owner path but
-is **disabled by default**. Its tensor contract and checksum pass, while isolated full-stack
-WP18→19 and WP17→18 trials with the current SDK action decoder fell at 61–68°; enabling it
-without the teammate's exact working runner/normalization contract would be unsafe. Gate 16
-remains isolated from this experimental path.
+The delivered `policy/stairs_stable/policy.onnx` uses the SDK's native 57D/16D runner on five
+measured stair-ascent legs. Once it is within 0.50 m of the target, all wheel centres and the
+base must be above the target platform with stable attitude for 0.25 s; ownership then returns
+to the official policy to close the waypoint. Segment indices follow the official zero-based log:
+WP6→7 uses stairs_stable, while WP4→5, WP5→6 and upper-platform WP18→19 remain official-owned.
+Gate 16 remains isolated from this path.
 
 | Layer | Responsibility |
 |---|---|
@@ -148,7 +149,7 @@ official-policy-only diagnostic; that is not the validated competition configura
 │   └── s10_bringup/          launch files, generated course, tuned parameters
 ├── integration/              ROS command bridge and joint-command ownership gate
 ├── policy/gate16/            pinned Gate 16 models, v4 manifest and command profiles
-├── policy/stairs57/           staged 57D stair model and fail-closed manifest
+├── policy/stairs_stable/      pinned 57D stair-ascent model and manifest
 ├── training/
 │   ├── s10_climb/            direct-MuJoCo diagnostic/strategy sandbox
 │   └── s10_rl/               optional perceptive-policy observation/export scaffold

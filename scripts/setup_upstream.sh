@@ -30,7 +30,7 @@ if [[ -d "${UPSTREAM_DIR}/.git" ]]; then
   # Drop our patch before pulling so the merge is against a pristine tree.
   python3 "${REPO_ROOT}/scripts/patch_upstream.py" --revert >/dev/null 2>&1 || true
   if [[ "${OFFLINE}" == "0" ]]; then
-    git -C "${UPSTREAM_DIR}" fetch --depth 1 origin "${UPSTREAM_REF}"
+    git -c safe.directory="${UPSTREAM_DIR}" -C "${UPSTREAM_DIR}" fetch --depth 1 origin "${UPSTREAM_REF}"
   fi
 else
   [[ "${OFFLINE}" == "0" ]] || {
@@ -41,7 +41,7 @@ else
   git clone --no-checkout "${UPSTREAM_URL}" "${UPSTREAM_DIR}"
 fi
 
-if ! git -C "${UPSTREAM_DIR}" cat-file -e "${UPSTREAM_REF}^{commit}" 2>/dev/null; then
+if ! git -c safe.directory="${UPSTREAM_DIR}" -C "${UPSTREAM_DIR}" cat-file -e "${UPSTREAM_REF}^{commit}" 2>/dev/null; then
   echo "error: pinned upstream commit ${UPSTREAM_REF} is unavailable" >&2
   echo "       rerun with network access or provide a checkout containing that commit" >&2
   exit 2
@@ -50,8 +50,8 @@ fi
 # Do not force this checkout: unrelated local edits in the official SDK must make setup stop
 # visibly instead of being discarded. patch_upstream.py --revert above touches only our known
 # integration targets.
-git -C "${UPSTREAM_DIR}" checkout --detach "${UPSTREAM_REF}"
-ACTUAL_REF="$(git -C "${UPSTREAM_DIR}" rev-parse HEAD)"
+git -c safe.directory="${UPSTREAM_DIR}" -C "${UPSTREAM_DIR}" checkout --detach "${UPSTREAM_REF}"
+ACTUAL_REF="$(git -c safe.directory="${UPSTREAM_DIR}" -C "${UPSTREAM_DIR}" rev-parse HEAD)"
 [[ "${ACTUAL_REF}" == "${UPSTREAM_REF}" ]] || {
   echo "error: expected upstream ${UPSTREAM_REF}, got ${ACTUAL_REF}" >&2
   exit 2

@@ -14,7 +14,7 @@ S10_INSTALL_BASE="${S10_INSTALL_BASE:-${REPO_ROOT}/install}"
   echo "error: upstream checkout is missing; run scripts/setup_upstream.sh" >&2
   exit 1
 }
-ACTUAL_REF="$(git -C "${UPSTREAM_DIR}" rev-parse HEAD)"
+ACTUAL_REF="$(git -c safe.directory="${UPSTREAM_DIR}" -C "${UPSTREAM_DIR}" rev-parse HEAD)"
 [[ "${ACTUAL_REF}" == "${UPSTREAM_REF}" ]] || {
   echo "error: upstream revision ${ACTUAL_REF}; expected ${UPSTREAM_REF}" >&2
   exit 1
@@ -33,7 +33,7 @@ root = Path(sys.argv[1])
 bundles = (
     (root / "policy/gate16/climb_policy_manifest.json", ("base_onnx", "base_sha256")),
     (root / "policy/gate16/climb_policy_manifest.json", ("residual_onnx", "residual_sha256")),
-    (root / "policy/stairs57/policy_manifest.json", ("onnx", "sha256")),
+    (root / "policy/stairs_stable/policy_manifest.json", ("onnx", "sha256")),
 )
 for manifest_path, (asset_key, checksum_key) in bundles:
     manifest = json.loads(manifest_path.read_text())

@@ -21,7 +21,7 @@ authorized local checkout.
 |---|---|---|---|
 | `policy/gate16/policy.onnx` | `belsun/goai-s10-gate16-policy`, integration source `216b77affa550359e73f4e71944d2853c64959ef`, asset bundle `b6535a48bf3d72f3ab2f3e37f8b555eb15aa3e64` | Frozen 174D-to-16D Gate 16 base model | Included, checksum in its manifest |
 | `policy/gate16/climb_residual.onnx` | Same Gate 16 bundle | Heightmap-gated residual used only on WP15-to-WP16 | Included, checksum in its manifest |
-| `policy/stairs57/policy.onnx` | Team-supplied `s10_stairs_up_57d_model1800_teammate(1)` bundle | Experimental 57D-to-16D stair model | Included for interface traceability but `stairs57_enabled: false`; never used in the accepted run |
+| `policy/stairs_stable/policy.onnx` | `s10_collision_ablation_queue/m0-direct-open-seed42/final_model599_actor.onnx` | 57D-to-16D stair-ascent model | Enabled on five selected ascent legs; SHA-256 pinned in its manifest |
 
 The Gate 16 source bundle and teammate stairs bundle did not contain a standalone license file
 when integrated. They are recorded as team-contributed competition assets, not claimed as original
