@@ -193,6 +193,10 @@ waypoint_follower:
     # the follower carries a continuous diagonal through the gate instead of stopping beside
     # the wall to make the wedged 90-degree pivot measured in escape17.
     barrier_escape_distance: 1.2
+    # A stacked lower deck can remain in the height map after the selected wall edge is
+    # physically clear. Bound the side phase before it reaches the platform boundary, then
+    # continue to the already-vetted corner under ordinary lidar collision checks.
+    barrier_escape_max_distance: 1.8
     barrier_bypass_forward: 3.0
     barrier_bypass_gate_standoff: 0.6
     barrier_bypass_lateral: 1.2
