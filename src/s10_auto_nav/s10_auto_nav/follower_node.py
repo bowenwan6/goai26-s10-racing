@@ -222,6 +222,7 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("barrier_bypass_lateral", 1.2)
         self.declare_parameter("barrier_clear_dwell", 2.0)
         self.declare_parameter("barrier_heading_commit_time", 0.75)
+        self.declare_parameter("barrier_stall_grace", 8.0)
         self.declare_parameter("barrier_commit_hard_clearance", 0.8)
         self.declare_parameter("barrier_commit_min_speed_fraction", 0.15)
         self.declare_parameter("barrier_commit_max_tilt_deg", 12.0)
@@ -400,6 +401,7 @@ class WaypointFollowerNode(Node):
         self.barrier_heading_commit_time = float(
             self.get_parameter("barrier_heading_commit_time").value
         )
+        self.barrier_stall_grace = float(self.get_parameter("barrier_stall_grace").value)
         self.barrier_commit_hard_clearance = float(
             self.get_parameter("barrier_commit_hard_clearance").value
         )
@@ -453,6 +455,7 @@ class WaypointFollowerNode(Node):
         self._barrier_final_phase = False
         self._barrier_heading_world: float | None = None
         self._barrier_heading_elapsed = 0.0
+        self._barrier_escape_elapsed = 0.0
         self._corner_retreat_target: np.ndarray | None = None
         self._corner_incoming_yaw: float | None = None
         self._corner_outgoing_yaw: float | None = None
@@ -690,10 +693,14 @@ class WaypointFollowerNode(Node):
 
         gate_distance = float(np.linalg.norm(self.course.target.xy - self._pose_xy))
         near_scoring_gate = gate_distance <= 0.5
-        barrier_heading_committed = bool(
-            self._barrier_side != 0 and abs(self._tilt) <= self.barrier_commit_max_tilt
+        if self._barrier_side != 0:
+            self._barrier_escape_elapsed += dt
+        barrier_stall_grace_active = bool(
+            self._barrier_side != 0
+            and self._barrier_escape_elapsed < self.barrier_stall_grace
+            and abs(self._tilt) <= self.barrier_commit_max_tilt
         )
-        if self._barrier_final_phase or near_scoring_gate or barrier_heading_committed:
+        if self._barrier_final_phase or near_scoring_gate or barrier_stall_grace_active:
             # Inside the final body-clear corridor, reversing is strictly harmful. At
             # escape21 the robot reached 0.213 m, then the low-speed watchdog repeatedly
             # pushed it back out because the ordinary flat-ground taper was below the gait's
@@ -1353,6 +1360,7 @@ class WaypointFollowerNode(Node):
         self._barrier_final_phase = False
         self._barrier_heading_world = None
         self._barrier_heading_elapsed = 0.0
+        self._barrier_escape_elapsed = 0.0
 
     def _barrier_escape_side_for(self, verdict: TerrainVerdict, dt: float, gate: np.ndarray) -> int:
         """Return a stable escape side through brief terrain-classifier label changes.
