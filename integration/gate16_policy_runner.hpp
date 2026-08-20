@@ -226,6 +226,35 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
       nlohmann::json manifest;
       manifest_stream >> manifest;
 
+      // The adaptive-v3 and v1.5 bundles intentionally share the same ONNX hashes.  The
+      // manifest is therefore part of the executable policy contract, not optional tuning.
+      // Missing v1.5 fields used to fall through to unsafe defaults: residual-on-immediately,
+      // no fallback velocity cap and fast-adapter enabled.  Refuse that mixed deployment
+      // before creating a command instead of silently changing the controller semantics.
+      if (manifest.value("format", std::string()) !=
+              "s10-gated-residual-front-tuck-v1.5" ||
+          manifest.value("observation_dim", 0) != 174 ||
+          manifest.value("action_dim", 0) != 16) {
+        throw std::runtime_error("Gate16 runner requires the v1.5 174D->16D manifest");
+      }
+      const auto& required_runtime = manifest.at("full_stack_runtime");
+      for (const char* key : {"residual_engage_edge_distance_m",
+                              "front_support_edge_distance_m",
+                              "front_support_confirm_policy_steps",
+                              "rear_push_hold_policy_steps",
+                              "fallback_max_forward_mps",
+                              "confidence_gated_fast_adapter"}) {
+        if (!required_runtime.contains(key)) {
+          throw std::runtime_error(std::string("Gate16 full_stack_runtime missing ") + key);
+        }
+      }
+      const auto& required_integration = manifest.at("racing_integration");
+      if (required_integration.value("fallback_owner_request", std::string()) !=
+              "gate16_climb_fallback" ||
+          required_integration.value("competition_fast_adapter_enabled", true)) {
+        throw std::runtime_error("Gate16 manifest does not fail closed to stable fallback");
+      }
+
       if (manifest.contains("policy_symmetry")) {
         const auto& symmetry = manifest.at("policy_symmetry");
         std::vector<std::pair<float, float>> bands;
@@ -241,13 +270,12 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
         }
       }
 
-      if (!manifest.contains("front_tuck_command_profile")) return;
+      if (!manifest.contains("front_tuck_command_profile")) {
+        throw std::runtime_error("Gate16 v1.5 command profile reference is missing");
+      }
       const auto& profile_ref = manifest.at("front_tuck_command_profile");
       if (!profile_ref.value("runner_applies_profile", false)) {
-        std::cout << "S10 adaptive-v3 command profile inactive: no verified "
-                     "front-wheel support-height input"
-                  << std::endl;
-        return;
+        throw std::runtime_error("Gate16 v1.5 runner profile is disabled");
       }
       const auto profile_name = profile_ref.at("file").get<std::string>();
       if (std::filesystem::path(profile_name).filename() != profile_name) {
@@ -295,20 +323,19 @@ class Gate16PolicyRunner : public PolicyRunnerBase {
             "aggressive_supported_forward_floor_mps", 0.0f);
         supported_policy_frame_yaw_bias_rps_ = runtime.value(
             "supported_policy_frame_yaw_bias_rps", 0.0f);
-        residual_engage_edge_distance_m_ = runtime.value(
-            "residual_engage_edge_distance_m",
-            std::numeric_limits<float>::infinity());
+        residual_engage_edge_distance_m_ =
+            runtime.at("residual_engage_edge_distance_m").get<float>();
         front_support_edge_x_ =
-            runtime.value("front_support_edge_distance_m", 0.40f);
+            runtime.at("front_support_edge_distance_m").get<float>();
         front_support_confirm_frames_ =
-            runtime.value("front_support_confirm_policy_steps", 2);
+            runtime.at("front_support_confirm_policy_steps").get<int>();
         rear_push_hold_frames_ =
-            runtime.value("rear_push_hold_policy_steps", 180);
+            runtime.at("rear_push_hold_policy_steps").get<int>();
         rear_push_hold_on_each_side_ =
             runtime.value("rear_push_hold_on_each_side", true);
         fallback_forward_cap_mps_ =
-            runtime.value("fallback_max_forward_mps", 0.0f);
-        if (runtime.contains("confidence_gated_fast_adapter")) {
+            runtime.at("fallback_max_forward_mps").get<float>();
+        {
           const auto& fast = runtime.at("confidence_gated_fast_adapter");
           fast_adapter_envelope_.confidence_gate_enabled =
               fast.value("enabled", false);

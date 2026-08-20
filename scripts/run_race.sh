@@ -31,6 +31,9 @@ set +u
 source "${S10_INSTALL_BASE}/setup.bash"
 set -u
 
+python3 "${REPO_ROOT}/scripts/runtime_fingerprint.py" check \
+  --install-base "${S10_INSTALL_BASE}"
+
 LAUNCH_ARGS=()
 HAS_ROUTER_ARG=0
 HAS_ROUTER_PARAMS_ARG=0
