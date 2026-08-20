@@ -328,6 +328,54 @@ def test_barrier_escape_commits_far_enough_to_make_lateral_room():
     ranges, angles = ring()
     steering = planner.plan_barrier_escape(ranges, angles, goal_bearing=0.0, side=-1)
     assert steering.heading <= -math.radians(60.0)
+
+
+def test_committed_corridor_holds_its_heading_through_a_moderate_close_return():
+    """The 0.8 m generic threshold caused WP24's stop/replan loop after route selection."""
+    planner = LocalPlanner()
+    ranges, angles = wall(normal_deg=0.0, half_width_deg=30.0, distance=0.65)
+    steering = planner.vet_committed_corridor(
+        ranges,
+        angles,
+        math.radians(-20.0),
+        travel_distance=2.0,
+        hard_stop_distance=0.45,
+        min_speed_fraction=0.45,
+    )
+    assert steering.heading == pytest.approx(math.radians(-20.0))
+    assert not steering.blocked
+    assert steering.speed_scale >= 0.45
+
+
+def test_committed_corridor_retains_a_real_close_collision_veto():
+    planner = LocalPlanner()
+    ranges, angles = wall(normal_deg=0.0, half_width_deg=60.0, distance=0.3)
+    steering = planner.vet_committed_corridor(
+        ranges,
+        angles,
+        0.0,
+        travel_distance=2.0,
+        hard_stop_distance=0.45,
+        min_speed_fraction=0.45,
+    )
+    assert steering.blocked
+    assert steering.speed_scale == 0.0
+
+
+def test_committed_corridor_ignores_the_wp24_pillar_beyond_its_short_target():
+    planner = LocalPlanner()
+    ranges, angles = wall(normal_deg=0.0, half_width_deg=30.0, distance=1.0)
+    steering = planner.vet_committed_corridor(
+        ranges,
+        angles,
+        0.0,
+        travel_distance=0.5,
+        hard_stop_distance=0.45,
+        min_speed_fraction=0.45,
+    )
+    assert not steering.blocked
+    assert steering.clearance == pytest.approx(planner.cfg.probe_distance)
+    assert steering.speed_scale == pytest.approx(1.0)
     assert not steering.blocked
 
 
