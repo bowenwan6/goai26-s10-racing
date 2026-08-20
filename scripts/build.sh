@@ -56,6 +56,9 @@ colcon --log-base "${S10_LOG_BASE}" build \
   --cmake-args "-DBUILD_PLATFORM=${BUILD_PLATFORM}" \
   "$@"
 
+python3 "${REPO_ROOT}/scripts/runtime_fingerprint.py" write \
+  --install-base "${S10_INSTALL_BASE}"
+
 cat <<EOF
 
 Build complete. Source the workspace with:

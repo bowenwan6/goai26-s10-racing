@@ -41,10 +41,63 @@ DEFAULT_UPSTREAM = REPO_ROOT / "upstream/goai_embodied_future_material"
 
 SDK = Path("src/S10_sdk_deploy")
 
+GATE16_DEPLOYMENT_FORMAT = "s10-gated-residual-front-tuck-v1.5"
+GATE16_RUNTIME_KEYS = (
+    "residual_engage_edge_distance_m",
+    "front_support_edge_distance_m",
+    "front_support_confirm_policy_steps",
+    "rear_push_hold_policy_steps",
+    "fallback_max_forward_mps",
+    "confidence_gated_fast_adapter",
+)
+
+
+def validate_gate16_manifest(manifest: dict) -> None:
+    """Reject a policy bundle that cannot satisfy the deployed runner contract.
+
+    The ONNX graphs are deliberately shared by adaptive-v3 and v1.5, so model hashes alone
+    cannot detect the dangerous mixed-version case.  A newer runner paired with the older
+    manifest silently defaulted to immediate residual engagement, no fallback velocity cap,
+    and the fast adapter.  Treat the control metadata as part of the executable contract.
+    """
+    if manifest.get("format") != GATE16_DEPLOYMENT_FORMAT:
+        raise ValueError(
+            f"Gate16 manifest format {manifest.get('format')!r}; "
+            f"expected {GATE16_DEPLOYMENT_FORMAT!r}"
+        )
+    if (manifest.get("observation_dim"), manifest.get("action_dim")) != (174, 16):
+        raise ValueError("Gate16 manifest must declare the 174D->16D contract")
+
+    profile = manifest.get("front_tuck_command_profile")
+    if not isinstance(profile, dict) or profile.get("runner_applies_profile") is not True:
+        raise ValueError("Gate16 v1.5 runner profile contract is missing or disabled")
+
+    runtime = manifest.get("full_stack_runtime")
+    if not isinstance(runtime, dict):
+        raise ValueError("Gate16 full_stack_runtime is required")
+    missing = [key for key in GATE16_RUNTIME_KEYS if key not in runtime]
+    if missing:
+        raise ValueError(f"Gate16 full_stack_runtime missing: {', '.join(missing)}")
+    fast = runtime["confidence_gated_fast_adapter"]
+    if not isinstance(fast, dict) or "enabled" not in fast:
+        raise ValueError("Gate16 confidence-gated fast-adapter contract is incomplete")
+
+    integration = manifest.get("racing_integration")
+    if not isinstance(integration, dict):
+        raise ValueError("Gate16 racing_integration is required")
+    if integration.get("fallback_owner_request") != "gate16_climb_fallback":
+        raise ValueError("Gate16 fallback owner request must be gate16_climb_fallback")
+    if integration.get("competition_fast_adapter_enabled") is not False:
+        raise ValueError("competition Gate16 manifest must default the fast adapter off")
+
 
 def verify_gate16_assets() -> None:
     directory = REPO_ROOT / "policy/gate16"
     manifest = json.loads((directory / "climb_policy_manifest.json").read_text())
+    try:
+        validate_gate16_manifest(manifest)
+    except ValueError as error:
+        raise SystemExit(f"Gate16 deployment contract mismatch: {error}") from error
     expected = {
         manifest["base_onnx"]: manifest["base_sha256"],
         manifest["residual_onnx"]: manifest["residual_sha256"],
