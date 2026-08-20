@@ -217,6 +217,7 @@ class WaypointFollowerNode(Node):
         self.declare_parameter("deviation_weight", AvoidanceConfig.deviation_weight)
         self.declare_parameter("barrier_escape_angle_deg", 60.0)
         self.declare_parameter("barrier_escape_distance", 1.2)
+        self.declare_parameter("barrier_escape_max_distance", 1.8)
         self.declare_parameter("barrier_bypass_forward", 3.0)
         self.declare_parameter("barrier_bypass_gate_standoff", 0.6)
         self.declare_parameter("barrier_bypass_lateral", 1.2)
@@ -392,6 +393,11 @@ class WaypointFollowerNode(Node):
         )
         self.blocked_timeout = float(self.get_parameter("blocked_timeout").value)
         self.barrier_escape_distance = float(self.get_parameter("barrier_escape_distance").value)
+        self.barrier_escape_max_distance = float(
+            self.get_parameter("barrier_escape_max_distance").value
+        )
+        if self.barrier_escape_max_distance < self.barrier_escape_distance:
+            raise ValueError("barrier_escape_max_distance must cover barrier_escape_distance")
         self.barrier_bypass_forward = float(self.get_parameter("barrier_bypass_forward").value)
         self.barrier_bypass_gate_standoff = float(
             self.get_parameter("barrier_bypass_gate_standoff").value
@@ -1375,6 +1381,33 @@ class WaypointFollowerNode(Node):
         if self._barrier_escape_done:
             return 0
 
+        distance = (
+            0.0
+            if self._barrier_escape_origin is None
+            else float(np.linalg.norm(self._pose_xy - self._barrier_escape_origin))
+        )
+        if self._barrier_side != 0 and distance >= self.barrier_escape_max_distance:
+            # Cross-storey returns can keep reporting HIGH_BARRIER after the body has
+            # already moved well past the selected edge. Without a geometric ceiling the
+            # side latch walks toward the deck boundary forever. At this point the measured
+            # side commitment is complete; continue to the precomputed corner under normal
+            # lidar planning rather than asking the height map to prove an absence it cannot
+            # represent on stacked geometry.
+            if self._barrier_corner_target is not None:
+                self._barrier_bypass_target = self._barrier_corner_target.copy()
+            self._stalled_for = 0.0
+            self._no_progress_for = 0.0
+            self._stall_reference = None
+            self._barrier_side = 0
+            self._barrier_clear_for = 0.0
+            self._barrier_escape_done = True
+            self._barrier_heading_world = None
+            self._barrier_heading_elapsed = 0.0
+            self.get_logger().info(
+                f"Barrier escape bounded at {distance:.1f}m; following the corner route"
+            )
+            return 0
+
         if verdict.kind is TerrainKind.HIGH_BARRIER:
             self._barrier_clear_for = 0.0
             if self._barrier_side == 0:
@@ -1424,11 +1457,6 @@ class WaypointFollowerNode(Node):
         if self._barrier_side == 0:
             return 0
 
-        distance = (
-            0.0
-            if self._barrier_escape_origin is None
-            else float(np.linalg.norm(self._pose_xy - self._barrier_escape_origin))
-        )
         if distance < self._barrier_escape_required:
             self._barrier_clear_for = 0.0
             return self._barrier_side
