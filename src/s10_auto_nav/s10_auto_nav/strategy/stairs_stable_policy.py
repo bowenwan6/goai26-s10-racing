@@ -22,7 +22,7 @@ from s10_auto_nav.strategy.policy import (
 
 
 @dataclass(frozen=True)
-class Stairs57Config:
+class StairsStableConfig:
     command_forward: float = 0.35
     command_lateral: float = 0.0
     command_yaw_rate: float = 0.0
@@ -33,7 +33,7 @@ class Stairs57Config:
     navigation_target_yaw_gain: float = 1.8
     navigation_target_lateral_gain: float = 0.0
     activation_target_distance: float = math.inf
-    near_target_settle_distance: float = 0.0
+    near_target_settle_distance: float = 0.5
     near_target_settle_heading: float = math.radians(60.0)
     summit_slowdown_distance: float = 0.0
     summit_command_forward: float = 0.25
@@ -48,37 +48,37 @@ class Stairs57Config:
 
     def __post_init__(self) -> None:
         if not self.entry_speed_min <= self.command_forward <= self.entry_speed_max:
-            raise ValueError("stairs57 command must remain inside its trained speed range")
+            raise ValueError("stairs_stable command must remain inside its trained speed range")
         if self.navigation_lateral_limit < 0.0 or self.navigation_yaw_rate_limit < 0.0:
-            raise ValueError("stairs57 navigation correction limits must be non-negative")
+            raise ValueError("stairs_stable navigation correction limits must be non-negative")
         if self.navigation_lookahead <= 0.0:
-            raise ValueError("stairs57 navigation lookahead must be positive")
+            raise ValueError("stairs_stable navigation lookahead must be positive")
         if self.navigation_steering_source not in ("centreline", "follower", "target"):
-            raise ValueError("stairs57 steering source must be centreline, follower or target")
+            raise ValueError("stairs_stable steering source must be centreline, follower or target")
         if self.navigation_target_yaw_gain < 0.0:
-            raise ValueError("stairs57 target yaw gain must be non-negative")
+            raise ValueError("stairs_stable target yaw gain must be non-negative")
         if self.navigation_target_lateral_gain < 0.0:
-            raise ValueError("stairs57 target lateral gain must be non-negative")
+            raise ValueError("stairs_stable target lateral gain must be non-negative")
         if math.isfinite(self.activation_target_distance) and self.activation_target_distance <= 0:
-            raise ValueError("stairs57 activation target distance must be positive")
+            raise ValueError("stairs_stable activation target distance must be positive")
         if self.near_target_settle_distance < 0.0:
-            raise ValueError("stairs57 near-target settle distance must be non-negative")
+            raise ValueError("stairs_stable near-target settle distance must be non-negative")
         if self.near_target_settle_heading <= 0.0:
-            raise ValueError("stairs57 near-target settle heading must be positive")
+            raise ValueError("stairs_stable near-target settle heading must be positive")
         if self.summit_slowdown_distance < 0.0:
-            raise ValueError("stairs57 summit slowdown distance must be non-negative")
+            raise ValueError("stairs_stable summit slowdown distance must be non-negative")
         if self.summit_slowdown_distance > 0.0 and not (
             self.entry_speed_min <= self.summit_command_forward <= self.command_forward
         ):
-            raise ValueError("stairs57 summit command must remain inside its trained range")
+            raise ValueError("stairs_stable summit command must remain inside its trained range")
 
 
-class Stairs57Policy:
-    """Remote handle for ``s10_stairs_up_57d_model1800``."""
+class StairsStablePolicy:
+    """Remote handle for the SDK-local 57D ``stairs_stable`` actor."""
 
     action_kind = ActionKind.DELEGATED
-    owner_name = "stairs57"
-    is_stairs57_policy = True
+    owner_name = "stairs_stable"
+    is_stairs_stable_policy = True
     requires_moving_entry = True
     requires_physical_clear = False
     owns_entire_segment = True
@@ -87,8 +87,8 @@ class Stairs57Policy:
     climb_timeout = 90.0
     climb_progress_window = 10.0
 
-    def __init__(self, config: Stairs57Config | None = None):
-        self.config = config or Stairs57Config()
+    def __init__(self, config: StairsStableConfig | None = None):
+        self.config = config or StairsStableConfig()
         self.command_forward = self.config.command_forward
         self.entry_speed_min = self.config.entry_speed_min
         self.entry_speed_max = self.config.entry_speed_max
@@ -151,7 +151,7 @@ class Stairs57Policy:
         self._started_at = float(observation.t)
         self._last_t = self._started_at
         self._status = PolicyStatus.RUNNING
-        self._reason = "stairs57 model1800 actor requested"
+        self._reason = "stairs_stable actor requested"
 
     def step(self, observation: PolicyObservation) -> PolicyAction:
         self._last_t = float(observation.t)
@@ -165,7 +165,7 @@ class Stairs57Policy:
             ),
             info={
                 "owner": self.owner_name,
-                "runtime": "s10_stairs_up_57d_model1800",
+                "runtime": "stairs_stable",
                 "command_forward_mps": self.config.command_forward,
             },
         )
@@ -240,7 +240,7 @@ class Stairs57Policy:
             self._reason,
             elapsed,
             {
-                "checkpoint": "s10_stairs_up_57d_model1800",
+                "checkpoint": "stairs_stable",
                 "observation_dim": 57,
                 "action_dim": 16,
             },
