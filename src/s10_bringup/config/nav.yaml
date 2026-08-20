@@ -202,6 +202,14 @@ waypoint_follower:
     # that wall -- still visible beside the robot -- start another escape before the gate.
     barrier_clear_dwell: 2.0
 
+    # Once the height map and initial lidar scan have selected the WP24-side corridor,
+    # keep following its fixed world-frame target. The ordinary 0.8 m replanning threshold
+    # repeatedly vetoed this already-proven route. A closer 0.45 m direct-corridor check is
+    # still a hard collision stop, and unstable attitude exits commitment immediately.
+    barrier_commit_hard_clearance: 0.45
+    barrier_commit_min_speed_fraction: 0.45
+    barrier_commit_max_tilt_deg: 12.0
+
     # Keep this much clear beyond a short target for the robot's forward footprint, but do
     # not let obstacles farther beyond the target veto reaching it. WP24 is the measured
     # case: its pillar is 0.40 m beyond the gate along the final approach, and treating the
