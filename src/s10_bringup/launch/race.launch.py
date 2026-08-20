@@ -15,6 +15,7 @@ from launch.substitutions import (
     PythonExpression,
 )
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -29,6 +30,7 @@ def generate_launch_description() -> LaunchDescription:
     viz = LaunchConfiguration("viz")
     rviz = LaunchConfiguration("rviz")
     router = LaunchConfiguration("strategy_router")
+    use_sim_time = LaunchConfiguration("use_sim_time")
 
     # The follower's output moves rather than being duplicated. With the router on it feeds
     # /strategy/nav_cmd_vel and the router is the only publisher of /cmd_vel; with the router
@@ -65,6 +67,11 @@ def generate_launch_description() -> LaunchDescription:
                 "launch_sim",
                 default_value="true",
                 description="Set false to attach to a simulator that is already running.",
+            ),
+            DeclareLaunchArgument(
+                "use_sim_time",
+                default_value="true",
+                description="Use MuJoCo /clock for navigation and strategy timing.",
             ),
             Node(
                 package="s10_perception",
@@ -104,7 +111,11 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 parameters=[
                     nav_params,
-                    {"course_file": course_file, "cmd_vel_topic": follower_cmd_topic},
+                    {
+                        "course_file": course_file,
+                        "cmd_vel_topic": follower_cmd_topic,
+                        "use_sim_time": ParameterValue(use_sim_time, value_type=bool),
+                    },
                 ],
             ),
             Node(
@@ -114,7 +125,11 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 parameters=[
                     router_params,
-                    {"course_file": course_file, "nav_cmd_topic": "/strategy/nav_cmd_vel"},
+                    {
+                        "course_file": course_file,
+                        "nav_cmd_topic": "/strategy/nav_cmd_vel",
+                        "use_sim_time": ParameterValue(use_sim_time, value_type=bool),
+                    },
                 ],
                 condition=IfCondition(router),
             ),
@@ -123,6 +138,7 @@ def generate_launch_description() -> LaunchDescription:
                 executable="viz_node",
                 name="perception_viz",
                 output="screen",
+                parameters=[{"use_sim_time": ParameterValue(use_sim_time, value_type=bool)}],
                 # Launch arguments arrive as the strings "true"/"false", not as booleans,
                 # so the comparison has to be spelled out rather than written as `viz or
                 # rviz` -- which would be true for the string "false" as well.
