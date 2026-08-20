@@ -145,7 +145,12 @@ def run_once(args, waypoints: list[dict], seed: int, course_path: Path) -> dict:
 
     # The recorder ends the run; this is only the backstop for a stack that never got as far
     # as recording anything, which is a harness failure rather than a robot one.
-    deadline = time.monotonic() + args.max_time + 90.0
+    wall_budget = (
+        args.wall_timeout
+        if args.wall_timeout > 0.0
+        else max(args.max_time * 10.0 + 300.0, args.max_time + 90.0)
+    )
+    deadline = time.monotonic() + wall_budget
     while stack.poll() is None and time.monotonic() < deadline:
         time.sleep(0.5)
     _terminate(stack)
@@ -187,6 +192,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seeds", type=int, default=3)
     parser.add_argument("--seed-from", type=int, default=0)
     parser.add_argument("--max-time", type=float, default=120.0)
+    parser.add_argument(
+        "--wall-timeout",
+        type=float,
+        default=0.0,
+        help=(
+            "host-time backstop per seed; 0 allows 10x real-time slowdown plus 300 s "
+            "while max-time remains official simulation time"
+        ),
+    )
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--tag", default="", help="suffix, to keep an A/B pair apart")
     parser.add_argument("--nav-params", default="", help="override nav.yaml, for an A/B only")
