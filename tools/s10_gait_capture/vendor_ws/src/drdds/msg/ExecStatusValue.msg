@@ -1,0 +1,3 @@
+uint8 overtime
+uint8 numeric_error
+uint8 timestamp_error

@@ -1,0 +1,17 @@
+[Unit]
+Description=S10 hotspot gait capture portal to Orin
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=user
+ExecStart=/usr/bin/ssh -NT -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/home/user/.ssh/s10_mapping_known_hosts -o ExitOnForwardFailure=yes -o ConnectTimeout=8 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -i /home/user/.ssh/s10_gait_relay -L 10.21.41.1:8090:127.0.0.1:8090 -L 10.21.33.103:8090:127.0.0.1:8090 xwy@10.21.33.102
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

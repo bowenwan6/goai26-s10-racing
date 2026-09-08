@@ -1,0 +1,4 @@
+uint8 total_status
+ExecStatusValue exec_val
+LossStatusValue loss_val
+InputStatusValue input_val
