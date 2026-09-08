@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S10 步态采集</title><link rel="stylesheet" href="/static/style.css"></head>
+<body><main>
+<header><div><span class="eyebrow">S10 · ROBOT LEARNING</span><h1>步态数据采集</h1><p>记录每一次跨越，让训练有据可循。</p></div><span id="mode" class="badge">本地采集站</span></header>
+<section id="login"><h2>连接采集站</h2><p>机器人部署使用原建图网页登录密码；本地演示使用数据目录中的访问口令。</p><form id="loginForm"><label>访问密码<input id="token" type="password" autocomplete="current-password" required></label><button>连接</button></form></section>
+<div id="workspace" hidden>
+<div class="notice" id="notice">正在读取采集状态</div>
+<section><h2>机器人当前步态 <small>/MOTION_INFO 反馈</small></h2><div id="gaitFeedback" class="record-state">等待运动反馈</div><p id="gaitDetail">接收反馈后自动显示；地形分类与机器人步态分别记录。</p></section>
+<div class="grid"><section><h2><span>01</span> 选择地形</h2><div class="terrain" id="terrain">
+<button type="button" data-terrain="basic" class="selected" aria-pressed="true">基础运动<small>平地 · 转向 · 启停</small></button><button type="button" data-terrain="stairs" aria-pressed="false">连续台阶<small>上阶 · 下阶</small></button><button type="button" data-terrain="ledge" aria-pressed="false">高台跨越<small>攀上 · 落下</small></button><button type="button" data-terrain="gravel" aria-pressed="false">碎石路面<small>起伏 · 打滑</small></button></div>
+<form id="captureForm"><div class="fields"><label>高度 / 阶高（cm）<input id="height_cm" type="number" min="0" max="1000" step="any" placeholder="可选"></label><label>踏面深度（cm）<input id="depth_cm" type="number" min="0" max="1000" step="any" placeholder="可选"></label><label>坡度（°）<input id="slope_deg" type="number" min="0" max="90" step="any" placeholder="可选"></label><label>碎石粒径（cm）<input id="gravel_cm" type="number" min="0" max="1000" step="any" placeholder="可选"></label></div>
+<label>教师 / 原厂步态版本<input id="teacher" maxlength="200" placeholder="例如：原厂基础模式，固件版本待确认"></label><label>采集说明<textarea id="notes" maxlength="2000" rows="2" placeholder="方向、速度档位、载荷、地面材质和操作条件"></textarea></label><label>自动停止时限（秒）<input id="duration" type="number" value="120" min="5" max="1800" required></label><label class="check"><input id="partial" type="checkbox">关键话题缺失时，仅录制诊断数据</label><button id="start" class="primary">开始录制</button></form></section>
+<section><h2><span>02</span> 当前录制</h2><div id="recordState" class="record-state">准备采集</div><div id="elapsed" class="timer">00:00</div><p id="sessionName">选择地形，确认数据连接后开始。</p><div id="events" class="events"><button data-event="obstacle_enter">进入障碍</button><button data-event="obstacle_exit">离开障碍</button><button data-event="slip">发生打滑</button><button data-event="intervention">人工接管</button><button data-event="failure">失败事件</button></div><p class="hint">标注时间为后台接收时刻，精确动作边界需回放对齐。</p><label>本轮结果<select id="outcome"><option value="unlabeled">待复核</option><option value="success">成功通过</option><option value="failure">失败</option><option value="intervention">人工接管</option></select></label><button id="stop" class="stop" disabled>停止并保存</button><p class="hint">停止录制仅结束数据保存；机器人仍由原有遥控器控制。</p></section></div>
+<section><h2><span>03</span> 数据连接 <small id="disk"></small></h2><div id="health" class="health"></div><p class="hint">频率是本采集端接收估计。话题在线不代表动作语义、时间同步或定位已经验收。</p></section>
+<section><h2><span>04</span> 已保存记录</h2><p class="hint">下载包含原始记录、地形参数、事件、质量统计和文件校验值。真实记录仍需训练前审查。</p><div id="history"></div></section>
+</div><div id="message" role="status" aria-live="polite"></div><footer>手机管理采集 · 后台持续保存 · 训练在工作站进行</footer>
+</main><script src="/static/app.js"></script></body></html>
