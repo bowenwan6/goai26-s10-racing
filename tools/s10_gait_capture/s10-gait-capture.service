@@ -1,0 +1,15 @@
+[Unit]
+Description=S10 read-only gait capture backend
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/s10_gait_capture
+EnvironmentFile=-%h/.config/s10-gait-capture/environment
+ExecStart=/bin/bash %h/s10_gait_capture/start-robot.sh
+Restart=on-failure
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=default.target
