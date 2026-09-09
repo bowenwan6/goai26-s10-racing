@@ -1,0 +1,9 @@
+# Regenerate these from the separately distributed source recordings.
+/data/
+/decoded/
+/previews/
+*.db3
+*.db3-*
+*.npz
+*.err
+# human_reviews.jsonl is deliberate human work: do not ignore it.
