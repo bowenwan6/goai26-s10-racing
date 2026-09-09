@@ -1,0 +1,4167 @@
+[
+  {
+    "id": "gait_20260906_133215_7ac9013c8d0f",
+    "terrain": "basic",
+    "duration_s": 12.003967681000177,
+    "outcome": "unlabeled",
+    "notes": "Read-only deployment validation. No commanded motion. Not a training demonstration.",
+    "events": [
+      {
+        "label": "obstacle_enter",
+        "receive_wall_ns": 1788672735169950140,
+        "elapsed_s": 0.06356187999972462,
+        "time_basis": "server receipt; not sensor-aligned"
+      }
+    ],
+    "empty_metadata": false,
+    "streams": {
+      "/JOINTS_DATA": {
+        "count": 2406,
+        "manifest_count": 2406,
+        "count_matches": true,
+        "source_span_s": 12.024996417,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.00491575,
+          "median": 0.004999751,
+          "p95": 0.005039709,
+          "max": 0.005085209
+        },
+        "receive_gap_s": {
+          "min": 0.001095648,
+          "median": 0.004998742,
+          "p95": 0.007825170399999993,
+          "max": 0.03502605
+        },
+        "receive_minus_source_s": {
+          "min": 0.000884619,
+          "median": 0.0015988255,
+          "p95": 0.008885295,
+          "max": 0.072955928
+        },
+        "source_missing": 0,
+        "measured_hz": 200.00005959253335,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "position_range": [
+          0.00016435235738754272,
+          0.00022602081298828125,
+          0.00011641811579465866,
+          0.00048828125,
+          0.00020544975996017456,
+          0.00017130374908447266,
+          0.00016435422003269196,
+          0.0,
+          0.00010956823825836182,
+          0.00013017654418945312,
+          0.00019174814224243164,
+          0.00048828125,
+          0.00021228939294815063,
+          0.00015056133270263672,
+          0.00023968517780303955,
+          0.0
+        ],
+        "velocity_abs_p95": [
+          0.014100553002208471,
+          0.016865406651049852,
+          0.008287852397188544,
+          0.036016667261719704,
+          0.016016618348658085,
+          0.012315691215917468,
+          0.010465918807312846,
+          0.044654522091150284,
+          0.0072200552094727755,
+          0.010810925858095288,
+          0.014457044191658497,
+          0.03426886908710003,
+          0.017235422041267157,
+          0.010460229590535164,
+          0.016575769055634737,
+          0.030155245680361986
+        ],
+        "velocity_abs_max": [
+          0.027535011991858482,
+          0.034109510481357574,
+          0.014239962212741375,
+          0.07052965462207794,
+          0.02733173593878746,
+          0.024477647617459297,
+          0.021267874166369438,
+          0.07810645550489426,
+          0.013355297967791557,
+          0.018429046496748924,
+          0.029064783826470375,
+          0.06694748252630234,
+          0.029970085248351097,
+          0.023537341505289078,
+          0.02938164211809635,
+          0.05566011741757393
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 2405,
+          "0.02": 0,
+          "0.1": 0,
+          "1.0": 0
+        }
+      },
+      "/IMU": {
+        "count": 2405,
+        "manifest_count": 2405,
+        "count_matches": true,
+        "source_span_s": 12.02,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.001291521,
+          "median": 0.005040482,
+          "p95": 0.007726231849999999,
+          "max": 0.032557797
+        },
+        "receive_minus_source_s": {
+          "min": 0.009507819,
+          "median": 0.010449173,
+          "p95": 0.016329208399999993,
+          "max": 0.083111392
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.9999999603454804,
+          "median": 1.0000000417639467,
+          "p95": 1.0000000991996172,
+          "max": 1.0000001236211693
+        },
+        "gyro_norm": {
+          "min": 0.0004620590723756919,
+          "median": 0.006098632264342533,
+          "p95": 0.011160215624470742,
+          "max": 0.017361358374156973
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 240,
+        "manifest_count": 240,
+        "count_matches": true,
+        "source_span_s": 11.9500092,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.049845839,
+          "median": 0.050000713,
+          "p95": 0.0500147431,
+          "max": 0.050158213
+        },
+        "receive_gap_s": {
+          "min": 0.037885505,
+          "median": 0.049987386,
+          "p95": 0.0577417897,
+          "max": 0.061967042
+        },
+        "receive_minus_source_s": {
+          "min": 0.0009446,
+          "median": 0.00153354,
+          "p95": 0.009384083949999998,
+          "max": 0.016389194
+        },
+        "source_missing": 0,
+        "measured_hz": 19.999984602522314,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "0": 240
+        },
+        "gait_counts": {
+          "0": 240
+        },
+        "velocity_xy_norm": {
+          "min": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "height": {
+          "min": 0.07241614162921906,
+          "median": 0.0724664218723774,
+          "p95": 0.07249853499233723,
+          "max": 0.07250503450632095
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 0,
+            "gait": 0
+          }
+        ]
+      },
+      "/rslidar_front/points": {
+        "count": 113,
+        "manifest_count": 113,
+        "count_matches": true,
+        "source_span_s": 11.900002957,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.099879026,
+          "median": 0.099997997,
+          "p95": 0.199995041,
+          "max": 0.200009108
+        },
+        "receive_gap_s": {
+          "min": 0.081981303,
+          "median": 0.100123637,
+          "p95": 0.19405503105,
+          "max": 0.209051618
+        },
+        "receive_minus_source_s": {
+          "min": 0.116789212,
+          "median": 0.120618925,
+          "p95": 0.1270591576,
+          "max": 0.138685312
+        },
+        "source_missing": 0,
+        "measured_hz": 9.41176236717804,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 50
+      },
+      "/rslidar_rear/points": {
+        "count": 114,
+        "manifest_count": 114,
+        "count_matches": true,
+        "source_span_s": 11.899995089,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.099881887,
+          "median": 0.100000858,
+          "p95": 0.14006609899999914,
+          "max": 0.200043202
+        },
+        "receive_gap_s": {
+          "min": 0.071396324,
+          "median": 0.1003242,
+          "p95": 0.14574179239999926,
+          "max": 0.207417411
+        },
+        "receive_minus_source_s": {
+          "min": 0.116465681,
+          "median": 0.1231251145,
+          "p95": 0.12749851825,
+          "max": 0.151782058
+        },
+        "source_missing": 0,
+        "measured_hz": 9.495802238141579,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 61
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 30088,
+        "frame_id": "base_link"
+      },
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 26755,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_133611_a088e9a21bad",
+    "terrain": "basic",
+    "duration_s": 12.005897628000639,
+    "outcome": "unlabeled",
+    "notes": "Read-only deployment validation. No commanded motion. Not a training demonstration.",
+    "events": [
+      {
+        "label": "obstacle_enter",
+        "receive_wall_ns": 1788672971364500240,
+        "elapsed_s": 0.08051634700041177,
+        "time_basis": "server receipt; not sensor-aligned"
+      }
+    ],
+    "empty_metadata": false,
+    "streams": {
+      "/IMU": {
+        "count": 2403,
+        "manifest_count": 2403,
+        "count_matches": true,
+        "source_span_s": 12.01,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.001204353,
+          "median": 0.005054848,
+          "p95": 0.006637497599999999,
+          "max": 0.02087728
+        },
+        "receive_minus_source_s": {
+          "min": 0.009217761,
+          "median": 0.010417739,
+          "p95": 0.01755487490000001,
+          "max": 0.030631411
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.9999999359973698,
+          "median": 1.0000000340891448,
+          "p95": 1.000000085233808,
+          "max": 1.0000001370052196
+        },
+        "gyro_norm": {
+          "min": 0.0006741013399716725,
+          "median": 0.3995825998710185,
+          "p95": 1.6085552428360634,
+          "max": 3.622076405933352
+        }
+      },
+      "/JOINTS_DATA": {
+        "count": 2404,
+        "manifest_count": 2404,
+        "count_matches": true,
+        "source_span_s": 12.014998666,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.004930918,
+          "median": 0.005000042,
+          "p95": 0.005014334,
+          "max": 0.005071209
+        },
+        "receive_gap_s": {
+          "min": 0.00087616,
+          "median": 0.00499456,
+          "p95": 0.006601414400000001,
+          "max": 0.018498304
+        },
+        "receive_minus_source_s": {
+          "min": 0.000807447,
+          "median": 0.001572567,
+          "p95": 0.008716619349999998,
+          "max": 0.025684236
+        },
+        "source_missing": 0,
+        "measured_hz": 200.00002220557883,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "position_range": [
+          0.31679442524909973,
+          1.6251500844955444,
+          1.9736307188868523,
+          32.23046875,
+          0.3281623423099518,
+          1.5371445417404175,
+          1.4892213344573975,
+          35.765625,
+          0.34464579820632935,
+          1.3924847841262817,
+          1.6827426254749298,
+          36.90478515625,
+          0.2197222113609314,
+          1.4005793333053589,
+          1.6706625521183014,
+          51.96435546875
+        ],
+        "velocity_abs_p95": [
+          1.7598686397075647,
+          4.174683022499079,
+          5.485444211959837,
+          11.343065929412841,
+          1.1682896852493285,
+          4.025766062736511,
+          4.447749614715575,
+          11.97896862030029,
+          1.1734976232051846,
+          2.9279916167259215,
+          3.842411518096923,
+          11.399123620986924,
+          1.37186312675476,
+          3.093514037132259,
+          3.8265491843223565,
+          10.08502025604248
+        ],
+        "velocity_abs_max": [
+          3.7748892307281494,
+          13.617280006408691,
+          12.526961326599121,
+          22.218114852905273,
+          3.5070135593414307,
+          9.436317443847656,
+          11.546648979187012,
+          18.638545989990234,
+          4.199021816253662,
+          9.607420921325684,
+          16.243131637573242,
+          23.92018699645996,
+          4.2944416999816895,
+          7.60172176361084,
+          14.41013240814209,
+          27.527620315551758
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 2403,
+          "0.02": 0,
+          "0.1": 0,
+          "1.0": 0
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 240,
+        "manifest_count": 240,
+        "count_matches": true,
+        "source_span_s": 11.950002784,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.049752505,
+          "median": 0.05000013,
+          "p95": 0.0500072175,
+          "max": 0.050243089
+        },
+        "receive_gap_s": {
+          "min": 0.043810269,
+          "median": 0.050048007,
+          "p95": 0.052010868,
+          "max": 0.055544773
+        },
+        "receive_minus_source_s": {
+          "min": 0.000815365,
+          "median": 0.002211447,
+          "p95": 0.004490806449999991,
+          "max": 0.0078818
+        },
+        "source_missing": 0,
+        "measured_hz": 19.99999534058686,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "17": 240
+        },
+        "gait_counts": {
+          "4099": 240
+        },
+        "velocity_xy_norm": {
+          "min": 0.004849198781936798,
+          "median": 0.3684987582348994,
+          "p95": 0.7994171044766859,
+          "max": 1.0771603445041469
+        },
+        "height": {
+          "min": 0.2575482428073883,
+          "median": 0.40505002439022064,
+          "p95": 0.41446916908025744,
+          "max": 0.41476014256477356
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 17,
+            "gait": 4099
+          }
+        ]
+      },
+      "/STEER": {
+        "count": 120,
+        "manifest_count": 120,
+        "count_matches": true,
+        "source_span_s": 10.010135959,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 7.2729e-05,
+          "median": 8.0919e-05,
+          "p95": 1.0000811579,
+          "max": 1.000405165
+        },
+        "receive_gap_s": {
+          "min": 0.067742534,
+          "median": 0.081022012,
+          "p95": 0.0870487333,
+          "max": 0.404367354
+        },
+        "receive_minus_source_s": {
+          "min": -1.97744125,
+          "median": -1.502464885,
+          "p95": -1.0470230536,
+          "max": -0.997787791
+        },
+        "source_missing": 0,
+        "measured_hz": 11.887950422192663,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 10
+      },
+      "/HANDLE_STEER": {
+        "count": 120,
+        "manifest_count": 120,
+        "count_matches": true,
+        "source_span_s": 10.010135959,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 7.2729e-05,
+          "median": 8.0919e-05,
+          "p95": 1.0000811579,
+          "max": 1.000405165
+        },
+        "receive_gap_s": {
+          "min": 0.067757383,
+          "median": 0.081019176,
+          "p95": 0.08800195039999999,
+          "max": 0.404321018
+        },
+        "receive_minus_source_s": {
+          "min": -1.969661535,
+          "median": -1.5020139885,
+          "p95": -1.0465716456,
+          "max": -0.997344335
+        },
+        "source_missing": 0,
+        "measured_hz": 11.887950422192663,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 10
+      },
+      "/rslidar_front/points": {
+        "count": 119,
+        "manifest_count": 119,
+        "count_matches": true,
+        "source_span_s": 11.800010204,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.09929657,
+          "median": 0.09999036750000001,
+          "p95": 0.10046461805000001,
+          "max": 0.101019144
+        },
+        "receive_gap_s": {
+          "min": 0.0031832,
+          "median": 0.09481901749999999,
+          "p95": 0.32657888739999913,
+          "max": 0.900489379
+        },
+        "receive_minus_source_s": {
+          "min": 0.115822083,
+          "median": 0.126075745,
+          "p95": 0.7280907572,
+          "max": 0.927569486
+        },
+        "source_missing": 0,
+        "measured_hz": 9.999991352549852,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 48
+      },
+      "/rslidar_rear/points": {
+        "count": 119,
+        "manifest_count": 119,
+        "count_matches": true,
+        "source_span_s": 11.800017833,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095351219,
+          "median": 0.0999891755,
+          "p95": 0.10049930835,
+          "max": 0.104822874
+        },
+        "receive_gap_s": {
+          "min": 0.003162208,
+          "median": 0.006308784,
+          "p95": 0.7391353564999984,
+          "max": 1.00161016
+        },
+        "receive_minus_source_s": {
+          "min": 0.114064909,
+          "median": 0.341542922,
+          "p95": 0.9286521186000001,
+          "max": 1.03426088
+        },
+        "source_missing": 0,
+        "measured_hz": 9.999984887310974,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 44
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 50541,
+        "frame_id": "base_link"
+      },
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 50114,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_134213_82386e35f7b0",
+    "terrain": "basic",
+    "duration_s": 4.620388295999874,
+    "outcome": "unlabeled",
+    "notes": "",
+    "events": [],
+    "empty_metadata": false,
+    "streams": {
+      "/IMU": {
+        "count": 925,
+        "manifest_count": 925,
+        "count_matches": true,
+        "source_span_s": 4.62,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.0006144,
+          "median": 0.0050031365,
+          "p95": 0.010652983399999998,
+          "max": 0.036797564
+        },
+        "receive_minus_source_s": {
+          "min": 0.009278297,
+          "median": 0.010872441,
+          "p95": 0.05344838759999998,
+          "max": 0.081515584
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.9999999517926422,
+          "median": 1.0000000354490206,
+          "p95": 1.0000000918815197,
+          "max": 1.0000001157718246
+        },
+        "gyro_norm": {
+          "min": 0.00044034528777064447,
+          "median": 0.0060701167734691815,
+          "p95": 0.011378015591709222,
+          "max": 0.016527938629679186
+        }
+      },
+      "/JOINTS_DATA": {
+        "count": 231,
+        "manifest_count": 231,
+        "count_matches": true,
+        "source_span_s": 4.600001463,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.019944752,
+          "median": 0.020000168,
+          "p95": 0.020007169,
+          "max": 0.020050919
+        },
+        "receive_gap_s": {
+          "min": 0.003907135,
+          "median": 0.019993374,
+          "p95": 0.033021926349999994,
+          "max": 0.041657819
+        },
+        "receive_minus_source_s": {
+          "min": 0.000998163,
+          "median": 0.00245788,
+          "p95": 0.0168993345,
+          "max": 0.049019979
+        },
+        "source_missing": 0,
+        "measured_hz": 49.999984097831145,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "position_range": [
+          0.00010955333709716797,
+          0.0001232624053955078,
+          0.0001575946807861328,
+          0.00048828125,
+          0.00010961294174194336,
+          0.00010967254638671875,
+          0.0001163482666015625,
+          0.0,
+          0.00014382600784301758,
+          0.0001163482666015625,
+          0.00013005733489990234,
+          0.00048828125,
+          0.00013691186904907227,
+          0.00013017654418945312,
+          0.00017130374908447266,
+          0.0009765625
+        ],
+        "velocity_abs_p95": [
+          0.009826559107750654,
+          0.01051330054178834,
+          0.017498290166258812,
+          0.036115460097789764,
+          0.01291597681120038,
+          0.011086443904787302,
+          0.01089056907221675,
+          0.034500669687986374,
+          0.013066904153674841,
+          0.01140171242877841,
+          0.012638700660318136,
+          0.049463601782917976,
+          0.01663779281079769,
+          0.014553750399500132,
+          0.014876504428684711,
+          0.04806356504559517
+        ],
+        "velocity_abs_max": [
+          0.021110523492097855,
+          0.01306528877466917,
+          0.02628837153315544,
+          0.05643016844987869,
+          0.01796777732670307,
+          0.014791488647460938,
+          0.015929212793707848,
+          0.04959810897707939,
+          0.026372000575065613,
+          0.01600795052945614,
+          0.019567159935832024,
+          0.07895635068416595,
+          0.02495359443128109,
+          0.024440763518214226,
+          0.020036006346344948,
+          0.08060344308614731
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 230,
+          "0.1": 0,
+          "1.0": 0
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 93,
+        "manifest_count": 93,
+        "count_matches": true,
+        "source_span_s": 4.599979004,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.049974755,
+          "median": 0.0499988175,
+          "p95": 0.050017848749999996,
+          "max": 0.050029296
+        },
+        "receive_gap_s": {
+          "min": 0.02673254,
+          "median": 0.0498456625,
+          "p95": 0.0699917422,
+          "max": 0.073658646
+        },
+        "receive_minus_source_s": {
+          "min": 0.00131766,
+          "median": 0.002924502,
+          "p95": 0.023329181999999983,
+          "max": 0.038233199
+        },
+        "source_missing": 0,
+        "measured_hz": 20.00009128737319,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "17": 93
+        },
+        "gait_counts": {
+          "4097": 93
+        },
+        "velocity_xy_norm": {
+          "min": 0.019494982973085,
+          "median": 0.019524674256283143,
+          "p95": 0.01955513364935451,
+          "max": 0.0195694548780353
+        },
+        "height": {
+          "min": 0.4073841869831085,
+          "median": 0.4074055850505829,
+          "p95": 0.4074225425720215,
+          "max": 0.407426655292511
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 17,
+            "gait": 4097
+          }
+        ]
+      },
+      "/rslidar_rear/points": {
+        "count": 47,
+        "manifest_count": 47,
+        "count_matches": true,
+        "source_span_s": 4.599995375,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.099879742,
+          "median": 0.1000008585,
+          "p95": 0.100108683,
+          "max": 0.100114107
+        },
+        "receive_gap_s": {
+          "min": 0.007731264,
+          "median": 0.095034668,
+          "p95": 0.1242457705,
+          "max": 0.809705314
+        },
+        "receive_minus_source_s": {
+          "min": 0.116959002,
+          "median": 0.131899439,
+          "p95": 0.6702387984999999,
+          "max": 0.835699305
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000010054357936,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 26
+      },
+      "/rslidar_front/points": {
+        "count": 47,
+        "manifest_count": 47,
+        "count_matches": true,
+        "source_span_s": 4.59999609,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.099882364,
+          "median": 0.099998951,
+          "p95": 0.100107312,
+          "max": 0.100120067
+        },
+        "receive_gap_s": {
+          "min": 0.005029408,
+          "median": 0.0096092955,
+          "p95": 0.76978461225,
+          "max": 1.014006756
+        },
+        "receive_minus_source_s": {
+          "min": 0.11960468,
+          "median": 0.396191231,
+          "p95": 0.9650355589999999,
+          "max": 1.05017624
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000008500007224,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 18
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 49623,
+        "frame_id": "base_link"
+      },
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 52828,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_134245_67a76c09d415",
+    "terrain": "basic",
+    "duration_s": 23.640816885000277,
+    "outcome": "unlabeled",
+    "notes": "",
+    "events": [],
+    "empty_metadata": false,
+    "streams": {
+      "/IMU": {
+        "count": 4729,
+        "manifest_count": 4729,
+        "count_matches": true,
+        "source_span_s": 23.64,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.000624895,
+          "median": 0.005008383999999999,
+          "p95": 0.010613145649999997,
+          "max": 0.03335402
+        },
+        "receive_minus_source_s": {
+          "min": 0.009298487,
+          "median": 0.010824251,
+          "p95": 0.031335826399999975,
+          "max": 0.07277124
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.999999935121135,
+          "median": 1.0000000373801532,
+          "p95": 1.0000001011033717,
+          "max": 1.0000001430168333
+        },
+        "gyro_norm": {
+          "min": 0.0006595371491417096,
+          "median": 0.056299361369241914,
+          "p95": 1.8389358855882347,
+          "max": 2.7385862037636253
+        }
+      },
+      "/JOINTS_DATA": {
+        "count": 1182,
+        "manifest_count": 1182,
+        "count_matches": true,
+        "source_span_s": 23.619999415,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.00983471,
+          "median": 0.019999877,
+          "p95": 0.020013002,
+          "max": 0.030169419
+        },
+        "receive_gap_s": {
+          "min": 0.002312607,
+          "median": 0.020031198,
+          "p95": 0.03022141,
+          "max": 0.046957095
+        },
+        "receive_minus_source_s": {
+          "min": 0.001076546,
+          "median": 0.002342436,
+          "p95": 0.012871452949999999,
+          "max": 0.033808468
+        },
+        "source_missing": 0,
+        "measured_hz": 50.000001238357356,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "position_range": [
+          0.35017216205596924,
+          0.36912107467651367,
+          0.5186635255813599,
+          141.18212890625,
+          0.4596737325191498,
+          0.343289852142334,
+          0.5418171882629395,
+          137.26513671875,
+          0.44510096311569214,
+          0.38691914081573486,
+          0.8482846021652222,
+          131.24560546875,
+          0.4363422393798828,
+          0.4200094938278198,
+          0.8337390422821045,
+          127.83935546875
+        ],
+        "velocity_abs_p95": [
+          1.598728346824646,
+          1.8800731778144837,
+          2.5809228181838995,
+          22.656154918670655,
+          1.8153031945228613,
+          1.8128228664398198,
+          2.954100644588471,
+          22.632243347167968,
+          2.1023417353630087,
+          1.5185604095458993,
+          3.565018784999849,
+          22.544731616973877,
+          1.8291343867778787,
+          1.634906512498856,
+          3.2518797278404246,
+          22.894421672821046
+        ],
+        "velocity_abs_max": [
+          4.168879985809326,
+          4.0094685554504395,
+          7.812739372253418,
+          23.16591453552246,
+          5.8855695724487305,
+          3.6839630603790283,
+          7.617807865142822,
+          23.07425308227539,
+          6.143017292022705,
+          3.0395374298095703,
+          8.210287094116211,
+          23.017072677612305,
+          4.641681671142578,
+          3.171510934829712,
+          7.55893611907959,
+          23.405868530273438
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 1179,
+          "0.1": 0,
+          "1.0": 0
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 472,
+        "manifest_count": 472,
+        "count_matches": true,
+        "source_span_s": 23.550014866,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.049835047,
+          "median": 0.05000013,
+          "p95": 0.050021859,
+          "max": 0.050164921
+        },
+        "receive_gap_s": {
+          "min": 0.023859393,
+          "median": 0.050069623,
+          "p95": 0.0684466515,
+          "max": 0.076092012
+        },
+        "receive_minus_source_s": {
+          "min": 0.001061873,
+          "median": 0.0026381245,
+          "p95": 0.0208603089,
+          "max": 0.028022335
+        },
+        "source_missing": 0,
+        "measured_hz": 19.99998737495489,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "17": 472
+        },
+        "gait_counts": {
+          "4097": 472
+        },
+        "velocity_xy_norm": {
+          "min": 0.012047788669964423,
+          "median": 0.5008505249986707,
+          "p95": 1.8696340626679797,
+          "max": 1.8790473775517036
+        },
+        "height": {
+          "min": 0.36632633209228516,
+          "median": 0.40711459517478943,
+          "p95": 0.4190054714679718,
+          "max": 0.4204096496105194
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 17,
+            "gait": 4097
+          }
+        ]
+      },
+      "/rslidar_front/points": {
+        "count": 234,
+        "manifest_count": 234,
+        "count_matches": true,
+        "source_span_s": 23.299902201,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.098781109,
+          "median": 0.099995852,
+          "p95": 0.1004177564,
+          "max": 0.101027012
+        },
+        "receive_gap_s": {
+          "min": 0.003966559,
+          "median": 0.071595604,
+          "p95": 0.5037447637999999,
+          "max": 1.008557119
+        },
+        "receive_minus_source_s": {
+          "min": 0.116941212,
+          "median": 0.15726388349999998,
+          "p95": 0.8643458113,
+          "max": 1.038497178
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000041973995923,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 91
+      },
+      "/rslidar_rear/points": {
+        "count": 239,
+        "manifest_count": 239,
+        "count_matches": true,
+        "source_span_s": 23.799999237,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095273495,
+          "median": 0.09999752049999999,
+          "p95": 0.1003777629,
+          "max": 0.104582787
+        },
+        "receive_gap_s": {
+          "min": 0.003392705,
+          "median": 0.0683128155,
+          "p95": 0.50342812215,
+          "max": 0.964091318
+        },
+        "receive_minus_source_s": {
+          "min": 0.116099594,
+          "median": 0.157287412,
+          "p95": 0.8357599416,
+          "max": 1.045955452
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000000320588246,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 100
+      },
+      "/HANDLE_STEER": {
+        "count": 206,
+        "manifest_count": 206,
+        "count_matches": true,
+        "source_span_s": 18.018154446,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 5.9688e-05,
+          "median": 8.1013e-05,
+          "p95": 1.0000809774,
+          "max": 1.001051681
+        },
+        "receive_gap_s": {
+          "min": 0.059738956,
+          "median": 0.08106146,
+          "p95": 0.09487672719999994,
+          "max": 1.047386891
+        },
+        "receive_minus_source_s": {
+          "min": -2.38169434,
+          "median": -1.8800295505000002,
+          "p95": -1.4376321614999998,
+          "max": -1.387973423
+        },
+        "source_missing": 0,
+        "measured_hz": 11.377413853032525,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 18
+      },
+      "/STEER": {
+        "count": 206,
+        "manifest_count": 206,
+        "count_matches": true,
+        "source_span_s": 18.018154446,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 5.9688e-05,
+          "median": 8.1013e-05,
+          "p95": 1.0000809774,
+          "max": 1.001051681
+        },
+        "receive_gap_s": {
+          "min": 0.057792705,
+          "median": 0.080949115,
+          "p95": 0.0975343272,
+          "max": 1.046885323
+        },
+        "receive_minus_source_s": {
+          "min": -2.380000099,
+          "median": -1.8788790065,
+          "p95": -1.4364455134999998,
+          "max": -1.387346255
+        },
+        "source_missing": 0,
+        "measured_hz": 11.377413853032525,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 18
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 52581,
+        "frame_id": "base_link"
+      },
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 52194,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_134324_93fa2317c970",
+    "terrain": "stairs",
+    "duration_s": 32.62751142700017,
+    "outcome": "unlabeled",
+    "notes": "",
+    "events": [],
+    "empty_metadata": false,
+    "streams": {
+      "/IMU": {
+        "count": 6528,
+        "manifest_count": 6528,
+        "count_matches": true,
+        "source_span_s": 32.635,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.000618048,
+          "median": 0.005005023,
+          "p95": 0.0102276064,
+          "max": 0.04833066
+        },
+        "receive_minus_source_s": {
+          "min": 0.009233623,
+          "median": 0.010815169,
+          "p95": 0.027321641299999998,
+          "max": 0.078214502
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.999999937195723,
+          "median": 1.0000000371909885,
+          "p95": 1.0000001010973083,
+          "max": 1.0000077164386734
+        },
+        "gyro_norm": {
+          "min": 0.0006596108089575985,
+          "median": 0.6321504825639782,
+          "p95": 1.599097350312843,
+          "max": 3.7102546226202024
+        }
+      },
+      "/JOINTS_DATA": {
+        "count": 1632,
+        "manifest_count": 1632,
+        "count_matches": true,
+        "source_span_s": 32.619998028,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.010329959,
+          "median": 0.020000168,
+          "p95": 0.020010085,
+          "max": 0.029706545
+        },
+        "receive_gap_s": {
+          "min": 0.00226016,
+          "median": 0.0199992,
+          "p95": 0.0296401715,
+          "max": 0.048554531
+        },
+        "receive_minus_source_s": {
+          "min": 0.001108518,
+          "median": 0.0023591435,
+          "p95": 0.012282629849999999,
+          "max": 0.047677793
+        },
+        "source_missing": 0,
+        "measured_hz": 50.000003022685654,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "position_range": [
+          0.31944459676742554,
+          1.8252865076065063,
+          2.0439266227185726,
+          96.5966796875,
+          0.3467961251735687,
+          1.4777237176895142,
+          2.0730724819004536,
+          101.609375,
+          0.3800232410430908,
+          1.4507759809494019,
+          1.7508336007595062,
+          122.45458984375,
+          0.3489258587360382,
+          1.4464616775512695,
+          1.7520113587379456,
+          134.7333984375
+        ],
+        "velocity_abs_p95": [
+          1.5810770988464349,
+          3.8140618562698276,
+          4.909748435020444,
+          14.746422386169423,
+          1.6708433270454406,
+          3.8954897642135564,
+          4.445074796676624,
+          14.872576236724854,
+          1.5510826110839833,
+          3.0584945797920216,
+          3.92359253168106,
+          13.80436234474182,
+          1.4268374204635619,
+          3.015049743652342,
+          3.285180389881134,
+          14.146077728271484
+        ],
+        "velocity_abs_max": [
+          3.936913013458252,
+          14.017450332641602,
+          11.797184944152832,
+          24.58206558227539,
+          4.174787521362305,
+          9.89497184753418,
+          13.504446983337402,
+          21.411828994750977,
+          4.865707874298096,
+          8.836565017700195,
+          16.389188766479492,
+          20.15712547302246,
+          4.213839530944824,
+          8.067806243896484,
+          18.488679885864258,
+          20.41891098022461
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 1629,
+          "0.1": 0,
+          "1.0": 0
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 653,
+        "manifest_count": 653,
+        "count_matches": true,
+        "source_span_s": 32.599980943,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.049958421,
+          "median": 0.05000013,
+          "p95": 0.05001951095,
+          "max": 0.050039797
+        },
+        "receive_gap_s": {
+          "min": 0.019135327,
+          "median": 0.0501636905,
+          "p95": 0.06805903919999999,
+          "max": 0.080676057
+        },
+        "receive_minus_source_s": {
+          "min": 0.001053617,
+          "median": 0.002671871,
+          "p95": 0.020130905199999993,
+          "max": 0.03239502
+        },
+        "source_missing": 0,
+        "measured_hz": 20.00001169141788,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "17": 653
+        },
+        "gait_counts": {
+          "4099": 653
+        },
+        "velocity_xy_norm": {
+          "min": 0.004065835882972908,
+          "median": 0.239578457650122,
+          "p95": 1.0773056723673784,
+          "max": 1.4895554199304133
+        },
+        "height": {
+          "min": 0.26154568791389465,
+          "median": 0.4084135890007019,
+          "p95": 0.4171075463294983,
+          "max": 0.4199686646461487
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 17,
+            "gait": 4099
+          }
+        ]
+      },
+      "/rslidar_front/points": {
+        "count": 320,
+        "manifest_count": 320,
+        "count_matches": true,
+        "source_span_s": 31.899991989,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095318079,
+          "median": 0.099992991,
+          "p95": 0.100394869,
+          "max": 0.104855775
+        },
+        "receive_gap_s": {
+          "min": 0.003560765,
+          "median": 0.092403484,
+          "p95": 0.5096457879999998,
+          "max": 0.977718628
+        },
+        "receive_minus_source_s": {
+          "min": 0.116368932,
+          "median": 0.13607860649999998,
+          "p95": 0.6845118301500006,
+          "max": 1.041461866
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000002511285897,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 139
+      },
+      "/rslidar_rear/points": {
+        "count": 320,
+        "manifest_count": 320,
+        "count_matches": true,
+        "source_span_s": 31.899999856,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095025063,
+          "median": 0.099989892,
+          "p95": 0.10042614879999999,
+          "max": 0.105079889
+        },
+        "receive_gap_s": {
+          "min": 0.003178624,
+          "median": 0.08610963,
+          "p95": 0.5037878230999997,
+          "max": 0.996663049
+        },
+        "receive_minus_source_s": {
+          "min": 0.116305027,
+          "median": 0.1389190865,
+          "p95": 0.7567284921500002,
+          "max": 1.035478134
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000000045141066,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 137
+      },
+      "/HANDLE_STEER": {
+        "count": 333,
+        "manifest_count": 333,
+        "count_matches": true,
+        "source_span_s": 28.028228725,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 6.3934e-05,
+          "median": 8.09435e-05,
+          "p95": 1.00008034075,
+          "max": 1.000483495
+        },
+        "receive_gap_s": {
+          "min": 0.055234627,
+          "median": 0.08096566399999999,
+          "p95": 0.09299973809999999,
+          "max": 0.48217579
+        },
+        "receive_minus_source_s": {
+          "min": -2.427683977,
+          "median": -1.943261601,
+          "p95": -1.4820876382000001,
+          "max": -1.43475507
+        },
+        "source_missing": 0,
+        "measured_hz": 11.845200895762277,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 28
+      },
+      "/STEER": {
+        "count": 333,
+        "manifest_count": 333,
+        "count_matches": true,
+        "source_span_s": 28.028228725,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 6.3934e-05,
+          "median": 8.09435e-05,
+          "p95": 1.00008034075,
+          "max": 1.000483495
+        },
+        "receive_gap_s": {
+          "min": 0.053312355,
+          "median": 0.081069014,
+          "p95": 0.09565346235,
+          "max": 0.481460238
+        },
+        "receive_minus_source_s": {
+          "min": -2.426950217,
+          "median": -1.942554625,
+          "p95": -1.4810155662,
+          "max": -1.433409278
+        },
+        "source_missing": 0,
+        "measured_hz": 11.845200895762277,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 28
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 53326,
+        "frame_id": "base_link"
+      },
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 53356,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_141606_4ef6a913c02c",
+    "terrain": "ledge",
+    "duration_s": 120.00816345899966,
+    "outcome": "unlabeled",
+    "notes": "",
+    "events": [],
+    "empty_metadata": false,
+    "streams": {
+      "/rslidar_rear/points": {
+        "count": 1200,
+        "manifest_count": 1200,
+        "count_matches": true,
+        "source_span_s": 119.90000081,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095631837,
+          "median": 0.099999905,
+          "p95": 0.100112915,
+          "max": 0.104395867
+        },
+        "receive_gap_s": {
+          "min": 0.003583776,
+          "median": 0.097219236,
+          "p95": 0.1265026958999996,
+          "max": 1.009636588
+        },
+        "receive_minus_source_s": {
+          "min": 0.11615009,
+          "median": 0.1307879765,
+          "p95": 0.7627894413499999,
+          "max": 1.046796896
+        },
+        "source_missing": 0,
+        "measured_hz": 9.999999932443703,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 595
+      },
+      "/IMU": {
+        "count": 24009,
+        "manifest_count": 24009,
+        "count_matches": true,
+        "source_span_s": 120.04,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.000625152,
+          "median": 0.005030303999999999,
+          "p95": 0.010164813149999999,
+          "max": 0.120559599
+        },
+        "receive_minus_source_s": {
+          "min": 0.009235244,
+          "median": 0.010861928,
+          "p95": 0.025931866399999986,
+          "max": 0.16688248
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.9999999482664124,
+          "median": 1.0000000365931854,
+          "p95": 1.0000000952361834,
+          "max": 1.000000121803379
+        },
+        "gyro_norm": {
+          "min": 0.0005135886791793656,
+          "median": 0.006962584044370471,
+          "p95": 0.276496265560769,
+          "max": 4.851164782206716
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 2401,
+        "manifest_count": 2401,
+        "count_matches": true,
+        "source_span_s": 119.970000887,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.020007461,
+          "median": 0.049999839,
+          "p95": 0.050009171049999995,
+          "max": 0.050127297
+        },
+        "receive_gap_s": {
+          "min": 0.020222658,
+          "median": 0.050000891,
+          "p95": 0.06114208904999999,
+          "max": 0.132153936
+        },
+        "receive_minus_source_s": {
+          "min": 0.000922477,
+          "median": 0.002103291,
+          "p95": 0.012966941,
+          "max": 0.083793153
+        },
+        "source_missing": 0,
+        "measured_hz": 20.005001102405302,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "17": 2401
+        },
+        "gait_counts": {
+          "4099": 110,
+          "4098": 2291
+        },
+        "velocity_xy_norm": {
+          "min": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.028350288247063506
+        },
+        "height": {
+          "min": 0.20854242146015167,
+          "median": 0.3538224399089813,
+          "p95": 0.35963869094848633,
+          "max": 0.4109260141849518
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 17,
+            "gait": 4099
+          },
+          {
+            "t_s": 5.470009091,
+            "state": 17,
+            "gait": 4098
+          }
+        ]
+      },
+      "/SLAM_ODOM": {
+        "count": 1201,
+        "manifest_count": 1201,
+        "count_matches": true,
+        "source_span_s": 119.999997855,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.099442006,
+          "median": 0.0999996665,
+          "p95": 0.10001063305,
+          "max": 0.10102582
+        },
+        "receive_gap_s": {
+          "min": 0.025206211,
+          "median": 0.100063827,
+          "p95": 0.11771082890000001,
+          "max": 0.206571993
+        },
+        "receive_minus_source_s": {
+          "min": 0.052955219,
+          "median": 0.073079579,
+          "p95": 0.094679844,
+          "max": 0.167597829
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000000178750003,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 536,
+        "position_start": [
+          -22.59594064542896,
+          79.38051430602327,
+          6.128276415242252
+        ],
+        "position_end": [
+          -21.951645605427007,
+          79.82504105714185,
+          6.336404705280259
+        ],
+        "position_range": [
+          1.4720318996781145,
+          1.1189234246044037,
+          0.30558705539177833
+        ],
+        "accumulated_distance_m": 9.553920789348549,
+        "step_m": {
+          "min": 0.0001313486845685951,
+          "median": 0.0013042382892368086,
+          "p95": 0.05778771030823228,
+          "max": 0.16031709171199013
+        },
+        "position_derived_speed": {
+          "min": 0.0013134599197575962,
+          "median": 0.013041789251159189,
+          "p95": 0.5749435142066608,
+          "max": 1.5983328275841173
+        },
+        "quaternion_norm": {
+          "min": 0.9999999999999534,
+          "median": 0.9999999999999808,
+          "p95": 0.9999999999999871,
+          "max": 0.9999999999999883
+        }
+      },
+      "/rslidar_front/points": {
+        "count": 1201,
+        "manifest_count": 1201,
+        "count_matches": true,
+        "source_span_s": 119.999996901,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095292092,
+          "median": 0.099998951,
+          "p95": 0.100111008,
+          "max": 0.104365111
+        },
+        "receive_gap_s": {
+          "min": 0.002232384,
+          "median": 0.098842712,
+          "p95": 0.1199795794,
+          "max": 1.023293908
+        },
+        "receive_minus_source_s": {
+          "min": 0.114907077,
+          "median": 0.121730015,
+          "p95": 0.745417149,
+          "max": 1.050533497
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000000258250006,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 542
+      },
+      "/JOINTS_DATA": {
+        "count": 120,
+        "manifest_count": 120,
+        "count_matches": true,
+        "source_span_s": 119.000028582,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.999948059,
+          "median": 0.999999683,
+          "p95": 1.000039059,
+          "max": 1.0000551
+        },
+        "receive_gap_s": {
+          "min": 0.954973089,
+          "median": 1.00003354,
+          "p95": 1.0023861768,
+          "max": 1.041709536
+        },
+        "receive_minus_source_s": {
+          "min": 0.001770995,
+          "median": 0.003069816,
+          "p95": 0.0063659057000000005,
+          "max": 0.047214118
+        },
+        "source_missing": 0,
+        "measured_hz": 0.9999997598151837,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 119,
+        "position_range": [
+          0.13234007358551025,
+          1.7760553658008575,
+          0.674301028251648,
+          38.3564453125,
+          0.2145586609840393,
+          0.8455249071121216,
+          0.7614501714706421,
+          41.1220703125,
+          0.29476404190063477,
+          1.118758201599121,
+          1.0796418190002441,
+          19.63623046875,
+          0.42640553414821625,
+          1.5890877842903137,
+          1.2846199870109558,
+          19.18505859375
+        ],
+        "velocity_abs_p95": [
+          0.09195975214242902,
+          0.4734649956226341,
+          0.277922891080379,
+          7.501353430747982,
+          0.08468664735555642,
+          0.417072457075119,
+          0.1762114547193043,
+          5.001059293746944,
+          0.13241469115018842,
+          0.5703213781118378,
+          0.5010305270552633,
+          8.303178930282591,
+          0.1354130379855631,
+          0.32416472733020657,
+          0.22769620046019518,
+          7.639699888229367
+        ],
+        "velocity_abs_max": [
+          4.387084007263184,
+          5.171761512756348,
+          4.5033488273620605,
+          25.46746826171875,
+          1.196018934249878,
+          2.617300033569336,
+          2.377990245819092,
+          14.13928508758545,
+          1.1960586309432983,
+          5.3983473777771,
+          12.067864418029785,
+          23.111770629882812,
+          6.092121601104736,
+          13.867980003356934,
+          8.548003196716309,
+          18.337100982666016
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 0,
+          "0.1": 0,
+          "1.0": 119
+        }
+      },
+      "/GAIT": {
+        "count": 1,
+        "manifest_count": 1,
+        "count_matches": true,
+        "source_span_s": 0.0,
+        "source_nonincreasing": 0,
+        "source_gap_s": null,
+        "receive_gap_s": null,
+        "receive_minus_source_s": {
+          "min": 1788675371.5243905,
+          "median": 1788675371.5243905,
+          "p95": 1788675371.5243905,
+          "max": 1788675371.5243905
+        },
+        "source_missing": 1,
+        "measured_hz": null,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0
+      },
+      "/HANDLE_STEER": {
+        "count": 158,
+        "manifest_count": 158,
+        "count_matches": true,
+        "source_span_s": 105.10450136,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 5.6078e-05,
+          "median": 8.1261e-05,
+          "p95": 1.0000871,
+          "max": 86.085783085
+        },
+        "receive_gap_s": {
+          "min": 0.055928081,
+          "median": 0.081029764,
+          "p95": 0.10124912459999995,
+          "max": 85.775911219
+        },
+        "receive_minus_source_s": {
+          "min": -0.190227781,
+          "median": 0.3827037945,
+          "p95": 0.8152361671,
+          "max": 0.899764546
+        },
+        "source_missing": 0,
+        "measured_hz": 1.493751437554986,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 19
+      },
+      "/STEER": {
+        "count": 158,
+        "manifest_count": 158,
+        "count_matches": true,
+        "source_span_s": 105.10450136,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 5.6078e-05,
+          "median": 8.1261e-05,
+          "p95": 1.0000871,
+          "max": 86.085783085
+        },
+        "receive_gap_s": {
+          "min": 0.054601283,
+          "median": 0.08104906,
+          "p95": 0.10310883639999999,
+          "max": 85.773297427
+        },
+        "receive_minus_source_s": {
+          "min": -0.189398405,
+          "median": 0.38396589049999996,
+          "p95": 0.816263049,
+          "max": 0.900563234
+        },
+        "source_missing": 0,
+        "measured_hz": 1.493751437554986,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 19
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/rslidar_rear/points": [
+        "base_link"
+      ],
+      "/IMU": [
+        ""
+      ],
+      "/SLAM_ODOM": [
+        "map"
+      ],
+      "/SLAM_ODOM/child": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 46281,
+        "frame_id": "base_link"
+      },
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 36793,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_143150_2620f4f1e142",
+    "terrain": "basic",
+    "duration_s": 96.44098104000022,
+    "outcome": "unlabeled",
+    "notes": "",
+    "events": [],
+    "empty_metadata": false,
+    "streams": {
+      "/IMU": {
+        "count": 19289,
+        "manifest_count": 19289,
+        "count_matches": true,
+        "source_span_s": 96.44,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.000638528,
+          "median": 0.0050145120000000005,
+          "p95": 0.009077758049999999,
+          "max": 0.179121943
+        },
+        "receive_minus_source_s": {
+          "min": 0.009278271,
+          "median": 0.010722751,
+          "p95": 0.026251919599999972,
+          "max": 0.22909351
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.9999999255782657,
+          "median": 1.0000000361288108,
+          "p95": 1.0000001003151882,
+          "max": 1.000242069993375
+        },
+        "gyro_norm": {
+          "min": 0.0005423691322590481,
+          "median": 0.16260794213423116,
+          "p95": 1.3169333017580995,
+          "max": 2.624909288596107
+        }
+      },
+      "/JOINTS_DATA": {
+        "count": 4822,
+        "manifest_count": 4822,
+        "count_matches": true,
+        "source_span_s": 96.420009063,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.015276626,
+          "median": 0.020000168,
+          "p95": 0.02001796,
+          "max": 0.024720211
+        },
+        "receive_gap_s": {
+          "min": 0.001726272,
+          "median": 0.020083394,
+          "p95": 0.025260063,
+          "max": 0.191512342
+        },
+        "receive_minus_source_s": {
+          "min": 0.001085044,
+          "median": 0.003146515,
+          "p95": 0.0089154183,
+          "max": 0.175068539
+        },
+        "source_missing": 0,
+        "measured_hz": 49.99999530024935,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "position_range": [
+          0.5230326652526855,
+          0.4373966455459595,
+          0.8896061182022095,
+          868.4326171875,
+          0.5072751343250275,
+          0.42698073387145996,
+          0.8482708930969238,
+          830.2119140625,
+          0.44789496064186096,
+          0.3885694742202759,
+          0.7987862825393677,
+          825.734375,
+          0.5317777097225189,
+          0.3641219139099121,
+          0.8539546728134155,
+          804.732421875
+        ],
+        "velocity_abs_p95": [
+          1.102377122640609,
+          1.0221773624420165,
+          1.583968973159789,
+          21.872021293640135,
+          1.1416808366775513,
+          1.0511865079402916,
+          1.792890149354934,
+          20.92829036712646,
+          1.2101953923702238,
+          0.8756146728992461,
+          1.6996840357780447,
+          21.10691261291504,
+          1.1978587687015534,
+          0.8123968183994293,
+          1.6351778686046594,
+          20.74116983413696
+        ],
+        "velocity_abs_max": [
+          5.620142936706543,
+          3.557668685913086,
+          7.490036964416504,
+          29.15970802307129,
+          5.158878326416016,
+          3.4317479133605957,
+          6.537461280822754,
+          26.12579345703125,
+          5.553157806396484,
+          2.893906354904175,
+          6.139945030212402,
+          27.05489730834961,
+          4.071420192718506,
+          3.9121346473693848,
+          7.16298246383667,
+          26.255483627319336
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 4817,
+          "0.1": 0,
+          "1.0": 0
+        }
+      },
+      "/rslidar_front/points": {
+        "count": 963,
+        "manifest_count": 963,
+        "count_matches": true,
+        "source_span_s": 96.200117826,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095402241,
+          "median": 0.099997998,
+          "p95": 0.1001605986,
+          "max": 0.104759932
+        },
+        "receive_gap_s": {
+          "min": 0.002488318,
+          "median": 0.0958810095,
+          "p95": 0.40435844404999327,
+          "max": 0.998007441
+        },
+        "receive_minus_source_s": {
+          "min": 0.116121645,
+          "median": 0.128618381,
+          "p95": 0.8309011892999999,
+          "max": 1.035034355
+        },
+        "source_missing": 0,
+        "measured_hz": 9.999987751990053,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 458
+      },
+      "/rslidar_rear/points": {
+        "count": 963,
+        "manifest_count": 963,
+        "count_matches": true,
+        "source_span_s": 96.199995995,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095228195,
+          "median": 0.099999904,
+          "p95": 0.10013007004999999,
+          "max": 0.104641914
+        },
+        "receive_gap_s": {
+          "min": 0.002887552,
+          "median": 0.095807597,
+          "p95": 0.31463225975,
+          "max": 1.003754455
+        },
+        "receive_minus_source_s": {
+          "min": 0.115625138,
+          "median": 0.132877432,
+          "p95": 0.8342762930000001,
+          "max": 1.037788244
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000000416320184,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 463
+      },
+      "/MOTION_INFO": {
+        "count": 1929,
+        "manifest_count": 1929,
+        "count_matches": true,
+        "source_span_s": 96.393000727,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.03300617,
+          "median": 0.05000013,
+          "p95": 0.050010047,
+          "max": 0.060014215
+        },
+        "receive_gap_s": {
+          "min": 0.003026656,
+          "median": 0.050017495999999995,
+          "p95": 0.05584053899999998,
+          "max": 0.206127894
+        },
+        "receive_minus_source_s": {
+          "min": 0.000874722,
+          "median": 0.002557418,
+          "p95": 0.008384472599999998,
+          "max": 0.158693377
+        },
+        "source_missing": 0,
+        "measured_hz": 20.001452236769726,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "17": 1929
+        },
+        "gait_counts": {
+          "4097": 1785,
+          "4099": 144
+        },
+        "velocity_xy_norm": {
+          "min": 0.01035884506298663,
+          "median": 0.7635325299764212,
+          "p95": 1.6774240431294638,
+          "max": 1.870985632822238
+        },
+        "height": {
+          "min": 0.3421170711517334,
+          "median": 0.40696439146995544,
+          "p95": 0.41637784242630005,
+          "max": 0.4184458553791046
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 89.243009259,
+            "state": 17,
+            "gait": 4099
+          }
+        ]
+      },
+      "/HANDLE_STEER": {
+        "count": 800,
+        "manifest_count": 800,
+        "count_matches": true,
+        "source_span_s": 84.083823529,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 6.4043e-05,
+          "median": 8.0953e-05,
+          "p95": 1.0000809851999999,
+          "max": 7.007145597
+        },
+        "receive_gap_s": {
+          "min": 0.017301696,
+          "median": 0.080869979,
+          "p95": 0.09242465639999993,
+          "max": 7.145899602
+        },
+        "receive_minus_source_s": {
+          "min": -1.111100805,
+          "median": -0.5696875724999999,
+          "p95": -0.12540739890000002,
+          "max": -0.061109637
+        },
+        "source_missing": 0,
+        "measured_hz": 9.502422302720687,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 73
+      },
+      "/STEER": {
+        "count": 800,
+        "manifest_count": 800,
+        "count_matches": true,
+        "source_span_s": 84.083823529,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 6.4043e-05,
+          "median": 8.0953e-05,
+          "p95": 1.0000809851999999,
+          "max": 7.007145597
+        },
+        "receive_gap_s": {
+          "min": 0.015666464,
+          "median": 0.080869496,
+          "p95": 0.09472491079999998,
+          "max": 7.145888498
+        },
+        "receive_minus_source_s": {
+          "min": -1.110394309,
+          "median": -0.5685893635,
+          "p95": -0.1221749119,
+          "max": -0.060323973
+        },
+        "source_missing": 0,
+        "measured_hz": 9.502422302720687,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 73
+      },
+      "/GAIT": {
+        "count": 1,
+        "manifest_count": 1,
+        "count_matches": true,
+        "source_span_s": 0.0,
+        "source_nonincreasing": 0,
+        "source_gap_s": null,
+        "receive_gap_s": null,
+        "receive_minus_source_s": {
+          "min": 1788676400.1680062,
+          "median": 1788676400.1680062,
+          "p95": 1788676400.1680062,
+          "max": 1788676400.1680062
+        },
+        "source_missing": 1,
+        "measured_hz": null,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 5686,
+        "frame_id": "base_link"
+      },
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 38429,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_151603_3aa186c2ff49",
+    "terrain": "stairs",
+    "duration_s": 300.012486481,
+    "outcome": "unlabeled",
+    "notes": "Continuous stairs, user-confirmed. Operator-managed capture. Joint feedback approximately 1 Hz at start; teacher actions unavailable. Outcome pending user annotation.",
+    "events": [],
+    "empty_metadata": false,
+    "streams": {
+      "/IMU": {
+        "count": 60006,
+        "manifest_count": 60006,
+        "count_matches": true,
+        "source_span_s": 300.025,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.000606688,
+          "median": 0.004962976,
+          "p95": 0.012538418999999999,
+          "max": 0.250871234
+        },
+        "receive_minus_source_s": {
+          "min": 0.009244208,
+          "median": 0.011013978,
+          "p95": 0.02757050775,
+          "max": 0.34048259
+        },
+        "source_missing": 0,
+        "measured_hz": 200.00000000000003,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.9999999284641606,
+          "median": 1.000000035684585,
+          "p95": 1.000000097651767,
+          "max": 1.0000108031994768
+        },
+        "gyro_norm": {
+          "min": 0.00048381129679401705,
+          "median": 0.1780184781219893,
+          "p95": 1.2510670552744003,
+          "max": 3.6557564263303473
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 6002,
+        "manifest_count": 6002,
+        "count_matches": true,
+        "source_span_s": 299.978990891,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.007001751,
+          "median": 0.049999839,
+          "p95": 0.05001588,
+          "max": 0.062017964
+        },
+        "receive_gap_s": {
+          "min": 0.0016912,
+          "median": 0.049999074,
+          "p95": 0.059854046,
+          "max": 0.273766708
+        },
+        "receive_minus_source_s": {
+          "min": 0.000874685,
+          "median": 0.002668665,
+          "p95": 0.01236726965,
+          "max": 0.226598619
+        },
+        "source_missing": 0,
+        "measured_hz": 20.004734272142798,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "17": 6002
+        },
+        "gait_counts": {
+          "4099": 4846,
+          "4097": 1156
+        },
+        "velocity_xy_norm": {
+          "min": 0.005868645092395165,
+          "median": 0.3975311632702694,
+          "p95": 1.3403750925742433,
+          "max": 2.2284210493580896
+        },
+        "height": {
+          "min": 0.2126711755990982,
+          "median": 0.40329961478710175,
+          "p95": 0.41838124841451646,
+          "max": 0.4234468638896942
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 17,
+            "gait": 4099
+          },
+          {
+            "t_s": 172.718996479,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 200.238994661,
+            "state": 17,
+            "gait": 4099
+          },
+          {
+            "t_s": 269.778990523,
+            "state": 17,
+            "gait": 4097
+          }
+        ]
+      },
+      "/STEER": {
+        "count": 2206,
+        "manifest_count": 2206,
+        "count_matches": true,
+        "source_span_s": 300.299905896,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 4.9e-08,
+          "median": 8.1018e-05,
+          "p95": 1.0000835472,
+          "max": 17.016676891
+        },
+        "receive_gap_s": {
+          "min": 0.001355295,
+          "median": 0.081171724,
+          "p95": 0.10733671419999995,
+          "max": 16.676451069
+        },
+        "receive_minus_source_s": {
+          "min": -3.963863632,
+          "median": -3.324437538,
+          "p95": -2.84138261975,
+          "max": -2.689670801
+        },
+        "source_missing": 0,
+        "measured_hz": 7.342659643601875,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 210
+      },
+      "/rslidar_front/points": {
+        "count": 3001,
+        "manifest_count": 3001,
+        "count_matches": true,
+        "source_span_s": 300.000036239,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095022916,
+          "median": 0.099998951,
+          "p95": 0.100322723,
+          "max": 0.104799032
+        },
+        "receive_gap_s": {
+          "min": 0.02114295,
+          "median": 0.0999208755,
+          "p95": 0.1152357861,
+          "max": 0.348427084
+        },
+        "receive_minus_source_s": {
+          "min": 0.113886678,
+          "median": 0.130417401,
+          "p95": 0.142131193,
+          "max": 0.379867695
+        },
+        "source_missing": 0,
+        "measured_hz": 9.999998792033479,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 1364
+      },
+      "/rslidar_rear/points": {
+        "count": 3000,
+        "manifest_count": 3000,
+        "count_matches": true,
+        "source_span_s": 299.899992227,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.094999075,
+          "median": 0.099998951,
+          "p95": 0.1003374577,
+          "max": 0.105229616
+        },
+        "receive_gap_s": {
+          "min": 0.010548735,
+          "median": 0.100048095,
+          "p95": 0.12016055360000001,
+          "max": 0.351760376
+        },
+        "receive_minus_source_s": {
+          "min": 0.112831198,
+          "median": 0.133056013,
+          "p95": 0.14561372544999998,
+          "max": 0.39572183
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000000259186402,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 1353
+      },
+      "/HANDLE_STEER": {
+        "count": 2206,
+        "manifest_count": 2206,
+        "count_matches": true,
+        "source_span_s": 300.299905896,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 4.9e-08,
+          "median": 8.1018e-05,
+          "p95": 1.0000835472,
+          "max": 17.016676891
+        },
+        "receive_gap_s": {
+          "min": 0.001338079,
+          "median": 0.081293208,
+          "p95": 0.10756275639999993,
+          "max": 16.676695773
+        },
+        "receive_minus_source_s": {
+          "min": -3.963031087,
+          "median": -3.3221503419999996,
+          "p95": -2.84174686325,
+          "max": -2.689074096
+        },
+        "source_missing": 0,
+        "measured_hz": 7.342659643601875,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 210
+      },
+      "/JOINTS_DATA": {
+        "count": 300,
+        "manifest_count": 300,
+        "count_matches": true,
+        "source_span_s": 299.000001418,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.999983934,
+          "median": 1.000000267,
+          "p95": 1.000004934,
+          "max": 1.000008725
+        },
+        "receive_gap_s": {
+          "min": 0.992086938,
+          "median": 1.000036291,
+          "p95": 1.0015060366,
+          "max": 1.007600708
+        },
+        "receive_minus_source_s": {
+          "min": 0.001135719,
+          "median": 0.0022271395,
+          "p95": 0.00364049975,
+          "max": 0.010192375
+        },
+        "source_missing": 0,
+        "measured_hz": 0.999999995257525,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 299,
+        "position_range": [
+          0.40240293741226196,
+          1.3448082208633423,
+          1.5976821184158325,
+          1104.2431030273438,
+          0.5546367466449738,
+          1.2856266498565674,
+          1.5596545934677124,
+          1177.5023803710938,
+          0.5110758543014526,
+          1.2286432981491089,
+          1.135166347026825,
+          1442.9325561523438,
+          0.39751332998275757,
+          1.150732159614563,
+          1.3593056797981262,
+          1435.0541381835938
+        ],
+        "velocity_abs_p95": [
+          1.1323413848876958,
+          4.1344149827957155,
+          4.557561469078064,
+          16.335247135162355,
+          1.1965494096279152,
+          3.126173627376558,
+          3.968576419353488,
+          16.868303680419924,
+          1.019463139772416,
+          3.0146064519882207,
+          2.5667550563812265,
+          16.812136363983157,
+          1.1669714927673343,
+          2.5794756054878274,
+          2.9152558684349072,
+          17.503953552246095
+        ],
+        "velocity_abs_max": [
+          3.2675890922546387,
+          8.159845352172852,
+          7.6594414710998535,
+          22.584760665893555,
+          2.9907310009002686,
+          9.161293029785156,
+          9.464597702026367,
+          22.754674911499023,
+          2.747831344604492,
+          7.120697975158691,
+          8.615973472595215,
+          22.64645767211914,
+          4.455395221710205,
+          7.668708324432373,
+          11.436147689819336,
+          24.31703758239746
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 0,
+          "0.1": 0,
+          "1.0": 299
+        }
+      },
+      "/GAIT": {
+        "count": 3,
+        "manifest_count": 3,
+        "count_matches": true,
+        "source_span_s": 0.0,
+        "source_nonincreasing": 2,
+        "source_gap_s": {
+          "min": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "receive_gap_s": {
+          "min": 27.51237581,
+          "median": 48.527429011500004,
+          "p95": 67.44097689285,
+          "max": 69.542482213
+        },
+        "receive_minus_source_s": {
+          "min": 1788679136.2458818,
+          "median": 1788679163.7582576,
+          "p95": 1788679226.3464916,
+          "max": 1788679233.3007398
+        },
+        "source_missing": 3,
+        "measured_hz": null,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 39532,
+        "frame_id": "base_link"
+      },
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 44911,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  },
+  {
+    "id": "gait_20260906_153020_96c782400250",
+    "terrain": "basic",
+    "duration_s": 180.0036383769998,
+    "outcome": "unlabeled",
+    "notes": "Repeated lie-down and stand-up under user remote control; record posture transitions. Operator-managed capture. Teacher actions unavailable. Outcome pending user annotation.",
+    "events": [],
+    "empty_metadata": true,
+    "streams": {
+      "/IMU": {
+        "count": 36003,
+        "manifest_count": 36003,
+        "count_matches": true,
+        "source_span_s": 180.01,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.005,
+          "median": 0.005,
+          "p95": 0.005,
+          "max": 0.005
+        },
+        "receive_gap_s": {
+          "min": 0.000675424,
+          "median": 0.0048727679999999995,
+          "p95": 0.012154673949999986,
+          "max": 0.252070649
+        },
+        "receive_minus_source_s": {
+          "min": 0.009293955,
+          "median": 0.01102154,
+          "p95": 0.02887706950000001,
+          "max": 0.357474636
+        },
+        "source_missing": 0,
+        "measured_hz": 200.0,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "quaternion_norm": {
+          "min": 0.9995979936088014,
+          "median": 1.0000000354716148,
+          "p95": 1.0000001012309385,
+          "max": 1.0000030396800388
+        },
+        "gyro_norm": {
+          "min": 0.0005269393492710647,
+          "median": 0.04631266871515772,
+          "p95": 1.3206928948789352,
+          "max": 3.8170308906520143
+        }
+      },
+      "/JOINTS_DATA": {
+        "count": 5734,
+        "manifest_count": 5734,
+        "count_matches": true,
+        "source_span_s": 179.979999209,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.019902752,
+          "median": 0.020000169,
+          "p95": 0.020055293,
+          "max": 1.000083976
+        },
+        "receive_gap_s": {
+          "min": 0.001395969,
+          "median": 0.020121641,
+          "p95": 0.032296993999999975,
+          "max": 1.01281066
+        },
+        "receive_minus_source_s": {
+          "min": 0.0010192,
+          "median": 0.0025117489999999998,
+          "p95": 0.014369697749999997,
+          "max": 0.20302129
+        },
+        "source_missing": 0,
+        "measured_hz": 31.853539422136624,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 67,
+        "position_range": [
+          0.7126915454864502,
+          2.0149113535881042,
+          2.216691203415394,
+          339.029296875,
+          0.7074048444628716,
+          1.9228928685188293,
+          2.174068527761847,
+          348.7509765625,
+          0.8712463565170765,
+          3.0280578397214413,
+          2.130767843918875,
+          345.3408203125,
+          0.7806319296360016,
+          3.045917756855488,
+          2.191613379865885,
+          335.38232421875
+        ],
+        "velocity_abs_p95": [
+          1.058481490612027,
+          3.2894346594810386,
+          4.154254436492916,
+          15.818530893325804,
+          1.0632993340492227,
+          3.2046554923057533,
+          3.9344688773155183,
+          16.072081089019775,
+          0.8826146155595767,
+          2.653751480579374,
+          2.9642500996589596,
+          15.258413076400757,
+          0.8372031271457666,
+          2.755450427532194,
+          2.993709063529967,
+          15.745542478561395
+        ],
+        "velocity_abs_max": [
+          3.650402545928955,
+          13.428032875061035,
+          12.248642921447754,
+          20.03897476196289,
+          3.6885523796081543,
+          11.360513687133789,
+          13.198410034179688,
+          24.173412322998047,
+          5.264594078063965,
+          9.144661903381348,
+          20.175491333007812,
+          25.441726684570312,
+          4.339571475982666,
+          9.946121215820312,
+          18.080215454101562,
+          26.076061248779297
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 5666,
+          "0.1": 0,
+          "1.0": 66
+        }
+      },
+      "/JOINTS_DATA_10HZ": {
+        "count": 1800,
+        "manifest_count": 1800,
+        "count_matches": true,
+        "source_span_s": 179.900035284,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.099932885,
+          "median": 0.099999969,
+          "p95": 0.1000256642,
+          "max": 0.100097677
+        },
+        "receive_gap_s": {
+          "min": 0.01428352,
+          "median": 0.099990957,
+          "p95": 0.1022479992,
+          "max": 0.329767956
+        },
+        "receive_minus_source_s": {
+          "min": 0.001289519,
+          "median": 0.0032924664999999997,
+          "p95": 0.005293347699999999,
+          "max": 0.231925998
+        },
+        "source_missing": 0,
+        "measured_hz": 9.999998038688544,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 898,
+        "position_range": [
+          0.7486373782157898,
+          1.9475873708724976,
+          2.2134314849972725,
+          337.748046875,
+          0.7096304893493652,
+          1.7797738313674927,
+          2.1703293658792973,
+          347.4248046875,
+          0.8275484070181847,
+          2.922384224832058,
+          2.0615400094538927,
+          344.18603515625,
+          0.819529302418232,
+          3.027222156524658,
+          2.1918188221752644,
+          334.197265625
+        ],
+        "velocity_abs_p95": [
+          0.990733817219734,
+          2.49367251396179,
+          3.574311804771423,
+          15.670336723327637,
+          0.9043057143688198,
+          2.6381181359291075,
+          3.5930706739425657,
+          15.78778281211853,
+          0.9485143691301344,
+          2.2042906045913693,
+          2.956265819072723,
+          15.113097286224365,
+          0.9181247383356095,
+          2.190813362598419,
+          3.1036724328994736,
+          15.30348081588745
+        ],
+        "velocity_abs_max": [
+          4.158967018127441,
+          11.141998291015625,
+          10.744811058044434,
+          31.958646774291992,
+          3.8072006702423096,
+          10.169203758239746,
+          12.273458480834961,
+          45.93876647949219,
+          4.9191575050354,
+          8.931963920593262,
+          20.175491333007812,
+          26.238019943237305,
+          3.815427303314209,
+          8.8054780960083,
+          14.139480590820312,
+          19.172311782836914
+        ],
+        "intervals_5ms_20ms_100ms_1s": {
+          "0.005": 0,
+          "0.02": 0,
+          "0.1": 1799,
+          "1.0": 0
+        }
+      },
+      "/MOTION_INFO": {
+        "count": 3621,
+        "manifest_count": 3621,
+        "count_matches": true,
+        "source_span_s": 179.975005292,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.000990208,
+          "median": 0.049999839,
+          "p95": 0.050015588,
+          "max": 0.050655797
+        },
+        "receive_gap_s": {
+          "min": 0.001392832,
+          "median": 0.0499596965,
+          "p95": 0.06362751229999998,
+          "max": 0.254440409
+        },
+        "receive_minus_source_s": {
+          "min": 0.000701232,
+          "median": 0.00280175,
+          "p95": 0.016895198,
+          "max": 0.22682479
+        },
+        "source_missing": 0,
+        "measured_hz": 20.113904117556437,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0,
+        "state_counts": {
+          "1": 246,
+          "17": 2847,
+          "4": 194,
+          "0": 293,
+          "2": 41
+        },
+        "gait_counts": {
+          "0": 782,
+          "4097": 851,
+          "4099": 1988
+        },
+        "velocity_xy_norm": {
+          "min": 0.0,
+          "median": 0.06206155244438059,
+          "p95": 1.2398233158851069,
+          "max": 1.7264848960722685
+        },
+        "height": {
+          "min": 0.017115484923124313,
+          "median": 0.4029180407524109,
+          "p95": 0.4145386219024658,
+          "max": 0.4201534390449524
+        },
+        "transitions": [
+          {
+            "t_s": 0.0,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 1.001017018,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 1.002014518,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 12.860024459,
+            "state": 4,
+            "gait": 0
+          },
+          {
+            "t_s": 14.461010953,
+            "state": 0,
+            "gait": 0
+          },
+          {
+            "t_s": 16.461019363,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 18.061005148,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 18.062002648,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 20.054005974,
+            "state": 4,
+            "gait": 0
+          },
+          {
+            "t_s": 21.654004301,
+            "state": 0,
+            "gait": 0
+          },
+          {
+            "t_s": 24.111002506,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 25.71200475,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 25.713006334,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 27.806020544,
+            "state": 4,
+            "gait": 0
+          },
+          {
+            "t_s": 29.407003538,
+            "state": 0,
+            "gait": 0
+          },
+          {
+            "t_s": 31.406999989,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 33.006999775,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 33.008001942,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 35.063001773,
+            "state": 4,
+            "gait": 0
+          },
+          {
+            "t_s": 36.663000101,
+            "state": 0,
+            "gait": 0
+          },
+          {
+            "t_s": 38.664003093,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 40.264004338,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 40.265020504,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 42.293030958,
+            "state": 4,
+            "gait": 0
+          },
+          {
+            "t_s": 43.893002744,
+            "state": 0,
+            "gait": 0
+          },
+          {
+            "t_s": 45.893016111,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 47.493009189,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 47.494010772,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 49.449012385,
+            "state": 4,
+            "gait": 0
+          },
+          {
+            "t_s": 51.04899963,
+            "state": 0,
+            "gait": 0
+          },
+          {
+            "t_s": 53.050007872,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 54.650012908,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 54.651003116,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 66.641238113,
+            "state": 2,
+            "gait": 0
+          },
+          {
+            "t_s": 68.643004981,
+            "state": 0,
+            "gait": 0
+          },
+          {
+            "t_s": 70.644000973,
+            "state": 1,
+            "gait": 0
+          },
+          {
+            "t_s": 72.244001634,
+            "state": 17,
+            "gait": 0
+          },
+          {
+            "t_s": 72.245013718,
+            "state": 17,
+            "gait": 4097
+          },
+          {
+            "t_s": 80.62500331,
+            "state": 17,
+            "gait": 4099
+          }
+        ]
+      },
+      "/rslidar_front/points": {
+        "count": 1800,
+        "manifest_count": 1800,
+        "count_matches": true,
+        "source_span_s": 179.900037288,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095194101,
+          "median": 0.099997998,
+          "p95": 0.1002969744,
+          "max": 0.104686737
+        },
+        "receive_gap_s": {
+          "min": 0.017419432,
+          "median": 0.099824594,
+          "p95": 0.11768118999999998,
+          "max": 0.292182615
+        },
+        "receive_minus_source_s": {
+          "min": 0.114124767,
+          "median": 0.129936981,
+          "p95": 0.14435862030000002,
+          "max": 0.314635863
+        },
+        "source_missing": 0,
+        "measured_hz": 9.99999792729337,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 793
+      },
+      "/rslidar_rear/points": {
+        "count": 1800,
+        "manifest_count": 1800,
+        "count_matches": true,
+        "source_span_s": 179.899971008,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 0.095269203,
+          "median": 0.099997997,
+          "p95": 0.1003187425,
+          "max": 0.104750871
+        },
+        "receive_gap_s": {
+          "min": 0.011884575,
+          "median": 0.099859963,
+          "p95": 0.1210101953,
+          "max": 0.293197689
+        },
+        "receive_minus_source_s": {
+          "min": 0.11560667,
+          "median": 0.1334424265,
+          "p95": 0.14879695554999997,
+          "max": 0.331537111
+        },
+        "source_missing": 0,
+        "measured_hz": 10.000001611562238,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 763
+      },
+      "/GAIT": {
+        "count": 11,
+        "manifest_count": 11,
+        "count_matches": true,
+        "source_span_s": 0.0,
+        "source_nonincreasing": 10,
+        "source_gap_s": {
+          "min": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "receive_gap_s": {
+          "min": 0.989912466,
+          "median": 7.1986439405,
+          "p95": 13.11997798219999,
+          "max": 17.598018146
+        },
+        "receive_minus_source_s": {
+          "min": 1788679836.6422799,
+          "median": 1788679873.2407522,
+          "p95": 1788679898.6880555,
+          "max": 1788679900.1881762
+        },
+        "source_missing": 11,
+        "measured_hz": null,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 0
+      },
+      "/HANDLE_STEER": {
+        "count": 1001,
+        "manifest_count": 1001,
+        "count_matches": true,
+        "source_span_s": 124.123905958,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 4.7663e-05,
+          "median": 8.1284e-05,
+          "p95": 1.0000817403,
+          "max": 17.016887715
+        },
+        "receive_gap_s": {
+          "min": 0.014841632,
+          "median": 0.081166245,
+          "p95": 0.10897726085,
+          "max": 16.886711023
+        },
+        "receive_minus_source_s": {
+          "min": -0.42141195,
+          "median": 0.139410551,
+          "p95": 0.576323464,
+          "max": 0.684772468
+        },
+        "source_missing": 0,
+        "measured_hz": 8.056465773308581,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 91
+      },
+      "/STEER": {
+        "count": 1001,
+        "manifest_count": 1001,
+        "count_matches": true,
+        "source_span_s": 124.123905958,
+        "source_nonincreasing": 0,
+        "source_gap_s": {
+          "min": 4.7663e-05,
+          "median": 8.1284e-05,
+          "p95": 1.0000817403,
+          "max": 17.016887715
+        },
+        "receive_gap_s": {
+          "min": 0.01384592,
+          "median": 0.0811620495,
+          "p95": 0.10924437314999999,
+          "max": 16.886830131
+        },
+        "receive_minus_source_s": {
+          "min": -0.42049515,
+          "median": 0.142384472,
+          "p95": 0.575532629,
+          "max": 0.685380084
+        },
+        "source_missing": 0,
+        "measured_hz": 8.056465773308581,
+        "nonfinite_values": 0,
+        "source_gaps_over_100ms": 91
+      }
+    },
+    "sqlite": [
+      {
+        "file": "bag_0.db3",
+        "quick_check": [
+          [
+            "ok"
+          ]
+        ]
+      }
+    ],
+    "joint_name_orders": [
+      [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    ],
+    "frames": {
+      "/IMU": [
+        ""
+      ],
+      "/rslidar_front/points": [
+        "base_link"
+      ],
+      "/rslidar_rear/points": [
+        "base_link"
+      ]
+    },
+    "lidar_first_message_layouts": {
+      "/rslidar_front/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 31131,
+        "frame_id": "base_link"
+      },
+      "/rslidar_rear/points": {
+        "fields": [
+          [
+            "x",
+            0,
+            7,
+            1
+          ],
+          [
+            "y",
+            4,
+            7,
+            1
+          ],
+          [
+            "z",
+            8,
+            7,
+            1
+          ],
+          [
+            "intensity",
+            12,
+            7,
+            1
+          ]
+        ],
+        "point_step": 16,
+        "is_bigendian": false,
+        "width": 1,
+        "height": 29558,
+        "frame_id": "base_link"
+      }
+    },
+    "decode_errors": {}
+  }
+]

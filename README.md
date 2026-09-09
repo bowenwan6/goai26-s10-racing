@@ -308,6 +308,10 @@ This repository runs in autonomous navigation mode.
 
 ## Development
 
+### S10 录制复核与参考运动重建
+
+团队交接见 [录制复核与重建经验](docs/S10_RECORDING_REVIEW_AND_RECONSTRUCTION_ZH.md)：包含两批录制的区别、关节/楼梯试验结果、3D 点云与动作复核区用法、人工标注协作、队友本地启动步骤和 Git/大数据交付边界。当前复核区支持保存人工判断；新批次地图、实机轨迹重建和 RL 训练尚未完成。
+
 ```bash
 scripts/build.sh                       # build everything
 colcon test --packages-select s10_auto_nav
