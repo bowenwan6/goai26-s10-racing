@@ -10,6 +10,14 @@ ignore = ["B008"]
 [tool.ruff.lint.isort]
 known-first-party = ["s10_perception", "s10_auto_nav", "s10_bringup", "s10_rl"]
 
+[tool.ruff.lint.per-file-ignores]
+# These are exact multiline C++ anchors applied to the private SDK. Wrapping their source
+# lines would change the bytes patch_upstream.py must match.
+"scripts/patch_upstream.py" = ["E501"]
+
 [tool.pytest.ini_options]
 testpaths = ["src", "training"]
 python_files = ["test_*.py"]
+markers = [
+    "params: ROS parameter overrides for the node a test constructs",
+]
