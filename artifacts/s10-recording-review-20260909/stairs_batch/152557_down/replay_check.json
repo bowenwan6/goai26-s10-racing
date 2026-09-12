@@ -1,0 +1,8 @@
+{
+  "video_frames": 806,
+  "usd_visual_meshes": 17,
+  "known_wheel_terrain_fraction": 1.0,
+  "median_minimum_wheel_gap_m": -0.0015028530099529536,
+  "wheel_samples_below_proxy_5cm_fraction": 0.2630272952853598,
+  "note": "Vertical wheel-bottom distance to approximate height grid; unknown cells stay NaN. No snapping, no exact contact claim."
+}

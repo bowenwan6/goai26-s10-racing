@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
 import pytest
-
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -53,3 +55,69 @@ def test_runtime_fingerprint_rejects_a_mixed_source_and_binary(tmp_path):
     binary.write_bytes(b"different compiled runtime")
     with pytest.raises(RuntimeError, match="binary does not match"):
         check_fingerprint(install, source)
+
+
+@pytest.mark.parametrize("use_venv", [False, True])
+def test_build_preserves_output_paths_with_both_colcon_launchers(tmp_path, use_venv):
+    bash = shutil.which("bash")
+    if bash is None:
+        pytest.skip("bash is required")
+    root = tmp_path / "workspace with spaces"
+    (root / "scripts").mkdir(parents=True)
+    (root / "upstream/goai_embodied_future_material/src").mkdir(parents=True)
+    shutil.copyfile(ROOT / "scripts/build.sh", root / "scripts/build.sh")
+    setup = tmp_path / "ros-setup.bash"
+    setup.write_text("")
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    launcher = root / ".venv/bin/python" if use_venv else bindir / "colcon"
+    launcher.parent.mkdir(parents=True, exist_ok=True)
+    launcher.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$BUILD_ARGS"\n')
+    launcher.chmod(0o755)
+    python = bindir / "python3"
+    python.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$FINGERPRINT_ARGS"\n')
+    python.chmod(0o755)
+    args_file = tmp_path / "build-args"
+    fingerprint_file = tmp_path / "fingerprint-args"
+    env = {
+        **os.environ,
+        "PATH": f"{bindir}{os.pathsep}{os.environ['PATH']}",
+        "ROS_DISTRO_SETUP": str(setup),
+        "BUILD_PLATFORM": "arm64",
+        "S10_BUILD_BASE": str(tmp_path / "build output"),
+        "S10_INSTALL_BASE": str(tmp_path / "install output"),
+        "S10_LOG_BASE": str(tmp_path / "log output"),
+        "BUILD_ARGS": str(args_file),
+        "FINGERPRINT_ARGS": str(fingerprint_file),
+    }
+    subprocess.run(
+        [bash, str(root / "scripts/build.sh"), "--packages-up-to", "s10_perception"],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert args_file.read_text().splitlines() == [
+        *(["-m", "colcon"] if use_venv else []),
+        "--log-base",
+        env["S10_LOG_BASE"],
+        "build",
+        "--base-paths",
+        "src",
+        str(root / "upstream/goai_embodied_future_material/src"),
+        "--build-base",
+        env["S10_BUILD_BASE"],
+        "--install-base",
+        env["S10_INSTALL_BASE"],
+        "--symlink-install",
+        "--cmake-args",
+        "-DBUILD_PLATFORM=arm",
+        "--packages-up-to",
+        "s10_perception",
+    ]
+    assert fingerprint_file.read_text().splitlines() == [
+        str(root / "scripts/runtime_fingerprint.py"),
+        "write",
+        "--install-base",
+        env["S10_INSTALL_BASE"],
+    ]

@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {"name":"145331_flight2","recording_id":"gait_20260909_145331_616f9d8038d9","start_s":29,"end_s":59,"direction":"up","phases":[[29,39.5,"landing_approach"],[39.5,55,"stairs_up"],[55,59,"landing"]]},
+    {"name":"145331_flight3","recording_id":"gait_20260909_145331_616f9d8038d9","start_s":59,"end_s":93.2,"direction":"up","phases":[[59,68,"landing_approach"],[68,86.5,"stairs_up"],[86.5,93.2,"landing"]]},
+    {"name":"152557_down","recording_id":"gait_20260909_152557_7ddbfc67c108","start_s":0,"end_s":40.396,"direction":"down","phases":[[0,8.5,"approach"],[8.5,39.5,"stairs_down"],[39.5,40.396,"interruption_context"]]},
+    {"name":"154654_up","recording_id":"gait_20260909_154654_65c5ae680a24","start_s":0,"end_s":52.89,"direction":"up","phases":[[0,11.5,"approach"],[11.5,34,"stairs_up"],[34,52.89,"landing_or_adjustment"]]},
+    {"name":"154856_up_down","recording_id":"gait_20260909_154856_5809460fe5ab","start_s":0,"end_s":84.12,"direction":"up_and_down","phases":[[0,19.5,"approach"],[19.5,36.5,"stairs_up"],[36.5,42,"landing_turn"],[42,48.5,"stairs_down"],[48.5,55,"landing"],[55,65.5,"stairs_down"],[65.5,84.12,"exit"]]}
+  ],
+  "excluded": [
+    {"recording_id":"gait_20260909_145241_9cae0ba51169","start_s":0,"end_s":16.699,"reason":"Active stair-attempt interval 1.5-7s is marked waste data in the latest human review; remainder is diagnostic context."},
+    {"recording_id":"gait_20260909_152557_7ddbfc67c108","start_s":40.396,"end_s":120.004,"reason":"Control exited; post-exit body movement is not expert stair motion."},
+    {"recording_id":"gait_20260909_154654_65c5ae680a24","start_s":52.89,"end_s":111.551,"reason":"Control exit and subsequent recovery/context; no additional identified stair passage."}
+  ],
+  "existing_first_flight":"stairs_reconstruction/REPORT.md",
+  "phase_labels":"Candidate phases from observations.json; not human-confirmed contacts or success labels."
+}

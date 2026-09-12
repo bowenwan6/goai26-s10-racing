@@ -1,0 +1,4 @@
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+policy/gate16/front_tuck_command_profiles.json text eol=lf
