@@ -4,10 +4,14 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 
 from s10_auto_nav.waypoints import Course
 
 COURSE_FILE = Path(__file__).resolve().parents[2] / "s10_bringup" / "config" / "course.yaml"
+GATE16_CONFIG = (
+    Path(__file__).resolve().parents[2] / "s10_bringup" / "config" / "strategy_gate16.yaml"
+)
 
 #: The scorer checks a 0.2 m horizontal radius, so consecutive gates must be further
 #: apart than that or one pose could satisfy two of them.
@@ -55,3 +59,57 @@ def test_start_and_finish_are_labelled(course):
     positions = [wp.position for wp in course.waypoints]
     np.testing.assert_allclose(positions[0], [0.0, -1.725, 0.0], atol=1e-3)
     np.testing.assert_allclose(positions[-1], [32.925, 18.45, 3.75], atol=1e-3)
+
+
+def test_gate16_enforces_b824_canonical_moving_handoff():
+    params = yaml.safe_load(GATE16_CONFIG.read_text())["strategy_router"]["ros__parameters"]
+    assert params["ready_distance_min"] == pytest.approx(0.60)
+    assert params["ready_distance_max"] == pytest.approx(0.65)
+    assert params["target_entry_speed"] == pytest.approx(0.25)
+    assert params["gate16_prewarm_forward"] == pytest.approx(0.25)
+    assert params["gate16_staging_lead"] == pytest.approx(0.25)
+    assert params["ready_dwell"] == pytest.approx(0.0)
+    assert params["min_entry_speed"] == pytest.approx(0.23)
+    assert params["max_entry_speed"] == pytest.approx(0.27)
+    assert params["max_heading_error_deg"] == pytest.approx(2.5)
+    assert params["max_entry_yaw_rate"] == pytest.approx(0.05)
+    assert params["max_lateral_error"] == pytest.approx(0.08)
+    assert params["climb_exit_forward"] == pytest.approx(0.50)
+    assert params["climb_exit_duration"] == pytest.approx(0.80)
+
+
+def test_stairs_stable_owns_only_measured_ascent_segments():
+    params = yaml.safe_load(GATE16_CONFIG.read_text())["strategy_router"]["ros__parameters"]
+    raw = params["stairs_stable_segments"]
+    segments = {tuple(raw[i : i + 2]) for i in range(0, len(raw), 2)}
+    assert params["stairs_stable_enabled"] is True
+    assert params["stairs_stable_command_forward"] == pytest.approx(0.35)
+    assert params["stairs_stable_near_target_settle_distance"] == pytest.approx(0.50)
+    assert params["stairs_stable_completion_hold"] == pytest.approx(0.25)
+    assert params["stairs_stable_entry_speed_min"] == pytest.approx(0.25)
+    assert params["stairs_stable_entry_speed_max"] == pytest.approx(0.45)
+    assert (15, 16) not in segments
+    assert (4, 5) not in segments
+    assert (5, 6) not in segments
+    assert segments == {
+        (6, 7),
+        (17, 18),
+        (22, 23),
+        (25, 26),
+        (27, 28),
+    }
+
+
+def test_gate16_v15_keeps_stable_v1_as_bounded_fallback():
+    params = yaml.safe_load(GATE16_CONFIG.read_text())["strategy_router"]["ros__parameters"]
+    assert params["gate16_fast_adapter_enabled"] is False
+    assert params["gate16_fallback_enabled"] is True
+    assert params["gate16_fallback_ready_distance_min"] == pytest.approx(0.62)
+    assert params["gate16_fallback_ready_distance_max"] == pytest.approx(0.70)
+    assert params["gate16_fallback_ready_dwell"] == pytest.approx(0.10)
+    assert params["gate16_fallback_min_entry_speed"] == pytest.approx(0.08)
+    assert params["gate16_fallback_max_entry_speed"] == pytest.approx(0.20)
+    assert params["gate16_fallback_target_entry_speed"] == pytest.approx(0.18)
+    assert params["gate16_fallback_max_lateral_error"] == pytest.approx(0.25)
+    assert params["gate16_fallback_max_heading_error_deg"] == pytest.approx(6.0)
+    assert params["gate16_fallback_max_yaw_rate"] == pytest.approx(0.10)

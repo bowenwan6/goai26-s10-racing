@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "description": "Bounded command cues for front-limb tuck with forward wheel pull, then continuous rear push. Unmatched entries use the manifest's generic supported-front tuck and forward floor.",
+  "speed_tolerance_mps": 0.024,
+  "yaw_tolerance_deg": 5.9,
+  "profiles": [
+    {
+      "name": "v015_yawm12",
+      "entry_speed_mps": 0.15,
+      "entry_yaw_deg": -12.0,
+      "settle_command_forward_mps": 0.10,
+      "push_command_forward_mps": 0.10
+    },
+    {
+      "name": "v020_yawp12",
+      "entry_speed_mps": 0.20,
+      "entry_yaw_deg": 12.0,
+      "settle_command_forward_mps": 0.25,
+      "push_command_forward_mps": 0.10
+    },
+    {
+      "name": "v025_yawm12",
+      "entry_speed_mps": 0.25,
+      "entry_yaw_deg": -12.0,
+      "settle_command_forward_mps": 0.30,
+      "push_command_forward_mps": 0.10
+    },
+    {
+      "name": "v030_yawm12",
+      "entry_speed_mps": 0.30,
+      "entry_yaw_deg": -12.0,
+      "settle_command_forward_mps": 0.10,
+      "push_command_forward_mps": 0.25
+    },
+    {
+      "name": "v030_yaw0",
+      "entry_speed_mps": 0.30,
+      "entry_yaw_deg": 0.0,
+      "settle_command_forward_mps": 0.15,
+      "push_command_forward_mps": 0.25
+    },
+    {
+      "name": "v025_yaw0_precontact_tuck",
+      "entry_speed_mps": 0.25,
+      "entry_yaw_deg": 0.0,
+      "settle_command_forward_mps": 0.25,
+      "push_command_forward_mps": 0.25,
+      "precontact_front_hipy_action_delta": 0.075,
+      "precontact_front_knee_action_delta": -0.15
+    },
+    {
+      "name": "v025_yawm05_mirror_compensated",
+      "entry_speed_mps": 0.25,
+      "entry_yaw_deg": -5.0,
+      "settle_command_forward_mps": 0.20,
+      "push_command_forward_mps": 0.10,
+      "yaw_tolerance_deg": 2.4
+    },
+    {
+      "name": "v025_yawm02p5_mirror_compensated",
+      "entry_speed_mps": 0.25,
+      "entry_yaw_deg": -2.5,
+      "settle_command_forward_mps": 0.20,
+      "push_command_forward_mps": 0.10,
+      "yaw_tolerance_deg": 1.2
+    },
+    {
+      "name": "v025_yawp02p5_mirror_compensated",
+      "entry_speed_mps": 0.25,
+      "entry_yaw_deg": 2.5,
+      "settle_command_forward_mps": 0.20,
+      "push_command_forward_mps": 0.10,
+      "yaw_tolerance_deg": 1.2
+    },
+    {
+      "name": "v025_yawp20_mirror_compensated",
+      "entry_speed_mps": 0.25,
+      "entry_yaw_deg": 20.0,
+      "settle_command_forward_mps": 0.20,
+      "push_command_forward_mps": 0.10,
+      "yaw_tolerance_deg": 2.4
+    },
+    {
+      "name": "v025_yawp25_mirror_compensated",
+      "entry_speed_mps": 0.25,
+      "entry_yaw_deg": 25.0,
+      "settle_command_forward_mps": 0.20,
+      "push_command_forward_mps": 0.10,
+      "yaw_tolerance_deg": 2.4
+    }
+  ]
+}
