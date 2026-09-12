@@ -1,0 +1,24 @@
+{
+  "recordings": 17,
+  "duration_s": 1251.9029410120008,
+  "clips": 422,
+  "category_duration_s": {
+    "stationary": 93.60891736499991,
+    "ground_motion": 264.0,
+    "varied_ground": 121.69957151200015,
+    "exclude": 502.6678150800002,
+    "obstacle_context": 269.92663705500047
+  },
+  "confirmed_training_seconds": 0,
+  "material_note": "草地/硬地/碎石只能由人工材质标注提供，几何候选不推断草地。",
+  "plane_assumptions": "base_link 点云按近邻 IMU roll/pitch 旋转；无平移补偿、无配准、无独立外参验证。",
+  "thresholds": {
+    "window_s": 2,
+    "level_below_deg": 4,
+    "plane_support": 0.7,
+    "plane_residual_p80_m": 0.06,
+    "front_rear_height_agreement_m": 0.12,
+    "front_rear_grade_agreement_deg": 5,
+    "body_tilt_holdout_deg": 35
+  }
+}

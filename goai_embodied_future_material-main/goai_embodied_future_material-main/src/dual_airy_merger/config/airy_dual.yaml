@@ -1,0 +1,73 @@
+common:
+  msg_source: 1
+  send_packet_ros: false
+  send_point_cloud_ros: true
+
+lidar:
+  - driver:
+      lidar_type: RSAIRY
+      host_address: 10.21.33.102
+      group_address: 224.10.10.201
+      socket_recv_buf: 16777216
+      msop_port: 6691
+      difop_port: 7781
+      imu_port: 6681
+      user_layer_bytes: 0
+      tail_layer_bytes: 0
+      min_distance: 0.2
+      max_distance: 60
+      use_lidar_clock: true
+      dense_points: true
+      ts_first_point: true
+      start_angle: 0
+      end_angle: 360
+      pcap_repeat: true
+      pcap_rate: 1.0
+      pcap_path: lidar.pcap
+      x: 0.22341
+      y: 0.0
+      z: -0.0001
+      roll: 0.0
+      pitch: -1.5707
+      yaw: -3.14159
+    ros:
+      ros_frame_id: lidar_link
+      ros_recv_packet_topic: /rslidar_front/packets
+      ros_send_packet_topic: /rslidar_front/packets
+      ros_send_imu_data_topic: /rslidar_front/imu
+      ros_send_point_cloud_topic: /rslidar_front/points
+      ros_queue_length: 10
+
+  - driver:
+      lidar_type: RSAIRY
+      host_address: 10.21.33.102
+      group_address: 224.10.10.202
+      socket_recv_buf: 16777216
+      msop_port: 6692
+      difop_port: 7782
+      imu_port: 6682
+      user_layer_bytes: 0
+      tail_layer_bytes: 0
+      min_distance: 0.2
+      max_distance: 60
+      use_lidar_clock: true
+      dense_points: true
+      ts_first_point: true
+      start_angle: 0
+      end_angle: 360
+      pcap_repeat: true
+      pcap_rate: 1.0
+      pcap_path: lidar.pcap
+      x: -0.22341
+      y: 0.0
+      z: -0.0001
+      roll: 0.0
+      pitch: -1.5707
+      yaw: 0.0
+    ros:
+      ros_frame_id: lidar_link
+      ros_recv_packet_topic: /rslidar_rear/packets
+      ros_send_packet_topic: /rslidar_rear/packets
+      ros_send_imu_data_topic: /rslidar_rear/imu
+      ros_send_point_cloud_topic: /rslidar_rear/points
+      ros_queue_length: 10

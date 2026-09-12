@@ -1,0 +1,15 @@
+{
+  "recording_id": "gait_20260909_154654_65c5ae680a24",
+  "job": "154654_up",
+  "resolution_m": 0.08,
+  "observed_cells": 5034,
+  "interpolated_cells": 2709,
+  "triangles": 14444,
+  "validation_points": 43497,
+  "covered_fraction": 0.9888268156424581,
+  "median_surface_distance_m": 0.054878609536899506,
+  "p90_surface_distance_m": 0.13595996604431085,
+  "ground_truth": false,
+  "physics_contact_validated": false,
+  "note": "Near-path lower-surface proxy from even scans; odd scans validate. Fill radius <=17cm. Mesh bridges stair edges over 8cm cells."
+}
