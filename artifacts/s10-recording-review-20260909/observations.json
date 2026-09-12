@@ -1,0 +1,92 @@
+{
+  "144907": {
+    "observations": [{"start_s":0,"end_s":120.006,"terrain_candidate":"flat_candidate","evidence":"模型检查完整信号图与12帧点云速览：主要为连续近水平地面；约4–23s报告vx多次正负切换，24–58s和60–82s有关节周期运动/转向，82–98s近静止。仅确认信号与抽样地面形态，不能确认每次移动的完成条件。"}],
+    "review_intervals":[[3,24,"前后往返是否应计为独立通行？各次终点是什么？"],[23,59,"这段是否为原地转向/侧移测试？"],[98,120.006,"尾段移动是否在录制结束前完成？"]]
+  },
+  "145241": {
+    "segment_boundaries_s":[2,3,6.5,10],
+    "observations":[{"start_s":0,"end_s":16.699,"terrain_candidate":"stairs_candidate","action_candidate":"上楼尝试候选","direction_candidate":"up_candidate","evidence":"0.7/2.1s前点云有连续阶梯；约2.5s起pitch下降至约−12°，2–6s轮关节明显转动，10s后基本静止；实际步态全程0x1001。上楼方向为点云+姿态的候选推断，后半段停在何处未确认。"}],
+    "review_intervals":[[1.5,7,"是否使用基础步态尝试上楼，实际接触从何时开始？"],[6,16.699,"是在台阶上等待、卡住、放弃，还是完成后停止？"]]
+  },
+  "145331": {
+    "segment_boundaries_s":[12.5,25,30,39.5,55,60,68,75,79,86.5],
+    "observations":[
+      {"start_s":12.5,"end_s":25,"terrain_candidate":"stairs_candidate","action_candidate":"上楼候选","direction_candidate":"up_candidate","evidence":"首段约13–25s持续负pitch及腿关节活动；之前前点云阶梯明显，过程中后点云出现阶梯，支持上楼候选。"},
+      {"start_s":25,"end_s":39.5,"terrain_candidate":"landing_or_approach_unknown","phase_by_class":{"0":"平台/平地等待候选","1":"平台行走/下一段接近候选","2":"平台调整/转向候选"},"evidence":"25–39.5s姿态回平，约31–34s发生轮式移动；35s点云前方再次有阶梯。可能是中间平台后接下一梯段，也可能重新接近；保留在同一通行候选。"},
+      {"start_s":39.5,"end_s":55,"terrain_candidate":"stairs_candidate","action_candidate":"上楼候选","direction_candidate":"up_candidate","evidence":"40–55s再次持续负pitch及腿关节运动，42.7/50.5s附近前后点云见阶梯。"},
+      {"start_s":55,"end_s":68,"terrain_candidate":"landing_or_approach_unknown","phase_by_class":{"0":"平台/平地等待候选","1":"平台行走/下一段接近候选","2":"平台调整/转向候选"},"evidence":"55–68s姿态大体回平，60–63s有快速轮关节活动与转向；58.3/66.1s前方仍见阶梯；平台还是重试接近需确认。"},
+      {"start_s":68,"end_s":86.5,"terrain_candidate":"stairs_candidate","action_candidate":"上楼候选","direction_candidate":"up_candidate","evidence":"68–86.5s负pitch及腿关节活动；75–79s在倾斜姿态下近静止，不能据此标作平平台。89.4s抽样点云前方趋平。"}],
+    "review_intervals":[[24,40,"第一段后是否为中间平台并继续同一次上楼？还是返回同一障碍重试？"],[54,69,"第二处连接区是否为平台；有无转向或人工调整？"],[74,81,"倾斜姿态停顿是在楼梯上等待还是卡住/干预？"],[85,93.26,"最后一段是否完成；三段阶梯可否赋予梯段/平台编号？"]]
+  },
+  "145914": {
+    "segment_boundaries_s":[21,24,27,29],
+    "observations":[{"start_s":0,"end_s":21,"terrain_candidate":"flat_candidate","evidence":"信号和点云初览前21s主要为近水平地面行走/转向；实际基础步态。"},{"start_s":21,"end_s":29,"terrain_candidate":"ledge_candidate","evidence":"21.4s前方出现台阶状边缘；24–27s pitch约−12°且腿轮活动，随后报告vx转负；27.9s前方边缘仍可见。不能把基础标签解释为全程平地，也不能据整段成功判断越障完成。"}],
+    "review_intervals":[[21,29,"是否接触/尝试上台后退回？障碍是什么，是否完成？"],[29,39.444,"尾段静止是在等待还是已结束通行？"]]
+  },
+  "150146": {
+    "passage_boundary_candidates_s":[19,37,50,75,93],
+    "segment_boundaries_s":[11,17,26,29,44,46,69,71,88,90,105,108],
+    "observations":[{"start_s":0,"end_s":114.64,"terrain_candidate":"ledge_candidate","evidence":"全段速览多次出现单个抬高边缘与平台；13/16/27/70/106s负pitch突变，45/89s正pitch突变，伴腿轮活动；中间有姿态回平和转向。19/37/50/75/93s为活动簇间候选通行分界，合并/拆分与同一高台身份均未人工确认。"},{"start_s":44,"end_s":46,"terrain_candidate":"ledge_candidate","action_candidate":"下台候选","direction_candidate":"down_candidate","evidence":"43s前点云边缘后下落，45s正pitch与轮速峰值配合；下台候选。"},{"start_s":88,"end_s":90,"terrain_candidate":"ledge_candidate","action_candidate":"下台候选","direction_candidate":"down_candidate","evidence":"81.2s前点云可见高低边缘，89s正pitch峰值，90.8s前地面形态改变；下台候选。"}],
+    "review_intervals":[[10,19,"13s与16s两次动作是上台后的退回/重试，还是两个独立通行？"],[25,37,"此处上台后是否完成，37s能否作为下一通行准备边界？"],[42,53,"45s是否下台；是否与前面同一高台？"],[68,77,"70s动作完成与下一次接近的分界？"],[87,96,"89s是否下台；转向后是否重过同一高台？"],[104,114.64,"末次动作是否完成？记录30cm是否对应所有这些障碍？"]]
+  },
+  "150705": {
+    "passage_boundary_candidates_s":[23,38,48,78],
+    "segment_boundaries_s":[10.5,18,28,31,34,36,40,43.5,63,65.5,81,84],
+    "observations":[{"start_s":0,"end_s":93.256,"terrain_candidate":"ledge_candidate","evidence":"点云反复出现前方台沿与后方地面；11–18、28–36、40–43.5、63–65.5、81–84s有多次姿态/关节活动簇。23/38/48/78s为候选通行分界；第一簇同时有正负pitch与大roll，不能逐峰当作成功上/下台。66–80s长时间近静止但0x1002仍保持。"}],
+    "review_intervals":[[10,19,"是否发生上台、下台、失稳或连续重试？"],[27,37,"两组动作是否同一通行内的调整/退回？"],[39,45,"此簇是否完成高台通行？"],[62,84,"64s后长停顿与82s动作是什么关系，是否卡住或人工处理？"],[84,93.256,"末尾是否完成/放弃；32cm标签是否对应同一高台？"]]
+  },
+  "150921": {
+    "segment_boundaries_s":[10,12,15.5,19.5,30,45,48,63.75],
+    "observations":[{"start_s":0,"end_s":16.813,"terrain_candidate":"ledge_candidate","evidence":"前方点云有台沿，约11s短负pitch；16–19s大幅roll/pitch倾斜，16.813s状态17→2，18.814s→0。整段manifest仍为success；事件归因和此前是否有成功通行需人工确认。"},{"start_s":16.813,"end_s":63.75,"evidence":"退出控制后约19–30s关节近静止而机身倾斜；30–48s姿态再变化，可能有人处理但无人工事件证据。MOTION_INFO速度字段维持常值，不能推断持续运动。"},{"start_s":63.75,"end_s":89.367,"evidence":"IMU/JOINTS_DATA/MOTION_INFO在约63.7s后无数据；前后点云有长源时间间隔，末尾恢复部分点云。"}],
+    "review_intervals":[[10,20,"11s是否已经成功一次？16–19s大倾角是否摔倒/放弃/人工接管，整段success如何解释？"],[29,49,"是否人工扶正或搬动？"],[62,89.367,"后段是否设备停机/连接断开，尾部点云恢复发生了什么？"]]
+  },
+  "151135": {
+    "segment_boundaries_s":[11.5,13.5,18.5,23.5],
+    "observations":[{"start_s":0,"end_s":26.319,"terrain_candidate":"ledge_candidate","action_candidate":"上台候选","direction_candidate":"up_candidate","evidence":"1–12s前点云见台沿；约12–13.5s负pitch达约−40°并有腿轮活动，14.3s后前点云趋平、后方保留高低结构；支持上台候选。19–23s有后续移动/转向，不能自动解释为已完全通过。"}],
+    "review_intervals":[[11,15,"实际上台接触、完成区间在哪里？"],[18,26.319,"后续是在台面行走/转向，还是又接触其他地形？"]]
+  },
+  "151220": {
+    "segment_boundaries_s":[8.5,10,11],
+    "observations":[{"start_s":0,"end_s":13.336,"terrain_candidate":"ledge_candidate","action_candidate":"上台候选","direction_candidate":"up_candidate","evidence":"前点云初始有台沿；约8.8–10s负pitch达约−42°，有腿轮活动，10.6s后前点云趋平而机身仍倾斜。截断前是否四轮完成越障无法仅凭速览确认。"}],
+    "review_intervals":[[8,13.336,"末次上台是否完成，还是在台沿/倾斜姿态下结束录制？是否与151135同一38cm高台？"]]
+  },
+  "151538": {
+    "stationary_context": true,
+    "observations":[{"start_s":0,"end_s":24.863,"terrain_candidate":"flat_candidate","evidence":"完整信号图中roll/pitch近恒定、关节速度仅微小噪声，点云近地面形态基本稳定；实际状态17/步态0x1001。manifest为failure，但无可定位失败动作证据。"}],
+    "review_intervals":[[0,24.863,"全段近静止：failure标记原因是什么？是否只是无动作/未开始？"]]
+  },
+  "151616": {
+    "observations":[{"start_s":0,"end_s":56.935,"terrain_candidate":"flat_candidate","evidence":"速览以近水平地面为主；1–24s与37–54s轮式移动，24–37s明显转向/调整；roll/pitch幅值较小，状态始终17。没有从这些信号定位到manifest failure的明确发生时刻。"}],
+    "review_intervals":[[23,38,"该转向区是常规动作还是失败/重试节点？"],[45,56.935,"failure发生在哪个具体动作？末尾近静止是完成还是停止？"]]
+  },
+  "151734": {
+    "observations":[{"start_s":0,"end_s":58.367,"evidence":"轮式行走与转向交替，近地面点云并非处处平直，有局部起伏/边缘；roll/pitch多为个位数度，实际状态始终17。不能凭basic标签当作整段平地，也未定位整段failure对应事件。"}],
+    "review_intervals":[[11,15,"此处是转向还是越过局部起伏/边缘？"],[22,39,"连续转向区是否包含失败/重试？"],[47,58.367,"末段failure的具体位置及原因？"]]
+  },
+  "151931": {
+    "segment_boundaries_s":[7.5,23.5,44.5,62,90.5,94],
+    "observations":[{"start_s":0,"end_s":120.005,"terrain_candidate":"flat_candidate","evidence":"近地面点云以平缓面为主；1–7、24–44、62–90、94s后有移动，7.5–23.5与44.5–62s长等待；尾段有周期关节活动/转向，状态始终17。停顿不自动切成新通行。"}],
+    "review_intervals":[[6,25,"长等待前后是否为独立测试通行？"],[43,64,"第二次长等待是否结束上一通行？"],[94,120.005,"尾段动作是什么，是否完成？"]]
+  },
+  "152145": {
+    "segment_boundaries_s":[4,7.5,11.5,13.5,28,31.5,40,43,61,65],
+    "observations":[{"start_s":0,"end_s":69.7,"evidence":"比其他basic段有更明显roll/pitch起伏：约4–7.5、11.5–13.5、28–31.5、40–43s；有轮关节活动，点云局部起伏/边缘但不足以确认为楼梯或高台。状态始终17；61–65s近静止后又移动。"}],
+    "review_intervals":[[4,14,"前两次姿态起伏经过什么地形，是否其中一次失败？"],[27,44,"中段起伏与多次转向是否属于同一通行？"],[60,69.7,"停顿后再次移动是恢复/重试还是正常结束？"]]
+  },
+  "152557": {
+    "segment_boundaries_s":[8.5,11,19,30,39.5,43,56,62,79,83,117],
+    "observations":[{"start_s":8.5,"end_s":39.5,"terrain_candidate":"stairs_candidate","action_candidate":"下楼候选","direction_candidate":"down_candidate","evidence":"约11s后pitch约+15°，15/25s前点云近处有阶梯纹理、后方地面倾斜，35s后点云见阶梯；轮关节活动与正pitch支持下楼候选，但实际步态一直0x1001。"},{"start_s":39.5,"end_s":62,"evidence":"约40s roll升至约70–90°，40.396s状态17→2，42.398s→0；45/55s点云呈明显侧倾，关节活动降至近静止。是否摔倒及人工处置待确认。"},{"start_s":62,"end_s":120.004,"evidence":"控制退出后机身姿态多次变化（约62/79–83/117s），与原地静止状态不同；不能仅凭姿态变化认定搬动。"}],
+    "review_intervals":[[8,20,"是否基础步态下楼，11–19s停顿在何处？"],[30,43,"40s附近是否摔倒/人工急停，通行应判失败还是中断？"],[55,64,"是否首次人工扶正/搬动？"],[78,84,"第二次姿态变化是否人工干预？"],[116,120.004,"末尾姿态变化是什么动作？"]]
+  },
+  "154654": {
+    "segment_boundaries_s":[11.5,24,26.5,34,38.5,52.5,54.5,61.5,67,73,86,99,106],
+    "observations":[{"start_s":11.5,"end_s":34,"terrain_candidate":"stairs_candidate","action_candidate":"上楼候选","direction_candidate":"up_candidate","evidence":"4.6s前点云有连续阶梯；12–34s负pitch与腿关节活动，多处阶梯形点云，24–26.5s仍保持倾斜但活动降低，不能把这处停顿硬标平台。"},{"start_s":34,"end_s":52.891,"terrain_candidate":"landing_or_stairs_unknown","evidence":"34–38s正pitch短段，之后接近平姿且多次调整，前方仍有边缘/阶梯结构；52.891s退出到状态4，54.491s到0。是否到平台、放弃或人工停下尚不确定。"},{"start_s":54.491,"end_s":107.606,"evidence":"长段状态0期间仍有姿态和少量关节变化；约62–67s、73–86s、99–106s需核对是否人工处理；106.005s状态1，107.606s恢复17。"}],
+    "review_intervals":[[23,28,"倾斜停顿是在梯段内还是中间平台？"],[33,40,"是否已经上到平台/转向，还是仍处于障碍？"],[50,56,"退出控制是完成后主动停下、失败，还是人工接管？"],[61,68,"该姿态变化是否人工处理？"],[73,86,"长倾斜区是否机器人被搬动？"],[99,111.551,"扶正/站立/恢复控制后是否开始新通行？"]]
+  },
+  "154856": {
+    "passage_boundary_candidates_s":[40],
+    "segment_boundaries_s":[19.5,25.5,27.5,29.5,36.5,40,42,48.5,55,65.5,70,79],
+    "observations":[{"start_s":19.5,"end_s":36.5,"terrain_candidate":"stairs_candidate","action_candidate":"上楼候选","direction_candidate":"up_candidate","evidence":"初始前点云连续阶梯；20–36.5s负pitch与腿关节活动；25.5–29.5s有倾斜停顿/再调整，仍保留同一上行候选。"},{"start_s":36.5,"end_s":42,"terrain_candidate":"landing_candidate","phase_by_class":{"0":"平台等待候选","1":"平台行走/调整候选","2":"平台转向候选"},"evidence":"36.5–40s姿态趋平且明显转向，38.6s点云近处地面平缓；42s以后pitch转为持续正值。40s提出上行/下行通行候选分界，需确认是否同一楼梯返回。"},{"start_s":42,"end_s":48.5,"terrain_candidate":"stairs_candidate","action_candidate":"下楼候选","direction_candidate":"down_candidate","evidence":"42–48.5s正pitch约+15–20°、周期轮腿运动，前后点云阶梯结构；下楼候选。"},{"start_s":48.5,"end_s":55,"terrain_candidate":"landing_candidate","phase_by_class":{"0":"平台等待候选","1":"平台行走候选","2":"平台转向候选"},"evidence":"48.5–55s姿态回平、短时轮式行走/转向，52.6s前点云近处较平且远处下降；保留在下行通行内连接两个楼梯活动区。"},{"start_s":55,"end_s":65.5,"terrain_candidate":"stairs_candidate","action_candidate":"下楼候选","direction_candidate":"down_candidate","evidence":"56–65s再次持续正pitch及周期轮腿运动，59.6/66.6s后点云有阶梯；支持第二下行活动区，未逐级编号。"}],
+    "review_intervals":[[24,30,"上行中停顿是在梯段内、平台还是调整/重试？"],[36,43,"是否到顶平台转身后沿同一楼梯返回；40s通行分界是否合适？"],[48,56,"这里是否中间平台，是否需分配平台编号？"],[64,70,"下楼是否已完成，何时离开最后阶梯？"],[70,84.152,"后续行走/转向是否为同一次通行的退出段？"]]
+  }
+}

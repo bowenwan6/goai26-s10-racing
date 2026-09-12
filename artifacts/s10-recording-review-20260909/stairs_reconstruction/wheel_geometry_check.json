@@ -1,0 +1,21 @@
+{
+  "frames": 578,
+  "minimum_wheel_bottom_gap_m": 0.0005129024344019267,
+  "max_robot_terrain_penetration_m": -0.0,
+  "frames_penetrating_over_2cm": 0,
+  "frames_penetrating_over_5cm": 0,
+  "fraction_wheels_below_surface_by_5cm": 0.0,
+  "last_wheel_levels": [
+    11.0,
+    11.0,
+    11.0,
+    11.0
+  ],
+  "last_wheel_bottom_gap_m": [
+    0.01920054557360018,
+    0.017019189491204623,
+    0.016634187910004705,
+    0.007523866524490774
+  ],
+  "note": "Wheel-bottom vertical gap is a rough geometry check; ignores wheel/riser side contact and is not measured contact state"
+}

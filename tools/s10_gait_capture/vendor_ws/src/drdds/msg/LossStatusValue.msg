@@ -1,0 +1,4 @@
+uint8 odom_error
+uint8 leg_odom_error
+uint8 matching_error
+uint8 pub_error

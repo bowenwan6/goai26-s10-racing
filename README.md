@@ -17,6 +17,31 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 
 ---
 
+## 真机与录制研究
+
+### 当前真机：48 号（2026-09-11）
+
+- [48 号环境、账号与传感器](docs/S10_48_SETUP_ZH.md)：使用本队 `golai`，Windows 登录 `ssh s10-48-golai`。
+- [48 号官方 SLAM：当前状态、使用方法与算法](docs/S10_48_SLAM_ZH.md)：手机连接 48 号 Wi-Fi，打开 `http://10.21.41.1:8080/`；103 转发至 AGX 网页，遥控器控制行走。
+- [手机建图与实时定位工具](tools/s10_mapping_web/README.md)包含部署和维护说明。9 月 11 日已加入 PTP 启动检查及测量时间检查；后续开机、闭环及定位验收状态以 SLAM 指南为准。
+- 当前不再使用 50 号。`xwy` 属于 50 号的历史环境；51 号交接文档是未采用的计划。
+
+### 实机采集与研究交接
+
+- [历史数据、运动验证、地图与 RL 参考结论](docs/S10_DATA_RESEARCH_ZH.md)
+- [录制复核与重建交接](docs/S10_RECORDING_REVIEW_AND_RECONSTRUCTION_ZH.md)、[楼梯匹配方法](docs/S10_STAIRS_MATCHING_GUIDE_ZH.md)、[高台匹配方法](docs/S10_LEDGE_MATCHING_GUIDE_ZH.md)
+- [基础步态平面匹配与软参考](docs/S10_BASIC_FLAT_MATCHING_ZH.md)：5 段、34 秒 Isaac Sim 试验，3 段未摔倒，转向和侧向 2 段侧翻，尚未训练 RL。
+- [采集工具与本地演示](tools/s10_gait_capture/README.md)、[数据格式](tools/s10_gait_capture/LOCAL_COPY.md)、[50 号部署及清理记录](tools/s10_gait_capture/DEPLOYMENT_050.md)
+- [50 号 106 SLAM 调查（历史）](docs/S10_SLAM_106_RESEARCH_ZH.md)、[下一步验证事项](docs/TODO.md)
+
+9 月 9 日的新 17 段原始录制位于采集工作站 `D:/S10Data/050/2026-09-09/`，不随 Git 分发。
+仓库保留工具、索引、报告和部分派生结果；完整回放仍需另行准备原始数据及缓存。
+
+本分支的比赛、导航和仿真入口已对齐 `main`。旧 WASD、Windows 键盘控制和指定模型回放
+属于 [合并前版本 cc93d39](https://github.com/bowenwan6/goai26-s10-racing/tree/cc93d39f8a939c88627f73534ca42c30d7705746)，
+当前不再提供 `run_race.sh --manual`、`replay_waypoint.sh` 或 `replay_velocity_profile.sh`。
+`docs/WASD_*`、`submission/WASD_*` 及 `policies/README.md` 保留为历史记录；当前比赛与分段测试按下文操作。
+
 ## Current status
 
 Judge-facing submission details are collected in

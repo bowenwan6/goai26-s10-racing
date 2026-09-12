@@ -1,0 +1,41 @@
+{
+  "engine": "isaac",
+  "duration_s": 8.0,
+  "free_base": true,
+  "leg_rmse_deg": 3.716524970546863,
+  "wheel_speed_rmse_rad_s": 0.9348546424541027,
+  "gravity_error_rms_deg": 145.36718534364056,
+  "orientation_error_rms_deg": 156.59097915441686,
+  "tilt_max_deg": 180.0,
+  "root_height_min_m": 0.08000760525465012,
+  "simulated_displacement_xyz_m": [
+    -0.4568801820278168,
+    0.4104683995246887,
+    -0.3207097508943477
+  ],
+  "fell": true,
+  "saturation_fraction_per_joint": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "training_ready": false,
+  "engine_version": "Isaac Sim 5.1.0",
+  "physics_dt_s": 0.001,
+  "controller_dt_s": 0.001,
+  "nonwheel_net_contact_samples": 298,
+  "contact_note": "50 Hz net forces, includes self contact; not an exact floor contact count"
+}

@@ -1,0 +1,57 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S10 录制复核</title><link rel="icon" href="data:,"><link rel="stylesheet" href="viewer.css">
+<header><a href="index.html">← 全部录制</a> · <a href="basic_gait_review.html">基础步态参考筛选</a><h1 id="title">加载本地数据…</h1><p id="meta"></p></header>
+<main>
+<p class="notice">总览：点云约 2 Hz、动作约 10 Hz；“加载精细回放”读取选区的原始关节采样及约 10 Hz 点云。机器人机身位置固定，SDK 骨架与 IMU 安装关系尚需实物核对。<b>这是局部观测回放，不是重建地图或世界轨迹。</b></p>
+<div class="controls"><button id="play">播放</button><button id="back">−0.5s</button><button id="next">+0.5s</button>
+<label>速度 <select id="speed"><option>.25</option><option>.5</option><option selected>1</option><option>2</option><option>4</option></select></label>
+<label>同步基准 <select id="clock"><option value="src">源时间（不校正时钟）</option><option value="rx">接收时间（可检查卡顿）</option></select></label>
+<label>原录制秒 <input id="time" type="number" min="0" step="0.1" value="0"></label><output id="clocktext"></output></div>
+<input id="slider" aria-label="原录制时间轴" type="range" min="0" step="0.1" value="0">
+<canvas id="timeline" width="1400" height="105" aria-label="地形动作候选与实际控制分层时间轴"></canvas>
+<p id="phase"></p><p id="feedback"></p>
+<div class="review-layout">
+<section class="scene-card"><h2>机器人动作与 3D 点云</h2>
+<div class="controls"><label><input id="showfront" type="checkbox" checked>前点云</label><label><input id="showrear" type="checkbox" checked>后点云</label><label><input id="showbody" type="checkbox" checked>机器人</label>
+<button id="camera-side">侧面</button><button id="camera-top">俯视</button><button id="camera-reset">复位视角</button></div>
+<canvas id="scene3d" width="960" height="600" tabindex="0" aria-label="可旋转的机器人与点云三维视图，左右键旋转，上下键调整仰角，加减键缩放"></canvas>
+<p class="muted">拖动旋转 · 滚轮缩放 · 键盘方向键旋转，+/− 缩放。蓝：前点云；橙：后点云。坐标轴为参考轴，不代表地面。</p><p id="scene-status"></p>
+</section>
+<section class="review-card"><h2>人工复核</h2><p id="review-progress"></p>
+<label>选择候选 <select id="review-source"><option value="questions">待确认问题</option><option value="passages">连续通行</option><option value="segments">内部片段</option><option value="saved">已保存标注</option></select></label>
+<select id="review-item" aria-label="选择复核项目"></select><p id="review-question"></p>
+<div class="controls"><button id="review-prev">上一项</button><button id="review-next">下一项</button><button id="review-loop">循环选区（前后 2 秒）</button></div>
+<div class="review-grid">
+<label>起点（源秒）<input id="review-start" type="number" min="0" step="0.01"></label><label>终点（源秒）<input id="review-end" type="number" min="0" step="0.01"></label>
+<button id="review-set-start">当前位置设为起点</button><button id="review-set-end">当前位置设为终点</button>
+<label>层级<select id="review-level"><option value="segment">内部片段</option><option value="passage">连续通行</option></select></label>
+<label>地形形状<select id="review-terrain"><option value="unknown">不确定</option><option value="flat">近水平地面</option><option value="slope">坡面</option><option value="uneven">起伏地面</option><option value="stairs">楼梯</option><option value="platform">中间/顶部平台</option><option value="ledge">高台</option></select></label>
+<label>表面材质<select id="review-surface"><option value="unknown">不确定</option><option value="hard">硬地</option><option value="grass">草地</option><option value="gravel">碎石</option><option value="mixed">混合</option></select></label>
+<label>参考用途<select id="review-reference"><option value="pending">待判断</option><option value="candidate">保留为参考候选</option><option value="exclude">排除该区间</option></select></label>
+<label>动作<select id="review-action"><option value="unknown">不确定</option><option value="approach">接近</option><option value="adjust">调整</option><option value="ascend">上楼/上台</option><option value="descend">下楼/下台</option><option value="platform_walk">平台行走</option><option value="locomote">地面行走/轮式运动</option><option value="start_stop">起停/换向</option><option value="turn">转向</option><option value="wait">等待</option><option value="recover">恢复</option><option value="interrupted">中断</option></select></label>
+<label>方向<select id="review-direction"><option value="unknown">不确定</option><option value="up">向上</option><option value="down">向下</option><option value="level">水平</option></select></label>
+<label>结果<select id="review-outcome"><option value="uncertain">不确定</option><option value="completed">完成</option><option value="failure">失败</option><option value="interrupted">中断</option></select></label>
+<label>障碍编号（可留空）<input id="review-obstacle" placeholder="如 楼梯A-第二梯段"></label>
+</div>
+<label>所属连续通行（可留空）<input id="review-group" placeholder="用相同编号关联梯段、平台和后续梯段"></label>
+<label>备注<textarea id="review-notes" rows="2" placeholder="记录判断依据或无法确定的地方"></textarea></label>
+<div class="controls"><button id="review-merge">合并前一候选区间</button><button id="review-split">在当前位置拆成两段草稿</button></div>
+<div class="controls"><button class="primary" id="review-save">确认并保存</button><button id="review-uncertain">保存为无法判断</button><button id="review-retire">撤回此标注</button></div>
+<p id="review-status" role="status" aria-live="polite">正在连接本地标注服务…</p>
+<div class="controls"><button id="detail-load">加载精细回放（最多20秒）</button><button id="detail-clear">返回总览采样</button><button id="review-export">导出全部人工标注</button></div>
+<p id="detail-status" role="status">精细回放保留原始采样时刻；50 Hz 区间不会补造成更高频的实测数据。</p>
+</section></div>
+<details><summary>分窗点云与关节数值</summary>
+<div class="views"><section><h2>前点云 · 本地 x-z</h2><canvas id="front" width="680" height="340"></canvas><p id="fronttime"></p></section>
+<section><h2>后点云 · 本地 x-z</h2><canvas id="rear" width="680" height="340"></canvas><p id="reartime"></p></section>
+<section><h2>固定机身关节示意</h2><canvas id="robot" width="680" height="340"></canvas><p id="imustate"></p></section>
+<section><h2>原始关节位置（rad，数字通道 0–15）</h2><canvas id="joints" width="680" height="340"></canvas><p id="jointstate"></p></section></div></details>
+<label>点云侧视截面 |y| &lt; <select id="width"><option value="0.6">0.6m</option><option value="1.3" selected>1.3m</option><option value="4">4m</option><option value="12">12m</option></select></label>
+<label>点云视图 <select id="view"><option value="side">侧视 x-z</option><option value="top">俯视 x-y</option><option value="iso">立体投影</option></select></label>
+<p id="samples"></p><p>时间原点：<code id="anchor"></code>（manifest.started_wall_ns）。两种同步均未证明所有话题时钟一致；每窗显示实际样本 src/rx 与偏差。缺帧不延续旧姿态。控制退出后的速度字段可能保持旧值，不能据此推断持续移动。</p>
+<details open><summary>待确认区间与证据观察（模型初览，非人工确认）</summary><div id="questions"></div><p id="observations"></p></details>
+<details><summary>数据问题</summary><ul id="issues"></ul></details>
+<details><summary>候选事件与原始控制变化</summary><div id="events"></div></details>
+<details><summary>全部内部片段索引</summary><div id="segments"></div></details>
+<p><a id="signals">完整信号图</a> · <a id="cloudsheet">点云速览图</a> · <a href="segments.csv">片段 CSV</a> · <a href="review_queue.csv">待确认清单</a></p>
+</main><script src="catalog.js"></script><script src="review_ui.js"></script><script src="viewer.js"></script></html>

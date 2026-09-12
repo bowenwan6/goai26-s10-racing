@@ -1,0 +1,25 @@
+{
+  "source_host": "10.21.33.106",
+  "source_directory": "/opt/ros/jazzy/share/drdds/msg",
+  "sha256": {
+    "MotionInfo": "bf3606463f8396f4329cfa87489192b9e6840f8b2ba35dba948c8241453e28ab",
+    "MetaType": "07622e7cae92aa5f96803992420dada6c24e9403915a0f26fe6bedd4ef7ad814",
+    "MotionInfoValue": "ae90fc60e41d7cc17ca40288fe9d0a976ccd2ef8027f5a32c14ed75c3faefe39",
+    "MotionStateValue": "051bed7fcff317bdce20cfe052e5ed92a201540a4fe43a0f7cac3beae49ca663",
+    "GaitValue": "86330c1cd758a2b4b9ecf56eeeb1526a39598183a88a27546dbf43e647f3ccdb",
+    "JointsData": "567d2df2677d6242af6071587a405e0bc2c841206638a23959e7cc9d22fe6db4",
+    "JointsDataValue": "dc967bf46d529efd28769679db28082368602400f153484763b5c91e5e476908",
+    "JointData": "f74faeb266244e7e6993f291825ae6ccf83eb2ce4b42ec9ae5496b4b7373e7bd",
+    "JointsDataCmd": "05680b01b01aa9f527f2e6966cdaa76ef85dfa9155d04e327e59fd55c1051e06",
+    "JointsDataCmdValue": "62754d1efb0b50dcff5c0acc575420b0958b92e16f6b0f3bc1b7ef6f692346e7",
+    "JointDataCmd": "75e590960d17f1f581f5c8db45e5474ccb814156bfdd0f119ce2b9de2a011183",
+    "Gait": "677cf2d4f58507581f6dba5e6a7cbc2c9805f3a7a38102634a5cbf9e43b0f4ab",
+    "LocationStatus": "d7d99a26b950698ab5ca326bdf2d9a0bb280c7d02c1901cbc8a12e2094f2ffc6",
+    "LocationStatusValue": "d51a0b6023be9d7406ddd24816f71b7d5107578d1d592c4e3ea5363c66f33b4b",
+    "ExecStatusValue": "232e523941654d6e020a5c1e824565ee70f31a32c3302f3975c5e6fa94b4039b",
+    "LossStatusValue": "5573cb5afb5d26c0544284fbeb8e9889c8e01efbf86c2f0c19f3788b0cf270a0",
+    "InputStatusValue": "6619f611091f8e488821c60d253cbd254f68290cf2e514fe2083177c54f9d491",
+    "Steer": "9dcbd176b4a607d4110aa36417e0ffb34590b976bde2b1a0566a2b0e88fd7308",
+    "SteerValue": "9257e9f2613ea1dcbc9e6c1c2fa86f42ba540d7f462dcaa26eceee3876e06073"
+  }
+}
