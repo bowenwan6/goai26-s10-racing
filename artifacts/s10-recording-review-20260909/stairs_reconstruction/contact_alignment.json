@@ -1,0 +1,10 @@
+{
+  "samples": 5780,
+  "max_correction_m": 0.13328514401230093,
+  "median_correction_m": 0.007096583450994118,
+  "p95_correction_m": 0.06004813053759568,
+  "maximum_remaining_penetration_m": -0.0,
+  "correction_over_12cm": 5,
+  "remaining_penetration_over_2mm": 0,
+  "meaning": "Root translation inferred from lidar and nonpenetration; joint measurements and orientation unchanged; not measured ground truth"
+}

@@ -1,0 +1,43 @@
+{
+  "backend": "MuJoCo, not Isaac Sim",
+  "free_dynamics": true,
+  "reached_top": false,
+  "reached_destination": false,
+  "descending": true,
+  "all_wheels_cleared": true,
+  "first_tilt_over_60_source_s": 45.461,
+  "final_base_position_m": [
+    1.9429358954282612,
+    -0.41595546191673644,
+    0.08031287075528636
+  ],
+  "leg_tracking_rmse_deg": 2.580664874751327,
+  "actuator_saturation_fraction": 0.0,
+  "first_contacts_source_s": {
+    "fr_wheel_top": 42.521,
+    "fl_wheel_top": 42.541,
+    "hr_wheel_top": 42.541,
+    "hl_wheel_top": 42.580999999999996,
+    "fl_knee_top": 45.181,
+    "fl_hipy_top": 45.281,
+    "fl_wheel_face": 45.341,
+    "fr_wheel_face": 45.400999999999996
+  },
+  "frames_with_ledge_contact": 145,
+  "kp_leg": 80,
+  "kd_leg": 2,
+  "kd_wheel": 0.6,
+  "completed": false,
+  "up_completed": null,
+  "down_completed": false,
+  "up_completed_source_s": null,
+  "final_tilt_deg": 179.82809335985434,
+  "final_stable_under_20": false,
+  "offset_m": 0.0,
+  "delay_s": 0.0,
+  "initial_distance_m": 1.1669447555198278,
+  "reference_orientation_rmse_deg": 97.01115414912955,
+  "edge_distance_rmse_m": 0.16112420241723796,
+  "score": 129.23599463257716,
+  "initial_penetration_m": 0.0
+}

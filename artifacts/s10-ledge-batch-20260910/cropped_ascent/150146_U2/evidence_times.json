@@ -1,0 +1,26 @@
+[
+  {
+    "target_source_s": 28.28,
+    "skeleton_source_s": 28.279999999999347,
+    "lidar_source_s": {
+      "/rslidar_front/points": 28.235256703,
+      "/rslidar_rear/points": 28.235219748
+    }
+  },
+  {
+    "target_source_s": 28.48,
+    "skeleton_source_s": 28.479999999999308,
+    "lidar_source_s": {
+      "/rslidar_front/points": 28.434572728,
+      "/rslidar_rear/points": 28.434541733
+    }
+  },
+  {
+    "target_source_s": 28.98,
+    "skeleton_source_s": 28.979999999999208,
+    "lidar_source_s": {
+      "/rslidar_front/points": 28.933681757,
+      "/rslidar_rear/points": 28.933699639
+    }
+  }
+]

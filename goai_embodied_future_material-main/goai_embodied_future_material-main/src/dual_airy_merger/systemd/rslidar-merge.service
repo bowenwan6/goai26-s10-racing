@@ -1,0 +1,16 @@
+[Unit]
+Description=Merge dual RoboSense Airy point clouds with CD1 extrinsics
+After=rslidar-dual.service
+Requires=rslidar-dual.service
+
+[Service]
+Type=simple
+User=AGX_USER
+WorkingDirectory=REPOSITORY_ROOT
+Environment=FASTRTPS_DEFAULT_PROFILES_FILE=REPOSITORY_ROOT/src/dual_airy_merger/config/fastdds_ethernet.xml
+ExecStart=/bin/bash -lc 'source /opt/ros/jazzy/setup.bash && source REPOSITORY_ROOT/install/setup.bash && exec ros2 run dual_airy_merger dual_airy_merger_node'
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

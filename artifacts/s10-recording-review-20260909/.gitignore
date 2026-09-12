@@ -7,3 +7,13 @@
 *.npz
 *.err
 # human_reviews.jsonl is deliberate human work: do not ignore it.
+# Regenerable stair replay assets and binary scene files.
+/stairs_batch/*/*.usdc
+/stairs_batch/*/*.usda
+/stairs_batch/*/*.xml
+/stairs_batch/*/*.ppm
+/basic_flat_match/*.xml
+/basic_flat_match/*.usda
+/basic_flat_match/*.usdc
+/basic_flat_match/ground_contact_check*/*.xml
+/basic_flat_match/ground_contact_check*/*.usdc

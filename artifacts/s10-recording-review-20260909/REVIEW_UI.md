@@ -47,3 +47,26 @@
 浏览器已检查：服务连接、3D 点云/骨架显示、选区播放、源时间跳转，以及高台 9–17 秒的精细加载（1,600 个原关节样本、前后点云各 83 帧）。人工确认由使用者完成。
 
 代码复用 `build.py` 的回放和 `review.py` 的消息解析/点云抽样；没有新增依赖。
+
+## 基础步态、草地与坡面筛选（2026-09-10）
+
+入口：[基础步态参考筛选](http://127.0.0.1:8767/basic_gait_review.html)；[逐段整理报告](BASIC_GAIT_REVIEW.md)。默认先显示 58 个近水平地面运动候选，共 264 秒；另有 121.700 秒坡面/起伏运动候选。站立等待、障碍上下文、非基础步态或无效控制分别列出，所有分组互斥覆盖新 17 段。
+
+点击片段后，起止时间直接带入人工表单；每段不超过 16 秒，加前后各 2 秒仍可完整加载精细回放。先确认地形形状，再确认表面材质。例如草地坡面应选“坡面 + 草地”，不能把草地自动理解成平地。材质看不出来时保留不确定。选择“保留为参考候选”或“排除该区间”，再点击“确认并保存”。这些选择不等于已满足训练质量要求。
+
+新增字段为 `surface_type`（unknown/hard/grass/gravel/mixed）和 `reference_use`（pending/candidate/exclude）；旧标注读取时使用 unknown/pending。地形新增 slope/uneven，动作新增 locomote/start_stop；原人工日志保持兼容，拆分后参考用途重置为待判断。
+
+人工保存后，从项目根目录重跑下面命令更新筛选页。脚本复用 decoded 缓存，不修改原始录制、原自动索引或人工日志；点云中的地面形状是局部平面假设，不会自动推断草地材质，也没有生成世界轨迹或训练数据包。
+
+```powershell
+python -s -B artifacts/s10-recording-review-20260909/organize_basic_gait.py
+python -s -B artifacts/s10-recording-review-20260909/organize_basic_gait.py --selfcheck
+```
+
+需要 NumPy 和 Matplotlib；可改用第 7 节已安装这些依赖的 Python 环境。生成 `basic_gait_clips.json`、`basic_gait_windows.json`、`basic_gait_summary.json`、`basic_gait_review.html`、`BASIC_GAIT_REVIEW.md` 及 previews 下每段的筛查图。原始时间范围及精确源纳秒保留在索引中，后续可用于参考数组导出。
+
+## 基础步态平面匹配（2026-09-10）
+
+[匹配对照区](http://127.0.0.1:8767/basic_flat_match/index.html) 提供 5 段、34 秒实录与 Isaac 自由动力学的对照视频和误差曲线。每段可以跳回原始关节/点云复核。视频左侧固定机身 XYZ，只更新实录 q/IMU 姿态；右侧是 Isaac 日志，两侧都由 MuJoCo 渲染，不能把左侧当成恢复的世界轨迹。
+
+最终静态平板测试中，前进、后退和另一条直行未摔倒，转向与侧向侧翻。“没有摔倒”与“动作匹配”仍须分开判断。继续在原复核表单中确认地形、材质、动作结果与参考用途；仿真结果不会自动写入人工确认。参考字段、复现命令和 RL 软奖励示例见 [基础步态平面匹配方法](../../docs/S10_BASIC_FLAT_MATCHING_ZH.md)。

@@ -1,0 +1,57 @@
+{
+  "id": "151220_U1",
+  "recording": "151220",
+  "source_recording_id": "gait_20260909_151220_d3ace6be729a",
+  "start": 7.0,
+  "end": 10.0,
+  "peak": 9.25,
+  "height": 0.38,
+  "mode": "up",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action",
+  "parent_end": 13.3,
+  "previous_ascent_end": 13.3,
+  "sample_count": 601,
+  "source_rule": {
+    "max_wheel_height_spread_m": 0.045,
+    "max_abs_pitch_roll_deg": 10.0,
+    "min_level_duration_s": 0.2,
+    "max_level_tail_s": 0.5,
+    "after_peak_s": 0.3
+  },
+  "window": {
+    "level_start_s": 9.72,
+    "level_run_end_s": 10.0,
+    "end_s": 10.0,
+    "next_out_of_window_s": 10.02,
+    "retained_level_duration_s": 0.28,
+    "end_pitch_deg": -2.168075757462723,
+    "end_roll_deg": -4.684301078185634,
+    "end_wheel_height_spread_m": 0.03930412699816477
+  },
+  "crop_reason": "First near-level recorded joint/IMU phase, before later motion; robot-length platform reported by user",
+  "removed_source_interval_s": [
+    10.005,
+    13.3
+  ],
+  "terminal_wheel_velocity_rad_s": [
+    -19.247955110713463,
+    -8.115329492090378,
+    -5.087829377759755,
+    -8.384616828809587
+  ],
+  "terminal_behavior": "End reference/episode at end; terminal feedback is not a zero-velocity standing command",
+  "platform_depth_m": null,
+  "platform_width_m": null,
+  "dimensions_status": "User reports platform just fits robot and grass beyond; numerical depth not measured",
+  "source_contact_status": "FK near-level candidate, not measured world contact",
+  "human_review": "candidate_not_confirmed",
+  "training_ready": false,
+  "cropped_reference_dynamics_executed": false,
+  "isaac_sim_executed": false,
+  "previous_simulation": {
+    "platform_depth_m": 3.0,
+    "up_completed_source_s": 10.121,
+    "status": "Historical long-platform result; not validation of this crop"
+  }
+}

@@ -8,7 +8,7 @@
 #
 #   scripts/run_race.sh                       # default course and tuning
 #   scripts/run_race.sh --headless            # no viewer, for batch evaluation
-#   scripts/run_race.sh --manual              # terminal-focused WASD control
+#   scripts/run_race.sh --manual              # terminal or focused MuJoCo WASD
 #   S10_MUJOCO_XML=/path/model.xml scripts/run_race.sh
 
 set -euo pipefail
@@ -17,6 +17,13 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-1}"
 export GALLIUM_DRIVER="${GALLIUM_DRIVER:-d3d12}"
 export MESA_D3D12_DEFAULT_ADAPTER_NAME="${MESA_D3D12_DEFAULT_ADAPTER_NAME:-NVIDIA}"
+export S10_SECOND_POLICY_PATH="${S10_SECOND_POLICY_PATH:-${REPO_ROOT}/policies/s10_stairs_stable_up_57d_model499.onnx}"
+export S10_DOWN_POLICY_PATH="${S10_DOWN_POLICY_PATH:-${REPO_ROOT}/policies/stable_down_compare/model300.onnx}"
+export S10_SPEEDTURN_POLICY_PATH="${S10_SPEEDTURN_POLICY_PATH:-${REPO_ROOT}/policies/speedturn_sweep/model_2000.onnx}"
+
+for policy in "${S10_SECOND_POLICY_PATH}" "${S10_DOWN_POLICY_PATH}" "${S10_SPEEDTURN_POLICY_PATH}"; do
+  [[ -f "${policy}" ]] || { echo "error: policy not found: ${policy}" >&2; exit 1; }
+done
 
 if [[ ! -f "${REPO_ROOT}/install/setup.bash" ]]; then
   echo "error: workspace not built. Run scripts/build.sh first." >&2
@@ -69,8 +76,10 @@ if [[ "${MANUAL}" == true ]]; then
   fi
 
   export S10_USE_PERCEPTION=0
-  echo "==> Starting manual control (keep this terminal focused)"
-  echo "    Z: stand  C: RL  WASD/QE: move  V/M: obstacle  H: flat high speed  0: reset"
+  echo "==> Starting manual control"
+  echo "    Focus the terminal or MuJoCo: Z/C, WASD/QE, V/M, H, P/L, 0"
+  echo "    Obstacle tuning: 7 slower, 8 faster (1 rad/s per press)"
+  echo "    MuJoCo viewer: Ctrl+Q or close the window to exit"
   (
     sleep 2
     echo "==> Starting headless simulator"
