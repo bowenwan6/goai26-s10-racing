@@ -1,0 +1,58 @@
+{
+  "recording_id": "gait_20260909_151135_f45a816f4062",
+  "start_s": 9.0,
+  "end_s": 15.5,
+  "height_m": 0.38,
+  "height_source": "manifest.parameters.height_cm; visible wall is not a complete independent height measurement",
+  "edge_horizontal_distance_m": 0.5145302072651567,
+  "edge_normal_xy": [
+    0.9996711945217018,
+    0.02564181825755939
+  ],
+  "edge_yaw_deg": 1.4693290098726315,
+  "front_wheel_outer_gap_m": 0.15509548322111755,
+  "initial_base_position_m": [
+    0.0,
+    0.0,
+    0.4314591938912153
+  ],
+  "initial_base_quaternion_wxyz": [
+    0.9998093139944471,
+    0.00907569192152807,
+    -0.0172899633697391,
+    0.0001569483087243695
+  ],
+  "joint_names": [
+    "fl_hipx_joint",
+    "fl_hipy_joint",
+    "fl_knee_joint",
+    "fl_wheel_joint",
+    "fr_hipx_joint",
+    "fr_hipy_joint",
+    "fr_knee_joint",
+    "fr_wheel_joint",
+    "hl_hipx_joint",
+    "hl_hipy_joint",
+    "hl_knee_joint",
+    "hl_wheel_joint",
+    "hr_hipx_joint",
+    "hr_hipy_joint",
+    "hr_knee_joint",
+    "hr_wheel_joint"
+  ],
+  "platform_depth_m": 3.0,
+  "platform_width_m": 2.0,
+  "assumed_geometry": "3m depth/2m width are sufficient-size test geometry, not measured dimensions",
+  "coordinates": "X forward at clip start; Z up; origin is initial base projected to floor; initial yaw removed",
+  "point_frame": "declared base_link; no extra transform applied; physical lidar and IMU extrinsics unverified",
+  "initial_z_method": "SDK kinematics puts lowest wheel 2mm above floor; lidar floor fit recorded separately",
+  "lidar_initial_base_height_m": 0.3999476876538502,
+  "point_plane_residual_m": 0.008682643240421326,
+  "reference_kind": "measured joint state, NOT original controller action; no reconstructed root translation",
+  "max_reference_joint_limit_excess_rad": 0.0005816088014105603,
+  "isaac_sim_executed": false,
+  "nominal_lidar_edge_distance_m": 0.5745302072651568,
+  "simulation_distance_correction_m": -0.06,
+  "action_delay_s": 0.0,
+  "correction_status": "Fitted simulation offset, NOT a verified real sensor calibration"
+}

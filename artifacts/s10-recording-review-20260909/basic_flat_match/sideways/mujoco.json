@@ -1,0 +1,40 @@
+{
+  "engine": "mujoco",
+  "duration_s": 6.0,
+  "free_base": true,
+  "leg_rmse_deg": 3.262230740056141,
+  "wheel_speed_rmse_rad_s": 0.9959317914972543,
+  "gravity_error_rms_deg": 4.643969323984987,
+  "orientation_error_rms_deg": 18.18016984759349,
+  "tilt_max_deg": 11.197544425668191,
+  "root_height_min_m": 0.36933072906141196,
+  "simulated_displacement_xyz_m": [
+    -0.26601639694307205,
+    1.9490849190176875,
+    0.004555227418226615
+  ],
+  "fell": false,
+  "saturation_fraction_per_joint": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "training_ready": false,
+  "nonwheel_contact_steps": 0,
+  "engine_version": "3.11.0",
+  "physics_dt_s": 0.001,
+  "controller_dt_s": 0.001
+}

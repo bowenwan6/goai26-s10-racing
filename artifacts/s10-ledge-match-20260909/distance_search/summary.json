@@ -1,0 +1,219 @@
+{
+  "trials": 77,
+  "successes": 22,
+  "baseline": {
+    "backend": "MuJoCo, not Isaac Sim",
+    "free_dynamics": true,
+    "reached_top": false,
+    "all_wheels_cleared": false,
+    "first_tilt_over_60_source_s": 13.561,
+    "final_base_position_m": [
+      -0.012235467071308596,
+      -0.837821712375468,
+      0.16644778022811996
+    ],
+    "leg_tracking_rmse_deg": 2.7030309937321286,
+    "actuator_saturation_fraction": 2.8846153846153845e-05,
+    "first_contacts_source_s": {
+      "base_link_face": 12.181,
+      "fl_wheel_face": 12.360999999999999,
+      "base_link_top": 12.860999999999999,
+      "fr_knee_top": 12.860999999999999,
+      "fr_wheel_top": 12.860999999999999,
+      "fl_wheel_top": 13.241,
+      "fr_wheel_face": 13.281
+    },
+    "frames_with_ledge_contact": 33,
+    "kp_leg": 80,
+    "kd_leg": 2,
+    "kd_wheel": 0.6,
+    "offset_m": 0.0,
+    "delay_s": 0.0,
+    "initial_base_to_edge_m": 0.5745302072651568,
+    "approach_distance_rmse_m": 0.01820953587657475,
+    "ascent_orientation_rmse_deg": 50.78687096212972,
+    "score": 54.42877813744467
+  },
+  "selected": {
+    "backend": "MuJoCo, not Isaac Sim",
+    "free_dynamics": true,
+    "reached_top": true,
+    "all_wheels_cleared": true,
+    "first_tilt_over_60_source_s": null,
+    "final_base_position_m": [
+      0.8759974707252373,
+      -0.13248986696336496,
+      0.7296039262718341
+    ],
+    "leg_tracking_rmse_deg": 2.899556636623226,
+    "actuator_saturation_fraction": 0.0,
+    "first_contacts_source_s": {
+      "fl_hipx_face": 12.121,
+      "fl_wheel_face": 12.141,
+      "fr_wheel_face": 12.161,
+      "fr_knee_top": 12.841,
+      "fr_wheel_top": 12.841,
+      "fl_wheel_top": 13.220999999999998,
+      "hl_wheel_top": 13.481,
+      "hr_wheel_top": 13.481
+    },
+    "frames_with_ledge_contact": 156,
+    "kp_leg": 80,
+    "kd_leg": 2,
+    "kd_wheel": 0.6,
+    "offset_m": -0.06,
+    "delay_s": 0.0,
+    "initial_base_to_edge_m": 0.5145302072651567,
+    "approach_distance_rmse_m": 0.06985233693088616,
+    "ascent_orientation_rmse_deg": 11.820520750119298,
+    "score": 25.79098813629653
+  },
+  "best_distance_only": {
+    "backend": "MuJoCo, not Isaac Sim",
+    "free_dynamics": true,
+    "reached_top": true,
+    "all_wheels_cleared": true,
+    "first_tilt_over_60_source_s": null,
+    "final_base_position_m": [
+      0.8759974707252373,
+      -0.13248986696336496,
+      0.7296039262718341
+    ],
+    "leg_tracking_rmse_deg": 2.899556636623226,
+    "actuator_saturation_fraction": 0.0,
+    "first_contacts_source_s": {
+      "fl_hipx_face": 12.121,
+      "fl_wheel_face": 12.141,
+      "fr_wheel_face": 12.161,
+      "fr_knee_top": 12.841,
+      "fr_wheel_top": 12.841,
+      "fl_wheel_top": 13.220999999999998,
+      "hl_wheel_top": 13.481,
+      "hr_wheel_top": 13.481
+    },
+    "frames_with_ledge_contact": 156,
+    "kp_leg": 80,
+    "kd_leg": 2,
+    "kd_wheel": 0.6,
+    "offset_m": -0.06,
+    "delay_s": 0.0,
+    "initial_base_to_edge_m": 0.5145302072651567,
+    "approach_distance_rmse_m": 0.06985233693088616,
+    "ascent_orientation_rmse_deg": 11.820520750119298,
+    "score": 25.79098813629653
+  },
+  "successful_parameters": [
+    {
+      "offset_m": -0.15,
+      "delay_s": -0.3,
+      "approach_distance_rmse_m": 0.17077304074477986
+    },
+    {
+      "offset_m": -0.15,
+      "delay_s": -0.2,
+      "approach_distance_rmse_m": 0.16540598453321306
+    },
+    {
+      "offset_m": -0.15,
+      "delay_s": -0.1,
+      "approach_distance_rmse_m": 0.1606211359226894
+    },
+    {
+      "offset_m": -0.15,
+      "delay_s": 0.0,
+      "approach_distance_rmse_m": 0.15662035579210254
+    },
+    {
+      "offset_m": -0.15,
+      "delay_s": 0.09999999999999998,
+      "approach_distance_rmse_m": 0.15367895709559257
+    },
+    {
+      "offset_m": -0.15,
+      "delay_s": 0.19999999999999996,
+      "approach_distance_rmse_m": 0.15217657165781356
+    },
+    {
+      "offset_m": -0.15,
+      "delay_s": 0.3,
+      "approach_distance_rmse_m": 0.15191702146648095
+    },
+    {
+      "offset_m": -0.12,
+      "delay_s": -0.3,
+      "approach_distance_rmse_m": 0.1453409048646344
+    },
+    {
+      "offset_m": -0.12,
+      "delay_s": -0.2,
+      "approach_distance_rmse_m": 0.13864757972038766
+    },
+    {
+      "offset_m": -0.12,
+      "delay_s": -0.1,
+      "approach_distance_rmse_m": 0.13271147809130324
+    },
+    {
+      "offset_m": -0.12,
+      "delay_s": 0.0,
+      "approach_distance_rmse_m": 0.12792190700067585
+    },
+    {
+      "offset_m": -0.12,
+      "delay_s": 0.09999999999999998,
+      "approach_distance_rmse_m": 0.12481206884200212
+    },
+    {
+      "offset_m": -0.12,
+      "delay_s": 0.19999999999999996,
+      "approach_distance_rmse_m": 0.1238599244224177
+    },
+    {
+      "offset_m": -0.12,
+      "delay_s": 0.3,
+      "approach_distance_rmse_m": 0.12422321625007078
+    },
+    {
+      "offset_m": -0.09,
+      "delay_s": -0.3,
+      "approach_distance_rmse_m": 0.11944625902621957
+    },
+    {
+      "offset_m": -0.09,
+      "delay_s": -0.2,
+      "approach_distance_rmse_m": 0.1112045415911896
+    },
+    {
+      "offset_m": -0.09,
+      "delay_s": -0.1,
+      "approach_distance_rmse_m": 0.10405504043791244
+    },
+    {
+      "offset_m": -0.09,
+      "delay_s": 0.0,
+      "approach_distance_rmse_m": 0.09875721826394508
+    },
+    {
+      "offset_m": -0.09,
+      "delay_s": 0.09999999999999998,
+      "approach_distance_rmse_m": 0.09633140577937166
+    },
+    {
+      "offset_m": -0.09,
+      "delay_s": 0.19999999999999996,
+      "approach_distance_rmse_m": 0.09617892036743358
+    },
+    {
+      "offset_m": -0.09,
+      "delay_s": 0.3,
+      "approach_distance_rmse_m": 0.09789807709948371
+    },
+    {
+      "offset_m": -0.06,
+      "delay_s": 0.0,
+      "approach_distance_rmse_m": 0.06985233693088616
+    }
+  ],
+  "ranges": "distance -15..+15 cm in 3cm steps; action delay -0.3..+0.3s in 0.1s steps; +delay means later action",
+  "selection": "Success first, then ascent orientation RMSE + 200*approach distance RMSE; result does not validate calibration"
+}

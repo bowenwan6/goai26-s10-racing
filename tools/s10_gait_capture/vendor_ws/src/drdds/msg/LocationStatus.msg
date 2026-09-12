@@ -1,0 +1,2 @@
+MetaType meta
+LocationStatusValue data

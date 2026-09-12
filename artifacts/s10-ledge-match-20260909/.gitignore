@@ -1,0 +1,7 @@
+*
+!*/
+!.gitignore
+!*.py
+!*.md
+!*.json
+motion_data.json

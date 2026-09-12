@@ -1,0 +1,22 @@
+{
+  "id": "150705_C1",
+  "recording": "150705",
+  "start": 5.0,
+  "end": 12.35,
+  "mode": "up",
+  "peak": 11.25,
+  "height": 0.32,
+  "evidence": "上台后后方低地；14秒附近轮速反向，前方立面重新出现。12.95秒正俯仰是连续动作内回摆，未单独标为前进下台。起点提前到5秒，避免9秒附近真实台缘被遮挡而误配台上物体。",
+  "source_recording_id": "gait_20260909_150705_4fe2b5f8eebd",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action",
+  "parent_mode": "cycle",
+  "parent_end": 18.5,
+  "crop_reason": "Recorded first level phase before subsequent body adjustment/reverse motion",
+  "controller": {
+    "kp_leg": 80.0,
+    "kd_leg": 2.0,
+    "kd_wheel": 0.6
+  }
+}
