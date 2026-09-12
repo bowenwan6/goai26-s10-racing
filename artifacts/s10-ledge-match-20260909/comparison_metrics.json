@@ -1,0 +1,7 @@
+{
+  "source_time_s": 12.200999999999999,
+  "lidar_distance_m": 0.3000662861456444,
+  "simulated_distance_m": 0.3033315878425065,
+  "approach_distance_rmse_m": 0.01820953587657475,
+  "approach_distance_abs_error_p95_m": 0.027382603972562897
+}

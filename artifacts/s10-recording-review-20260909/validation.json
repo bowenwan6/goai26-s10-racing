@@ -1,0 +1,31 @@
+{
+  "recordings": 17,
+  "duration_s": 1251.9029410120008,
+  "passage_groups": 31,
+  "segments": 393,
+  "questions": 56,
+  "checks": [
+    "nearest sample boundary cases",
+    "identity quaternion",
+    "complete non-overlapping segment coverage",
+    "no manifest outcome propagation",
+    "all human review pending",
+    "all generated JSON finite"
+  ],
+  "source_access": "SQLite mode=ro; prior verified.json reused; no source file writes or hashes",
+  "candidate_passages": 27,
+  "context_blocks": 4,
+  "static_previews": 34,
+  "browser_checks": [
+    "index and recording pages load",
+    "timeline jump and +0.5s",
+    "source/receive mode switching",
+    "playback advances 50.00 to 51.65 seconds",
+    "72s of 150921 hides stale clouds, joints, IMU and control",
+    "fixed-base 17-body skeleton visible"
+  ],
+  "browser_evidence": [
+    "../../output/playwright/s10-review-joints-checked.png",
+    "../../output/playwright/s10-review-gap.png"
+  ]
+}

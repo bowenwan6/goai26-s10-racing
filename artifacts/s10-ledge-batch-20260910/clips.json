@@ -1,0 +1,14 @@
+[
+ {"id":"150146_C1","recording":"150146","start":10.5,"end":18.5,"mode":"cycle","peak":12.85,"reverse_start":14.4,"reverse_peak":15.9,"height":0.30,"evidence":"上台后前方台面、后方低地；随后轮速反向，前方立面重新出现。"},
+ {"id":"150146_U2","recording":"150146","start":25.0,"end":30.5,"mode":"up","peak":27.55,"height":0.30,"evidence":"前方立面变台面，后方低地；上台候选。"},
+ {"id":"150146_D1","recording":"150146","start":42.5,"end":47.5,"mode":"down","peak":45.0,"height":0.30,"evidence":"前方高地末端与低地同时可见，正俯仰后身后出现立面；前进下台。"},
+ {"id":"150146_U3","recording":"150146","start":67.8,"end":72.0,"mode":"up","peak":69.8,"height":0.30,"evidence":"前方立面变台面，后方低地；上台候选。"},
+ {"id":"150146_D2","recording":"150146","start":86.5,"end":92.0,"mode":"down","peak":89.15,"height":0.30,"evidence":"前方高地结束与低地可见，越沿后身后出现立面；前进下台。"},
+ {"id":"150146_U4","recording":"150146","start":104.0,"end":110.0,"mode":"up","peak":106.2,"height":0.30,"evidence":"前方立面变台面，后方地面降低；上台候选。"},
+ {"id":"150705_C1","recording":"150705","start":5.0,"end":18.5,"mode":"cycle","peak":11.25,"reverse_start":13.6,"reverse_peak":14.35,"height":0.32,"evidence":"上台后后方低地；14秒附近轮速反向，前方立面重新出现。12.95秒正俯仰是连续动作内回摆，未单独标为前进下台。起点提前到5秒，避免9秒附近真实台缘被遮挡而误配台上物体。"},
+ {"id":"150705_C2","recording":"150705","start":26.0,"end":37.0,"mode":"cycle","peak":28.65,"reverse_start":32.5,"reverse_peak":34.25,"height":0.32,"evidence":"上台后后方低地；随后倒退，前方立面重新出现。30.15秒正俯仰保留在上台/台上调整阶段。"},
+ {"id":"150705_C3","recording":"150705","start":39.0,"end":45.0,"mode":"cycle","peak":41.0,"reverse_start":42.15,"reverse_peak":43.05,"height":0.32,"evidence":"上台后短暂回摆，随后原立面重新出现在前方；连续上台/退回候选。"},
+ {"id":"150705_C4","recording":"150705","start":62.0,"end":85.0,"mode":"cycle","peak":64.35,"reverse_start":80.5,"reverse_peak":82.2,"height":0.32,"evidence":"上台后长等待保留；82秒轮速反向、后方地面回升、前方立面重现，倒退下台。"},
+ {"id":"150921_C1","recording":"150921","start":9.0,"end":16.8,"mode":"cycle","peak":11.05,"reverse_start":15.3,"reverse_peak":16.5,"height":0.38,"reference_outcome":"interrupted","evidence":"先上台，后倒退/失稳；16.813秒控制退出，后续摔倒/恢复不作为受控专家动作回放。"},
+ {"id":"151220_U1","recording":"151220","start":7.0,"end":13.3,"mode":"up","peak":9.25,"height":0.38,"reference_outcome":"end_uncertain","evidence":"上台姿态明确，前方转为台面、后方低地；末尾仍倾斜，录制结束前是否完整通过未人工确认。"}
+]

@@ -1,0 +1,16 @@
+{
+  "final_10_frame_wheel_contact_counts": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "check": "Recomputed contacts from selected qpos, distance <= 3 mm; supports are floor or matched_ledge",
+  "all_final_frames_have_at_least_two_wheels_in_contact": true
+}

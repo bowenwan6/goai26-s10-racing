@@ -1,0 +1,14 @@
+{
+  "soft_reference_trials": [
+    "forward",
+    "backward",
+    "second_recording"
+  ],
+  "diagnostic_only": [
+    "turn",
+    "sideways"
+  ],
+  "human_confirmation": "pending",
+  "rl_training_performed": false,
+  "note": "Use explicit clip names, not a glob over all reference.npz. Trial selection is not training certification."
+}

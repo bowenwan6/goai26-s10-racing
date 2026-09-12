@@ -1,0 +1,16 @@
+{
+  "id": "150705_C2",
+  "recording": "150705",
+  "start": 26.0,
+  "end": 37.0,
+  "mode": "cycle",
+  "peak": 28.65,
+  "reverse_start": 32.5,
+  "reverse_peak": 34.25,
+  "height": 0.32,
+  "evidence": "上台后后方低地；随后倒退，前方立面重新出现。30.15秒正俯仰保留在上台/台上调整阶段。",
+  "source_recording_id": "gait_20260909_150705_4fe2b5f8eebd",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action"
+}

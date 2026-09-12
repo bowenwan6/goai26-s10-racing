@@ -1,0 +1,14 @@
+{
+  "model": "x=edge+k*depth+slope*y+curvature*y^2 (local quadratic arc)",
+  "edge_m": 0.4550633871896,
+  "depth_m": 0.5697571121341319,
+  "slope": 0.01673670010847858,
+  "curvature_per_m": 0.048379992160177514,
+  "approximate_radius_m": 10.334850785932112,
+  "lateral_extent_m": 2.5,
+  "points": 415,
+  "curved_p90_m": 0.038715576317091493,
+  "straight_p90_m": 0.1052554375402556,
+  "curved_median_m": 0.01504373306368123,
+  "straight_median_m": 0.044514284483971434
+}

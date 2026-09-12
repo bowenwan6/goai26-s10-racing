@@ -1,0 +1,16 @@
+{
+  "id": "150705_C4",
+  "recording": "150705",
+  "start": 62.0,
+  "end": 85.0,
+  "mode": "cycle",
+  "peak": 64.35,
+  "reverse_start": 80.5,
+  "reverse_peak": 82.2,
+  "height": 0.32,
+  "evidence": "上台后长等待保留；82秒轮速反向、后方地面回升、前方立面重现，倒退下台。",
+  "source_recording_id": "gait_20260909_150705_4fe2b5f8eebd",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action"
+}
