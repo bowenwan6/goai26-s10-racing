@@ -1,0 +1,150 @@
+{
+  "format": "s10-gated-residual-front-tuck-v1.5",
+  "source_repository": "https://github.com/belsun/goai-s10-gate16-policy",
+  "source_commit": "216b77affa550359e73f4e71944d2853c64959ef",
+  "asset_bundle_commit": "b6535a48bf3d72f3ab2f3e37f8b555eb15aa3e64",
+  "observation_dim": 174,
+  "action_dim": 16,
+  "base_onnx": "policy.onnx",
+  "residual_onnx": "climb_residual.onnx",
+  "base_sha256": "5c1b388f951b282693b4497cd4fd2fd1b53fe1bcd989758c0af42f140a20fb16",
+  "residual_sha256": "de61441facb21f0301787b26f168f8447fdc0d83c337eeea884537bbf2468889",
+  "base_checkpoint": "/home/bella/goai/goai26-s10-racing/training/assets/s10_29cm_stable.pt",
+  "residual_checkpoint": "/home/bella/goai/goai26-s10-racing/training/runs/gate16_rear_push_final_20260817/checkpoint/speed_core_best_checkpoint.pt",
+  "correction_scale": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    6.0,
+    6.0,
+    6.0,
+    6.0
+  ],
+  "correction_limit": 4.0,
+  "action_guard": [
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0
+  ],
+  "skill_gate": {
+    "enter_step_height": 0.04,
+    "exit_step_height": 0.02,
+    "enter_frames": 2,
+    "exit_frames": 15,
+    "min_active_frames": 100,
+    "max_active_frames": 600,
+    "first_boundary_row": 4,
+    "last_boundary_row": 8,
+    "first_retention_row": 0,
+    "last_retention_row": 8,
+    "first_column": 2,
+    "last_column": 6
+  },
+  "numeric_max_abs_error": {
+    "base": 3.814697265625e-06,
+    "residual": 4.76837158203125e-06
+  },
+  "front_tuck_command_profile": {
+    "file": "front_tuck_command_profiles.json",
+    "sha256": "78bbb7f04add5be5616cc04665bb632c1fa76410c73fede9d19d1aa80c937686",
+    "selection_inputs": [
+      "entry_forward_speed_mps",
+      "entry_yaw_deg"
+    ],
+    "phase_inputs": [
+      "both_front_wheels_supported",
+      "front_tuck_m"
+    ],
+    "execution_owner": "gate16_policy_runner",
+    "runner_applies_profile": true,
+    "unmatched_behavior": "use frozen release policy without the fast adapter",
+    "front_wheel_forward_sign": "negative"
+  },
+  "policy_symmetry": {
+    "mode": "disabled_by_v1_5_fast_adapter",
+    "yaw_bands_deg": [
+      [
+        -27.5,
+        -22.5
+      ],
+      [
+        -7.5,
+        7.5
+      ],
+      [
+        17.5,
+        90.0
+      ]
+    ],
+    "onnx_graphs_unchanged": true
+  },
+  "full_stack_runtime": {
+    "residual_engage_edge_distance_m": 0.7,
+    "front_support_edge_distance_m": 0.4,
+    "front_support_confirm_policy_steps": 3,
+    "supported_front_tuck_action_delta": [0.075, -0.15],
+    "aggressive_supported_forward_floor_mps": 0.25,
+    "supported_policy_frame_yaw_bias_rps": 0.0,
+    "rear_push_hold_policy_steps": 45,
+    "rear_push_hold_on_each_side": false,
+    "fallback_max_forward_mps": 0.15,
+    "confidence_gated_fast_adapter": {
+      "enabled": true,
+      "min_edge_heading_samples": 4,
+      "min_edge_heading_peak_step_m": 0.2,
+      "max_abs_entry_yaw_deg": 8.0,
+      "min_entry_speed_mps": 0.18,
+      "max_entry_speed_mps": 0.28,
+      "max_side_edge_skew_m": 0.2,
+      "allow_policy_mirroring": false
+    },
+    "competition_navigation": {
+      "gate16_fast_handoff_forward_mps": 0.25,
+      "gate16_fallback_handoff_forward_mps": 0.15,
+      "max_forward_mps": 0.7,
+      "climb_exit_forward_mps": 0.5,
+      "climb_exit_duration_s": 0.8
+    }
+  },
+  "racing_integration": {
+    "canonical_handoff_source": "216b77affa550359e73f4e71944d2853c64959ef",
+    "entry_distance_m": [0.60, 0.65],
+    "entry_speed_mps": [0.23, 0.27],
+    "entry_heading_abs_max_deg": 5.0,
+    "entry_heading_source": "calibrated base yaw relative to measured Gate16 +X normal",
+    "fallback_entry_distance_m": [0.62, 0.70],
+    "fallback_entry_speed_mps": [0.08, 0.20],
+    "fallback_target_command_mps": 0.18,
+    "fallback_low_level_forward_cap_mps": 0.15,
+    "fallback_owner_request": "gate16_climb_fallback",
+    "fallback_mode_precedence": "a router-selected stable fallback cannot be upgraded by low-level heightmap confidence",
+    "competition_fast_adapter_enabled": false,
+    "base_owner_prewarms_before_residual": false,
+    "shadow_condition": "evaluate the unarmed Gate16 base from APPROACH at 3.0 m while official remains sole actuator owner",
+    "prewarm_condition": "shadow-evaluate until the router selects and proves either the fast or stable-fallback entry envelope",
+    "residual_arm_request": "gate16_climb after CLIMB_READY; the runner confidence-gates the contact adapter and immediately enables the release residual on fallback",
+    "safe_hold_location": "aligned staging point, nominally 0.90 m before the lip"
+  }
+}

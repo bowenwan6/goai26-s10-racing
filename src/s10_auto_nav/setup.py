@@ -20,6 +20,9 @@ setup(
     entry_points={
         "console_scripts": [
             "waypoint_follower = s10_auto_nav.follower_node:main",
+            "strategy_router = s10_auto_nav.strategy_router_node:main",
+            "segment_recorder = s10_auto_nav.segment_recorder:main",
+            "pitfail_recorder = s10_auto_nav.pitfail_recorder:main",
         ],
     },
 )

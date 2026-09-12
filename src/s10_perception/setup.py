@@ -14,7 +14,6 @@ setup(
         ("share/" + package_name + "/mjcf", glob("mjcf/*.xml")),
     ],
     install_requires=["setuptools"],
-    tests_require=["pytest"],
     zip_safe=True,
     maintainer="s10-perception-racing contributors",
     maintainer_email="wang.bowen@icloud.com",
@@ -23,7 +22,7 @@ setup(
     entry_points={
         "console_scripts": [
             "sim_node = s10_perception.sim_node:main",
-            "viewer_node = s10_perception.viewer_node:main",
+            "viz_node = s10_perception.viz_node:main",
         ],
     },
 )

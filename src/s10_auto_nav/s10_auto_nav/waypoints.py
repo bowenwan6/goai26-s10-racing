@@ -7,6 +7,7 @@ YAML from the upstream track overlay.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,22 +29,37 @@ class Course:
     """An ordered waypoint course with progress tracking.
 
     Progress is strictly sequential, mirroring the contest scorer: waypoint ``i + 1``
-    only becomes the target once ``i`` has been reached. The scorer uses a 0.2 m
-    horizontal radius; we advance on a slightly larger radius so the follower commits to
-    the next leg before the scorer's check fires, which avoids braking at every gate.
+    only becomes the target once ``i`` has been reached.
+
+    What counts as reached is the part that had to be rewritten. The official scorer's radius
+    is 0.2 m; this class now uses a stricter 0.18 m internal radius. It once advanced at 0.35 m,
+    on the reasoning that committing to the next leg
+    early avoids braking into every gate. On a straight leg the robot carries on through
+    and scores anyway, which is why it survived so long. On a corner it does not: the
+    carrot swings onto the next leg the instant the cursor moves, and the robot turns away
+    from a gate it was still 0.34 m from. Scored offline against the continuous waypoint 16
+    to 32 run, that cost gates 17 (closest 0.338 m), 21 (0.320 m) and 22 (0.336 m) out of a
+    run that was otherwise navigating them correctly -- three of sixteen, thrown away by the
+    bookkeeping rather than by the driving.
+
+    The cursor now moves only when the current gate is inside ``score_radius``. There is no
+    receding/closest-point or ``advance_radius`` fallback: missing a strict gate must hold the
+    cursor instead of invalidating every later gate. Both shipped radii are 0.18 m, but only
+    the score radius is allowed to consume a waypoint.
     """
 
     def __init__(
-        self, waypoints: list[Waypoint], advance_radius: float = 0.35, start_index: int = 0
+        self,
+        waypoints: list[Waypoint],
+        advance_radius: float = 0.18,
+        score_radius: float = 0.18,
     ) -> None:
         if not waypoints:
             raise ValueError("Course requires at least one waypoint")
-        if not 0 <= start_index < len(waypoints):
-            raise ValueError(f"start_index must be between 0 and {len(waypoints) - 1}")
         self.waypoints = waypoints
         self.advance_radius = float(advance_radius)
-        self._start_index = int(start_index)
-        self._cursor = self._start_index
+        self.score_radius = float(score_radius)
+        self._cursor = 0
 
     @classmethod
     def from_yaml(cls, path: str | Path, **kwargs) -> Course:
@@ -82,35 +98,41 @@ class Course:
         if self.finished:
             return False
         distance = float(np.linalg.norm(self.waypoints[self._cursor].xy - position_xy))
-        if distance <= self.advance_radius:
+        if distance <= self.score_radius:
             self._cursor += 1
             return True
         return False
 
     def lookahead_point(self, position_xy: np.ndarray, distance: float) -> np.ndarray:
-        """Return a carrot point ``distance`` metres along the remaining course.
+        """Return the point ``distance`` metres ahead that the follower should steer at.
 
-        Walking forward along the polyline rather than simply targeting the next waypoint
-        lets the follower cut corners on tight gates instead of stopping to pivot at each
-        one, which is where most of the lap time is otherwise lost.
+        The carrot rides the line from the robot to the current gate and stops there; it
+        never runs onto the next leg. Both looser rules were tried on the real course and
+        both deadlock:
+
+        * Advancing a fixed *arc length* along the whole remaining polyline folds the
+          carrot back on top of the robot at a switchback. Standing 0.69 m past gate 2,
+          the follower spent its 1.4 m walking back to the gate and out the far side, so
+          the carrot sat 0.12 m away, the speed schedule read that as an arrival and
+          braked to 0.06 m/s, and the run never finished.
+        * Taking the point where a circle of radius ``distance`` leaves the polyline fixes
+          the fold-back but rounds corners early: once the gate is closer than the radius
+          the carrot is already on the next leg. Approaching gate 1 that pulled the robot
+          2.1 m west of it, past the 0.35 m advance radius, and it never recovered.
+
+        Cutting the corner is worth real lap time and is worth revisiting, but only with
+        the cut bounded below the scorer's 0.2 m radius. Unbounded, it loses the gate.
         """
         if self.finished:
             return self.waypoints[-1].xy
 
-        remaining = distance
-        cursor = self.waypoints[self._cursor].xy
-        origin = position_xy
+        centre = np.asarray(position_xy, float)
+        gate = self.waypoints[self._cursor].xy
 
-        for wp in self.waypoints[self._cursor :]:
-            leg = wp.xy - origin
-            leg_len = float(np.linalg.norm(leg))
-            if leg_len >= remaining:
-                return origin + leg * (remaining / max(leg_len, 1e-6))
-            remaining -= leg_len
-            origin = wp.xy
-            cursor = wp.xy
-
-        return cursor
+        # Inside the radius there is no crossing: aim at the gate itself and let the
+        # caller brake into it.
+        exit_point = _segment_circle_exit(centre, distance, centre, gate)
+        return gate if exit_point is None else exit_point
 
     def remaining_distance(self, position_xy: np.ndarray) -> float:
         """Straight-line course length still to be covered, for logging and pacing."""
@@ -124,4 +146,33 @@ class Course:
         return total
 
     def reset(self) -> None:
-        self._cursor = self._start_index
+        self._cursor = 0
+
+
+def _segment_circle_exit(
+    centre: np.ndarray, radius: float, start: np.ndarray, end: np.ndarray
+) -> np.ndarray | None:
+    """Point where segment ``start`` -> ``end`` last crosses a circle, or ``None``.
+
+    The far root is taken so a segment that clips through the circle and continues does
+    not stop the search early; the caller wants the point at which the course leaves the
+    robot's lookahead radius for good.
+    """
+    d = np.asarray(end, float) - np.asarray(start, float)
+    f = np.asarray(start, float) - np.asarray(centre, float)
+
+    a = float(d @ d)
+    if a < 1e-12:
+        return None
+
+    b = 2.0 * float(f @ d)
+    c = float(f @ f) - radius * radius
+    discriminant = b * b - 4.0 * a * c
+    if discriminant < 0.0:
+        return None
+
+    root = math.sqrt(discriminant)
+    for t in ((-b + root) / (2.0 * a), (-b - root) / (2.0 * a)):
+        if 0.0 <= t <= 1.0:
+            return np.asarray(start, float) + t * d
+    return None

@@ -3,10 +3,15 @@
 import math
 
 import numpy as np
+import pytest
 
 from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains, wrap_angle
 
 DT = 0.02
+
+#: 27 degrees off the nose: inside the 30-degree pivot threshold, but far enough to one
+#: side that the cross-track term saturates lateral.
+OFFSET_TARGET = np.array([2.0, 1.0])
 
 
 def settled(controller, position, yaw, target, steps=200):
@@ -29,7 +34,7 @@ def test_wrap_angle():
 def test_drives_forward_when_aligned():
     controller = PurePursuitController()
     command = settled(controller, [0.0, 0.0], 0.0, [50.0, 0.0])
-    assert command.forward > 1.0
+    assert command.forward == pytest.approx(PursuitGains.max_forward)
     assert abs(command.yaw_rate) < 1e-3
 
 
@@ -38,6 +43,15 @@ def test_pivots_in_place_when_facing_away():
     command = settled(controller, [0.0, 0.0], 0.0, [-50.0, 0.0])
     assert math.isclose(command.forward, 0.0, abs_tol=1e-6)
     assert abs(command.yaw_rate) > 0.5
+
+
+def test_pivots_in_place_during_a_large_gate_transition():
+    """Do not translate toward an elevated-deck edge while making a sharp turn."""
+    controller = PurePursuitController()
+    command = settled(controller, [0.0, 0.0], 0.0, [1.0, 1.0])
+    assert command.forward == pytest.approx(0.0)
+    assert command.lateral == pytest.approx(0.0)
+    assert command.yaw_rate > 0.5
 
 
 def test_yaw_rate_points_toward_the_target():
@@ -88,8 +102,115 @@ def test_slew_limits_the_first_step():
     assert first.forward <= gains.forward_slew * DT + 1e-9
 
 
+def test_slew_limits_lateral_too():
+    """Lateral was unlimited and could snap to full scale in a single 20 ms step.
+
+    That is an input the policy never saw in training, and it lands hardest where the
+    robot is straddling a ledge: told to move sideways, it scrubs along the edge instead
+    of rolling over it.
+    """
+    gains = PursuitGains(lateral_slew=1.0)
+    controller = PurePursuitController(gains)
+    # Off to one side but still inside the pivot threshold, so the controller actually
+    # asks for lateral. Past that threshold it rotates on the spot and lateral is zero,
+    # which would pass this assertion while testing nothing.
+    first = controller.compute(np.array([0.0, 0.0]), 0.0, OFFSET_TARGET, DT)
+    assert abs(first.lateral) <= gains.lateral_slew * DT + 1e-9
+
+
+def test_lateral_reaches_its_target_over_successive_steps():
+    controller = PurePursuitController(PursuitGains(lateral_slew=2.0))
+    command = settled(controller, [0.0, 0.0], 0.0, OFFSET_TARGET)
+    assert abs(command.lateral) == pytest.approx(controller.gains.max_lateral, abs=1e-6)
+
+
 def test_zero_distance_target_is_safe():
     controller = PurePursuitController()
     command = controller.compute(np.array([1.0, 1.0]), 0.0, np.array([1.0, 1.0]), DT)
     assert command.forward == 0.0
     assert command.yaw_rate == 0.0
+
+
+def test_brake_distance_defaults_to_the_lookahead_it_replaced():
+    """The knob is new; the shipped behaviour is not. Unset, the two must be identical.
+
+    Worth asserting rather than eyeballing, because the default is what races.
+    """
+    unset = PurePursuitController(PursuitGains())
+    explicit = PurePursuitController(PursuitGains(brake_distance=PursuitGains().lookahead))
+    target = np.array([0.6, 0.0])
+    for _ in range(50):
+        a = unset.compute(np.array([0.0, 0.0]), 0.0, target, DT)
+        b = explicit.compute(np.array([0.0, 0.0]), 0.0, target, DT)
+    assert a.as_tuple() == pytest.approx(b.as_tuple())
+
+
+def test_a_shorter_brake_distance_keeps_more_speed_on_the_run_in():
+    """Why the knob exists: three climbs in the segment sweep stalled inside the taper.
+
+    17->18 stopped 0.55 m short of its waypoint with its rear axle on the top riser, still
+    asking to go forward at the 0.275 m/s the taper allowed. Shortening the brake gives the
+    robot its push back without touching how it steers.
+    """
+    gains = PursuitGains()
+    target = np.array([0.6, 0.0])
+    shipped = settled(PurePursuitController(gains), [0.0, 0.0], 0.0, target)
+    braked_late = settled(
+        PurePursuitController(PursuitGains(brake_distance=0.4)), [0.0, 0.0], 0.0, target
+    )
+    assert shipped.forward == pytest.approx(gains.max_forward * 0.6 / gains.lookahead, rel=1e-3)
+    assert braked_late.forward == pytest.approx(gains.max_forward, rel=1e-3)
+
+
+def test_corner_preview_keeps_world_translation_pointed_at_the_current_gate():
+    """Turning the body early must not turn the path away from the strict gate."""
+    controller = PurePursuitController()
+    command = None
+    for _ in range(200):
+        command = controller.compute_corner_preview(
+            np.array([0.0, 0.0]),
+            math.pi / 2,
+            np.array([0.5, 0.0]),
+            np.array([0.5, 2.0]),
+            1.0,
+            0.45,
+            DT,
+        )
+
+    assert command is not None
+    # Facing north while the gate remains east requires a rightward body-frame command.
+    assert abs(command.forward) < 1e-6
+    assert command.lateral < -0.24
+    assert abs(command.yaw_rate) < 1e-6
+
+
+def test_corner_preview_respects_speed_and_slew_limits():
+    gains = PursuitGains(forward_slew=1.0, lateral_slew=1.0, yaw_slew=1.0)
+    controller = PurePursuitController(gains)
+    first = controller.compute_corner_preview(
+        np.array([0.0, 0.0]),
+        0.0,
+        np.array([0.5, 0.0]),
+        np.array([0.5, 2.0]),
+        1.0,
+        0.45,
+        DT,
+    )
+    assert abs(first.forward) <= DT + 1e-9
+    assert abs(first.lateral) <= DT + 1e-9
+    assert abs(first.yaw_rate) <= DT + 1e-9
+
+    settled_command = first
+    for _ in range(200):
+        settled_command = controller.compute_corner_preview(
+            np.array([0.0, 0.0]),
+            0.0,
+            np.array([0.5, 0.0]),
+            np.array([0.5, 2.0]),
+            1.0,
+            0.45,
+            DT,
+        )
+    assert abs(settled_command.forward) <= 0.45 + 1e-9
+    assert abs(settled_command.lateral) <= gains.max_lateral + 1e-9
+    assert abs(settled_command.yaw_rate) <= gains.max_yaw_rate + 1e-9
