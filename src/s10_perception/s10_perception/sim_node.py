@@ -34,7 +34,7 @@ import numpy as np
 import rclpy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Empty, Float32MultiArray, MultiArrayDimension
+from std_msgs.msg import Empty, Float32MultiArray, MultiArrayDimension, UInt8
 
 from s10_perception.heightmap import HeightmapConfig, HeightmapSampler
 from s10_perception.lidar import LidarConfig, RayCastLidar
@@ -47,6 +47,9 @@ _upstream = load_simulator_module()
 PERCEPTION_DECIMATION = 20
 _MANUAL_FRAME = struct.Struct("!4sB16f")
 _MANUAL_MAGIC = b"S10C"
+_KEY_FRAME = struct.Struct("!4sB")
+_KEY_MAGIC = b"S10K"
+_CONTROL_KEYS = frozenset(b"0rzcxvmhplkwasdqe12345678[]")
 _WHEEL_JOINTS = np.array([3, 7, 11, 15])
 
 
@@ -58,6 +61,13 @@ def _decode_manual_control(payload: bytes):
     if magic != _MANUAL_MAGIC or mode not in (0, 1, 2) or not np.isfinite(targets).all():
         return None
     return mode, targets
+
+
+def _decode_key(payload: bytes) -> int | None:
+    if len(payload) != _KEY_FRAME.size:
+        return None
+    magic, key = _KEY_FRAME.unpack(payload)
+    return key if magic == _KEY_MAGIC and key in _CONTROL_KEYS else None
 
 
 def _set_wheel_friction(model, friction: float) -> None:
@@ -113,6 +123,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         self.scan_pub = self.create_publisher(LaserScan, "/scan", 10)
         self.lidar_pub = self.create_publisher(Float32MultiArray, "/perception/lidar", 10)
         self.heightmap_pub = self.create_publisher(Float32MultiArray, "/perception/heightmap", 10)
+        self.key_pub = self.create_publisher(UInt8, "/keyboard/key", 10)
         self.reset_sub = self.create_subscription(Empty, "/sim/reset", self._reset_sim, 1)
 
         manual_port = int(os.environ.get("S10_MANUAL_PORT", "18778"))
@@ -158,7 +169,14 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         yaw = math.radians(float(os.environ["S10_START_YAW_DEG"])) if os.environ.get(
             "S10_START_YAW_DEG"
         ) else path_yaw
-        self.data.qpos[:3] = start + np.array([0.0, 0.0, 0.2])
+        yaw += math.radians(float(os.environ.get("S10_START_YAW_OFFSET_DEG", "0")))
+        forward_offset = float(os.environ.get("S10_START_FORWARD_OFFSET", "0"))
+        lateral_offset = float(os.environ.get("S10_START_LATERAL_OFFSET", "0"))
+        offset_xy = (
+            forward_offset * np.array([math.cos(path_yaw), math.sin(path_yaw)])
+            + lateral_offset * np.array([-math.sin(path_yaw), math.cos(path_yaw)])
+        )
+        self.data.qpos[:3] = start + np.array([offset_xy[0], offset_xy[1], 0.2])
         self.data.qpos[3:7] = (math.cos(yaw / 2), 0.0, 0.0, math.sin(yaw / 2))
         self.data.qvel[:] = 0.0
         mujoco.mj_forward(self.model, self.data)
@@ -190,6 +208,10 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
                 payload = self._manual_socket.recv(_MANUAL_FRAME.size + 1)
             except BlockingIOError:
                 return
+            key = _decode_key(payload)
+            if key is not None:
+                self.key_pub.publish(UInt8(data=key))
+                continue
             command = _decode_manual_control(payload)
             if command is None:
                 continue

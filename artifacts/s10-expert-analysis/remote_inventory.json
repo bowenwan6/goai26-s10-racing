@@ -1,0 +1,2212 @@
+[
+  {
+    "path": "deployment_test/gait_20260906_133215_7ac9013c8d0f",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_133215_7ac9013c8d0f",
+      "terrain": "basic",
+      "parameters": {},
+      "teacher": "vendor feedback; deployment diagnostic",
+      "notes": "Read-only deployment validation. No commanded motion. Not a training demonstration.",
+      "duration_limit_s": 12,
+      "started_wall_ns": 1788672735106443972,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/JOINTS_DATA": {
+          "count": 2406,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.03272499699960463,
+          "last_receive_monotonic": 4623.805836206,
+          "last_source_ns": 1788672747105127527
+        },
+        "/IMU": {
+          "count": 2405,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.03257395699984045,
+          "last_receive_monotonic": 4623.802648654,
+          "last_source_ns": 1788672747093000000
+        },
+        "/MOTION_INFO": {
+          "count": 240,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.06196460999944975,
+          "last_receive_monotonic": 4623.764401395,
+          "last_source_ns": 1788672747063852022
+        },
+        "/rslidar_front/points": {
+          "count": 113,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.20904960200005007,
+          "last_receive_monotonic": 4623.718892216,
+          "last_source_ns": 1788672746900008917
+        },
+        "/rslidar_rear/points": {
+          "count": 114,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.2073829470000419,
+          "last_receive_monotonic": 4623.723323895,
+          "last_source_ns": 1788672746900013924
+        }
+      },
+      "events": [
+        {
+          "label": "obstacle_enter",
+          "receive_wall_ns": 1788672735169950140,
+          "elapsed_s": 0.06356187999972462,
+          "time_basis": "server receipt; not sensor-aligned"
+        }
+      ],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.04094047799935652,
+        "last_feedback": {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788672735063843858,
+          "receive_wall_ns": 1788672735065540166,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788672735063843858,
+          "receive_wall_ns": 1788672735065540166,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "达到录制时限或磁盘剩余空间下限",
+      "stopped_wall_ns": 1788672747110359077,
+      "duration_s": 12.003967681000177,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "deployment_test/gait_20260906_133215_7ac9013c8d0f/manifest.json",
+        "size": 3567,
+        "mtime": 1788672747105375429
+      },
+      {
+        "path": "deployment_test/gait_20260906_133215_7ac9013c8d0f/SHA256SUMS.json",
+        "size": 267,
+        "mtime": 1788672750409375575
+      },
+      {
+        "path": "deployment_test/gait_20260906_133215_7ac9013c8d0f/bag/bag_0.db3",
+        "size": 104448000,
+        "mtime": 1788672747101375430
+      },
+      {
+        "path": "deployment_test/gait_20260906_133215_7ac9013c8d0f/bag/metadata.yaml",
+        "size": 1658,
+        "mtime": 1788672747105375429
+      }
+    ]
+  },
+  {
+    "path": "deployment_test/gait_20260906_133611_a088e9a21bad",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_133611_a088e9a21bad",
+      "terrain": "basic",
+      "parameters": {},
+      "teacher": "vendor feedback; deployment diagnostic",
+      "notes": "Read-only deployment validation. No commanded motion. Not a training demonstration.",
+      "duration_limit_s": 12,
+      "started_wall_ns": 1788672971284009013,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/IMU": {
+          "count": 2403,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.017084287999750813,
+          "last_receive_monotonic": 4859.982852953,
+          "last_source_ns": 1788672983273000000
+        },
+        "/JOINTS_DATA": {
+          "count": 2404,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.018453503999808163,
+          "last_receive_monotonic": 4859.984890714,
+          "last_source_ns": 1788672983284133049
+        },
+        "/MOTION_INFO": {
+          "count": 240,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.055542213000080665,
+          "last_receive_monotonic": 4859.945347383,
+          "last_source_ns": 1788672983243844836
+        },
+        "/STEER": {
+          "count": 120,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.404365561999839,
+          "last_receive_monotonic": 4858.146081323,
+          "last_source_ns": 1788672982997581638
+        },
+        "/HANDLE_STEER": {
+          "count": 120,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.40431906600042566,
+          "last_receive_monotonic": 4858.146503595,
+          "last_source_ns": 1788672982997581638
+        },
+        "/rslidar_front/points": {
+          "count": 119,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.9005182430000787,
+          "last_receive_monotonic": 4859.82036248,
+          "last_source_ns": 1788672983000031233
+        },
+        "/rslidar_rear/points": {
+          "count": 119,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0015641439995306,
+          "last_receive_monotonic": 4859.825570576,
+          "last_source_ns": 1788672983000028133
+        }
+      },
+      "events": [
+        {
+          "label": "obstacle_enter",
+          "receive_wall_ns": 1788672971364500240,
+          "elapsed_s": 0.08051634700041177,
+          "time_basis": "server receipt; not sensor-aligned"
+        }
+      ],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.03781215900016832,
+        "last_feedback": {
+          "gait_code": 4099,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788672971243843089,
+          "receive_wall_ns": 1788672971246220470,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 4099,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788672971243843089,
+          "receive_wall_ns": 1788672971246220470,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "达到录制时限或磁盘剩余空间下限",
+      "stopped_wall_ns": 1788672983289880689,
+      "duration_s": 12.005897628000639,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "deployment_test/gait_20260906_133611_a088e9a21bad/manifest.json",
+        "size": 4151,
+        "mtime": 1788672983285375472
+      },
+      {
+        "path": "deployment_test/gait_20260906_133611_a088e9a21bad/SHA256SUMS.json",
+        "size": 267,
+        "mtime": 1788672986701375532
+      },
+      {
+        "path": "deployment_test/gait_20260906_133611_a088e9a21bad/bag/bag_0.db3",
+        "size": 193830912,
+        "mtime": 1788672983281375472
+      },
+      {
+        "path": "deployment_test/gait_20260906_133611_a088e9a21bad/bag/metadata.yaml",
+        "size": 2083,
+        "mtime": 1788672983285375472
+      }
+    ]
+  },
+  {
+    "path": "gait_20260906_134213_82386e35f7b0",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_134213_82386e35f7b0",
+      "terrain": "basic",
+      "parameters": {},
+      "teacher": "",
+      "notes": "",
+      "duration_limit_s": 120,
+      "started_wall_ns": 1788673333436538395,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/IMU": {
+          "count": 925,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.041445883000051253,
+          "last_receive_monotonic": 5214.747000811,
+          "last_source_ns": 1788673338023000000
+        },
+        "/JOINTS_DATA": {
+          "count": 231,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.04166213799999241,
+          "last_receive_monotonic": 5214.725949226,
+          "last_source_ns": 1788673338024131484
+        },
+        "/MOTION_INFO": {
+          "count": 93,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.07366008600001805,
+          "last_receive_monotonic": 5214.717315017,
+          "last_source_ns": 1788673338015844358
+        },
+        "/rslidar_rear/points": {
+          "count": 47,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.8097158100008528,
+          "last_receive_monotonic": 5214.740680843,
+          "last_source_ns": 1788673337900012255
+        },
+        "/rslidar_front/points": {
+          "count": 47,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0139999400007582,
+          "last_receive_monotonic": 5214.731773066,
+          "last_source_ns": 1788673337900008917
+        }
+      },
+      "events": [],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.06876197499968839,
+        "last_feedback": {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788673333365859099,
+          "receive_wall_ns": 1788673333367824100,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788673333365859099,
+          "receive_wall_ns": 1788673333367824100,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "",
+      "stopped_wall_ns": 1788673338056782563,
+      "duration_s": 4.620388295999874,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "gait_20260906_134213_82386e35f7b0/manifest.json",
+        "size": 3247,
+        "mtime": 1788673338053375459
+      },
+      {
+        "path": "gait_20260906_134213_82386e35f7b0/bag/bag_0.db3",
+        "size": 76976128,
+        "mtime": 1788673338049375459
+      },
+      {
+        "path": "gait_20260906_134213_82386e35f7b0/bag/metadata.yaml",
+        "size": 1650,
+        "mtime": 1788673338049375459
+      }
+    ]
+  },
+  {
+    "path": "gait_20260906_134245_67a76c09d415",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_134245_67a76c09d415",
+      "terrain": "basic",
+      "parameters": {},
+      "teacher": "",
+      "notes": "",
+      "duration_limit_s": 120,
+      "started_wall_ns": 1788673365592813189,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/IMU": {
+          "count": 4729,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.03196200499951374,
+          "last_receive_monotonic": 5265.925648772,
+          "last_source_ns": 1788673389208000000
+        },
+        "/JOINTS_DATA": {
+          "count": 1182,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.04694199099958496,
+          "last_receive_monotonic": 5265.904567464,
+          "last_source_ns": 1788673389204132334
+        },
+        "/MOTION_INFO": {
+          "count": 472,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.07609636399956798,
+          "last_receive_monotonic": 5265.866402705,
+          "last_source_ns": 1788673389165861289
+        },
+        "/rslidar_front/points": {
+          "count": 234,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0085772470001757,
+          "last_receive_monotonic": 5265.626871516,
+          "last_source_ns": 1788673388799910307
+        },
+        "/rslidar_rear/points": {
+          "count": 239,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.9641813339994769,
+          "last_receive_monotonic": 5265.918209957,
+          "last_source_ns": 1788673389100017071
+        },
+        "/HANDLE_STEER": {
+          "count": 206,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.047400106999703,
+          "last_receive_monotonic": 5263.536786246,
+          "last_source_ns": 1788673388402964943
+        },
+        "/STEER": {
+          "count": 206,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0468951150005523,
+          "last_receive_monotonic": 5263.540505928,
+          "last_source_ns": 1788673388402964943
+        }
+      },
+      "events": [],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.024079267000161053,
+        "last_feedback": {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788673365565853293,
+          "receive_wall_ns": 1788673365568779298,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788673365565853293,
+          "receive_wall_ns": 1788673365568779298,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "",
+      "stopped_wall_ns": 1788673389233594170,
+      "duration_s": 23.640816885000277,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "gait_20260906_134245_67a76c09d415/manifest.json",
+        "size": 3821,
+        "mtime": 1788673389229375450
+      },
+      {
+        "path": "gait_20260906_134245_67a76c09d415/bag/bag_0.db3",
+        "size": 391573504,
+        "mtime": 1788673389229375450
+      },
+      {
+        "path": "gait_20260906_134245_67a76c09d415/bag/metadata.yaml",
+        "size": 2083,
+        "mtime": 1788673389229375450
+      }
+    ]
+  },
+  {
+    "path": "gait_20260906_134324_93fa2317c970",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_134324_93fa2317c970",
+      "terrain": "stairs",
+      "parameters": {},
+      "teacher": "",
+      "notes": "",
+      "duration_limit_s": 120,
+      "started_wall_ns": 1788673404229863553,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/IMU": {
+          "count": 6528,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.04838995599948248,
+          "last_receive_monotonic": 5313.5475587,
+          "last_source_ns": 1788673436838000000
+        },
+        "/JOINTS_DATA": {
+          "count": 1632,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.048561667000285524,
+          "last_receive_monotonic": 5313.545612652,
+          "last_source_ns": 1788673436844131038
+        },
+        "/MOTION_INFO": {
+          "count": 653,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.08066972100004932,
+          "last_receive_monotonic": 5313.517122155,
+          "last_source_ns": 1788673436815841702
+        },
+        "/rslidar_front/points": {
+          "count": 320,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.9777590759995292,
+          "last_receive_monotonic": 5312.834721602,
+          "last_source_ns": 1788673436000001907
+        },
+        "/rslidar_rear/points": {
+          "count": 320,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.9966653850005969,
+          "last_receive_monotonic": 5312.818231903,
+          "last_source_ns": 1788673436000019073
+        },
+        "/HANDLE_STEER": {
+          "count": 333,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.48218238200024643,
+          "last_receive_monotonic": 5310.174906649,
+          "last_source_ns": 1788673435449609754
+        },
+        "/STEER": {
+          "count": 333,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.4814662219996535,
+          "last_receive_monotonic": 5310.175611929,
+          "last_source_ns": 1788673435449609754
+        }
+      },
+      "events": [],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.06017911599974468,
+        "last_feedback": {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788673404165845171,
+          "receive_wall_ns": 1788673404169748213,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788673404165845171,
+          "receive_wall_ns": 1788673404169748213,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "",
+      "stopped_wall_ns": 1788673436857340292,
+      "duration_s": 32.62751142700017,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "gait_20260906_134324_93fa2317c970/manifest.json",
+        "size": 3821,
+        "mtime": 1788673436857375428
+      },
+      {
+        "path": "gait_20260906_134324_93fa2317c970/bag/bag_0.db3",
+        "size": 532758528,
+        "mtime": 1788673436849375427
+      },
+      {
+        "path": "gait_20260906_134324_93fa2317c970/bag/metadata.yaml",
+        "size": 2084,
+        "mtime": 1788673436849375427
+      }
+    ]
+  },
+  {
+    "path": "gait_20260906_141606_4ef6a913c02c",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_141606_4ef6a913c02c",
+      "terrain": "ledge",
+      "parameters": {},
+      "teacher": "",
+      "notes": "",
+      "duration_limit_s": 120,
+      "started_wall_ns": 1788675366055533069,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/rslidar_rear/points": {
+          "count": 1200,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0097083319997182,
+          "last_receive_monotonic": 7362.622275438,
+          "last_source_ns": 1788675485800013065
+        },
+        "/IMU": {
+          "count": 24009,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.12061131100017519,
+          "last_receive_monotonic": 7362.757786748,
+          "last_source_ns": 1788675486048000000
+        },
+        "/MOTION_INFO": {
+          "count": 2401,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.13217051200081187,
+          "last_receive_monotonic": 7362.745427908,
+          "last_source_ns": 1788675486029845350
+        },
+        "/SLAM_ODOM": {
+          "count": 1201,
+          "type": "nav_msgs/msg/Odometry",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.20665061700037768,
+          "last_receive_monotonic": 7362.727541838,
+          "last_source_ns": 1788675485949995995
+        },
+        "/rslidar_front/points": {
+          "count": 1201,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0231888839998646,
+          "last_receive_monotonic": 7362.734997418,
+          "last_source_ns": 1788675485900002003
+        },
+        "/JOINTS_DATA": {
+          "count": 120,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0417233600001055,
+          "last_receive_monotonic": 7362.067375514,
+          "last_source_ns": 1788675485365185367
+        },
+        "/GAIT": {
+          "count": 1,
+          "type": "drdds/msg/Gait",
+          "source_stamp_missing": 1,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0,
+          "last_receive_monotonic": 7248.223541853
+        },
+        "/HANDLE_STEER": {
+          "count": 158,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 85.77590904299996,
+          "last_receive_monotonic": 7353.842277388,
+          "last_source_ns": 1788675477198308368
+        },
+        "/STEER": {
+          "count": 158,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 85.77330795500075,
+          "last_receive_monotonic": 7353.845394316,
+          "last_source_ns": 1788675477198308368
+        }
+      },
+      "events": [],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.043350782999368676,
+        "last_feedback": {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788675366009840832,
+          "receive_wall_ns": 1788675366012227694,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788675366009840832,
+          "receive_wall_ns": 1788675366012227694,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [
+        {
+          "gait_code": 4098,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1002",
+          "hint": "0x1002 在指南状态协议表中定义为高台；ROS 表未列出，待实机确认",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788675371529853554,
+          "receive_wall_ns": 1788675371543166035,
+          "synthetic": false,
+          "elapsed_s": 5.487679397999273,
+          "event": "feedback_update"
+        }
+      ],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "达到录制时限或磁盘剩余空间下限",
+      "stopped_wall_ns": 1788675486063632784,
+      "duration_s": 120.00816345899966,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "gait_20260906_141606_4ef6a913c02c/manifest.json",
+        "size": 5013,
+        "mtime": 1788675486057375220
+      },
+      {
+        "path": "gait_20260906_141606_4ef6a913c02c/bag/bag_0.db3",
+        "size": 1303265280,
+        "mtime": 1788675486053375222
+      },
+      {
+        "path": "gait_20260906_141606_4ef6a913c02c/bag/metadata.yaml",
+        "size": 2514,
+        "mtime": 1788675486057375220
+      }
+    ]
+  },
+  {
+    "path": "gait_20260906_143150_2620f4f1e142",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_143150_2620f4f1e142",
+      "terrain": "basic",
+      "parameters": {},
+      "teacher": "",
+      "notes": "",
+      "duration_limit_s": 120,
+      "started_wall_ns": 1788676310925012365,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/IMU": {
+          "count": 19289,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.17913407100058976,
+          "last_receive_monotonic": 8284.048160133,
+          "last_source_ns": 1788676407338000000
+        },
+        "/JOINTS_DATA": {
+          "count": 4822,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.19160511000154656,
+          "last_receive_monotonic": 8284.034590597,
+          "last_source_ns": 1788676407332145503
+        },
+        "/rslidar_front/points": {
+          "count": 963,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.9980403369991109,
+          "last_receive_monotonic": 8283.818780465,
+          "last_source_ns": 1788676407000020027
+        },
+        "/rslidar_rear/points": {
+          "count": 963,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0037349989997892,
+          "last_receive_monotonic": 8283.825527056,
+          "last_source_ns": 1788676407000015974
+        },
+        "/MOTION_INFO": {
+          "count": 1929,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.20613509400027397,
+          "last_receive_monotonic": 8284.030676197,
+          "last_source_ns": 1788676407329841044
+        },
+        "/HANDLE_STEER": {
+          "count": 800,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 7.145924433998516,
+          "last_receive_monotonic": 8283.070866625,
+          "last_source_ns": 1788676407127535432
+        },
+        "/STEER": {
+          "count": 800,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 7.145886929998596,
+          "last_receive_monotonic": 8283.071575681,
+          "last_source_ns": 1788676407127535432
+        },
+        "/GAIT": {
+          "count": 1,
+          "type": "drdds/msg/Gait",
+          "source_stamp_missing": 1,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0,
+          "last_receive_monotonic": 8276.867135022
+        }
+      },
+      "events": [],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.03607568699953845,
+        "last_feedback": {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788676310886840771,
+          "receive_wall_ns": 1788676310888986214,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788676310886840771,
+          "receive_wall_ns": 1788676310888986214,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [
+        {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788676400179849576,
+          "receive_wall_ns": 1788676400182024519,
+          "synthetic": false,
+          "elapsed_s": 89.2570389700004,
+          "event": "feedback_update"
+        }
+      ],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "",
+      "stopped_wall_ns": 1788676407365274333,
+      "duration_s": 96.44098104000022,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "gait_20260906_143150_2620f4f1e142/manifest.json",
+        "size": 4600,
+        "mtime": 1788676407361375453
+      },
+      {
+        "path": "gait_20260906_143150_2620f4f1e142/bag/bag_0.db3",
+        "size": 1220935680,
+        "mtime": 1788676407353375452
+      },
+      {
+        "path": "gait_20260906_143150_2620f4f1e142/bag/metadata.yaml",
+        "size": 2291,
+        "mtime": 1788676407357375452
+      }
+    ]
+  },
+  {
+    "path": "gait_20260906_151603_3aa186c2ff49",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_151603_3aa186c2ff49",
+      "terrain": "stairs",
+      "parameters": {},
+      "teacher": "Vendor controller; user teleoperation",
+      "notes": "Continuous stairs, user-confirmed. Operator-managed capture. Joint feedback approximately 1 Hz at start; teacher actions unavailable. Outcome pending user annotation.",
+      "duration_limit_s": 300,
+      "started_wall_ns": 1788678963536032830,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/IMU": {
+          "count": 60006,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.2507936659999359,
+          "last_receive_monotonic": 2120.183153013,
+          "last_source_ns": 1788679263516000000
+        },
+        "/MOTION_INFO": {
+          "count": 6002,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.2737774919999083,
+          "last_receive_monotonic": 2120.171102547,
+          "last_source_ns": 1788679263512425953
+        },
+        "/STEER": {
+          "count": 2206,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 16.67646434900007,
+          "last_receive_monotonic": 2120.085401898,
+          "last_source_ns": 1788679266984589724
+        },
+        "/rslidar_front/points": {
+          "count": 3001,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.3483796280002025,
+          "last_receive_monotonic": 2120.190085141,
+          "last_source_ns": 1788679263400034189
+        },
+        "/rslidar_rear/points": {
+          "count": 3000,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.3518168880000303,
+          "last_receive_monotonic": 2120.102871788,
+          "last_source_ns": 1788679263300014257
+        },
+        "/HANDLE_STEER": {
+          "count": 2206,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 16.676702877000025,
+          "last_receive_monotonic": 2120.086339722,
+          "last_source_ns": 1788679266984589724
+        },
+        "/JOINTS_DATA": {
+          "count": 300,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0076245800000834,
+          "last_receive_monotonic": 2119.816470208,
+          "last_source_ns": 1788679263157774709
+        },
+        "/GAIT": {
+          "count": 3,
+          "type": "drdds/msg/Gait",
+          "source_stamp_missing": 3,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 69.54248410100013,
+          "last_receive_monotonic": 2089.957281508
+        }
+      },
+      "events": [],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.050467328000195266,
+        "last_feedback": {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788678963483415682,
+          "receive_wall_ns": 1788678963485643806,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788678963483415682,
+          "receive_wall_ns": 1788678963485643806,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679136252431541,
+          "receive_wall_ns": 1788679136254525046,
+          "synthetic": false,
+          "elapsed_s": 172.71856818399988,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679163772429723,
+          "receive_wall_ns": 1788679163774693112,
+          "synthetic": false,
+          "elapsed_s": 200.23873097,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679233312425585,
+          "receive_wall_ns": 1788679233315064667,
+          "synthetic": false,
+          "elapsed_s": 269.77908886099976,
+          "event": "feedback_update"
+        }
+      ],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "达到录制时限或磁盘剩余空间下限",
+      "stopped_wall_ns": 1788679263548418447,
+      "duration_s": 300.012486481,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "gait_20260906_151603_3aa186c2ff49/manifest.json",
+        "size": 5989,
+        "mtime": 1788679263544750287
+      },
+      {
+        "path": "gait_20260906_151603_3aa186c2ff49/SHA256SUMS.json",
+        "size": 267,
+        "mtime": 1788679581360750222
+      },
+      {
+        "path": "gait_20260906_151603_3aa186c2ff49/bag/bag_0.db3",
+        "size": 3744591872,
+        "mtime": 1788679263540750286
+      },
+      {
+        "path": "gait_20260906_151603_3aa186c2ff49/bag/metadata.yaml",
+        "size": 2297,
+        "mtime": 1788679263544750287
+      }
+    ]
+  },
+  {
+    "path": "gait_20260906_153020_96c782400250",
+    "manifest": {
+      "schema_version": 1,
+      "id": "gait_20260906_153020_96c782400250",
+      "terrain": "basic",
+      "parameters": {},
+      "teacher": "Vendor controller; user teleoperation",
+      "notes": "Repeated lie-down and stand-up under user remote control; record posture transitions. Operator-managed capture. Teacher actions unavailable. Outcome pending user annotation.",
+      "duration_limit_s": 180,
+      "started_wall_ns": 1788679820152823262,
+      "status": "stopped",
+      "outcome": "unlabeled",
+      "mode": "ros",
+      "missing_at_start": [
+        "/JOINTS_CMD"
+      ],
+      "topics": {
+        "/IMU": {
+          "count": 36003,
+          "type": "sensor_msgs/msg/Imu",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.2520864570001322,
+          "last_receive_monotonic": 2856.807091952,
+          "last_source_ns": 1788680000141000000
+        },
+        "/JOINTS_DATA": {
+          "count": 5734,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 1.0128160039998875,
+          "last_receive_monotonic": 2856.808090128,
+          "last_source_ns": 1788680000149772551
+        },
+        "/JOINTS_DATA_10HZ": {
+          "count": 1800,
+          "type": "drdds/msg/JointsData",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.329780244000176,
+          "last_receive_monotonic": 2856.728986689,
+          "last_source_ns": 1788680000069808626
+        },
+        "/MOTION_INFO": {
+          "count": 3621,
+          "type": "drdds/msg/MotionInfo",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.2446068419999392,
+          "last_receive_monotonic": 2856.809206191,
+          "last_source_ns": 1788680000150424426
+        },
+        "/rslidar_front/points": {
+          "count": 1800,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.2922400870002093,
+          "last_receive_monotonic": 2856.776711254,
+          "last_source_ns": 1788680000000037193
+        },
+        "/rslidar_rear/points": {
+          "count": 1800,
+          "type": "sensor_msgs/msg/PointCloud2",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 0.2932784569998148,
+          "last_receive_monotonic": 2856.786256692,
+          "last_source_ns": 1788679999999990225
+        },
+        "/GAIT": {
+          "count": 11,
+          "type": "drdds/msg/Gait",
+          "source_stamp_missing": 11,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 17.59806822599967,
+          "last_receive_monotonic": 2756.844714083
+        },
+        "/HANDLE_STEER": {
+          "count": 1001,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 16.886675951000143,
+          "last_receive_monotonic": 2856.80387976,
+          "last_source_ns": 1788680000426341107
+        },
+        "/STEER": {
+          "count": 1001,
+          "type": "drdds/msg/Steer",
+          "source_stamp_missing": 0,
+          "source_nonincreasing": 0,
+          "max_receive_gap_s": 16.886840051000036,
+          "last_receive_monotonic": 2856.804377008,
+          "last_source_ns": 1788680000426341107
+        }
+      },
+      "events": [],
+      "training_ready": false,
+      "motion_feedback_at_start": {
+        "fresh": true,
+        "age_s": 0.0225002210004277,
+        "last_feedback": {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679820125424254,
+          "receive_wall_ns": 1788679820130388065,
+          "synthetic": false
+        },
+        "current": {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679820125424254,
+          "receive_wall_ns": 1788679820130388065,
+          "synthetic": false
+        }
+      },
+      "motion_feedback_events": [
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679821176436152,
+          "receive_wall_ns": 1788679821180402979,
+          "synthetic": false,
+          "elapsed_s": 1.0276105329999154,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679821177433652,
+          "receive_wall_ns": 1788679821186323683,
+          "synthetic": false,
+          "elapsed_s": 1.0335325490000287,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 4,
+          "state_label": "趴下",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679833035443593,
+          "receive_wall_ns": 1788679833043231015,
+          "synthetic": false,
+          "elapsed_s": 12.890443176999725,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679834636430087,
+          "receive_wall_ns": 1788679834645669465,
+          "synthetic": false,
+          "elapsed_s": 14.492876986999818,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679836636438497,
+          "receive_wall_ns": 1788679836645103249,
+          "synthetic": false,
+          "elapsed_s": 16.49230721899994,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679838236424282,
+          "receive_wall_ns": 1788679838242440060,
+          "synthetic": false,
+          "elapsed_s": 18.089643102000082,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679838237421782,
+          "receive_wall_ns": 1788679838257761659,
+          "synthetic": false,
+          "elapsed_s": 18.104966556999898,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 4,
+          "state_label": "趴下",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679840229425108,
+          "receive_wall_ns": 1788679840238541107,
+          "synthetic": false,
+          "elapsed_s": 20.085741684999903,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679841829423435,
+          "receive_wall_ns": 1788679841835931239,
+          "synthetic": false,
+          "elapsed_s": 21.683124872999997,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679844286421640,
+          "receive_wall_ns": 1788679844290880743,
+          "synthetic": false,
+          "elapsed_s": 24.138077512999644,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679845887423884,
+          "receive_wall_ns": 1788679845890699656,
+          "synthetic": false,
+          "elapsed_s": 25.737909257999945,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679845888425468,
+          "receive_wall_ns": 1788679845896843945,
+          "synthetic": false,
+          "elapsed_s": 25.744042378999893,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 4,
+          "state_label": "趴下",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679847981439678,
+          "receive_wall_ns": 1788679847983435400,
+          "synthetic": false,
+          "elapsed_s": 27.830642377999993,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679849582422672,
+          "receive_wall_ns": 1788679849584901611,
+          "synthetic": false,
+          "elapsed_s": 29.432110764999834,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679851582419123,
+          "receive_wall_ns": 1788679851584474713,
+          "synthetic": false,
+          "elapsed_s": 31.431678778999867,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679853182418909,
+          "receive_wall_ns": 1788679853184274178,
+          "synthetic": false,
+          "elapsed_s": 33.0314784039997,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679853183421076,
+          "receive_wall_ns": 1788679853189359361,
+          "synthetic": false,
+          "elapsed_s": 33.03656848299988,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 4,
+          "state_label": "趴下",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679855238420907,
+          "receive_wall_ns": 1788679855241535515,
+          "synthetic": false,
+          "elapsed_s": 35.08874681299994,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679856838419235,
+          "receive_wall_ns": 1788679856844460185,
+          "synthetic": false,
+          "elapsed_s": 36.69166489100007,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679858839422227,
+          "receive_wall_ns": 1788679858847614381,
+          "synthetic": false,
+          "elapsed_s": 38.69482516700009,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679860439423472,
+          "receive_wall_ns": 1788679860446834980,
+          "synthetic": false,
+          "elapsed_s": 40.2940397819998,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679860440439638,
+          "receive_wall_ns": 1788679860451350946,
+          "synthetic": false,
+          "elapsed_s": 40.298560067999915,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 4,
+          "state_label": "趴下",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679862468450092,
+          "receive_wall_ns": 1788679862471028027,
+          "synthetic": false,
+          "elapsed_s": 42.31823001299972,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679864068421878,
+          "receive_wall_ns": 1788679864070636613,
+          "synthetic": false,
+          "elapsed_s": 43.91783514300005,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679866068435245,
+          "receive_wall_ns": 1788679866086877590,
+          "synthetic": false,
+          "elapsed_s": 45.93406469599995,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679867668428323,
+          "receive_wall_ns": 1788679867671832038,
+          "synthetic": false,
+          "elapsed_s": 47.519013864000044,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679867669429906,
+          "receive_wall_ns": 1788679867684683367,
+          "synthetic": false,
+          "elapsed_s": 47.53184884099983,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 4,
+          "state_label": "趴下",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679869624431519,
+          "receive_wall_ns": 1788679869640948985,
+          "synthetic": false,
+          "elapsed_s": 49.48815260299989,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679871224418764,
+          "receive_wall_ns": 1788679871244462988,
+          "synthetic": false,
+          "elapsed_s": 51.09165332599969,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679873225427006,
+          "receive_wall_ns": 1788679873243203989,
+          "synthetic": false,
+          "elapsed_s": 53.09040680699991,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679874825432042,
+          "receive_wall_ns": 1788679874834743822,
+          "synthetic": false,
+          "elapsed_s": 54.68194782399996,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679874826422250,
+          "receive_wall_ns": 1788679874849768814,
+          "synthetic": false,
+          "elapsed_s": 54.69697703999964,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 2,
+          "state_label": "关节阻尼 / 软急停",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679886816657247,
+          "receive_wall_ns": 1788679886831230710,
+          "synthetic": false,
+          "elapsed_s": 66.67841468000006,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 0,
+          "state_label": "空闲",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679888818424115,
+          "receive_wall_ns": 1788679888830381098,
+          "synthetic": false,
+          "elapsed_s": 68.67757940399997,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 1,
+          "state_label": "站立",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679890819420107,
+          "receive_wall_ns": 1788679890875287687,
+          "synthetic": false,
+          "elapsed_s": 70.72247444100003,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 0,
+          "gait_label": "未映射步态",
+          "gait_known": false,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x0000",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679892419420768,
+          "receive_wall_ns": 1788679892437008927,
+          "synthetic": false,
+          "elapsed_s": 72.28420076899965,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4097,
+          "gait_label": "基础（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1001",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679892420432852,
+          "receive_wall_ns": 1788679892446507199,
+          "synthetic": false,
+          "elapsed_s": 72.29371014499975,
+          "event": "feedback_update"
+        },
+        {
+          "gait_code": 4099,
+          "gait_label": "楼梯（标准运动模式）",
+          "gait_known": true,
+          "state_code": 17,
+          "state_label": "RL 控制",
+          "field_paths": {
+            "gait": "data.gait_state.gait",
+            "state": "data.motion_state.state"
+          },
+          "gait_hex": "0x1003",
+          "hint": "",
+          "source_topic": "/MOTION_INFO",
+          "source_stamp_ns": 1788679900800422444,
+          "receive_wall_ns": 1788679900803754433,
+          "synthetic": false,
+          "elapsed_s": 80.65095859499979,
+          "event": "feedback_update"
+        }
+      ],
+      "qualification": "原始记录；动作来源、单位、关节顺序、同步与闭环效果待验收",
+      "error": "达到录制时限或磁盘剩余空间下限",
+      "stopped_wall_ns": 1788680000156418823,
+      "duration_s": 180.0036383769998,
+      "missing_topics": [
+        "/JOINTS_CMD"
+      ]
+    },
+    "files": [
+      {
+        "path": "gait_20260906_153020_96c782400250/manifest.json",
+        "size": 25453,
+        "mtime": 1788680000152750119
+      },
+      {
+        "path": "gait_20260906_153020_96c782400250/SHA256SUMS.json",
+        "size": 0,
+        "mtime": 1788680003416750358
+      },
+      {
+        "path": "gait_20260906_153020_96c782400250/bag/bag_0.db3",
+        "size": 2626367488,
+        "mtime": 1788680000148750120
+      },
+      {
+        "path": "gait_20260906_153020_96c782400250/bag/metadata.yaml",
+        "size": 0,
+        "mtime": 1788680000152750119
+      }
+    ]
+  }
+]

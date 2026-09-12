@@ -278,7 +278,7 @@ EDITS = [
         addition="if (k == 'r' || k == 'z' || k == 'c' || k == 'x' || k == 'v' || k == 'b' || k == 'n')",
         marker="|| k == 'v' || k == 'b'",
         mode="replace",
-        superseded_marker="|| k == 'm' || k == 'h' ||",
+        superseded_marker="void HandleKey",
     ),
     Edit(
         path=SDK / "interface/user_command/keyboard_interface.hpp",
@@ -490,7 +490,7 @@ EDITS = [
         ),
         marker="|| k == 'm' || k == 'n'",
         mode="replace",
-        superseded_marker="|| k == 'm' || k == 'h' ||",
+        superseded_marker="void HandleKey",
     ),
     Edit(
         path=SDK / "interface/user_command/keyboard_interface.hpp",
@@ -587,6 +587,7 @@ EDITS = [
         ),
         marker="|| k == 'm' || k == 'h' ||",
         mode="replace",
+        superseded_marker="void HandleKey",
     ),
     Edit(
         path=SDK / "interface/user_command/keyboard_interface.hpp",
@@ -664,7 +665,84 @@ EDITS = [
         addition="            high_speed_phase_ = 0.0f;\n",
         marker="start_flag_ = true;\n            high_speed_phase_ = 0.0f;",
     ),
-    # 7. Sync the WSLg viewer near 60 Hz instead of every tenth 1 kHz physics step.
+    # 7. Accept keyboard events forwarded by the focused native MuJoCo window.
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor='#include "std_msgs/msg/empty.hpp"\n',
+        addition='#include "std_msgs/msg/u_int8.hpp"\n',
+        marker="std_msgs/msg/u_int8.hpp",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor="    rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr reset_pub_;\n",
+        addition="    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr key_sub_;\n",
+        marker="key_sub_",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor="    void keyboard_loop()\n",
+        addition=(
+            "    void HandleKey(char raw_key, double now) {\n"
+            "        const char k = std::tolower(static_cast<unsigned char>(raw_key));\n"
+            "        if (k == '0' || k == 'r' || k == 'z' || k == 'c' || k == 'x'\n"
+            "            || k == 'v' || k == 'm' || k == 'h'\n"
+            "            || (k >= '1' && k <= '8') || k == '[' || k == ']') {\n"
+            "            process_mode_command(k);\n"
+            "            return;\n"
+            "        }\n"
+            "        if (velocity_keys_.count(k)) {\n"
+            "            std::lock_guard<std::mutex> lock(keys_mutex_);\n"
+            "            held_keys_.insert(k);\n"
+            "            last_seen_time_[k] = now;\n"
+            "        }\n"
+            "    }\n\n"
+            "    void keyboard_loop()\n"
+        ),
+        marker="void HandleKey",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor=(
+            "                char k = std::tolower(static_cast<unsigned char>(ch));\n\n"
+            "                // Handle mode commands\n"
+            "                if (k == '0' || k == 'r' || k == 'z' || k == 'c' || k == 'x' || k == 'v' || k == 'm' || k == 'h' || (k >= '1' && k <= '8') || k == '[' || k == ']') {\n"
+            "                    process_mode_command(k);\n"
+            "                    continue;\n"
+            "                }\n\n"
+            "                // Track velocity keys\n"
+            "                if (velocity_keys_.count(k)) {\n"
+            "                    std::lock_guard<std::mutex> lock(keys_mutex_);\n"
+            "                    held_keys_.insert(k);\n"
+            "                    last_seen_time_[k] = now;\n"
+            "                }\n"
+        ),
+        addition="                HandleKey(ch, now);\n",
+        marker="HandleKey(ch, now);",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor="        while (running_) {\n",
+        addition="            rclcpp::spin_some(reset_node_);\n",
+        marker="rclcpp::spin_some(reset_node_)",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor=(
+            '        reset_pub_ = reset_node_->create_publisher<std_msgs::msg::Empty>'
+            '("/sim/reset", 1);\n'
+        ),
+        addition=(
+            "        key_sub_ = reset_node_->create_subscription<std_msgs::msg::UInt8>(\n"
+            "            \"/keyboard/key\", 10,\n"
+            "            [this](const std_msgs::msg::UInt8::SharedPtr msg) {\n"
+            "                HandleKey(static_cast<char>(msg->data), GetCurrentTimeStamp());\n"
+            "            });\n"
+        ),
+        marker='"/keyboard/key"',
+    ),
+    # 8. Sync the WSLg viewer near 60 Hz instead of every tenth 1 kHz physics step.
     Edit(
         path=SDK / "interface/robot/simulation/mujoco_simulation_ros2.py",
         anchor="RENDER_INTERVAL = 10",
@@ -832,6 +910,7 @@ EDITS = [
             "        input_observationShape[1] = observation_dim;\n"
         ),
         marker="Unsupported ONNX observation width",
+        superseded_marker="Preloaded stairs model",
     ),
     Edit(
         path=SDK / "run_policy/s10_policy_runner.hpp",
@@ -898,6 +977,705 @@ EDITS = [
         anchor="<depend>drdds</depend>",
         addition="\n  <depend>geometry_msgs</depend>\n  <depend>std_msgs</depend>",
         marker="<depend>geometry_msgs</depend>",
+    ),
+    # 10. Preload a second policy and switch inference sessions at runtime.
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="#include <utility>\n",
+        addition="#include <cstdlib>\n",
+        marker="#include <cstdlib>",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    const std::string policy_path_;\n",
+        addition="    const std::string secondary_policy_path_;\n",
+        marker="secondary_policy_path_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    Ort::Session session_{nullptr};\n",
+        addition=(
+            "    Ort::Session secondary_session_{nullptr};\n"
+            "    bool has_secondary_policy_ = false;\n"
+            "    bool using_secondary_policy_ = false;\n"
+        ),
+        marker="secondary_session_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    void StartHeightmapSubscriber() {\n",
+        addition=(
+            "    int ValidateSession(Ort::Session& session, const char* label) {\n"
+            "        if (session.GetInputCount() != 1 || session.GetOutputCount() != 1)\n"
+            "            throw std::runtime_error(std::string(label) +\n"
+            "                                     \" ONNX must have one input and one output\");\n"
+            "        const auto input_shape = session.GetInputTypeInfo(0)\n"
+            "            .GetTensorTypeAndShapeInfo().GetShape();\n"
+            "        if (input_shape.size() != 2\n"
+            "            || (input_shape[1] != kProprioceptionDim\n"
+            "                && input_shape[1] != kProprioceptionDim + kHeightmapDim))\n"
+            "            throw std::runtime_error(std::string(label) +\n"
+            "                                     \" ONNX observation width is unsupported\");\n"
+            "        const auto output_shape = session.GetOutputTypeInfo(0)\n"
+            "            .GetTensorTypeAndShapeInfo().GetShape();\n"
+            "        if (output_shape.size() != 2 || output_shape[1] != action_dim)\n"
+            "            throw std::runtime_error(std::string(label) +\n"
+            "                                     \" ONNX action width is unsupported\");\n"
+            "        return static_cast<int>(input_shape[1]);\n"
+            "    }\n\n"
+            "    static bool SecondaryPolicyRequested() {\n"
+            "        const char* value = std::getenv(\"S10_USE_SECOND_POLICY\");\n"
+            "        return value && std::atoi(value) != 0;\n"
+            "    }\n\n"
+            "    void UpdatePolicySelection() {\n"
+            "        const bool use_secondary =\n"
+            "            has_secondary_policy_ && SecondaryPolicyRequested();\n"
+            "        if (use_secondary == using_secondary_policy_) return;\n"
+            "        using_secondary_policy_ = use_secondary;\n"
+            "        last_action_eigen.setZero(action_dim);\n"
+            "        current_action_eigen.setZero(action_dim);\n"
+            "        tmp_action_eigen.setZero(action_dim);\n"
+            "        std::cout << \"[POLICY] Active model: \"\n"
+            "                  << (use_secondary ? \"stairs\" : \"default\") << \"\\n\";\n"
+            "    }\n\n"
+            "    void StartHeightmapSubscriber() {\n"
+        ),
+        marker="SecondaryPolicyRequested",
+        superseded_marker="RequestedPolicySlot",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    S10PolicyRunner(const std::string &policy_name, const std::string &policy_path) :\n"
+            "            PolicyRunnerBase(policy_name), policy_path_(policy_path),env_(ORT_LOGGING_LEVEL_WARNING, \"S10PolicyRunner\"),\n"
+        ),
+        addition=(
+            "    S10PolicyRunner(const std::string &policy_name, const std::string &policy_path,\n"
+            "                    const std::string &secondary_policy_path = \"\") :\n"
+            "            PolicyRunnerBase(policy_name), policy_path_(policy_path),\n"
+            "            secondary_policy_path_(secondary_policy_path),\n"
+            "            env_(ORT_LOGGING_LEVEL_WARNING, \"S10PolicyRunner\"),\n"
+        ),
+        marker="const std::string &secondary_policy_path",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "        const auto input_shape = session_.GetInputTypeInfo(0)\n"
+            "            .GetTensorTypeAndShapeInfo().GetShape();\n"
+            "        if (input_shape.size() != 2\n"
+            "            || (input_shape[1] != kProprioceptionDim\n"
+            "                && input_shape[1] != kProprioceptionDim + kHeightmapDim))\n"
+            "            throw std::runtime_error(\"Unsupported ONNX observation width\");\n"
+            "        observation_dim = static_cast<int>(input_shape[1]);\n"
+            "        input_observationShape[1] = observation_dim;\n"
+        ),
+        addition=(
+            "        observation_dim = ValidateSession(session_, \"Primary\");\n"
+            "        input_observationShape[1] = observation_dim;\n"
+            "        if (!secondary_policy_path_.empty()) {\n"
+            "            if (access(secondary_policy_path_.c_str(), F_OK) != 0)\n"
+            "                throw std::runtime_error(\"Secondary model file missing: \" +\n"
+            "                                         secondary_policy_path_);\n"
+            "            secondary_session_ = Ort::Session(\n"
+            "                env_, secondary_policy_path_.c_str(), session_options_);\n"
+            "            const int secondary_observation_dim =\n"
+            "                ValidateSession(secondary_session_, \"Secondary\");\n"
+            "            if (secondary_observation_dim != observation_dim)\n"
+            "                throw std::runtime_error(\n"
+            "                    \"Primary and secondary ONNX observation widths differ\");\n"
+            "            has_secondary_policy_ = true;\n"
+            "            std::cout << \"[POLICY] Preloaded stairs model: \"\n"
+            "                      << secondary_policy_path_ << \"\\n\";\n"
+            "        }\n"
+        ),
+        marker="Preloaded stairs model",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="        auto outputs = session_.Run(\n",
+        addition=(
+            "        auto& active_session =\n"
+            "            using_secondary_policy_ ? secondary_session_ : session_;\n"
+            "        auto outputs = active_session.Run(\n"
+        ),
+        marker="active_session.Run",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    RobotAction getRobotAction(const RobotBasicState &ro, const UserCommand &uc) {\n\n"
+        ),
+        addition=(
+            "    RobotAction getRobotAction(const RobotBasicState &ro, const UserCommand &uc) {\n\n"
+            "        UpdatePolicySelection();\n"
+        ),
+        marker="UpdatePolicySelection();",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor=(
+            "                const char* override_path = std::getenv(\"S10_POLICY_PATH\");\n"
+            "                auto model_path = fs::canonical(\n"
+            "                    override_path ? fs::path(override_path)\n"
+            "                                  : base / \"..\" / \"..\" / \"policy\" / \"policy.onnx\");\n"
+            "                s10_policy_ = std::make_shared<S10PolicyRunner>(\"s10_policy\", model_path.string());\n"
+        ),
+        addition=(
+            "                const char* override_path = std::getenv(\"S10_POLICY_PATH\");\n"
+            "                auto model_path = fs::canonical(\n"
+            "                    override_path ? fs::path(override_path)\n"
+            "                                  : base / \"..\" / \"..\" / \"policy\" / \"policy.onnx\");\n"
+            "                const char* secondary_path = std::getenv(\"S10_SECOND_POLICY_PATH\");\n"
+            "                const auto secondary_model_path = secondary_path && *secondary_path\n"
+            "                    ? fs::canonical(fs::path(secondary_path)).string()\n"
+            "                    : std::string();\n"
+            "                s10_policy_ = std::make_shared<S10PolicyRunner>(\n"
+            "                    \"s10_policy\", model_path.string(), secondary_model_path);\n"
+        ),
+        marker="S10_SECOND_POLICY_PATH",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor=(
+            "        else if (k == 'h' && msfb_->GetCurrentState() == RobotMotionState::RLControlMode) {\n"
+            "            const char* value = std::getenv(\"S10_HIGH_SPEED\");\n"
+            "            const bool enabled = !(value && std::atoi(value) != 0);\n"
+            "            setenv(\"S10_HIGH_SPEED\", enabled ? \"1\" : \"0\", 1);\n"
+            "            std::cout << \"[HIGH SPEED] H: \"\n"
+            "                      << (enabled ? \"ON (crouch then accelerate)\" : \"OFF\") << \"\\n\";\n"
+            "        }\n"
+        ),
+        addition=(
+            "        else if (k == 'p') {\n"
+            "            const char* path = std::getenv(\"S10_SECOND_POLICY_PATH\");\n"
+            "            if (!path || !*path) {\n"
+            "                std::cout << \"[POLICY] P: stairs model unavailable\\n\";\n"
+            "            } else {\n"
+            "                const char* value = std::getenv(\"S10_USE_SECOND_POLICY\");\n"
+            "                const bool enabled = !(value && std::atoi(value) != 0);\n"
+            "                setenv(\"S10_USE_SECOND_POLICY\", enabled ? \"1\" : \"0\", 1);\n"
+            "                if (enabled) setenv(\"S10_HIGH_SPEED\", \"0\", 1);\n"
+            "                std::cout << \"[POLICY] P: \"\n"
+            "                          << (enabled ? \"stairs\" : \"default\") << \"\\n\";\n"
+            "            }\n"
+            "        }\n"
+        ),
+        marker="[POLICY] P:",
+        superseded_marker="TogglePolicy(1, 'P'",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor="            || k == 'v' || k == 'm' || k == 'h'\n",
+        addition="            || k == 'v' || k == 'm' || k == 'h' || k == 'p'\n",
+        marker="|| k == 'p'",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor='                  << "  Flat:      H (low/high speed toggle)\\n"\n',
+        addition='                  << "  Policy:    P (default/stairs toggle)\\n"\n',
+        marker="default/stairs toggle",
+        superseded_marker="K (speed-turn)",
+    ),
+    # 11. Add a third preloaded slot for the stairs-down policy.
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    const std::string secondary_policy_path_;\n",
+        addition="    const std::string down_policy_path_;\n",
+        marker="down_policy_path_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    Ort::Session secondary_session_{nullptr};\n",
+        addition="    Ort::Session down_session_{nullptr};\n",
+        marker="down_session_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    bool has_secondary_policy_ = false;\n"
+            "    bool using_secondary_policy_ = false;\n"
+        ),
+        addition=(
+            "    bool has_secondary_policy_ = false;\n"
+            "    bool has_down_policy_ = false;\n"
+            "    int active_policy_ = 0;\n"
+        ),
+        marker="active_policy_",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    static bool SecondaryPolicyRequested() {\n"
+            "        const char* value = std::getenv(\"S10_USE_SECOND_POLICY\");\n"
+            "        return value && std::atoi(value) != 0;\n"
+            "    }\n\n"
+            "    void UpdatePolicySelection() {\n"
+            "        const bool use_secondary =\n"
+            "            has_secondary_policy_ && SecondaryPolicyRequested();\n"
+            "        if (use_secondary == using_secondary_policy_) return;\n"
+            "        using_secondary_policy_ = use_secondary;\n"
+            "        last_action_eigen.setZero(action_dim);\n"
+            "        current_action_eigen.setZero(action_dim);\n"
+            "        tmp_action_eigen.setZero(action_dim);\n"
+            "        std::cout << \"[POLICY] Active model: \"\n"
+            "                  << (use_secondary ? \"stairs\" : \"default\") << \"\\n\";\n"
+            "    }\n"
+        ),
+        addition=(
+            "    static int RequestedPolicySlot() {\n"
+            "        const char* value = std::getenv(\"S10_POLICY_SLOT\");\n"
+            "        return value ? std::atoi(value) : 0;\n"
+            "    }\n\n"
+            "    void UpdatePolicySelection() {\n"
+            "        const int requested = RequestedPolicySlot();\n"
+            "        const int selected =\n"
+            "            requested == 1 && has_secondary_policy_ ? 1 :\n"
+            "            requested == 2 && has_down_policy_ ? 2 : 0;\n"
+            "        if (selected == active_policy_) return;\n"
+            "        active_policy_ = selected;\n"
+            "        last_action_eigen.setZero(action_dim);\n"
+            "        current_action_eigen.setZero(action_dim);\n"
+            "        tmp_action_eigen.setZero(action_dim);\n"
+            "        const char* names[] = {\"default\", \"stairs-up\", \"stairs-down\"};\n"
+            "        std::cout << \"[POLICY] Active model: \"\n"
+            "                  << names[active_policy_] << \"\\n\";\n"
+            "    }\n"
+        ),
+        marker="RequestedPolicySlot",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    S10PolicyRunner(const std::string &policy_name, const std::string &policy_path,\n"
+            "                    const std::string &secondary_policy_path = \"\") :\n"
+            "            PolicyRunnerBase(policy_name), policy_path_(policy_path),\n"
+            "            secondary_policy_path_(secondary_policy_path),\n"
+        ),
+        addition=(
+            "    S10PolicyRunner(const std::string &policy_name, const std::string &policy_path,\n"
+            "                    const std::string &secondary_policy_path = \"\",\n"
+            "                    const std::string &down_policy_path = \"\") :\n"
+            "            PolicyRunnerBase(policy_name), policy_path_(policy_path),\n"
+            "            secondary_policy_path_(secondary_policy_path),\n"
+            "            down_policy_path_(down_policy_path),\n"
+        ),
+        marker="const std::string &down_policy_path",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "            std::cout << \"[POLICY] Preloaded stairs model: \"\n"
+            "                      << secondary_policy_path_ << \"\\n\";\n"
+            "        }\n"
+        ),
+        addition=(
+            "            std::cout << \"[POLICY] Preloaded stairs model: \"\n"
+            "                      << secondary_policy_path_ << \"\\n\";\n"
+            "        }\n"
+            "        if (!down_policy_path_.empty()) {\n"
+            "            if (access(down_policy_path_.c_str(), F_OK) != 0)\n"
+            "                throw std::runtime_error(\"Down model file missing: \" +\n"
+            "                                         down_policy_path_);\n"
+            "            down_session_ = Ort::Session(\n"
+            "                env_, down_policy_path_.c_str(), session_options_);\n"
+            "            const int down_observation_dim =\n"
+            "                ValidateSession(down_session_, \"Down\");\n"
+            "            if (down_observation_dim != observation_dim)\n"
+            "                throw std::runtime_error(\n"
+            "                    \"Primary and down ONNX observation widths differ\");\n"
+            "            has_down_policy_ = true;\n"
+            "            std::cout << \"[POLICY] Preloaded stairs-down model: \"\n"
+            "                      << down_policy_path_ << \"\\n\";\n"
+            "        }\n"
+        ),
+        marker="Preloaded stairs-down model",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "        auto& active_session =\n"
+            "            using_secondary_policy_ ? secondary_session_ : session_;\n"
+        ),
+        addition=(
+            "        auto& active_session = active_policy_ == 2 ? down_session_\n"
+            "            : active_policy_ == 1 ? secondary_session_ : session_;\n"
+        ),
+        marker="active_policy_ == 2 ? down_session_",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor=(
+            "                const char* secondary_path = std::getenv(\"S10_SECOND_POLICY_PATH\");\n"
+            "                const auto secondary_model_path = secondary_path && *secondary_path\n"
+            "                    ? fs::canonical(fs::path(secondary_path)).string()\n"
+            "                    : std::string();\n"
+            "                s10_policy_ = std::make_shared<S10PolicyRunner>(\n"
+            "                    \"s10_policy\", model_path.string(), secondary_model_path);\n"
+        ),
+        addition=(
+            "                const char* secondary_path = std::getenv(\"S10_SECOND_POLICY_PATH\");\n"
+            "                const auto secondary_model_path = secondary_path && *secondary_path\n"
+            "                    ? fs::canonical(fs::path(secondary_path)).string()\n"
+            "                    : std::string();\n"
+            "                const char* down_path = std::getenv(\"S10_DOWN_POLICY_PATH\");\n"
+            "                const auto down_model_path = down_path && *down_path\n"
+            "                    ? fs::canonical(fs::path(down_path)).string()\n"
+            "                    : std::string();\n"
+            "                s10_policy_ = std::make_shared<S10PolicyRunner>(\n"
+            "                    \"s10_policy\", model_path.string(),\n"
+            "                    secondary_model_path, down_model_path);\n"
+        ),
+        marker="S10_DOWN_POLICY_PATH",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor="    void process_mode_command(char k)\n",
+        addition=(
+            "    void TogglePolicy(int slot, char key, const char* label, const char* path_env) {\n"
+            "        const char* path = std::getenv(path_env);\n"
+            "        if (!path || !*path) {\n"
+            "            std::cout << \"[POLICY] \" << key << \": \"\n"
+            "                      << label << \" model unavailable\\n\";\n"
+            "            return;\n"
+            "        }\n"
+            "        const char* value = std::getenv(\"S10_POLICY_SLOT\");\n"
+            "        const int selected = value && std::atoi(value) == slot ? 0 : slot;\n"
+            "        const std::string text = std::to_string(selected);\n"
+            "        setenv(\"S10_POLICY_SLOT\", text.c_str(), 1);\n"
+            "        if (selected != 0) setenv(\"S10_HIGH_SPEED\", \"0\", 1);\n"
+            "        std::cout << \"[POLICY] \" << key << \": \"\n"
+            "                  << (selected == 0 ? \"default\" : label) << \"\\n\";\n"
+            "    }\n\n"
+            "    void process_mode_command(char k)\n"
+        ),
+        marker="void TogglePolicy",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor=(
+            "        else if (k == 'p') {\n"
+            "            const char* path = std::getenv(\"S10_SECOND_POLICY_PATH\");\n"
+            "            if (!path || !*path) {\n"
+            "                std::cout << \"[POLICY] P: stairs model unavailable\\n\";\n"
+            "            } else {\n"
+            "                const char* value = std::getenv(\"S10_USE_SECOND_POLICY\");\n"
+            "                const bool enabled = !(value && std::atoi(value) != 0);\n"
+            "                setenv(\"S10_USE_SECOND_POLICY\", enabled ? \"1\" : \"0\", 1);\n"
+            "                if (enabled) setenv(\"S10_HIGH_SPEED\", \"0\", 1);\n"
+            "                std::cout << \"[POLICY] P: \"\n"
+            "                          << (enabled ? \"stairs\" : \"default\") << \"\\n\";\n"
+            "            }\n"
+            "        }\n"
+        ),
+        addition=(
+            "        else if (k == 'p') {\n"
+            "            TogglePolicy(1, 'P', \"stairs-up\", \"S10_SECOND_POLICY_PATH\");\n"
+            "        }\n"
+            "        else if (k == 'l') {\n"
+            "            TogglePolicy(2, 'L', \"stairs-down\", \"S10_DOWN_POLICY_PATH\");\n"
+            "        }\n"
+        ),
+        marker="TogglePolicy(2, 'L'",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor="            || k == 'v' || k == 'm' || k == 'h' || k == 'p'\n",
+        addition="            || k == 'v' || k == 'm' || k == 'h' || k == 'p' || k == 'l'\n",
+        marker="|| k == 'l'",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor='                  << "  Policy:    P (default/stairs toggle)\\n"\n',
+        addition='                  << "  Policy:    P (default/stairs toggle)  L (default/down toggle)\\n"\n',
+        marker="default/down toggle",
+        superseded_marker="K (speed-turn)",
+        mode="replace",
+    ),
+    # 12. Add a fourth preloaded slot for the speed-turn policy.
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    const std::string down_policy_path_;\n",
+        addition="    const std::string speedturn_policy_path_;\n",
+        marker="speedturn_policy_path_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    Ort::Session down_session_{nullptr};\n",
+        addition="    Ort::Session speedturn_session_{nullptr};\n",
+        marker="speedturn_session_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    bool has_down_policy_ = false;\n",
+        addition="    bool has_speedturn_policy_ = false;\n",
+        marker="has_speedturn_policy_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    void UpdatePolicySelection() {\n"
+            "        const int requested = RequestedPolicySlot();\n"
+            "        const int selected =\n"
+            "            requested == 1 && has_secondary_policy_ ? 1 :\n"
+            "            requested == 2 && has_down_policy_ ? 2 : 0;\n"
+            "        if (selected == active_policy_) return;\n"
+            "        active_policy_ = selected;\n"
+            "        last_action_eigen.setZero(action_dim);\n"
+            "        current_action_eigen.setZero(action_dim);\n"
+            "        tmp_action_eigen.setZero(action_dim);\n"
+            "        const char* names[] = {\"default\", \"stairs-up\", \"stairs-down\"};\n"
+            "        std::cout << \"[POLICY] Active model: \"\n"
+            "                  << names[active_policy_] << \"\\n\";\n"
+            "    }\n"
+        ),
+        addition=(
+            "    void UpdatePolicySelection() {\n"
+            "        const int requested = RequestedPolicySlot();\n"
+            "        const int selected =\n"
+            "            requested == 1 && has_secondary_policy_ ? 1 :\n"
+            "            requested == 2 && has_down_policy_ ? 2 :\n"
+            "            requested == 3 && has_speedturn_policy_ ? 3 : 0;\n"
+            "        if (selected == active_policy_) return;\n"
+            "        active_policy_ = selected;\n"
+            "        last_action_eigen.setZero(action_dim);\n"
+            "        current_action_eigen.setZero(action_dim);\n"
+            "        tmp_action_eigen.setZero(action_dim);\n"
+            "        const char* names[] = {\"default\", \"stairs-up\", \"stairs-down\", \"speed-turn\"};\n"
+            "        std::cout << \"[POLICY] Active model: \"\n"
+            "                  << names[active_policy_] << \"\\n\";\n"
+            "    }\n"
+        ),
+        marker="requested == 3 && has_speedturn_policy_",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    S10PolicyRunner(const std::string &policy_name, const std::string &policy_path,\n"
+            "                    const std::string &secondary_policy_path = \"\",\n"
+            "                    const std::string &down_policy_path = \"\") :\n"
+            "            PolicyRunnerBase(policy_name), policy_path_(policy_path),\n"
+            "            secondary_policy_path_(secondary_policy_path),\n"
+            "            down_policy_path_(down_policy_path),\n"
+        ),
+        addition=(
+            "    S10PolicyRunner(const std::string &policy_name, const std::string &policy_path,\n"
+            "                    const std::string &secondary_policy_path = \"\",\n"
+            "                    const std::string &down_policy_path = \"\",\n"
+            "                    const std::string &speedturn_policy_path = \"\") :\n"
+            "            PolicyRunnerBase(policy_name), policy_path_(policy_path),\n"
+            "            secondary_policy_path_(secondary_policy_path),\n"
+            "            down_policy_path_(down_policy_path),\n"
+            "            speedturn_policy_path_(speedturn_policy_path),\n"
+        ),
+        marker="const std::string &speedturn_policy_path",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "            std::cout << \"[POLICY] Preloaded stairs-down model: \"\n"
+            "                      << down_policy_path_ << \"\\n\";\n"
+            "        }\n"
+        ),
+        addition=(
+            "            std::cout << \"[POLICY] Preloaded stairs-down model: \"\n"
+            "                      << down_policy_path_ << \"\\n\";\n"
+            "        }\n"
+            "        if (!speedturn_policy_path_.empty()) {\n"
+            "            if (access(speedturn_policy_path_.c_str(), F_OK) != 0)\n"
+            "                throw std::runtime_error(\"Speed-turn model file missing: \" +\n"
+            "                                         speedturn_policy_path_);\n"
+            "            speedturn_session_ = Ort::Session(\n"
+            "                env_, speedturn_policy_path_.c_str(), session_options_);\n"
+            "            const int speedturn_observation_dim =\n"
+            "                ValidateSession(speedturn_session_, \"Speed-turn\");\n"
+            "            if (speedturn_observation_dim != observation_dim)\n"
+            "                throw std::runtime_error(\n"
+            "                    \"Primary and speed-turn ONNX observation widths differ\");\n"
+            "            has_speedturn_policy_ = true;\n"
+            "            std::cout << \"[POLICY] Preloaded speed-turn model: \"\n"
+            "                      << speedturn_policy_path_ << \"\\n\";\n"
+            "        }\n"
+        ),
+        marker="Preloaded speed-turn model",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "        auto& active_session = active_policy_ == 2 ? down_session_\n"
+            "            : active_policy_ == 1 ? secondary_session_ : session_;\n"
+        ),
+        addition=(
+            "        auto& active_session = active_policy_ == 3 ? speedturn_session_\n"
+            "            : active_policy_ == 2 ? down_session_\n"
+            "            : active_policy_ == 1 ? secondary_session_ : session_;\n"
+        ),
+        marker="active_policy_ == 3 ? speedturn_session_",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "state_machine/quadruped_wheel/rl_control_state.hpp",
+        anchor=(
+            "                const char* down_path = std::getenv(\"S10_DOWN_POLICY_PATH\");\n"
+            "                const auto down_model_path = down_path && *down_path\n"
+            "                    ? fs::canonical(fs::path(down_path)).string()\n"
+            "                    : std::string();\n"
+            "                s10_policy_ = std::make_shared<S10PolicyRunner>(\n"
+            "                    \"s10_policy\", model_path.string(),\n"
+            "                    secondary_model_path, down_model_path);\n"
+        ),
+        addition=(
+            "                const char* down_path = std::getenv(\"S10_DOWN_POLICY_PATH\");\n"
+            "                const auto down_model_path = down_path && *down_path\n"
+            "                    ? fs::canonical(fs::path(down_path)).string()\n"
+            "                    : std::string();\n"
+            "                const char* speedturn_path = std::getenv(\"S10_SPEEDTURN_POLICY_PATH\");\n"
+            "                const auto speedturn_model_path = speedturn_path && *speedturn_path\n"
+            "                    ? fs::canonical(fs::path(speedturn_path)).string()\n"
+            "                    : std::string();\n"
+            "                s10_policy_ = std::make_shared<S10PolicyRunner>(\n"
+            "                    \"s10_policy\", model_path.string(),\n"
+            "                    secondary_model_path, down_model_path, speedturn_model_path);\n"
+        ),
+        marker="S10_SPEEDTURN_POLICY_PATH",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor=(
+            "        else if (k == 'p') {\n"
+            "            TogglePolicy(1, 'P', \"stairs-up\", \"S10_SECOND_POLICY_PATH\");\n"
+            "        }\n"
+            "        else if (k == 'l') {\n"
+            "            TogglePolicy(2, 'L', \"stairs-down\", \"S10_DOWN_POLICY_PATH\");\n"
+            "        }\n"
+        ),
+        addition=(
+            "        else if (k == 'p') {\n"
+            "            TogglePolicy(1, 'P', \"stairs-up\", \"S10_SECOND_POLICY_PATH\");\n"
+            "        }\n"
+            "        else if (k == 'l') {\n"
+            "            TogglePolicy(2, 'L', \"stairs-down\", \"S10_DOWN_POLICY_PATH\");\n"
+            "        }\n"
+            "        else if (k == 'k') {\n"
+            "            TogglePolicy(3, 'K', \"speed-turn\", \"S10_SPEEDTURN_POLICY_PATH\");\n"
+            "        }\n"
+        ),
+        marker="TogglePolicy(3, 'K'",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor="            || k == 'v' || k == 'm' || k == 'h' || k == 'p' || k == 'l'\n",
+        addition="            || k == 'v' || k == 'm' || k == 'h' || k == 'p' || k == 'l' || k == 'k'\n",
+        marker="|| k == 'k'",
+        mode="replace",
+    ),
+    Edit(
+        path=SDK / "interface/user_command/keyboard_interface.hpp",
+        anchor='                  << "  Policy:    P (default/stairs toggle)  L (default/down toggle)\\n"\n',
+        addition='                  << "  Policy:    P (stairs-up)  L (stairs-down)  K (speed-turn)\\n"\n',
+        marker="K (speed-turn)",
+        mode="replace",
+    ),
+    # 16. Optional one-shot policy trace for cross-runtime interface verification.
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="#include <cstdlib>\n",
+        addition="#include <fstream>\n#include <iomanip>\n",
+        marker="#include <fstream>",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="    std::thread heightmap_thread_;\n",
+        addition=(
+            "    std::ofstream trace_file_;\n"
+            "    int trace_steps_remaining_ = 0;\n"
+        ),
+        marker="trace_steps_remaining_",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "    void StopHeightmapSubscriber() {\n"
+            "        if (heightmap_executor_) heightmap_executor_->cancel();\n"
+            "        if (heightmap_thread_.joinable()) heightmap_thread_.join();\n"
+            "    }\n"
+        ),
+        addition=(
+            "\n    void WriteTrace(const RobotBasicState& state, const Vec3f& command,\n"
+            "                    const VecXf& raw_action, const VecXf& decoded_command) {\n"
+            "        if (!trace_file_.is_open() || trace_steps_remaining_ <= 0) return;\n"
+            "        auto write_vector = [this](const auto& values) {\n"
+            "            trace_file_ << \"[\";\n"
+            "            for (int i = 0; i < values.size(); ++i) {\n"
+            "                if (i) trace_file_ << \",\";\n"
+            "                trace_file_ << values(i);\n"
+            "            }\n"
+            "            trace_file_ << \"]\";\n"
+            "        };\n"
+            "        trace_file_ << std::setprecision(9) << \"{\\\"base_omega\\\":\";\n"
+            "        write_vector(state.base_omega);\n"
+            "        trace_file_ << \",\\\"joint_pos_robot\\\":\";\n"
+            "        write_vector(state.joint_pos);\n"
+            "        trace_file_ << \",\\\"joint_vel_robot\\\":\";\n"
+            "        write_vector(state.joint_vel);\n"
+            "        trace_file_ << \",\\\"command\\\":\";\n"
+            "        write_vector(command);\n"
+            "        trace_file_ << \",\\\"observation\\\":\";\n"
+            "        write_vector(current_observation_);\n"
+            "        trace_file_ << \",\\\"raw_action_policy\\\":\";\n"
+            "        write_vector(raw_action);\n"
+            "        trace_file_ << \",\\\"decoded_command_robot\\\":\";\n"
+            "        write_vector(decoded_command);\n"
+            "        trace_file_ << \"}\\n\";\n"
+            "        trace_file_.flush();\n"
+            "        --trace_steps_remaining_;\n"
+            "    }\n"
+        ),
+        marker="void WriteTrace(",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor=(
+            "        memory_info = Ort::MemoryInfo::CreateCpu("
+            "OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);\n"
+        ),
+        addition=(
+            "        const char* trace_path = std::getenv(\"S10_POLICY_TRACE_PATH\");\n"
+            "        if (trace_path && *trace_path) {\n"
+            "            trace_file_.open(trace_path, std::ios::out | std::ios::trunc);\n"
+            "            const char* trace_steps = std::getenv(\"S10_POLICY_TRACE_STEPS\");\n"
+            "            trace_steps_remaining_ = trace_steps ? std::atoi(trace_steps) : 1;\n"
+            "            if (trace_steps_remaining_ < 1) trace_steps_remaining_ = 1;\n"
+            "        }\n"
+        ),
+        marker="S10_POLICY_TRACE_PATH",
+    ),
+    Edit(
+        path=SDK / "run_policy/s10_policy_runner.hpp",
+        anchor="        tmp_action_eigen += dof_default_eigen_robot;\n",
+        addition="        WriteTrace(ro, command, current_action_eigen, tmp_action_eigen);\n",
+        marker="WriteTrace(ro, command",
     ),
 ]
 

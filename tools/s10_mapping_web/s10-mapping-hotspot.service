@@ -1,0 +1,11 @@
+[Unit]
+Description=S10 48 forward phone mapping to AGX
+Requires=s10-mapping-hotspot.socket
+After=network-online.target
+
+[Service]
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd 10.21.33.102:8080
+User=user
+NoNewPrivileges=yes
+PrivateTmp=yes
+Restart=on-failure

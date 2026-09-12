@@ -1,0 +1,51 @@
+{
+  "recording_id": "gait_20260909_144907_fd57c06d30d3",
+  "start_s": 62.0,
+  "end_s": 68.0,
+  "anchor_ns": "1788936547150611101",
+  "sample_hz": 200,
+  "joint_dir": [
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0
+  ],
+  "offset_rad": [
+    -0.6108652381980153,
+    -2.530727415391778,
+    2.722713633111154,
+    0.0,
+    0.6108652381980153,
+    -2.530727415391778,
+    2.722713633111154,
+    0.0,
+    -0.6108652381980153,
+    2.530727415391778,
+    -2.722713633111154,
+    0.0,
+    0.6108652381980153,
+    2.530727415391778,
+    -2.722713633111154,
+    0.0
+  ],
+  "candidate_ids": [
+    "B011"
+  ],
+  "human_confirmed": false,
+  "training_ready": false,
+  "initial_velocity_assumption": "MOTION_INFO vx/vy interpreted as body m/s; not calibrated truth",
+  "reference_kind": "measured state, not JOINTS_CMD",
+  "review_url": "../viewer.html?id=gait_20260909_144907_fd57c06d30d3&t=62.0&end=68.0&range=basic"
+}

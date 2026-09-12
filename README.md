@@ -18,6 +18,23 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 
 ## Overview
 
+### 当前真机：48 号（2026-09-11）
+
+- [48 号环境、账号与传感器](docs/S10_48_SETUP_ZH.md)：使用本队 `golai`，Windows 登录 `ssh s10-48-golai`。
+- [48 号官方 SLAM：当前状态、使用方法与算法](docs/S10_48_SLAM_ZH.md)：已核实 106 的官方 SLAM；手机连接 48 号 Wi-Fi，打开 `http://10.21.41.1:8080/`，103 转发至 AGX 网页，遥控器控制行走。
+- 9月11日下午，重启后IMU时间和ODOM已恢复，106已部署PTP启动检查、手机测量时间检查；下一次正常开机及短距离闭环仍待验收，旧跳时地图不用于导航。
+- 当前不再使用 50 号。`xwy` 是 50 号上其他队伍的账号，48 号没有该账号；下面的 50 号录制、部署及算法调查均是历史资料。51 号交接文档是未采用的计划。
+
+### 实机采集与研究交接（2026-09-09）
+
+- [历史数据、运动验证、地图与 RL 参考结论](docs/S10_DATA_RESEARCH_ZH.md)：队友先读这份，包含已完成事项、限制、地图预览及本地研究包复现入口。
+- [楼梯匹配使用方法与经验](docs/S10_STAIRS_MATCHING_GUIDE_ZH.md)：第一梯段及剩余楼梯的参考包、回放/USD、逐阶段掩码、软参考训练用法和复现命令；尚未验证动力学跟踪或 RL 效果。
+- [基础步态平面匹配与软参考用法](docs/S10_BASIC_FLAT_MATCHING_ZH.md)：5 段、34 秒 Isaac Sim 自由动力学实测、对照视频、参考 NPZ、软奖励示例与复现步骤；最终 3 段未摔倒，转向/侧向 2 段侧翻，尚未训练 RL。
+- [50 号 106 定位板与 SLAM 算法调查（历史）](docs/S10_SLAM_106_RESEARCH_ZH.md)：厂商版本、LIO/回环/图优化结构及开源算法来源线索，不能代替 48 号版本验收。
+- [50 号机器人采集站部署与清理](tools/s10_gait_capture/DEPLOYMENT_050.md)与[采集数据格式](tools/s10_gait_capture/LOCAL_COPY.md)：102 独立采集站和 103 临时中转均已于 2026-09-10 清理，本地录制保留。
+- [采集工具交接与本地演示](tools/s10_gait_capture/README.md)：独立手机热点、自启、点云预览和已知故障。9 月 9 日新增 17 段数据单独存于采集工作站 `D:/S10Data/050/2026-09-09/`，不随 Git 分发；本批未录深度相机，也没有官方关节动作目标。
+- [下一步验证事项](docs/TODO.md)。原始 bag、模型副本、完整地图及分析输出在本地 `artifacts/`，不随 Git 提交；仅 clone 仓库不会获得这些材料。本轮完成离线审查与短时仿真，尚未完成专家策略复刻或 RL 训练。
+
 The DEEP Robotics **Lynx S10** is a 16-DOF wheel-legged quadruped. The contest asks it to
 race a **33-waypoint, 224 m course with 6.7 m of cumulative climb** through an industrial
 park, as fast as possible, using perception.
@@ -159,7 +176,7 @@ ros2 launch s10_bringup race.launch.py launch_sim:=false
 
 ```bash
 scripts/run_race.sh --headless                      # batch evaluation, no viewer
-scripts/run_race.sh --manual                        # WASD/QE, V/M obstacle, H flat high speed
+scripts/run_race.sh --manual                        # WASD/QE; P policy; V/M obstacle; H high speed
 S10_START_WAYPOINT=16 S10_START_YAW_DEG=0 scripts/run_race.sh --manual  # face the 37 cm ledge normal
 S10_VIEWER_BACKEND=wsl scripts/run_race.sh --manual # fallback WSLg viewer
 scripts/build.sh --packages-select s10_auto_nav     # rebuild one package
@@ -178,6 +195,12 @@ python scripts/render_qpos_gif.py /abs/path/wp16.npy /abs/path/wp16.gif \
   --xml-path upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/mjcf/S10_track.xml \
   --width 640 --height 360 --fps 10
 ```
+
+The native MuJoCo window starts with both parameter sidebars hidden. When it has focus,
+the robot keys (`WASD/QE`, `Z/C/V/M/H/P/L/0` and the tuning keys) are captured before MuJoCo's
+own visualization shortcuts, so the command terminal does not need focus. `Ctrl+Q` or the
+window close button exits the viewer. Contact-point visualization starts disabled and uses
+small metric-scale markers if enabled for diagnostics.
 
 The 37 cm test ledge has its approach normal at world yaw `0 deg`; the waypoint 16→17
 tangent (`-18.4 deg`) is not square to the face. `V` enters the approach pose and drives
@@ -199,6 +222,21 @@ to `(front hip/knee=-0.75/+1.50, rear=+0.75/-1.50 rad)`, then ramps all four whe
 `20 rad/s`; pressing `H` again slows down before standing back up. Calibrate with
 `S10_HIGH_SPEED_HIP`, `S10_HIGH_SPEED_KNEE`, `S10_HIGH_SPEED_WHEEL`,
 `S10_HIGH_SPEED_WHEEL_KD`, and `S10_HIGH_SPEED_RAMP` before launch.
+
+In RL control, `P` switches instantly between the SDK default policy and
+`policies/s10_stairs_stable_up_57d_model499.onnx`. Both sessions are preloaded, and action
+history is cleared at the switch. Entering the stairs policy also disables the `H`
+high-speed override. Set `S10_SECOND_POLICY_PATH` before launch to use another compatible
+57- or 174-observation ONNX model.
+
+`L` switches between the default policy and the preloaded stairs-down policy at
+`policies/stable_down_compare/model300.onnx`. Pressing `P` while stairs-down is active
+switches directly to stairs-up, and pressing `L` while stairs-up is active switches
+directly to stairs-down.
+
+`K` switches between the default policy and the preloaded speed-turn policy at
+`policies/speedturn_sweep/model_2000.onnx`. Pressing `K` while either stairs policy is
+active switches directly to speed-turn. Override it with `S10_SPEEDTURN_POLICY_PATH`.
 
 </details>
 
@@ -307,6 +345,10 @@ This repository runs in autonomous navigation mode.
 ---
 
 ## Development
+
+### S10 录制复核与参考运动重建
+
+团队交接见 [录制复核与重建经验](docs/S10_RECORDING_REVIEW_AND_RECONSTRUCTION_ZH.md)：包含两批录制的区别、关节/楼梯试验结果、3D 点云与动作复核区用法、人工标注协作、队友本地启动步骤和 Git/大数据交付边界。当前复核区支持保存人工判断；新批次地图、实机轨迹重建和 RL 训练尚未完成。
 
 ```bash
 scripts/build.sh                       # build everything

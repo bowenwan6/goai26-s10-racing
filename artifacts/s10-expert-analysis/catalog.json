@@ -1,0 +1,588 @@
+[
+  {
+    "id": "gait_20260906_133215_7ac9013c8d0f",
+    "terrain": "basic",
+    "duration": 12.003967681000177,
+    "outcome": "unlabeled",
+    "events": [
+      {
+        "label": "obstacle_enter",
+        "receive_wall_ns": 1788672735169950140,
+        "elapsed_s": 0.06356187999972462,
+        "time_basis": "server receipt; not sensor-aligned"
+      }
+    ],
+    "notes": "Read-only deployment validation. No commanded motion. Not a training demonstration.",
+    "teacher": "vendor feedback; deployment diagnostic",
+    "parameters": {},
+    "error": "达到录制时限或磁盘剩余空间下限",
+    "topics": [
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        2406,
+        1788672735089553554,
+        1788672747106706821
+      ],
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        2405,
+        1788672735117473978,
+        1788672747103522501
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        240,
+        1788672735130232016,
+        1788672747065276362
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        113,
+        1788672735138691272,
+        1788672747019731599
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        114,
+        1788672735151800893,
+        1788672747024174062
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_133611_a088e9a21bad",
+    "terrain": "basic",
+    "duration": 12.005897628000639,
+    "outcome": "unlabeled",
+    "events": [
+      {
+        "label": "obstacle_enter",
+        "receive_wall_ns": 1788672971364500240,
+        "elapsed_s": 0.08051634700041177,
+        "time_basis": "server receipt; not sensor-aligned"
+      }
+    ],
+    "notes": "Read-only deployment validation. No commanded motion. Not a training demonstration.",
+    "teacher": "vendor feedback; deployment diagnostic",
+    "parameters": {},
+    "error": "达到录制时限或磁盘剩余空间下限",
+    "topics": [
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        2403,
+        1788672971273583797,
+        1788672983283728080
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        2404,
+        1788672971290380053,
+        1788672983285765905
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        240,
+        1788672971300273269,
+        1788672983246222638
+      ],
+      [
+        "/STEER",
+        "drdds/msg/Steer",
+        120,
+        1788672971314099892,
+        1788672981446957218
+      ],
+      [
+        "/HANDLE_STEER",
+        "drdds/msg/Steer",
+        120,
+        1788672971316148116,
+        1788672981447380386
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        119,
+        1788672971322645748,
+        1788672983121203399
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        119,
+        1788672971332989203,
+        1788672983126415783
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_134213_82386e35f7b0",
+    "terrain": "basic",
+    "duration": 4.620388295999874,
+    "outcome": "unlabeled",
+    "events": [],
+    "notes": "",
+    "teacher": "",
+    "parameters": {},
+    "error": "",
+    "topics": [
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        925,
+        1788673333418750845,
+        1788673338047858722
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        231,
+        1788673333451497017,
+        1788673338026815073
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        93,
+        1788673333454098553,
+        1788673338018153696
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        47,
+        1788673333464248983,
+        1788673338041515266
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        47,
+        1788673333646607615,
+        1788673338032577345
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_134245_67a76c09d415",
+    "terrain": "basic",
+    "duration": 23.640816885000277,
+    "outcome": "unlabeled",
+    "events": [],
+    "notes": "",
+    "teacher": "",
+    "parameters": {},
+    "error": "",
+    "topics": [
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        4729,
+        1788673365582973732,
+        1788673389226512187
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        1182,
+        1788673365605155015,
+        1788673389205434591
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        472,
+        1788673365630260939,
+        1788673389167280328
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        234,
+        1788673365641508620,
+        1788673388927730259
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        239,
+        1788673365937536788,
+        1788673389219041980
+      ],
+      [
+        "/HANDLE_STEER",
+        "drdds/msg/Steer",
+        206,
+        1788673368675580120,
+        1788673386837640093
+      ],
+      [
+        "/STEER",
+        "drdds/msg/Steer",
+        206,
+        1788673368677123064,
+        1788673386841367871
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_134324_93fa2317c970",
+    "terrain": "stairs",
+    "duration": 32.62751142700017,
+    "outcome": "unlabeled",
+    "events": [],
+    "notes": "",
+    "teacher": "",
+    "parameters": {},
+    "error": "",
+    "topics": [
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        6528,
+        1788673404219915775,
+        1788673436848427427
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        1632,
+        1788673404243257316,
+        1788673436846478659
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        653,
+        1788673404246187236,
+        1788673436817965922
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        320,
+        1788673404251328709,
+        1788673436135547417
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        320,
+        1788673404267528904,
+        1788673436118981142
+      ],
+      [
+        "/HANDLE_STEER",
+        "drdds/msg/Steer",
+        333,
+        1788673405250667027,
+        1788673433475773648
+      ],
+      [
+        "/STEER",
+        "drdds/msg/Steer",
+        333,
+        1788673405254161842,
+        1788673433476480720
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_141606_4ef6a913c02c",
+    "terrain": "ledge",
+    "duration": 120.00816345899966,
+    "outcome": "unlabeled",
+    "events": [],
+    "notes": "",
+    "teacher": "",
+    "parameters": {},
+    "error": "达到录制时限或磁盘剩余空间下限",
+    "topics": [
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        1200,
+        1788675366034526478,
+        1788675485923124165
+      ],
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        24009,
+        1788675366077422701,
+        1788675486058652563
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        2401,
+        1788675366081847533,
+        1788675486046299259
+      ],
+      [
+        "/SLAM_ODOM",
+        "nav_msgs/msg/Odometry",
+        1201,
+        1788675366085682124,
+        1788675486028394405
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        1201,
+        1788675366094968268,
+        1788675486035834337
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        120,
+        1788675366368207807,
+        1788675485368237585
+      ],
+      [
+        "/GAIT",
+        "drdds/msg/Gait",
+        1,
+        1788675371524390356,
+        1788675371524390356
+      ],
+      [
+        "/HANDLE_STEER",
+        "drdds/msg/Steer",
+        158,
+        1788675372645806543,
+        1788675477143140419
+      ],
+      [
+        "/STEER",
+        "drdds/msg/Steer",
+        158,
+        1788675372651013294,
+        1788675477146263747
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_143150_2620f4f1e142",
+    "terrain": "basic",
+    "duration": 96.44098104000022,
+    "outcome": "unlabeled",
+    "events": [],
+    "notes": "",
+    "teacher": "",
+    "parameters": {},
+    "error": "",
+    "topics": [
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        19289,
+        1788676310913037290,
+        1788676407349022044
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        4822,
+        1788676310940969168,
+        1788676407335448988
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        963,
+        1788676310944009232,
+        1788676407119560360
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        963,
+        1788676310948306705,
+        1788676407126336743
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        1929,
+        1788676310960724147,
+        1788676407331541180
+      ],
+      [
+        "/HANDLE_STEER",
+        "drdds/msg/Steer",
+        800,
+        1788676322547676272,
+        1788676406371727128
+      ],
+      [
+        "/STEER",
+        "drdds/msg/Steer",
+        800,
+        1788676322550438735,
+        1788676406372445336
+      ],
+      [
+        "/GAIT",
+        "drdds/msg/Gait",
+        1,
+        1788676400168006245,
+        1788676400168006245
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_151603_3aa186c2ff49",
+    "terrain": "stairs",
+    "duration": 300.012486481,
+    "outcome": "unlabeled",
+    "events": [],
+    "notes": "Continuous stairs, user-confirmed. Operator-managed capture. Joint feedback approximately 1 Hz at start; teacher actions unavailable. Outcome pending user annotation.",
+    "teacher": "Vendor controller; user teleoperation",
+    "parameters": {},
+    "error": "达到录制时限或磁盘剩余空间下限",
+    "topics": [
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        60006,
+        1788678963507778078,
+        1788679263526598189
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        6002,
+        1788678963559645470,
+        1788679263514550827
+      ],
+      [
+        "/STEER",
+        "drdds/msg/Steer",
+        2206,
+        1788678963566291198,
+        1788679263428857314
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        3001,
+        1788678963576254910,
+        1788679263533436109
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        3000,
+        1788678963602213567,
+        1788679263446224228
+      ],
+      [
+        "/HANDLE_STEER",
+        "drdds/msg/Steer",
+        2206,
+        1788678963612951263,
+        1788679263429782370
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        300,
+        1788678964160001643,
+        1788679263159928952
+      ],
+      [
+        "/GAIT",
+        "drdds/msg/Gait",
+        3,
+        1788679136245881781,
+        1788679233300739804
+      ]
+    ]
+  },
+  {
+    "id": "gait_20260906_153020_96c782400250",
+    "terrain": "basic",
+    "duration": 180.0036383769998,
+    "outcome": "unlabeled",
+    "events": [],
+    "notes": "Repeated lie-down and stand-up under user remote control; record posture transitions. Operator-managed capture. Teacher actions unavailable. Outcome pending user annotation.",
+    "teacher": "Vendor controller; user teleoperation",
+    "parameters": {},
+    "error": "达到录制时限或磁盘剩余空间下限",
+    "topics": [
+      [
+        "/IMU",
+        "sensor_msgs/msg/Imu",
+        36003,
+        1788679820142308384,
+        1788680000150557576
+      ],
+      [
+        "/JOINTS_DATA",
+        "drdds/msg/JointsData",
+        5734,
+        1788679820175067899,
+        1788680000151556840
+      ],
+      [
+        "/JOINTS_DATA_10HZ",
+        "drdds/msg/JointsData",
+        1800,
+        1788679820179320474,
+        1788680000072445145
+      ],
+      [
+        "/MOTION_INFO",
+        "drdds/msg/MotionInfo",
+        3621,
+        1788679820183724090,
+        1788680000152674215
+      ],
+      [
+        "/rslidar_front/points",
+        "sensor_msgs/msg/PointCloud2",
+        1800,
+        1788679820224863127,
+        1788680000120035918
+      ],
+      [
+        "/rslidar_rear/points",
+        "sensor_msgs/msg/PointCloud2",
+        1800,
+        1788679820262818039,
+        1788680000129684876
+      ],
+      [
+        "/GAIT",
+        "drdds/msg/Gait",
+        11,
+        1788679836642279985,
+        1788679900188176091
+      ],
+      [
+        "/HANDLE_STEER",
+        "drdds/msg/Steer",
+        1001,
+        1788679876244356244,
+        1788680000147346792
+      ],
+      [
+        "/STEER",
+        "drdds/msg/Steer",
+        1001,
+        1788679876248394772,
+        1788680000147844744
+      ]
+    ]
+  }
+]
