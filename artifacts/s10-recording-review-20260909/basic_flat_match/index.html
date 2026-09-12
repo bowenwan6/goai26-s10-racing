@@ -1,0 +1,30 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S10 基础步态平面匹配</title><style>body{font:16px/1.65 system-ui;margin:28px auto;padding:0 20px;max-width:1250px;color:#172c3e;background:#f5f7fa}article{background:white;padding:22px;margin:28px 0;border:1px solid #d9e1e8;border-radius:10px}img,video{width:100%;display:block;margin:16px 0}a{color:#096699}h1,h2{line-height:1.3}</style>
+<h1>S10 基础步态 · 平面软参考验证</h1><p>5 段 · 34 秒 · Isaac Sim 自由机身动力学已执行 · 人工训练资格待确认</p>
+<p>左侧视频：固定机身 XYZ 的实录关节/IMU 姿态示意。右侧：Isaac 自由动力学结果。网格由 MuJoCo 渲染。没有实测世界 XYZ；图中报告速度暂未校准。</p>
+<p>最终本地静态平板场景：3 段未摔倒；转向、侧向 2 段侧翻，保留诊断。没有摔倒也不代表运动完全匹配。<a href="../basic_gait_review.html">返回基础步态复核区</a></p><article id="forward"><h2>forward · 12–18 秒</h2>
+<p>首轮软参考试验候选：仍需人工复核</p><p>腿角 RMSE 2.63° · 轮速 RMSE 2.06 rad/s ·
+重力方向误差 3.67° · 摔倒阈值：未触发</p>
+<p><a href="../viewer.html?id=gait_20260909_144907_fd57c06d30d3&t=12.0&end=18.0&range=basic">打开原始点云与关节复核</a> · <a href="forward/reference.npz">参考 NPZ</a> ·
+<a href="forward/isaac.json">Isaac 指标</a> · <a href="forward/mujoco.json">MuJoCo 对照</a></p>
+<video controls preload="metadata" src="forward/comparison.mp4"></video><img loading="lazy" src="forward/comparison.png"></article><article id="backward"><h2>backward · 18–24 秒</h2>
+<p>首轮软参考试验候选：仍需人工复核</p><p>腿角 RMSE 2.80° · 轮速 RMSE 1.45 rad/s ·
+重力方向误差 4.12° · 摔倒阈值：未触发</p>
+<p><a href="../viewer.html?id=gait_20260909_144907_fd57c06d30d3&t=18.0&end=24.0&range=basic">打开原始点云与关节复核</a> · <a href="backward/reference.npz">参考 NPZ</a> ·
+<a href="backward/isaac.json">Isaac 指标</a> · <a href="backward/mujoco.json">MuJoCo 对照</a></p>
+<video controls preload="metadata" src="backward/comparison.mp4"></video><img loading="lazy" src="backward/comparison.png"></article><article id="turn"><h2>turn · 26–34 秒</h2>
+<p>诊断保留：本轮侧翻，不加入首轮训练试验组</p><p>腿角 RMSE 4.86° · 轮速 RMSE 1.64 rad/s ·
+重力方向误差 76.45° · 摔倒阈值：触发</p>
+<p><a href="../viewer.html?id=gait_20260909_144907_fd57c06d30d3&t=26.0&end=34.0&range=basic">打开原始点云与关节复核</a> · <a href="turn/reference.npz">参考 NPZ</a> ·
+<a href="turn/isaac.json">Isaac 指标</a> · <a href="turn/mujoco.json">MuJoCo 对照</a></p>
+<video controls preload="metadata" src="turn/comparison.mp4"></video><img loading="lazy" src="turn/comparison.png"></article><article id="sideways"><h2>sideways · 62–68 秒</h2>
+<p>诊断保留：本轮侧翻，不加入首轮训练试验组</p><p>腿角 RMSE 4.63° · 轮速 RMSE 1.41 rad/s ·
+重力方向误差 87.86° · 摔倒阈值：触发</p>
+<p><a href="../viewer.html?id=gait_20260909_144907_fd57c06d30d3&t=62.0&end=68.0&range=basic">打开原始点云与关节复核</a> · <a href="sideways/reference.npz">参考 NPZ</a> ·
+<a href="sideways/isaac.json">Isaac 指标</a> · <a href="sideways/mujoco.json">MuJoCo 对照</a></p>
+<video controls preload="metadata" src="sideways/comparison.mp4"></video><img loading="lazy" src="sideways/comparison.png"></article><article id="second_recording"><h2>second_recording · 24–32 秒</h2>
+<p>首轮软参考试验候选：仍需人工复核</p><p>腿角 RMSE 2.48° · 轮速 RMSE 1.62 rad/s ·
+重力方向误差 2.76° · 摔倒阈值：未触发</p>
+<p><a href="../viewer.html?id=gait_20260909_151931_7a0441190ea8&t=24.0&end=32.0&range=basic">打开原始点云与关节复核</a> · <a href="second_recording/reference.npz">参考 NPZ</a> ·
+<a href="second_recording/isaac.json">Isaac 指标</a> · <a href="second_recording/mujoco.json">MuJoCo 对照</a></p>
+<video controls preload="metadata" src="second_recording/comparison.mp4"></video><img loading="lazy" src="second_recording/comparison.png"></article></html>

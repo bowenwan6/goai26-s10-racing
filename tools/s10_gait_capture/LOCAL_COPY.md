@@ -1,8 +1,12 @@
 # 本地副本与数据格式
 
+部署历史、自启配置和清理结果见 [DEPLOYMENT_050.md](DEPLOYMENT_050.md)。2026-09-10 已移除 50 号 AGX 独立采集站及 103 临时中转，本地源码和录制保留。
+
+历史 9 轮录制、关节/姿态验证、地图和 RL 参考结论见 [研究交接](../../docs/S10_DATA_RESEARCH_ZH.md)；106 的建图调用与算法证据见 [SLAM 调查](../../docs/S10_SLAM_106_RESEARCH_ZH.md)。历史数据已复制到本地 `artifacts/`，不会随 Git 仓库分发。
+
 2026-09-08 从 50 号机器人 AGX `10.21.33.102:/home/xwy/s10_gait_capture` 只读复制。
 保存了 Python 源码、网页、启动脚本、服务文件和 vendor_ws/src/drdds 消息定义。
-没有复制虚拟环境、编译产物、认证配置或完整 ROS bag。原始源码保持不变。
+初次复制没有包含虚拟环境、编译产物、认证配置或完整 ROS bag。此后本地副本已改版；机器人原作者目录没有被覆盖。
 `run-demo-local.py` 是本次新增的本地演示入口，使用已有 Flask，完全不连接 ROS 或机器人。
 
 ## 本地演示
@@ -15,7 +19,7 @@ python tools/s10_gait_capture/run-demo-local.py
 
 打开 http://127.0.0.1:8090 。访问口令在 `artifacts/s10-capture-demo/.access-token`。
 若页面已在运行，无需重复启动。关闭运行终端可结束前台实例。
-当前后台演示进程 PID 为 37484；停止前应核对该 PID 仍对应此脚本。
+不要复用历史 PID；停止演示应关闭其启动终端，或先核对当前进程命令行。
 
 选择地形及参数 → 开始录制 → 标注事件 → 停止并保存 → 下载 ZIP。
 本次已通过页面完成上述流程，保存一轮 synthetic 演示。

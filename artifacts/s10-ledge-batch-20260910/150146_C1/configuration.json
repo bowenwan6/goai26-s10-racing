@@ -1,0 +1,16 @@
+{
+  "id": "150146_C1",
+  "recording": "150146",
+  "start": 10.5,
+  "end": 18.5,
+  "mode": "cycle",
+  "peak": 12.85,
+  "reverse_start": 14.4,
+  "reverse_peak": 15.9,
+  "height": 0.3,
+  "evidence": "上台后前方台面、后方低地；随后轮速反向，前方立面重新出现。",
+  "source_recording_id": "gait_20260909_150146_9b19dc6690ec",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action"
+}

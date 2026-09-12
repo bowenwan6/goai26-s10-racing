@@ -1,0 +1,15 @@
+{
+  "id": "151220_U1",
+  "recording": "151220",
+  "start": 7.0,
+  "end": 13.3,
+  "mode": "up",
+  "peak": 9.25,
+  "height": 0.38,
+  "reference_outcome": "end_uncertain",
+  "evidence": "上台姿态明确，前方转为台面、后方低地；末尾仍倾斜，录制结束前是否完整通过未人工确认。",
+  "source_recording_id": "gait_20260909_151220_d3ace6be729a",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action"
+}

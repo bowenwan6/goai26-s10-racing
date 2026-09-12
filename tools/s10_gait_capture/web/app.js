@@ -22,3 +22,74 @@ $('captureForm').onsubmit=e=>{e.preventDefault();const parameters={};['height_cm
 document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>action({action:'mark',session_id:state.active?.id,label:b.dataset.event}));
 $('stop').onclick=()=>action({action:'stop',session_id:state.active?.id,outcome:$('outcome').value});
 refresh();setInterval(refresh,2000);
+
+let pointFrames={},pointBusy=false;
+const pointColors={front:'#5ee4e8',rear:'#ffbc72'},pointNames={front:'前雷达',rear:'后雷达'};
+function pointScene(frames,selection,now=performance.now()){
+ const selected=selection==='both'?['front','rear']:[selection],messages=[];
+ let layers=selected.filter(key=>{
+  const f=frames[key],fresh=f?.fresh&&f.age_s+(now-f.receivedAt)/1000<=2;
+  messages.push(pointNames[key]+'：'+(fresh?`${f.points.length} / ${f.total} 点`:(f?.fresh?'点云已过期':f?.message||'等待点云')));
+  return fresh;
+ }).map(key=>({key,...frames[key]}));
+ if(layers.length===2&&(!layers[0].frame_id||layers[0].frame_id!==layers[1].frame_id)){
+  messages.push('坐标系不同或未声明，无法叠加；请选择单雷达查看');layers=[];
+ }
+ const frame=layers[0]?.frame_id||'';
+ if(layers.length)messages.push(frame==='base_link'?'机身坐标系 base_link':`${frame||'未声明坐标系'} · 无机身位置，隐藏机器狗`);
+ return {layers,robot:frame==='base_link',message:messages.join('；')};
+}
+function drawPoints(){
+ const canvas=$('pointCanvas'),rect=canvas.getBoundingClientRect();if(!rect.width)return;
+ const ctx=canvas.getContext('2d'),w=rect.width,h=rect.height,dpr=window.devicePixelRatio||1;
+ canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+ const range=Number($('pointRange').value),side=$('pointView').value==='side',scale=(Math.min(w,h)-64)/(2*range);
+ const scene=pointScene(pointFrames,$('pointSide').value),cx=w/2,cy=h/2,extent=range*scale;
+ const project=([x,y,z])=>side?[cx+x*scale,cy-z*scale]:[cx-y*scale,cy-x*scale];
+ const step=range<=2?.5:range<=5?1:range<=10?2:5;
+ ctx.fillStyle='#10223a';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#294059';ctx.lineWidth=1;
+ for(let i=-range;i<=range;i+=step){
+  ctx.beginPath();ctx.moveTo(cx+i*scale,cy-extent);ctx.lineTo(cx+i*scale,cy+extent);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-extent,cy+i*scale);ctx.lineTo(cx+extent,cy+i*scale);ctx.stroke();
+ }
+ ctx.save();ctx.beginPath();ctx.rect(cx-extent,cy-extent,2*extent,2*extent);ctx.clip();
+ for(const layer of scene.layers){
+  ctx.fillStyle=pointColors[layer.key];
+  for(const xyz of layer.points){const [px,py]=project(xyz);ctx.fillRect(px-1,py-1,2,2);}
+ }
+ ctx.restore();ctx.fillStyle='#b2c8e4';ctx.font='12px sans-serif';ctx.textAlign='center';
+ ctx.fillText(side?'上方 +Z':'前方 +X',cx,20);ctx.fillText(side?'下方 −Z':'后方 −X',cx,h-12);
+ ctx.textAlign='left';ctx.fillText(side?'后 −X':'左 +Y',10,cy);
+ ctx.textAlign='right';ctx.fillText(side?'前 +X':'右 −Y',w-10,cy);
+ ctx.textAlign='left';ctx.fillText(`每格 ${step} m`,12,h-14);
+ // Fixed-size orientation symbol, not a measured footprint or joint pose.
+ if(scene.robot){
+  ctx.save();ctx.translate(cx,cy);ctx.strokeStyle='#e9f4ff';ctx.fillStyle='#e9f4ff';ctx.lineWidth=3;ctx.lineCap='round';
+  ctx.shadowColor='#10223a';ctx.shadowBlur=6;
+  if(side){
+   ctx.fillRect(-22,-8,38,16);ctx.fillRect(16,-17,14,13);
+   for(const x of [-16,10]){ctx.beginPath();ctx.moveTo(x,6);ctx.lineTo(x-4,16);ctx.lineTo(x+1,25);ctx.stroke();}
+   ctx.beginPath();ctx.moveTo(-22,-5);ctx.lineTo(-30,-13);ctx.stroke();
+  }else{
+   ctx.fillRect(-10,-20,20,40);ctx.fillRect(-8,-32,16,12);
+   for(const x of [-1,1])for(const y of [-12,13]){ctx.beginPath();ctx.moveTo(x*10,y);ctx.lineTo(x*20,y+5);ctx.lineTo(x*20,y+11);ctx.stroke();}
+   ctx.beginPath();ctx.moveTo(0,20);ctx.lineTo(0,29);ctx.stroke();
+  }
+  ctx.restore();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('机器狗 · 示意',cx,cy+46);
+ }else if(!scene.layers.length){
+  ctx.textAlign='center';ctx.fillText('暂无可叠加点云',cx,cy-10);
+ }
+ ctx.textAlign='left';$('pointStatus').textContent=scene.message;
+}
+async function refreshPoints(){
+ if(pointBusy||$('workspace').hidden||document.hidden)return;
+ pointBusy=true;const selected=$('pointSide').value,keys=selected==='both'?['front','rear']:[selected];
+ try{await Promise.all(keys.map(async key=>{
+  try{pointFrames[key]={...await api('/api/points/'+key),receivedAt:performance.now()};}
+  catch(e){pointFrames[key]={fresh:false,message:e.message};}
+ }));}finally{pointBusy=false;drawPoints();if(selected!==$('pointSide').value)refreshPoints();}
+}
+$('pointSide').onchange=()=>{drawPoints();refreshPoints();};
+$('pointView').onchange=drawPoints;$('pointRange').onchange=drawPoints;
+new ResizeObserver(drawPoints).observe($('pointCanvas'));
+drawPoints();setInterval(()=>{drawPoints();refreshPoints();},2000);

@@ -1,0 +1,22 @@
+{
+  "id": "150705_C4",
+  "recording": "150705",
+  "start": 62.0,
+  "end": 66.5,
+  "mode": "up",
+  "peak": 64.35,
+  "height": 0.32,
+  "evidence": "上台后长等待保留；82秒轮速反向、后方地面回升、前方立面重现，倒退下台。",
+  "source_recording_id": "gait_20260909_150705_4fe2b5f8eebd",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action",
+  "parent_mode": "cycle",
+  "parent_end": 85.0,
+  "crop_reason": "Recorded first level phase before subsequent body adjustment/reverse motion",
+  "controller": {
+    "kp_leg": 80.0,
+    "kd_leg": 2.0,
+    "kd_wheel": 0.6
+  }
+}

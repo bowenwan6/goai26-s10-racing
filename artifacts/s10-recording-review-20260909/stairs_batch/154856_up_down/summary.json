@@ -1,0 +1,62 @@
+{
+  "name": "154856_up_down",
+  "recording_id": "gait_20260909_154856_5809460fe5ab",
+  "start_s": 0,
+  "end_s": 84.12,
+  "direction": "up_and_down",
+  "phases": [
+    [
+      0,
+      19.5,
+      "approach"
+    ],
+    [
+      19.5,
+      36.5,
+      "stairs_up"
+    ],
+    [
+      36.5,
+      42,
+      "landing_turn"
+    ],
+    [
+      42,
+      48.5,
+      "stairs_down"
+    ],
+    [
+      48.5,
+      55,
+      "landing"
+    ],
+    [
+      55,
+      65.5,
+      "stairs_down"
+    ],
+    [
+      65.5,
+      84.12,
+      "exit"
+    ]
+  ],
+  "samples": 4195,
+  "duration_s": 83.879996345,
+  "lidar_pairs": 840,
+  "reference_valid_fraction": 0.9189511323003575,
+  "provisional_root_reference_weight": 0.25,
+  "median_registration_residual_m": 0.013649521282545363,
+  "p90_registration_residual_m": 0.022965333700244374,
+  "endpoint_displacement_m": [
+    -9.297458958631434,
+    5.16363415058779,
+    -1.528415232552141
+  ],
+  "minimum_source_gap_s": 0.09499120699999963,
+  "maximum_source_gap_s": 0.10496783199999982,
+  "training_status": "soft_reference_candidate_not_dynamics_validated",
+  "contact_labels": "unavailable",
+  "outcome": "not_inferred_from_recording_label",
+  "root_coordinate_origin": "first lidar frame body origin; recording-initial heading"
+}
