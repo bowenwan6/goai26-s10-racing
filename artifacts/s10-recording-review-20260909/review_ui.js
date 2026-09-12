@@ -1,7 +1,7 @@
 'use strict';
 let reviewRows=[],reviewItems=[],reviewCurrent=null,reviewDirty=false,reviewSelection=0,reviewSource='questions';
 let orbit={az:.65,el:.4,range:2},dragPoint=null;
-const reviewFields={level:'level',terrain:'terrain',action_phase:'action',direction:'direction',outcome:'outcome',obstacle_id:'obstacle',group_id:'group',notes:'notes'};
+const reviewFields={level:'level',terrain:'terrain',surface_type:'surface',reference_use:'reference',action_phase:'action',direction:'direction',outcome:'outcome',obstacle_id:'obstacle',group_id:'group',notes:'notes'};
 
 async function reviewApi(path,entries){
  const response=await fetch(path,entries?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entries)}:{});
@@ -23,7 +23,7 @@ function fillReview(item){
  reviewCurrent=saved||{id:crypto.randomUUID(),recording_id:sid,start_s:item.start_s,end_s:item.end_s,level,
   terrain:'unknown',action_phase:'unknown',direction:'unknown',outcome:'uncertain',obstacle_id:'',group_id:item.passage_id||'',notes:'',human_review_status:'pending'};
  $('review-start').value=reviewCurrent.start_s.toFixed(3);$('review-end').value=reviewCurrent.end_s.toFixed(3);
- for(const [k,id] of Object.entries(reviewFields))$('review-'+id).value=reviewCurrent[k]||'';
+ for(const [k,id] of Object.entries(reviewFields))$('review-'+id).value=reviewCurrent[k]||(k==='surface_type'?'unknown':k==='reference_use'?'pending':'');
  $('review-question').textContent=item.label||`${item.human_review_status} · ${item.start_s.toFixed(2)}–${item.end_s.toFixed(2)}s`;
  $('review-retire').disabled=!saved;reviewDirty=false;
 }
@@ -56,7 +56,7 @@ async function persistReviews(entries){
 async function saveReview(status){try{const [saved]=await persistReviews([readReview(status)]);fillReview(saved);}catch(e){reviewMessage(e.message,true);}}
 async function splitReview(){try{
  const row=readReview('pending');if(!(row.start_s<t&&t<row.end_s))throw Error('请先将播放游标放在区间内部。');
- const parts=[{...row,id:crypto.randomUUID(),end_s:t},{...row,id:crypto.randomUUID(),start_s:t}].map(r=>({...r,outcome:'uncertain',action_phase:'unknown',direction:'unknown'}));
+ const parts=[{...row,id:crypto.randomUUID(),end_s:t},{...row,id:crypto.randomUUID(),start_s:t}].map(r=>({...r,outcome:'uncertain',action_phase:'unknown',direction:'unknown',reference_use:'pending'}));
  const entries=reviewRows.some(r=>r.id===row.id)?[{...row,retired:true},...parts]:parts;
  await persistReviews(entries);$('review-source').value='saved';populateReviews();selectReview(reviewItems.findIndex(r=>r.id===parts[0].id),true);
  reviewMessage('已保存两段待复核草稿。动作、方向和结果已重置，请分别检查后确认。');
@@ -69,7 +69,7 @@ function reviewUiInit(){
  $('review-set-end').onclick=()=>{if($('clock').value!=='src')return reviewMessage('先切换到源时间。',true);$('review-end').value=t.toFixed(3);reviewDirty=true;};
  $('review-loop').onclick=()=>{try{const r=readReview('pending');loopStart=Math.max(0,r.start_s-2);limit=Math.min(R.duration,r.end_s+2);loopEnabled=true;jump(loopStart);playing=true;last=performance.now();$('play').textContent='暂停';}catch(e){reviewMessage(e.message,true);}};
  $('review-save').onclick=()=>saveReview('confirmed');$('review-uncertain').onclick=()=>saveReview('uncertain');$('review-split').onclick=splitReview;
- $('review-merge').onclick=()=>{try{const r=readReview('pending');const rows=r.level==='passage'?R.passages:R.segments;const previous=rows.filter(s=>s.end_s<=r.start_s+1e-6).at(-1);if(!previous)throw Error('没有相邻的前一候选，请直接调整起止时间。');$('review-start').value=previous.start_s.toFixed(3);reviewDirty=true;reviewMessage('已扩展到前一候选的起点；检查范围后点击保存。不会自动继承完成结果。');$('review-outcome').value='uncertain';}catch(e){reviewMessage(e.message,true);}};
+ $('review-merge').onclick=()=>{try{const r=readReview('pending');const rows=r.level==='passage'?R.passages:R.segments;const previous=rows.filter(s=>s.end_s<=r.start_s+1e-6).at(-1);if(!previous)throw Error('没有相邻的前一候选，请直接调整起止时间。');$('review-start').value=previous.start_s.toFixed(3);reviewDirty=true;reviewMessage('已扩展到前一候选的起点；检查范围后点击保存。不会自动继承完成结果。');$('review-outcome').value='uncertain';$('review-reference').value='pending';}catch(e){reviewMessage(e.message,true);}};
  $('review-retire').onclick=async()=>{try{await persistReviews([{...readReview('pending'),retired:true}]);$('review-source').value='saved';populateReviews();}catch(e){reviewMessage(e.message,true);}};
  $('review-export').onclick=async()=>{try{await refreshReviews();const blob=new Blob([JSON.stringify({schema_version:1,reviews:reviewRows},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='s10-human-reviews.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){reviewMessage(e.message,true);}};
  $('detail-load').onclick=async()=>{try{
@@ -82,7 +82,7 @@ function reviewUiInit(){
  }catch(e){$('detail-status').textContent='加载失败：'+e.message;}finally{$('detail-load').disabled=false;}};
  $('detail-clear').onclick=()=>{detailData=null;$('detail-status').textContent='已返回总览：动作约10Hz，点云约2Hz。';render();};
  sceneInit();populateReviews();
- const desired=Number(params.get('t'));if(Number.isFinite(desired)&&params.has('t')){const i=reviewItems.findIndex(r=>r.start_s<=desired&&r.end_s>=desired);if(i>=0)selectReview(i,true);else{fillReview({start_s:desired,end_s:Math.min(Number(params.get('end'))||R.duration,R.duration),label:'指定区间'});jump(desired);}}
+ const desired=Number(params.get('t'));if(Number.isFinite(desired)&&params.has('t')){const end=Math.min(Number(params.get('end'))||R.duration,R.duration);const i=reviewItems.findIndex(r=>r.start_s<=desired&&r.end_s>=desired);if(params.get('range')==='basic'&&desired>=0&&desired<end){fillReview({start_s:desired,end_s:end,label:'基础步态参考候选：请确认地形形状、表面材质与参考用途'});loopStart=desired;limit=end;jump(desired);}else if(i>=0)selectReview(i,true);else{fillReview({start_s:desired,end_s:end,label:'指定区间'});jump(desired);}}
  refreshReviews().then(()=>{if(!reviewDirty&&reviewCurrent){const saved=reviewRows.find(r=>r.recording_id===sid&&r.level===reviewCurrent.level&&Math.abs(r.start_s-reviewCurrent.start_s)<1e-6&&Math.abs(r.end_s-reviewCurrent.end_s)<1e-6);if(saved)fillReview(saved);}reviewMessage('保存服务已连接：标注写入 human_reviews.jsonl，可刷新后继续。');}).catch(e=>reviewMessage(e.message,true));
  window.addEventListener('beforeunload',e=>{if(reviewDirty){e.preventDefault();e.returnValue='';}});
 }

@@ -1,0 +1,53 @@
+{
+  "source_clip": "151220_U1",
+  "initial_base_position_m": [
+    0.0,
+    0.0,
+    0.368901392836421
+  ],
+  "initial_base_quaternion_wxyz": [
+    -0.9995212601747874,
+    0.0057565024648907415,
+    0.030398725088697304,
+    0.00017507415087097966
+  ],
+  "nominal_lidar_edge_distance_m": 0.42941906566130195,
+  "edge_horizontal_distance_m": 0.6094190656613019,
+  "simulation_distance_correction_m": 0.18,
+  "action_delay_s": 0.3,
+  "edge_normal_xy": [
+    0.9990214803782443,
+    0.0442276129003278
+  ],
+  "front_wheel_outer_gap_m": 0.3371807402670422,
+  "gap_definition": "Signed distance to forward wheel rim; negative at a descending edge means wheels already protrude",
+  "height_m": 0.38,
+  "height_source": "recorded manifest.parameters.height_cm",
+  "platform_depth_m": 3,
+  "platform_width_m": 2,
+  "dimensions_source": "Sufficient-size test geometry, not measured extents",
+  "start_support": "lower ground",
+  "joint_names": [
+    "fl_hipx_joint",
+    "fl_hipy_joint",
+    "fl_knee_joint",
+    "fl_wheel_joint",
+    "fr_hipx_joint",
+    "fr_hipy_joint",
+    "fr_knee_joint",
+    "fr_wheel_joint",
+    "hl_hipx_joint",
+    "hl_hipy_joint",
+    "hl_knee_joint",
+    "hl_wheel_joint",
+    "hr_hipx_joint",
+    "hr_hipy_joint",
+    "hr_knee_joint",
+    "hr_wheel_joint"
+  ],
+  "isaac_sim_executed": false,
+  "max_reference_joint_limit_excess_rad": 0.0032451140193066053,
+  "correction_status": "Simulation fit, not verified sensor calibration",
+  "coordinates": "Initial base XY origin; initial yaw removed; Z-up; floor Z=0",
+  "initial_height_method": "Lowest SDK wheel centre at support height + 0.083 m"
+}

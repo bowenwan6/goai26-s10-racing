@@ -1,0 +1,14 @@
+{
+  "id": "150146_U2",
+  "recording": "150146",
+  "start": 25.0,
+  "end": 30.5,
+  "mode": "up",
+  "peak": 27.55,
+  "height": 0.3,
+  "evidence": "前方立面变台面，后方低地；上台候选。",
+  "source_recording_id": "gait_20260909_150146_9b19dc6690ec",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action"
+}

@@ -1,0 +1,1932 @@
+#usda 1.0
+(
+ metersPerUnit = 1
+ upAxis = "Z"
+)
+def Xform "MatchedStairs" {
+ def Cube "Step0_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8412282365229558, -2.4, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8224118636056439, -2.1999999999999997, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8054584124207806, -1.9999999999999996, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.790367882968366, -1.7999999999999994, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7771402752484002, -1.5999999999999992, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7657755892608831, -1.399999999999999, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7562738250058147, -1.1999999999999988, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.748634982483195, -0.9999999999999988, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7428590616930241, -0.7999999999999986, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7389460626353017, -0.5999999999999984, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7368959853100283, -0.39999999999999825, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7367088297172033, -0.19999999999999804, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7383845958568274, 2.1371793224034263e-15, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7419232837288998, 0.20000000000000231, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7473248933334211, 0.40000000000000246, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7545894246703913, 0.6000000000000026, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7637168777398099, 0.8000000000000028, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7747072525416774, 1.000000000000003, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.7875605490759934, 1.2000000000000033, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8022767673427582, 1.4000000000000035, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8188559073419719, 1.6000000000000036, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8372979690736342, 1.8000000000000038, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8576029525377451, 2.000000000000004, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.8797708577343049, 2.200000000000004, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step0_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (0.9038016846633132, 2.4000000000000044, -0.4089023267166302)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.25617764306095303)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.4106341002369036, -2.4, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3918177273195917, -2.1999999999999997, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3748642761347283, -1.9999999999999996, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3597737466823139, -1.7999999999999994, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.346546138962348, -1.5999999999999992, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.335181452974831, -1.399999999999999, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3256796887197626, -1.1999999999999988, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.318040846197143, -0.9999999999999988, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3122649254069718, -0.7999999999999986, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3083519263492496, -0.5999999999999984, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3063018490239762, -0.39999999999999825, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3061146934311512, -0.19999999999999804, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.307790459570775, 2.1371793224034263e-15, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3113291474428475, 0.20000000000000231, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.316730757047369, 0.40000000000000246, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3239952883843389, 0.6000000000000026, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3331227414537576, 0.8000000000000028, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.344113116255625, 1.000000000000003, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3569664127899412, 1.2000000000000033, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.371682631056706, 1.4000000000000035, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.3882617710559195, 1.6000000000000036, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.4067038327875818, 1.8000000000000038, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.427008816251693, 2.000000000000004, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.4491767214482525, 2.200000000000004, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step1_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.4732075483772609, 2.4000000000000044, -0.33081350518615366)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.4123552861219061)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9800399639508512, -2.4, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9612235910335392, -2.1999999999999997, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9442701398486761, -1.9999999999999996, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9291796103962615, -1.7999999999999994, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9159520026762957, -1.5999999999999992, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9045873166887786, -1.399999999999999, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8950855524337102, -1.1999999999999988, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8874467099110905, -0.9999999999999988, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8816707891209195, -0.7999999999999986, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8777577900631972, -0.5999999999999984, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8757077127379238, -0.39999999999999825, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8755205571450988, -0.19999999999999804, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8771963232847226, 2.1371793224034263e-15, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.880735011156795, 0.20000000000000231, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8861366207613166, 0.40000000000000246, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.8934011520982865, 0.6000000000000026, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9025286051677053, 0.8000000000000028, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9135189799695727, 1.000000000000003, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9263722765038889, 1.2000000000000033, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9410884947706537, 1.4000000000000035, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9576676347698672, 1.6000000000000036, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9761096965015295, 1.8000000000000038, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (1.9964146799656406, 2.000000000000004, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.0185825851622003, 2.200000000000004, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step2_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.0426134120912085, 2.4000000000000044, -0.25272468365567713)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.5685329291828591)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.5494458276647993, -2.4, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.5306294547474875, -2.1999999999999997, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.513676003562624, -1.9999999999999996, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4985854741102096, -1.7999999999999994, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4853578663902436, -1.5999999999999992, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4739931804027266, -1.399999999999999, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.464491416147658, -1.1999999999999988, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.456852573625038, -0.9999999999999988, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4510766528348675, -0.7999999999999986, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4471636537771455, -0.5999999999999984, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4451135764518717, -0.39999999999999825, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.444926420859047, -0.19999999999999804, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4466021869986707, 2.1371793224034263e-15, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.450140874870743, 0.20000000000000231, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4555424844752647, 0.40000000000000246, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4628070158122344, 0.6000000000000026, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.4719344688816536, 0.8000000000000028, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.482924843683521, 1.000000000000003, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.495778140217837, 1.2000000000000033, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.5104943584846016, 1.4000000000000035, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.5270734984838152, 1.6000000000000036, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.5455155602154775, 1.8000000000000038, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.5658205436795885, 2.000000000000004, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.587988448876148, 2.200000000000004, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step3_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (2.612019275805157, 2.4000000000000044, -0.17463586212520063)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.7247105722438121)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.118851691378747, -2.4, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.100035318461435, -2.1999999999999997, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.083081867276572, -1.9999999999999996, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0679913378241572, -1.7999999999999994, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.054763730104191, -1.5999999999999992, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0433990441166743, -1.399999999999999, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0338972798616055, -1.1999999999999988, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.026258437338986, -0.9999999999999988, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.020482516548815, -0.7999999999999986, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.016569517491093, -0.5999999999999984, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0145194401658193, -0.39999999999999825, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0143322845729945, -0.19999999999999804, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0160080507126183, 2.1371793224034263e-15, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.019546738584691, 0.20000000000000231, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0249483481892123, 0.40000000000000246, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.032212879526182, 0.6000000000000026, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.041340332595601, 0.8000000000000028, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0523307073974686, 1.000000000000003, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.0651840039317846, 1.2000000000000033, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.079900222198549, 1.4000000000000035, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.096479362197763, 1.6000000000000036, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.114921423929425, 1.8000000000000038, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.135226407393536, 2.000000000000004, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.1573943125900956, 2.200000000000004, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step4_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.1814251395191047, 2.4000000000000044, -0.0965470405947241)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 0.8808882153047652)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.6882575550926946, -2.4, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.6694411821753827, -2.1999999999999997, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.6524877309905195, -1.9999999999999996, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.637397201538105, -1.7999999999999994, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.624169593818139, -1.5999999999999992, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.612804907830622, -1.399999999999999, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.603303143575553, -1.1999999999999988, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.5956643010529334, -0.9999999999999988, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.589888380262763, -0.7999999999999986, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.585975381205041, -0.5999999999999984, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.583925303879767, -0.39999999999999825, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.583738148286942, -0.19999999999999804, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.585413914426566, 2.1371793224034263e-15, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.5889526022986384, 0.20000000000000231, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.59435421190316, 0.40000000000000246, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.6016187432401296, 0.6000000000000026, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.610746196309549, 0.8000000000000028, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.6217365711114162, 1.000000000000003, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.634589867645732, 1.2000000000000033, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.649306085912497, 1.4000000000000035, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.6658852259117105, 1.6000000000000036, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.684327287643373, 1.8000000000000038, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.7046322711074837, 2.000000000000004, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.7268001763040433, 2.200000000000004, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step5_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (3.7508310032330523, 2.4000000000000044, -0.01845821906424766)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.0370658583657182)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.257663418806643, -2.4, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.23884704588933, -2.1999999999999997, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.221893594704468, -1.9999999999999996, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.2068030652520525, -1.7999999999999994, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.193575457532087, -1.5999999999999992, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.18221077154457, -1.399999999999999, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.172709007289501, -1.1999999999999988, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.165070164766881, -0.9999999999999988, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.159294243976711, -0.7999999999999986, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.155381244918988, -0.5999999999999984, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.153331167593715, -0.39999999999999825, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.15314401200089, -0.19999999999999804, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.154819778140514, 2.1371793224034263e-15, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.1583584660125865, 0.20000000000000231, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.163760075617108, 0.40000000000000246, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.171024606954077, 0.6000000000000026, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.180152060023497, 0.8000000000000028, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.191142434825364, 1.000000000000003, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.20399573135968, 1.2000000000000033, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.218711949626445, 1.4000000000000035, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.235291089625658, 1.6000000000000036, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.253733151357321, 1.8000000000000038, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.274038134821431, 2.000000000000004, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.296206040017991, 2.200000000000004, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step6_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.320236866947, 2.4000000000000044, 0.05963060246622892)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.1932435014266711)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.82706928252059, -2.4, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.8082529096032784, -2.1999999999999997, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.791299458418415, -1.9999999999999996, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.776208928966001, -1.7999999999999994, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.762981321246035, -1.5999999999999992, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.751616635258518, -1.399999999999999, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.74211487100345, -1.1999999999999988, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.73447602848083, -0.9999999999999988, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.728700107690659, -0.7999999999999986, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.7247871086329365, -0.5999999999999984, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.722737031307663, -0.39999999999999825, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.722549875714838, -0.19999999999999804, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.724225641854462, 2.1371793224034263e-15, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.727764329726535, 0.20000000000000231, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.733165939331055, 0.40000000000000246, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.740430470668025, 0.6000000000000026, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.749557923737444, 0.8000000000000028, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.7605482985393115, 1.000000000000003, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.7734015950736275, 1.2000000000000033, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.788117813340392, 1.4000000000000035, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.804696953339607, 1.6000000000000036, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.823139015071269, 1.8000000000000038, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.843443998535379, 2.000000000000004, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.865611903731939, 2.200000000000004, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step7_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (4.889642730660948, 2.4000000000000044, 0.1377194239967054)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.349421144487624)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.396475146234538, -2.4, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.3776587733172265, -2.1999999999999997, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.360705322132363, -1.9999999999999996, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.345614792679949, -1.7999999999999994, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.332387184959983, -1.5999999999999992, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.321022498972466, -1.399999999999999, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.311520734717398, -1.1999999999999988, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.303881892194778, -0.9999999999999988, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.298105971404607, -0.7999999999999986, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.294192972346885, -0.5999999999999984, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.292142895021611, -0.39999999999999825, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.291955739428786, -0.19999999999999804, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.29363150556841, 2.1371793224034263e-15, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.297170193440483, 0.20000000000000231, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.302571803045003, 0.40000000000000246, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.309836334381973, 0.6000000000000026, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.318963787451392, 0.8000000000000028, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.32995416225326, 1.000000000000003, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.342807458787576, 1.2000000000000033, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.35752367705434, 1.4000000000000035, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.374102817053555, 1.6000000000000036, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.392544878785217, 1.8000000000000038, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.4128498622493275, 2.000000000000004, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.4350177674458875, 2.200000000000004, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step8_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.459048594374896, 2.4000000000000044, 0.21580824552718186)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.505598787548577)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.965881009948486, -2.4, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.947064637031175, -2.1999999999999997, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.930111185846311, -1.9999999999999996, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.915020656393897, -1.7999999999999994, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.901793048673931, -1.5999999999999992, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.890428362686414, -1.399999999999999, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.880926598431346, -1.1999999999999988, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.873287755908726, -0.9999999999999988, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.867511835118555, -0.7999999999999986, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.863598836060833, -0.5999999999999984, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.861548758735559, -0.39999999999999825, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.8613616031427345, -0.19999999999999804, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.863037369282358, 2.1371793224034263e-15, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.866576057154431, 0.20000000000000231, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.871977666758951, 0.40000000000000246, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.8792421980959215, 0.6000000000000026, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.88836965116534, 0.8000000000000028, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.899360025967208, 1.000000000000003, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.912213322501524, 1.2000000000000033, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.926929540768288, 1.4000000000000035, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.943508680767503, 1.6000000000000036, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.961950742499165, 1.8000000000000038, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (5.982255725963276, 2.000000000000004, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (6.004423631159836, 2.200000000000004, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step9_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (6.028454458088844, 2.4000000000000044, 0.29389706705765845)
+  double3 xformOp:scale = (0.5694058637139477, 0.2, 1.6617764306095304)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_0" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.750583941805459, -2.4, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_1" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.731767568888148, -2.1999999999999997, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_2" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.714814117703284, -1.9999999999999996, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_3" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.699723588250869, -1.7999999999999994, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_4" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.686495980530904, -1.5999999999999992, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_5" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.675131294543387, -1.399999999999999, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_6" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.665629530288319, -1.1999999999999988, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_7" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.657990687765699, -0.9999999999999988, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_8" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.652214766975528, -0.7999999999999986, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_9" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.648301767917806, -0.5999999999999984, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_10" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.646251690592532, -0.39999999999999825, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_11" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.646064534999708, -0.19999999999999804, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_12" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.647740301139331, 2.1371793224034263e-15, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_13" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.651278989011404, 0.20000000000000231, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_14" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.6566805986159245, 0.40000000000000246, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_15" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.663945129952895, 0.6000000000000026, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_16" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.673072583022313, 0.8000000000000028, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_17" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.684062957824181, 1.000000000000003, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_18" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.696916254358497, 1.2000000000000033, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_19" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.711632472625261, 1.4000000000000035, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_20" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.728211612624476, 1.6000000000000036, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_21" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.746653674356138, 1.8000000000000038, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_22" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.766958657820249, 2.000000000000004, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_23" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.789126563016809, 2.200000000000004, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+ def Cube "Step10_24" (prepend apiSchemas = ["PhysicsCollisionAPI"]) {
+  double size = 1
+  bool physics:collisionEnabled = true
+  double3 xformOp:translate = (7.813157389945817, 2.4000000000000044, 0.3719858885881349)
+  double3 xformOp:scale = (3, 0.2, 1.8179540736704833)
+  uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+ }
+}

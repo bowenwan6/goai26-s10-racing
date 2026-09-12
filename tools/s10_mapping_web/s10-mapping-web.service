@@ -1,0 +1,15 @@
+[Unit]
+Description=S10 48 phone mapping web on AGX
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/s10_mapping_web
+ExecStart=/usr/bin/python3 -u %h/s10_mapping_web/server.py
+Restart=on-failure
+RestartSec=3
+UMask=0077
+TimeoutStopSec=250
+
+[Install]
+WantedBy=default.target

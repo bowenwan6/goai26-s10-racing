@@ -35,14 +35,21 @@ def validate(entry):
     if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in (a,b)):
         raise ValueError('时间必须为有限数值')
     if not 0 <= a < b <= CATALOG[sid]['duration_s']+1e-8: raise ValueError('区间超出录制或起点不小于终点')
-    choices = {'level': ('passage','segment'), 'terrain': ('unknown','flat','stairs','platform','ledge'),
+    choices = {'level': ('passage','segment'), 'terrain': ('unknown','flat','slope','uneven','stairs','platform','ledge'),
                'direction': ('unknown','up','down','level'),
                'outcome': ('uncertain','completed','failure','interrupted'),
                'human_review_status': ('pending','confirmed','uncertain'),
-               'action_phase': ('unknown','approach','adjust','ascend','descend','platform_walk','turn','wait','recover','interrupted')}
+               'action_phase': ('unknown','approach','adjust','ascend','descend','platform_walk','locomote','start_stop','turn','wait','recover','interrupted')}
     for k, allowed in choices.items():
         if entry.get(k) not in allowed: raise ValueError('无效字段：'+k)
     result = {k:entry[k] for k in ('id','recording_id','start_s','end_s',*choices)}
+    for k, allowed, default in (
+        ('surface_type', ('unknown','hard','grass','gravel','mixed'), 'unknown'),
+        ('reference_use', ('pending','candidate','exclude'), 'pending'),
+    ):
+        value = entry.get(k, default)
+        if value not in allowed: raise ValueError('无效字段：'+k)
+        result[k] = value
     for k in ('notes','obstacle_id','group_id'):
         value = entry.get(k,'')
         if not isinstance(value,str) or len(value)>4000: raise ValueError('无效文本：'+k)
@@ -160,11 +167,18 @@ def selfcheck():
         terrain='unknown',direction='unknown',outcome='uncertain',human_review_status='pending',action_phase='unknown')
     with tempfile.TemporaryDirectory() as temp:
         path=Path(temp)/'test.jsonl';append_batch([entry],path)
+        assert latest(path)[0]['surface_type']=='unknown' and latest(path)[0]['reference_use']=='pending'
         try:append_batch([entry,{**entry,'end_s':-1}],path)
         except ValueError:pass
         else:raise AssertionError('Invalid batch accepted')
         assert len(path.read_text().splitlines())==1
-        append_batch([{**entry,'notes':'修订'}],path);assert len(latest(path))==1 and latest(path)[0]['notes']=='修订'
+        append_batch([{**entry,'notes':'修订','terrain':'slope','surface_type':'grass','reference_use':'candidate'}],path)
+        assert len(latest(path))==1 and latest(path)[0]['notes']=='修订' and latest(path)[0]['surface_type']=='grass'
+        before=path.read_bytes()
+        try:append_batch([{**entry,'surface_type':'invented'}],path)
+        except ValueError:pass
+        else:raise AssertionError('Invalid material accepted')
+        assert path.read_bytes()==before
         append_batch([{**entry,'retired':True}],path);assert not latest(path)
         original=JOURNAL;JOURNAL=path
         server=ThreadingHTTPServer(('127.0.0.1',0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
