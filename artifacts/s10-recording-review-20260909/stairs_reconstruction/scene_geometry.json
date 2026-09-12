@@ -1,0 +1,18 @@
+{
+  "count": 11,
+  "count_status": "first-flight candidate checked against terminal landing",
+  "edge_m": 0.4536816639998534,
+  "floor_z_m": -0.43699114824710666,
+  "height_m": 0.15617764306095303,
+  "depth_m": 0.5694058637139477,
+  "lateral_slope": 0.013036135029241,
+  "curvature_per_m": 0.023286521655608853,
+  "fitted_points": 34906,
+  "held_out_points": 36659,
+  "median_m": 0.020474539300536776,
+  "p90_m": 0.06696397042186052,
+  "within_5cm": 0.8187621048037317,
+  "recorded_dimensions_median_m": 0.034049217979551516,
+  "recorded_dimensions_p90_m": 0.08960244123045324,
+  "validation": "alternating native scans in the terrain ROI; registration shares stationary reference map"
+}

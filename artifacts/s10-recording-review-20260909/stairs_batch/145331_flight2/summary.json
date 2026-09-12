@@ -1,0 +1,42 @@
+{
+  "name": "145331_flight2",
+  "recording_id": "gait_20260909_145331_616f9d8038d9",
+  "start_s": 29,
+  "end_s": 59,
+  "direction": "up",
+  "phases": [
+    [
+      29,
+      39.5,
+      "landing_approach"
+    ],
+    [
+      39.5,
+      55,
+      "stairs_up"
+    ],
+    [
+      55,
+      59,
+      "landing"
+    ]
+  ],
+  "samples": 5980,
+  "duration_s": 29.895000712,
+  "lidar_pairs": 300,
+  "reference_valid_fraction": 1.0,
+  "provisional_root_reference_weight": 0.25,
+  "median_registration_residual_m": 0.013040139991944723,
+  "p90_registration_residual_m": 0.019626151868448006,
+  "endpoint_displacement_m": [
+    4.094316175867213,
+    5.697175377992344,
+    1.1738957771497276
+  ],
+  "minimum_source_gap_s": 0.09523606299999443,
+  "maximum_source_gap_s": 0.10478782600000613,
+  "training_status": "soft_reference_candidate_not_dynamics_validated",
+  "contact_labels": "unavailable",
+  "outcome": "not_inferred_from_recording_label",
+  "root_coordinate_origin": "first lidar frame body origin; recording-initial heading"
+}

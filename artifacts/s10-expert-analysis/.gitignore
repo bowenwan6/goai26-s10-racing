@@ -1,0 +1,11 @@
+# Historical recordings and regenerated reference arrays: distribute separately.
+/raw/
+/decoded/
+/references/
+*.db3
+*.db3-*
+*.npz
+*.ppm
+# Generated XML embeds workstation-specific absolute mesh paths.
+/simulation_review/*.xml
+/stairs_match/*.xml

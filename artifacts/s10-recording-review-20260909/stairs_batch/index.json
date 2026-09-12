@@ -1,0 +1,670 @@
+{
+  "jobs": [
+    {
+      "name": "145331_flight2",
+      "recording_id": "gait_20260909_145331_616f9d8038d9",
+      "start_s": 29,
+      "end_s": 59,
+      "direction": "up",
+      "phases": [
+        [
+          29,
+          39.5,
+          "landing_approach"
+        ],
+        [
+          39.5,
+          55,
+          "stairs_up"
+        ],
+        [
+          55,
+          59,
+          "landing"
+        ]
+      ],
+      "samples": 5980,
+      "duration_s": 29.895000712,
+      "lidar_pairs": 300,
+      "reference_valid_fraction": 1.0,
+      "provisional_root_reference_weight": 0.25,
+      "median_registration_residual_m": 0.013040139991944723,
+      "p90_registration_residual_m": 0.019626151868448006,
+      "endpoint_displacement_m": [
+        4.094316175867213,
+        5.697175377992344,
+        1.1738957771497276
+      ],
+      "minimum_source_gap_s": 0.09523606299999443,
+      "maximum_source_gap_s": 0.10478782600000613,
+      "training_status": "soft_reference_candidate_not_dynamics_validated",
+      "contact_labels": "unavailable",
+      "outcome": "not_inferred_from_recording_label",
+      "root_coordinate_origin": "first lidar frame body origin; recording-initial heading",
+      "fitted_flights": [
+        {
+          "start_s": 39.5,
+          "end_s": 55,
+          "direction": "stairs_up",
+          "origin_m": [
+            2.080614256322293,
+            1.3618904009750896,
+            0.059085497428513
+          ],
+          "yaw_rad": 1.1324207618668705,
+          "length_m": 4.7850380607657685,
+          "count": 7,
+          "parameters": [
+            0.7510520415248193,
+            -0.4132108730973659,
+            0.16015884635638147,
+            0.5718916426220984,
+            0.02581796556060283,
+            -0.07999999999999999
+          ],
+          "train_points": 17470,
+          "test_points": 17601,
+          "median_m": 0.03320700712235636,
+          "p90_m": 0.15434968607298005,
+          "candidates": [
+            {
+              "count": 6,
+              "score": 0.06149353417785417
+            },
+            {
+              "count": 7,
+              "score": 0.05090921073038833
+            },
+            {
+              "count": 8,
+              "score": 0.05578665630188019
+            }
+          ],
+          "geometry_status": "fitted_local_hypothesis"
+        }
+      ],
+      "replay": {
+        "video_frames": 598,
+        "usd_visual_meshes": 17,
+        "known_wheel_terrain_fraction": 1.0,
+        "median_minimum_wheel_gap_m": -0.013607607315368031,
+        "wheel_samples_below_proxy_5cm_fraction": 0.07775919732441472,
+        "note": "Vertical wheel-bottom distance to approximate height grid; unknown cells stay NaN. No snapping, no exact contact claim."
+      },
+      "terrain": {
+        "recording_id": "gait_20260909_145331_616f9d8038d9",
+        "job": "145331_flight2",
+        "resolution_m": 0.08,
+        "observed_cells": 3523,
+        "interpolated_cells": 2498,
+        "triangles": 10712,
+        "validation_points": 37077,
+        "covered_fraction": 0.9554440758421663,
+        "median_surface_distance_m": 0.058391318725976485,
+        "p90_surface_distance_m": 0.27662452070349214,
+        "ground_truth": false,
+        "physics_contact_validated": false,
+        "note": "Near-path lower-surface proxy from even scans; odd scans validate. Fill radius <=17cm. Mesh bridges stair edges over 8cm cells."
+      },
+      "root_z_enabled_fraction": 0.8909698996655518
+    },
+    {
+      "name": "145331_flight3",
+      "recording_id": "gait_20260909_145331_616f9d8038d9",
+      "start_s": 59,
+      "end_s": 93.2,
+      "direction": "up",
+      "phases": [
+        [
+          59,
+          68,
+          "landing_approach"
+        ],
+        [
+          68,
+          86.5,
+          "stairs_up"
+        ],
+        [
+          86.5,
+          93.2,
+          "landing"
+        ]
+      ],
+      "samples": 6800,
+      "duration_s": 33.995002041,
+      "lidar_pairs": 341,
+      "reference_valid_fraction": 1.0,
+      "provisional_root_reference_weight": 0.25,
+      "median_registration_residual_m": 0.012622471115562299,
+      "p90_registration_residual_m": 0.020710231880103937,
+      "endpoint_displacement_m": [
+        3.1407803736798408,
+        8.452890591228634,
+        2.0977170195766104
+      ],
+      "minimum_source_gap_s": 0.09520029999998769,
+      "maximum_source_gap_s": 0.10472750699999978,
+      "training_status": "soft_reference_candidate_not_dynamics_validated",
+      "contact_labels": "unavailable",
+      "outcome": "not_inferred_from_recording_label",
+      "root_coordinate_origin": "first lidar frame body origin; recording-initial heading",
+      "fitted_flights": [
+        {
+          "start_s": 68,
+          "end_s": 86.5,
+          "direction": "stairs_up",
+          "origin_m": [
+            -0.1827595504760531,
+            1.498085505923317,
+            0.023628730093107616
+          ],
+          "yaw_rad": 1.1257447188748149,
+          "length_m": 7.737296021855103,
+          "count": 14,
+          "parameters": [
+            0.2508731875618605,
+            -0.4238229585254134,
+            0.15547487180432604,
+            0.5714079401719876,
+            0.14999999997906804,
+            0.006714404480188366
+          ],
+          "train_points": 25248,
+          "test_points": 25330,
+          "median_m": 0.03670785945796473,
+          "p90_m": 0.12075500015196892,
+          "candidates": [
+            {
+              "count": 13,
+              "score": 0.051662098633543645
+            },
+            {
+              "count": 14,
+              "score": 0.05004040453418531
+            },
+            {
+              "count": 15,
+              "score": 0.05387432788558384
+            }
+          ],
+          "geometry_status": "fitted_local_hypothesis"
+        }
+      ],
+      "replay": {
+        "video_frames": 680,
+        "usd_visual_meshes": 17,
+        "known_wheel_terrain_fraction": 1.0,
+        "median_minimum_wheel_gap_m": -0.029962456111384116,
+        "wheel_samples_below_proxy_5cm_fraction": 0.11985294117647059,
+        "note": "Vertical wheel-bottom distance to approximate height grid; unknown cells stay NaN. No snapping, no exact contact claim."
+      },
+      "terrain": {
+        "recording_id": "gait_20260909_145331_616f9d8038d9",
+        "job": "145331_flight3",
+        "resolution_m": 0.08,
+        "observed_cells": 4298,
+        "interpolated_cells": 2779,
+        "triangles": 12784,
+        "validation_points": 46315,
+        "covered_fraction": 0.9202418223037893,
+        "median_surface_distance_m": 0.059156028203010955,
+        "p90_surface_distance_m": 0.2711199878507907,
+        "ground_truth": false,
+        "physics_contact_validated": false,
+        "note": "Near-path lower-surface proxy from even scans; odd scans validate. Fill radius <=17cm. Mesh bridges stair edges over 8cm cells."
+      },
+      "root_z_enabled_fraction": 0.6986764705882353
+    },
+    {
+      "name": "152557_down",
+      "recording_id": "gait_20260909_152557_7ddbfc67c108",
+      "start_s": 0,
+      "end_s": 40.396,
+      "direction": "down",
+      "phases": [
+        [
+          0,
+          8.5,
+          "approach"
+        ],
+        [
+          8.5,
+          39.5,
+          "stairs_down"
+        ],
+        [
+          39.5,
+          40.396,
+          "interruption_context"
+        ]
+      ],
+      "samples": 8060,
+      "duration_s": 40.295005007,
+      "lidar_pairs": 404,
+      "reference_valid_fraction": 0.9787841191066997,
+      "provisional_root_reference_weight": 0.25,
+      "median_registration_residual_m": 0.008476257949805187,
+      "p90_registration_residual_m": 0.014137372421695828,
+      "endpoint_displacement_m": [
+        6.626474303234115,
+        -0.24116371280575288,
+        -1.3817073102924633
+      ],
+      "minimum_source_gap_s": 0.09896397600000029,
+      "maximum_source_gap_s": 0.10207295499999702,
+      "training_status": "soft_reference_candidate_not_dynamics_validated",
+      "contact_labels": "unavailable",
+      "outcome": "not_inferred_from_recording_label",
+      "root_coordinate_origin": "first lidar frame body origin; recording-initial heading",
+      "fitted_flights": [
+        {
+          "start_s": 8.5,
+          "end_s": 39.5,
+          "direction": "stairs_down",
+          "origin_m": [
+            0.11400863851134257,
+            -0.005496167500145786,
+            -0.003941012773419156
+          ],
+          "yaw_rad": 0.04252327319212914,
+          "length_m": 6.338755934658823,
+          "count": 9,
+          "parameters": [
+            0.9999999999999999,
+            -0.2938581615324865,
+            -0.1499144259877323,
+            0.6395956407011583,
+            0.14999999999999997,
+            0.07999999999999999
+          ],
+          "train_points": 17889,
+          "test_points": 18399,
+          "median_m": 0.04971991803929976,
+          "p90_m": 0.15203466041415567,
+          "candidates": [
+            {
+              "count": 7,
+              "score": 0.07733075502821471
+            },
+            {
+              "count": 8,
+              "score": 0.06948349547651987
+            },
+            {
+              "count": 9,
+              "score": 0.06331105967654214
+            }
+          ],
+          "geometry_status": "fitted_local_hypothesis"
+        }
+      ],
+      "replay": {
+        "video_frames": 806,
+        "usd_visual_meshes": 17,
+        "known_wheel_terrain_fraction": 1.0,
+        "median_minimum_wheel_gap_m": -0.0015028530099529536,
+        "wheel_samples_below_proxy_5cm_fraction": 0.2630272952853598,
+        "note": "Vertical wheel-bottom distance to approximate height grid; unknown cells stay NaN. No snapping, no exact contact claim."
+      },
+      "terrain": {
+        "recording_id": "gait_20260909_152557_7ddbfc67c108",
+        "job": "152557_down",
+        "resolution_m": 0.08,
+        "observed_cells": 3487,
+        "interpolated_cells": 2725,
+        "triangles": 11272,
+        "validation_points": 39030,
+        "covered_fraction": 0.9516013323084807,
+        "median_surface_distance_m": 0.05812816132001673,
+        "p90_surface_distance_m": 0.288912151523928,
+        "ground_truth": false,
+        "physics_contact_validated": false,
+        "note": "Near-path lower-surface proxy from even scans; odd scans validate. Fill radius <=17cm. Mesh bridges stair edges over 8cm cells."
+      },
+      "root_z_enabled_fraction": 0.6684863523573201
+    },
+    {
+      "name": "154654_up",
+      "recording_id": "gait_20260909_154654_65c5ae680a24",
+      "start_s": 0,
+      "end_s": 52.89,
+      "direction": "up",
+      "phases": [
+        [
+          0,
+          11.5,
+          "approach"
+        ],
+        [
+          11.5,
+          34,
+          "stairs_up"
+        ],
+        [
+          34,
+          52.89,
+          "landing_or_adjustment"
+        ]
+      ],
+      "samples": 2640,
+      "duration_s": 52.779995678,
+      "lidar_pairs": 529,
+      "reference_valid_fraction": 0.9318181818181818,
+      "provisional_root_reference_weight": 0.25,
+      "median_registration_residual_m": 0.012385532782817836,
+      "p90_registration_residual_m": 0.021808507417933918,
+      "endpoint_displacement_m": [
+        8.357083309015469,
+        0.5033758164638882,
+        1.7617651139568773
+      ],
+      "minimum_source_gap_s": 0.09548497200000128,
+      "maximum_source_gap_s": 0.10499071999999998,
+      "training_status": "soft_reference_candidate_not_dynamics_validated",
+      "contact_labels": "unavailable",
+      "outcome": "not_inferred_from_recording_label",
+      "root_coordinate_origin": "first lidar frame body origin; recording-initial heading",
+      "fitted_flights": [
+        {
+          "start_s": 11.5,
+          "end_s": 34,
+          "direction": "stairs_up",
+          "origin_m": [
+            0.9427498012784773,
+            0.02574263958500852,
+            -0.013109810477847145
+          ],
+          "yaw_rad": 0.02051272302418078,
+          "length_m": 6.873196258009617,
+          "count": 11,
+          "parameters": [
+            0.7362521411553807,
+            -0.42036823735713696,
+            0.1597116745950847,
+            0.5642304496777272,
+            0.11593326206950166,
+            0.04342882764707564
+          ],
+          "train_points": 23239,
+          "test_points": 22688,
+          "median_m": 0.03196232669137032,
+          "p90_m": 0.10140154601515824,
+          "candidates": [
+            {
+              "count": 10,
+              "score": 0.049831949646267935
+            },
+            {
+              "count": 11,
+              "score": 0.04441325445011704
+            },
+            {
+              "count": 12,
+              "score": 0.04493373647680144
+            }
+          ],
+          "geometry_status": "fitted_local_hypothesis"
+        }
+      ],
+      "replay": {
+        "video_frames": 1056,
+        "usd_visual_meshes": 17,
+        "known_wheel_terrain_fraction": 1.0,
+        "median_minimum_wheel_gap_m": -0.03289258416579208,
+        "wheel_samples_below_proxy_5cm_fraction": 0.10748106060606061,
+        "note": "Vertical wheel-bottom distance to approximate height grid; unknown cells stay NaN. No snapping, no exact contact claim."
+      },
+      "terrain": {
+        "recording_id": "gait_20260909_154654_65c5ae680a24",
+        "job": "154654_up",
+        "resolution_m": 0.08,
+        "observed_cells": 5034,
+        "interpolated_cells": 2709,
+        "triangles": 14444,
+        "validation_points": 43497,
+        "covered_fraction": 0.9888268156424581,
+        "median_surface_distance_m": 0.054878609536899506,
+        "p90_surface_distance_m": 0.13595996604431085,
+        "ground_truth": false,
+        "physics_contact_validated": false,
+        "note": "Near-path lower-surface proxy from even scans; odd scans validate. Fill radius <=17cm. Mesh bridges stair edges over 8cm cells."
+      },
+      "root_z_enabled_fraction": 0.5621212121212121
+    },
+    {
+      "name": "154856_up_down",
+      "recording_id": "gait_20260909_154856_5809460fe5ab",
+      "start_s": 0,
+      "end_s": 84.12,
+      "direction": "up_and_down",
+      "phases": [
+        [
+          0,
+          19.5,
+          "approach"
+        ],
+        [
+          19.5,
+          36.5,
+          "stairs_up"
+        ],
+        [
+          36.5,
+          42,
+          "landing_turn"
+        ],
+        [
+          42,
+          48.5,
+          "stairs_down"
+        ],
+        [
+          48.5,
+          55,
+          "landing"
+        ],
+        [
+          55,
+          65.5,
+          "stairs_down"
+        ],
+        [
+          65.5,
+          84.12,
+          "exit"
+        ]
+      ],
+      "samples": 4195,
+      "duration_s": 83.879996345,
+      "lidar_pairs": 840,
+      "reference_valid_fraction": 0.9189511323003575,
+      "provisional_root_reference_weight": 0.25,
+      "median_registration_residual_m": 0.013649521282545363,
+      "p90_registration_residual_m": 0.022965333700244374,
+      "endpoint_displacement_m": [
+        -9.297458958631434,
+        5.16363415058779,
+        -1.528415232552141
+      ],
+      "minimum_source_gap_s": 0.09499120699999963,
+      "maximum_source_gap_s": 0.10496783199999982,
+      "training_status": "soft_reference_candidate_not_dynamics_validated",
+      "contact_labels": "unavailable",
+      "outcome": "not_inferred_from_recording_label",
+      "root_coordinate_origin": "first lidar frame body origin; recording-initial heading",
+      "fitted_flights": [
+        {
+          "start_s": 19.5,
+          "end_s": 36.5,
+          "direction": "stairs_up",
+          "origin_m": [
+            0.2813063919134178,
+            -0.00582254797371902,
+            0.0027437733755558166
+          ],
+          "yaw_rad": 0.09077461597054239,
+          "length_m": 4.986561269246628,
+          "count": 7,
+          "parameters": [
+            0.8116190801636448,
+            -0.39092279116648665,
+            0.15876550979536203,
+            0.5720756793971322,
+            -0.023768019126836012,
+            0.031915063983365285
+          ],
+          "train_points": 20061,
+          "test_points": 20416,
+          "median_m": 0.04135176009846203,
+          "p90_m": 0.15208220117674628,
+          "candidates": [
+            {
+              "count": 7,
+              "score": 0.05425534745644542
+            },
+            {
+              "count": 8,
+              "score": 0.05703604807345247
+            },
+            {
+              "count": 9,
+              "score": 0.05763904673595725
+            }
+          ],
+          "geometry_status": "fitted_local_hypothesis"
+        },
+        {
+          "start_s": 42,
+          "end_s": 48.5,
+          "direction": "stairs_down",
+          "origin_m": [
+            4.730349671353518,
+            0.36573228793878626,
+            1.0824584603045324
+          ],
+          "yaw_rad": -3.014987663016399,
+          "length_m": 4.477492652225538,
+          "count": 7,
+          "parameters": [
+            0.24180447009252395,
+            -0.3749212593565021,
+            -0.15562728152464828,
+            0.5702433441723281,
+            0.004681811194098289,
+            -0.051584018600044565
+          ],
+          "train_points": 19609,
+          "test_points": 19869,
+          "median_m": 0.04122894419063017,
+          "p90_m": 0.1523354751180048,
+          "candidates": [
+            {
+              "count": 6,
+              "score": 0.06179822228523527
+            },
+            {
+              "count": 7,
+              "score": 0.053916094794124125
+            },
+            {
+              "count": 8,
+              "score": 0.0577509225003562
+            }
+          ],
+          "geometry_status": "fitted_local_hypothesis",
+          "shared_geometry_with": 0
+        },
+        {
+          "start_s": 55,
+          "end_s": 65.5,
+          "direction": "stairs_down",
+          "origin_m": [
+            -1.1020860245063655,
+            1.2325046565565179,
+            -0.038605262370298675
+          ],
+          "yaw_rad": 2.2144700684653347,
+          "length_m": 7.462283696494303,
+          "count": 13,
+          "parameters": [
+            0.8187817504034737,
+            -0.38374083615802007,
+            -0.1678797038080193,
+            0.5147501027352781,
+            0.14999999999999997,
+            -0.007249378489669612
+          ],
+          "train_points": 26573,
+          "test_points": 27537,
+          "median_m": 0.06059556002009597,
+          "p90_m": 0.1727020107502111,
+          "candidates": [
+            {
+              "count": 13,
+              "score": 0.07028037169751987
+            },
+            {
+              "count": 14,
+              "score": 0.07179121152222778
+            },
+            {
+              "count": 15,
+              "score": 0.07161929857793237
+            }
+          ],
+          "geometry_status": "fitted_local_hypothesis"
+        }
+      ],
+      "replay": {
+        "video_frames": 1678,
+        "usd_visual_meshes": 17,
+        "known_wheel_terrain_fraction": 1.0,
+        "median_minimum_wheel_gap_m": -0.0059227648263435115,
+        "wheel_samples_below_proxy_5cm_fraction": 0.04082240762812873,
+        "note": "Vertical wheel-bottom distance to approximate height grid; unknown cells stay NaN. No snapping, no exact contact claim."
+      },
+      "terrain": {
+        "recording_id": "gait_20260909_154856_5809460fe5ab",
+        "job": "154856_up_down",
+        "resolution_m": 0.08,
+        "observed_cells": 9424,
+        "interpolated_cells": 4752,
+        "triangles": 26302,
+        "validation_points": 95990,
+        "covered_fraction": 0.9402021043858735,
+        "median_surface_distance_m": 0.05814172647908876,
+        "p90_surface_distance_m": 0.19890443148916412,
+        "ground_truth": false,
+        "physics_contact_validated": false,
+        "note": "Near-path lower-surface proxy from even scans; odd scans validate. Fill radius <=17cm. Mesh bridges stair edges over 8cm cells."
+      },
+      "root_z_enabled_fraction": 0.7706793802145411
+    }
+  ],
+  "excluded": [
+    {
+      "recording_id": "gait_20260909_145241_9cae0ba51169",
+      "start_s": 0,
+      "end_s": 16.699,
+      "reason": "Active stair-attempt interval 1.5-7s is marked waste data in the latest human review; remainder is diagnostic context."
+    },
+    {
+      "recording_id": "gait_20260909_152557_7ddbfc67c108",
+      "start_s": 40.396,
+      "end_s": 120.004,
+      "reason": "Control exited; post-exit body movement is not expert stair motion."
+    },
+    {
+      "recording_id": "gait_20260909_154654_65c5ae680a24",
+      "start_s": 52.89,
+      "end_s": 111.551,
+      "reason": "Control exit and subsequent recovery/context; no additional identified stair passage."
+    }
+  ],
+  "duration_s": 240.844999783,
+  "samples": 27675,
+  "flight_phases": 7,
+  "training_status": "soft_reference_candidates_only_no_RL_run",
+  "existing_first_flight": "../stairs_reconstruction/REPORT.md"
+}

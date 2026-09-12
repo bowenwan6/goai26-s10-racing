@@ -11,6 +11,7 @@ setup(
         ("share/" + package_name, ["package.xml"]),
     ],
     install_requires=["setuptools"],
+    tests_require=["pytest"],
     zip_safe=True,
     maintainer="s10-perception-racing contributors",
     maintainer_email="wang.bowen@icloud.com",

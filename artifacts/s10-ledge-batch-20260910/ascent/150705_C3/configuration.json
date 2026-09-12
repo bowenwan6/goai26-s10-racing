@@ -1,0 +1,22 @@
+{
+  "id": "150705_C3",
+  "recording": "150705",
+  "start": 39.0,
+  "end": 41.95,
+  "mode": "up",
+  "peak": 41.0,
+  "height": 0.32,
+  "evidence": "上台后短暂回摆，随后原立面重新出现在前方；连续上台/退回候选。",
+  "source_recording_id": "gait_20260909_150705_4fe2b5f8eebd",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action",
+  "parent_mode": "cycle",
+  "parent_end": 45.0,
+  "crop_reason": "Recorded first level phase before subsequent body adjustment/reverse motion",
+  "controller": {
+    "kp_leg": 80.0,
+    "kd_leg": 2.0,
+    "kd_wheel": 0.6
+  }
+}

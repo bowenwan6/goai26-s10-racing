@@ -48,7 +48,12 @@ cd "${REPO_ROOT}"
 echo "==> Building for platform: ${BUILD_PLATFORM}"
 
 # --log-base is a colcon global option and has to precede the verb.
-colcon --log-base "${S10_LOG_BASE}" build \
+COLCON=(colcon)
+if [[ -x "${REPO_ROOT}/.venv/bin/python" ]]; then
+  COLCON=("${REPO_ROOT}/.venv/bin/python" -m colcon)
+fi
+
+"${COLCON[@]}" --log-base "${S10_LOG_BASE}" build \
   --base-paths src "${UPSTREAM_SRC}" \
   --build-base "${S10_BUILD_BASE}" \
   --install-base "${S10_INSTALL_BASE}" \
