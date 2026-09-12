@@ -1,5 +1,7 @@
 # S10 连续上楼 57D policy
 
+> 历史版本说明：本文适用于 [cc93d39](https://github.com/bowenwan6/goai26-s10-racing/tree/cc93d39f8a939c88627f73534ca42c30d7705746)。当前分支已采用 main 的比赛实现，旧 WASD、键盘切换策略及 replay_waypoint.sh 入口已停用；当前操作见 [项目 README](../README.md)。
+
 `s10_stairs_stable_up_57d_model499.onnx` 是当前 WP18→19 实测更稳定的连续上楼候选模型。它保持官方部署接口：57 维 observation、16 维 action，不读取高度图。
 
 - SHA-256：`676D45A611A665799E6F41DA29B15C74D6E10E4D655CBE2FC04DE3254EA003F2`

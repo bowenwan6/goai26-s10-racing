@@ -23,21 +23,25 @@ downstream nodes need no change.
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import os
-import socket
-import struct
 import time
+from pathlib import Path
 
 import mujoco
 import numpy as np
 import rclpy
 from nav_msgs.msg import Odometry
+from rclpy.executors import ExternalShutdownException
+from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Empty, Float32MultiArray, MultiArrayDimension, UInt8
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, String
 
 from s10_perception.heightmap import HeightmapConfig, HeightmapSampler
 from s10_perception.lidar import LidarConfig, RayCastLidar
+from s10_perception.png import write_png
+from s10_perception.segment_spawn import SpawnOverride
 from s10_perception.upstream import load_simulator_module
 
 _upstream = load_simulator_module()
@@ -45,38 +49,6 @@ _upstream = load_simulator_module()
 #: Publish perception at 50 Hz to match the policy rate. The base loop runs at 1 kHz and
 #: upstream publishes proprioception every 5 steps, so we decimate by 20.
 PERCEPTION_DECIMATION = 20
-_MANUAL_FRAME = struct.Struct("!4sB16f")
-_MANUAL_MAGIC = b"S10C"
-_KEY_FRAME = struct.Struct("!4sB")
-_KEY_MAGIC = b"S10K"
-_CONTROL_KEYS = frozenset(b"0rzcxvmhplkwasdqe12345678[]")
-_WHEEL_JOINTS = np.array([3, 7, 11, 15])
-
-
-def _decode_manual_control(payload: bytes):
-    if len(payload) != _MANUAL_FRAME.size:
-        return None
-    magic, mode, *targets = _MANUAL_FRAME.unpack(payload)
-    targets = np.asarray(targets, dtype=np.float32)
-    if magic != _MANUAL_MAGIC or mode not in (0, 1, 2) or not np.isfinite(targets).all():
-        return None
-    return mode, targets
-
-
-def _decode_key(payload: bytes) -> int | None:
-    if len(payload) != _KEY_FRAME.size:
-        return None
-    magic, key = _KEY_FRAME.unpack(payload)
-    return key if magic == _KEY_MAGIC and key in _CONTROL_KEYS else None
-
-
-def _set_wheel_friction(model, friction: float) -> None:
-    if not math.isfinite(friction) or friction <= 0:
-        raise ValueError("S10_WHEEL_FRICTION must be positive and finite")
-    for name in ("fl_wheel", "fr_wheel", "hl_wheel", "hr_wheel"):
-        body = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
-        geoms = (model.geom_bodyid == body) & (model.geom_group == 1)
-        model.geom_friction[geoms, 0] = friction
 
 
 class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
@@ -100,9 +72,9 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         if xml_path is not None:
             kwargs["xml_path"] = xml_path
         super().__init__(**kwargs)
-        _set_wheel_friction(
-            self.model, float(os.environ.get("S10_WHEEL_FRICTION", "2.0"))
-        )
+        self.model_key = model_key or _upstream.MODEL_NAME
+        self._actual_joint_owner = "unknown"
+        self._active_policy = ""
 
         self.base_body_id = mujoco.mj_name2id(
             self.model, mujoco.mjtObj.mjOBJ_BODY, _upstream.TRACK_BODY_NAME
@@ -110,173 +82,249 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         if self.base_body_id < 0:
             raise RuntimeError(f"Body '{_upstream.TRACK_BODY_NAME}' not found in the model")
 
-        self._set_start_waypoint()
-        self._reset_qpos = self.data.qpos.copy()
+        self._apply_segment_spawn()
+        self._open_segment_video()
 
         self.lidar = RayCastLidar(self.model, self.base_body_id, lidar_config)
         self.heightmap = HeightmapSampler(self.model, self.base_body_id, heightmap_config)
-        self.use_perception = os.environ.get("S10_USE_PERCEPTION", "1") != "0"
-        self.use_lidar = self.use_perception and os.environ.get("S10_USE_LIDAR", "1") != "0"
-        self.use_heightmap = self.use_perception and os.environ.get("S10_USE_HEIGHTMAP", "1") != "0"
+        self.wheel_body_ids = np.asarray(
+            [
+                mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, name)
+                for name in ("fl_wheel", "fr_wheel", "hl_wheel", "hr_wheel")
+            ],
+            dtype=np.int32,
+        )
+        if np.any(self.wheel_body_ids < 0):
+            raise RuntimeError("S10 wheel bodies are missing from the MuJoCo model")
+        self._wheel_geoms = [self._descendant_geoms(int(body)) for body in self.wheel_body_ids]
 
         self.odom_pub = self.create_publisher(Odometry, "/ground_truth/odom", 50)
+        self.clock_pub = self.create_publisher(Clock, "/clock", 10)
         self.scan_pub = self.create_publisher(LaserScan, "/scan", 10)
         self.lidar_pub = self.create_publisher(Float32MultiArray, "/perception/lidar", 10)
         self.heightmap_pub = self.create_publisher(Float32MultiArray, "/perception/heightmap", 10)
-        self.key_pub = self.create_publisher(UInt8, "/keyboard/key", 10)
-        self.reset_sub = self.create_subscription(Empty, "/sim/reset", self._reset_sim, 1)
-
-        manual_port = int(os.environ.get("S10_MANUAL_PORT", "18778"))
-        if not 1 <= manual_port <= 65535:
-            raise ValueError("S10_MANUAL_PORT must be between 1 and 65535")
-        self._manual_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._manual_socket.bind(("0.0.0.0", manual_port))
-        self._manual_socket.setblocking(False)
-        self._manual_mode = 0
-        self._manual_targets = np.zeros(16, dtype=np.float32)
-        self._manual_last_packet = 0.0
-        self.get_logger().info(f"[manual] joint control UDP listening on {manual_port}")
-
-        if self.use_lidar or self.use_heightmap:
-            sensors = []
-            if self.use_lidar:
-                sensors.append(
-                    f"lidar {self.lidar.cfg.n_elevation}x{self.lidar.cfg.n_azimuth} rays"
-                )
-            if self.use_heightmap:
-                sensors.append(f"heightmap {self.heightmap.cfg.n_x}x{self.heightmap.cfg.n_y} cells")
-            self.get_logger().info(f"[perception] {', '.join(sensors)}")
-        else:
-            self.get_logger().info("[perception] lidar and heightmap disabled")
-
-    def _set_start_waypoint(self) -> None:
-        value = os.environ.get("S10_START_WAYPOINT")
-        if value is None:
-            return
-        try:
-            waypoint_number = int(value)
-        except ValueError as exc:
-            raise ValueError("S10_START_WAYPOINT must be an integer") from exc
-        if not 1 <= waypoint_number < len(self.track_waypoint_positions):
-            raise ValueError(
-                f"S10_START_WAYPOINT must be between 1 and {len(self.track_waypoint_positions) - 1}"
-            )
-
-        start_index = waypoint_number - 1
-        start = self.track_waypoint_positions[start_index]
-        target = self.track_waypoint_positions[start_index + 1]
-        path_yaw = math.atan2(target[1] - start[1], target[0] - start[0])
-        yaw = math.radians(float(os.environ["S10_START_YAW_DEG"])) if os.environ.get(
-            "S10_START_YAW_DEG"
-        ) else path_yaw
-        yaw += math.radians(float(os.environ.get("S10_START_YAW_OFFSET_DEG", "0")))
-        forward_offset = float(os.environ.get("S10_START_FORWARD_OFFSET", "0"))
-        lateral_offset = float(os.environ.get("S10_START_LATERAL_OFFSET", "0"))
-        offset_xy = (
-            forward_offset * np.array([math.cos(path_yaw), math.sin(path_yaw)])
-            + lateral_offset * np.array([-math.sin(path_yaw), math.cos(path_yaw)])
+        self.wheel_state_pub = self.create_publisher(
+            Float32MultiArray, "/perception/wheel_state", 10
         )
-        self.data.qpos[:3] = start + np.array([offset_xy[0], offset_xy[1], 0.2])
-        self.data.qpos[3:7] = (math.cos(yaw / 2), 0.0, 0.0, math.sin(yaw / 2))
-        self.data.qvel[:] = 0.0
-        mujoco.mj_forward(self.model, self.data)
+        self.create_subscription(String, "/joints/owner", self._on_joint_owner, 10)
+        self.create_subscription(String, "/strategy/status", self._on_strategy_status, 10)
+
         self.get_logger().info(
-            f"[sim] starting at path waypoint {waypoint_number} "
-            f"toward waypoint {waypoint_number + 1}: "
-            f"x={start[0]:.3f}, y={start[1]:.3f}, yaw={math.degrees(yaw):.1f}deg"
+            f"[perception] lidar {self.lidar.cfg.n_elevation}x{self.lidar.cfg.n_azimuth} rays, "
+            f"heightmap {self.heightmap.cfg.n_x}x{self.heightmap.cfg.n_y} cells"
         )
 
-    def _reset_sim(self, _msg: Empty) -> None:
-        mujoco.mj_resetData(self.model, self.data)
-        self.data.qpos[:] = self._reset_qpos
-        for command in (
-            self.kp_cmd,
-            self.kd_cmd,
-            self.pos_cmd,
-            self.vel_cmd,
-            self.tau_ff,
-            self.input_tq,
-        ):
-            command.fill(0.0)
-        self.last_base_linvel.fill(0.0)
-        mujoco.mj_forward(self.model, self.data)
-        self.get_logger().info("[sim] reset to the test start pose")
+    def _apply_segment_spawn(self) -> None:
+        """Move the start pose, for the segment harness only.
 
-    def _poll_manual_control(self) -> None:
-        while True:
-            try:
-                payload = self._manual_socket.recv(_MANUAL_FRAME.size + 1)
-            except BlockingIOError:
-                return
-            key = _decode_key(payload)
-            if key is not None:
-                self.key_pub.publish(UInt8(data=key))
-                continue
-            command = _decode_manual_control(payload)
-            if command is None:
-                continue
-            mode, targets = command
-            for index in range(16):
-                if index in _WHEEL_JOINTS:
-                    targets[index] = np.clip(targets[index], -20.0, 20.0)
-                    continue
-                joint = self.model.actuator_trnid[index, 0]
-                if self.model.jnt_limited[joint]:
-                    targets[index] = np.clip(targets[index], *self.model.jnt_range[joint])
-            if mode != self._manual_mode:
-                self.get_logger().info(f"[manual] mode {self._manual_mode} -> {mode}")
-            self._manual_mode = mode
-            self._manual_targets = targets
-            self._manual_last_packet = time.monotonic()
-
-    def _apply_joint_torque(self) -> None:
-        self._poll_manual_control()
-        if self._manual_mode == 0:
-            super()._apply_joint_torque()
+        A scored run never gets here: :meth:`SpawnOverride.from_env` returns ``None`` unless
+        ``S10_SPAWN_XY`` is set, and the whole method is then two comparisons and a return.
+        The simulator's own waypoint counter is wound forward to match, so its ``[TRACK]``
+        lines are about the segment under test rather than about a start line the robot is
+        nowhere near -- it stays an independent check on our recorder, which is the reason
+        for not simply ignoring it.
+        """
+        spawn = SpawnOverride.from_env()
+        if spawn is None:
             return
-        if self._manual_mode == 1 and time.monotonic() - self._manual_last_packet > 0.5:
-            self._manual_mode = 2
-            self.get_logger().warn("[manual] control heartbeat lost; entering damping")
 
-        q = self.data.qpos[7:23].reshape(-1, 1)
-        dq = self.data.qvel[6:22].reshape(-1, 1)
-        if self._manual_mode == 2:
-            self.input_tq = -2.0 * dq
+        base = spawn.apply(self.model, self.data, _upstream.JOINT_INIT[self.model_key])
+        if (
+            spawn.waypoint_index is not None
+            and spawn.waypoint_index > 0
+            and getattr(self, "track_enabled", False)
+        ):
+            for index in range(min(spawn.waypoint_index + 1, len(self.track_waypoint_positions))):
+                self._hide_track_point(index)
+            self.track_next_index = spawn.waypoint_index + 1
+        self.get_logger().warn(
+            f"[segment] spawn overridden to ({base[0]:.3f}, {base[1]:.3f}, {base[2]:.3f}) "
+            f"yaw={math.degrees(spawn.yaw):.1f} deg seed={spawn.seed}; this is a test run, "
+            f"not a scored one"
+        )
+
+    def _open_segment_video(self) -> None:
+        """Set up offscreen frame capture, for the segment harness only.
+
+        Same rule as the spawn override: unset environment means this costs one dictionary
+        lookup and nothing else. A headless renderer is expensive enough -- roughly a
+        millisecond a frame at this size, against a 1 ms physics step -- that it must not be
+        something a scored run can end up paying for by accident. ``replay`` mode records
+        only qpos and renders after the run; that is the right choice for high-resolution
+        software rendering, which otherwise blocks sensor publication long enough to change
+        the navigation behavior being filmed.
+        """
+        self._frames_dir = None
+        self._frame_renderer = None
+        self._frame_replay = False
+        self._frame_times: list[float] = []
+        self._frame_wall_times: list[float] = []
+        self._frame_qpos: list[np.ndarray] = []
+        self._frame_waypoints: list[int] = []
+        self._frame_owners: list[str] = []
+        self._frame_policies: list[str] = []
+        self._frame_wall_started = time.monotonic()
+        directory = os.environ.get("S10_SEGMENT_VIDEO", "").strip()
+        if not directory:
+            return
+        width = int(os.environ.get("S10_SEGMENT_VIDEO_WIDTH", "640"))
+        height = int(os.environ.get("S10_SEGMENT_VIDEO_HEIGHT", "480"))
+        if width <= 0 or height <= 0:
+            raise ValueError("S10_SEGMENT_VIDEO_WIDTH/HEIGHT must be positive integers")
+        self._frames_dir = Path(directory)
+        self._frames_dir.mkdir(parents=True, exist_ok=True)
+        self._frame_width = width
+        self._frame_height = height
+        capture_hz = float(os.environ.get("S10_SEGMENT_VIDEO_HZ", "10"))
+        if capture_hz <= 0.0:
+            raise ValueError("S10_SEGMENT_VIDEO_HZ must be positive")
+        self._frame_period = 1.0 / capture_hz
+        self._frame_next = 0.0
+        self._frame_number = 0
+        mode = os.environ.get("S10_SEGMENT_VIDEO_MODE", "frames").strip().lower()
+        if mode not in {"frames", "replay"}:
+            raise ValueError("S10_SEGMENT_VIDEO_MODE must be 'frames' or 'replay'")
+        if mode == "replay":
+            self._frame_replay = True
+            self.get_logger().info(
+                f"[segment] recording replay states at {capture_hz:.1f} Hz to "
+                f"{self._frames_dir / 'replay.npz'}"
+            )
+            return
+
+        # MuJoCo's offscreen framebuffer has its own size limit. Raise it before creating
+        # the renderer so an explicitly requested 1080p capture is genuinely rendered at
+        # 1080p rather than rejected or silently constrained by the model's default buffer.
+        self.model.vis.global_.offwidth = max(self.model.vis.global_.offwidth, width)
+        self.model.vis.global_.offheight = max(self.model.vis.global_.offheight, height)
+        self._frame_renderer = mujoco.Renderer(self.model, height=height, width=width)
+        self._frame_camera = mujoco.MjvCamera()
+        self._frame_camera.distance = float(
+            os.environ.get("S10_SEGMENT_VIDEO_CAMERA_DISTANCE", "4.0")
+        )
+        self._frame_camera.elevation = float(
+            os.environ.get("S10_SEGMENT_VIDEO_CAMERA_ELEVATION", "-20.0")
+        )
+        self._frame_camera.azimuth = float(
+            os.environ.get("S10_SEGMENT_VIDEO_CAMERA_AZIMUTH", "90.0")
+        )
+        self.get_logger().info(
+            f"[segment] recording {width}x{height} frames at "
+            f"{capture_hz:.1f} Hz to {self._frames_dir}"
+        )
+
+    def _capture_frame(self) -> None:
+        if self._frames_dir is None or self.timestamp < self._frame_next:
+            return
+        if self._frame_replay:
+            self._frame_times.append(float(self.timestamp))
+            self._frame_wall_times.append(time.monotonic() - self._frame_wall_started)
+            self._frame_qpos.append(self.data.qpos.copy())
+            self._frame_waypoints.append(int(getattr(self, "track_next_index", -1)))
+            self._frame_owners.append(self._actual_joint_owner)
+            displayed_policy = "WP16" if self._active_policy == "climb_policy" else "official"
+            self._frame_policies.append(displayed_policy)
         else:
-            kp = np.full((16, 1), 80.0, dtype=np.float32)
-            kp[_WHEEL_JOINTS] = 0.0
-            pos = self._manual_targets.reshape(-1, 1).copy()
-            pos[_WHEEL_JOINTS] = q[_WHEEL_JOINTS]
-            vel = np.zeros((16, 1), dtype=np.float32)
-            vel[_WHEEL_JOINTS] = self._manual_targets[_WHEEL_JOINTS, None]
-            self.input_tq = kp * (pos - q) + 2.0 * (vel - dq)
-        self.data.ctrl[:] = self.input_tq.ravel()
+            self._frame_camera.lookat[:] = self.data.xpos[self.base_body_id]
+            self._frame_renderer.update_scene(self.data, self._frame_camera)
+            write_png(
+                self._frames_dir / f"{self._frame_number:05d}.png",
+                self._frame_renderer.render(),
+            )
+        self._frame_number += 1
+        self._frame_next = self.timestamp + self._frame_period
 
     def destroy_node(self):
-        self._manual_socket.close()
+        """Flush a lightweight replay trace before ROS tears the simulator down."""
+        if self._frame_replay and self._frame_times:
+            replay = self._frames_dir / "replay.npz"
+            np.savez_compressed(
+                replay,
+                time=np.asarray(self._frame_times),
+                wall_time=np.asarray(self._frame_wall_times),
+                qpos=np.asarray(self._frame_qpos),
+                target_waypoint=np.asarray(self._frame_waypoints, dtype=np.int16),
+                joint_owner=np.asarray(self._frame_owners, dtype="U16"),
+                active_policy=np.asarray(self._frame_policies, dtype="U16"),
+                width=self._frame_width,
+                height=self._frame_height,
+            )
+            self.get_logger().info(
+                f"[segment] wrote {len(self._frame_times)} replay states to {replay}"
+            )
+            self._frame_replay = False
         return super().destroy_node()
+
+    def _on_joint_owner(self, msg: String) -> None:
+        self._actual_joint_owner = msg.data
+
+    def _on_strategy_status(self, msg: String) -> None:
+        try:
+            status = json.loads(msg.data)
+        except (TypeError, ValueError):
+            return
+        self._active_policy = str(status.get("active_policy", self._active_policy))
 
     def _publish_robot_state(self, step: int) -> None:
         """Extend upstream's state publication with our own sensors."""
+        if step % PERCEPTION_DECIMATION == 0:
+            # Navigation dwell/timeout logic must advance in MuJoCo time. On a loaded x86
+            # runner one simulated second can take several wall seconds; using wall time
+            # made Gate16 consume its 40 s alignment budget before the robot had received
+            # enough physics steps to align. The simulator itself stays on the steady wall
+            # clock that drives its loop; only consumers opt into this standard ROS clock.
+            seconds = float(self.timestamp)
+            clock = Clock()
+            clock.clock.sec = int(seconds)
+            clock.clock.nanosec = int(round((seconds - int(seconds)) * 1e9))
+            if clock.clock.nanosec >= 1_000_000_000:
+                clock.clock.sec += 1
+                clock.clock.nanosec -= 1_000_000_000
+            self.clock_pub.publish(clock)
         super()._publish_robot_state(step)
         if step % PERCEPTION_DECIMATION == 0:
             self._publish_perception()
+            self._capture_frame()
 
     def _publish_perception(self) -> None:
         stamp = self.get_clock().now().to_msg()
 
         self._publish_odometry(stamp)
-        if not self.use_perception:
-            return
 
-        if self.use_lidar:
-            ranges = self.lidar.scan(self.data)
-            self._publish_scan(stamp, self.lidar.horizontal_ring(ranges))
-            self.lidar_pub.publish(_to_float_array(ranges, ("elevation", "azimuth")))
+        ranges = self.lidar.scan(self.data)
+        self._publish_scan(stamp, self.lidar.horizontal_ring(ranges))
+        self.lidar_pub.publish(_to_float_array(ranges, ("elevation", "azimuth")))
 
-        if self.use_heightmap:
-            grid = self.heightmap.sample(self.data)
-            self.heightmap_pub.publish(_to_float_array(grid, ("x", "y")))
+        grid = self.heightmap.sample(self.data)
+        self.heightmap_pub.publish(_to_float_array(grid, ("x", "y")))
+        self.wheel_state_pub.publish(
+            _to_float_array(self._wheel_state(), ("wheel", "x_y_z_contact"))
+        )
+
+    def _descendant_geoms(self, ancestor_body: int) -> set[int]:
+        result: set[int] = set()
+        for geom in range(self.model.ngeom):
+            body = int(self.model.geom_bodyid[geom])
+            while body > 0 and body != ancestor_body:
+                body = int(self.model.body_parentid[body])
+            if body == ancestor_body:
+                result.add(geom)
+        return result
+
+    def _wheel_state(self) -> np.ndarray:
+        """Four world-frame wheel centres plus a terrain-contact oracle."""
+        contacts = np.zeros(4, dtype=np.float32)
+        for index, geoms in enumerate(self._wheel_geoms):
+            for contact_index in range(self.data.ncon):
+                contact = self.data.contact[contact_index]
+                if contact.dist > 0.005:
+                    continue
+                g1, g2 = int(contact.geom1), int(contact.geom2)
+                other = g2 if g1 in geoms else g1 if g2 in geoms else -1
+                if other >= 0 and int(self.model.geom_group[other]) == 0:
+                    contacts[index] = 1.0
+                    break
+        return np.column_stack((self.data.xpos[self.wheel_body_ids], contacts)).astype(np.float32)
 
     def _publish_odometry(self, stamp) -> None:
         msg = Odometry()
@@ -374,7 +422,8 @@ def main() -> None:
     )
     try:
         node.start()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
+        # See viz_node.main: SIGTERM has already closed the context by this point.
         pass
     finally:
         node.destroy_node()

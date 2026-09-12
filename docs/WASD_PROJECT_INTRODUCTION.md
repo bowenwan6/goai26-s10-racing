@@ -1,5 +1,7 @@
 # S10 轮足机器人 WASD 手动控制：项目介绍
 
+> 历史版本说明：本文适用于 [cc93d39](https://github.com/bowenwan6/goai26-s10-racing/tree/cc93d39f8a939c88627f73534ca42c30d7705746)。当前分支已采用 main 的比赛实现，旧 WASD、键盘切换策略及 replay_waypoint.sh 入口已停用；当前操作见 [项目 README](../README.md)。
+
 [技术方案](WASD_TECHNICAL_SOLUTION.md) · [Demo 说明](WASD_DEMO_GUIDE.md)
 
 ## 背景
