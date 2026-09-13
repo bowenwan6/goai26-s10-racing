@@ -1,0 +1,4 @@
+# Preserve the deployed payload byte-for-byte, including existing CRLF.
+agx102/** -text
+slam106/** -text
+relay103/** -text
