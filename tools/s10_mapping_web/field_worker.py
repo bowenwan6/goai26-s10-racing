@@ -8,13 +8,16 @@ import os
 from pathlib import Path
 import socket
 import socketserver
+import stat
 import threading
 import time
 
 from field_core import (DEFAULT_ROOT, FieldError, Store, binding, canonical, exclusive,
                         finite_list, ident, localization_reasons, pose_summary)
 
-SOCKET = Path('/run/s10-field/worker.sock')
+# The robot's overlay environment cannot reliably create systemd RuntimeDirectory.
+# Use the existing private data root, with the same default for server and RPC.
+SOCKET = DEFAULT_ROOT/'worker.sock'
 OPERATION_LOCK = Path(__file__).resolve().parent/'operation.lock'
 
 
@@ -347,6 +350,11 @@ def run(root, socket_path, adapter, lock_path=OPERATION_LOCK):
             store.update_session(session_id, approved_check=None, approved_at=None)
         socket_path = Path(socket_path)
         socket_path.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
+        parent_stat = socket_path.parent.stat()
+        if stat.S_IMODE(parent_stat.st_mode) != 0o700 or parent_stat.st_uid != os.geteuid():
+            raise FieldError('socket 父目录必须属于运行用户且权限为0700；未自动改权限或回退路径')
+        if socket_path.is_symlink():
+            raise FieldError('socket 位置存在符号链接，拒绝覆盖')
         if socket_path.exists():
             if not socket_path.is_socket():
                 raise FieldError('socket 位置存在非 socket 文件，拒绝覆盖')

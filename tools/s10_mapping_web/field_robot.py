@@ -18,6 +18,11 @@ import time
 from field_core import FieldError, MAP_RE, binding, canonical, finite_list, localization_reasons, pose_summary
 import robot_backend as vendor
 
+# Display decoding only; independent rosbag recording keeps original messages.
+# At ~0.13 s measured LiDAR source latency, a 0.5 s display interval could
+# randomly exceed the unchanged 0.5 s evidence gate. Use 5 Hz cloud previews.
+PREVIEW_INTERVALS_S = dict(pose=.1, imu=.1, cloud=.2, aligned_cloud=.2)
+
 PROFILE = {
     '/ODOM': ('nav_msgs/msg/Odometry', True),
     '/IMU': ('sensor_msgs/msg/Imu', True),
@@ -112,7 +117,7 @@ class RobotAdapter:
                 with self.lock:
                     old = self.latest.get(key)
                     self.counts[key] = self.counts.get(key, 0)+1
-                    if old and now-old['received'] < (.1 if key in ('pose', 'imu') else .5):
+                    if old and now-old['received'] < PREVIEW_INTERVALS_S[key]:
                         return
                 msg = deserialize_message(raw, kind)
                 stamp = msg.header.stamp.sec+msg.header.stamp.nanosec/1e9
@@ -174,11 +179,11 @@ class RobotAdapter:
         return value
 
     def snapshot(self):
-        now = time.monotonic()
-        if self.status_cache is None or now-self.status_at > .5:
+        schedule_now = time.monotonic()
+        if self.status_cache is None or schedule_now-self.status_at > .5:
             loc = vendor.localization_status()
             self.status_cache = dict(loc=loc, mapping=vendor.service().get('ActiveState'), navigation=navigation_status())
-            self.status_at = now
+            self.status_at = schedule_now
         info = self.status_cache
         loc = info['loc']
         identity, identity_error = None, None
@@ -187,9 +192,15 @@ class RobotAdapter:
         except Exception as exc:
             identity_error = str(exc)
         with self.lock:
-            streams = {k: dict(v, age=now-v['received'], stamp_age_s=time.time()-v['stamp']) for k, v in self.latest.items()}
+            # Vendor service/log/map reads above may be slow while ROS callbacks
+            # continue receiving. Sample clocks only once we hold the data lock,
+            # not before that IO; do not hide genuinely future data with a clamp.
+            snapshot_now = time.monotonic()
+            snapshot_wall = time.time()
+            streams = {k: dict(v, age=snapshot_now-v['received'], stamp_age_s=snapshot_wall-v['stamp'])
+                       for k, v in self.latest.items()}
         status = dict(loc.get('status', {}))
-        status['fresh'] = (status.get('fresh') is True and -.05 <= time.time()-status.get('stamp', 0) <= 5)
+        status['fresh'] = (status.get('fresh') is True and -.05 <= snapshot_wall-status.get('stamp', 0) <= 5)
         import hashlib
         machine_hash = hashlib.sha256(Path('/etc/machine-id').read_bytes().strip()).hexdigest()
         identity_verified = (self.config.get('expected_machine_id_sha256') == machine_hash and bool(self.config.get('robot_id')))
@@ -200,7 +211,7 @@ class RobotAdapter:
                     invocation=loc.get('invocation'), started_at=loc.get('started_at'),
                     mapping_active=info['mapping'] not in ('inactive', 'failed'),
                     localization_active=loc.get('service') == 'active', status=status,
-                    error=self.error, board_time=time.time(), monotonic=now, calibration=self.calibration(),
+                    error=self.error, board_time=snapshot_wall, monotonic=snapshot_now, calibration=self.calibration(),
                     navigation=info.get('navigation', {}),
                     demo=False, **streams)
 

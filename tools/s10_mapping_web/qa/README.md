@@ -31,3 +31,29 @@ S10_QA_PLAYWRIGHT=/absolute/path/to/node_modules/playwright node tools/s10_mappi
 输出 `BROWSER_ALL_PASS` 并更新 `browser-phone.png`；结束后用Ctrl+C停止终端一的demo，它会清理自己的fake worker及临时数据。测试过程中不得把host改为机器人IP。
 
 结果和现场未测关卡见[REVIEW.md](REVIEW.md)。本地通过不等于真机定位/安全/无外网验收通过。
+
+## 首页入口专项
+
+同一个loopback demo可运行更短的入口/登录回归，不会提交任何建图或现场动作：
+
+```bash
+S10_QA_PLAYWRIGHT=/absolute/path/to/node_modules/playwright node tools/s10_mapping_web/qa/test_homepage_entry.cjs
+```
+
+期望`HOMEPAGE_ENTRY_ALL_PASS`，截图`homepage-entry-phone.png`；专项范围与结果见[HOMEPAGE_REVIEW.md](HOMEPAGE_REVIEW.md)。
+
+## 持久socket兼容专项
+
+```bash
+python3.12 -B tools/s10_mapping_web/qa/test_socket_compat.py
+```
+
+额外9项本地测试覆盖持久目录中的socket恢复、第二实例、非socket/symlink保护、目录/socket权限及默认客户端路径一致；报告见[SOCKET_COMPAT_REVIEW.md](SOCKET_COMPAT_REVIEW.md)。该文件不匹配上方`test_independent_*.py`的48项旧套件，须单独运行，或用`test*.py`一起发现。
+
+## Snapshot 时序专项
+
+```bash
+python3.12 -B tools/s10_mapping_web/qa/test_snapshot_race.py
+```
+
+额外6项测试使用假时钟和 vendor/设备身份 mock，不初始化 ROS 或连接任何网络。覆盖缓存/非缓存慢 I/O、锁等待、真正未来接收/源时间及状态过期；结果见[SNAPSHOT_TIME_REVIEW.md](SNAPSHOT_TIME_REVIEW.md)。该文件同样不包含在上方48项旧套件中。
