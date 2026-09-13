@@ -1,0 +1,15 @@
+# Never add runtime credentials or transient state to this snapshot.
+backend_key*
+known_hosts
+authorized_keys
+config.json
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*password*
+.env*
+session.json
+operation.lock
+__pycache__/
+*.pyc

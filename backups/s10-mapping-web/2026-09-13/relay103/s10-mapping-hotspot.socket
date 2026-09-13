@@ -1,0 +1,10 @@
+[Unit]
+Description=S10 48 phone mapping hotspot entry
+After=network.target
+
+[Socket]
+ListenStream=10.21.41.1:8080
+FreeBind=yes
+
+[Install]
+WantedBy=sockets.target
