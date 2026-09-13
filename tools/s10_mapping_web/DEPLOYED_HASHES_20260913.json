@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-09-13 10:13:38 UTC",
+  "scope": "Deployed app source byte hashes verified against the local tested working tree; no secrets included.",
+  "hosts": {
+    "102": {
+      "server.py": "e5da38499860ceff3b273fec7b4f4923cb679981c1276c67f5fd639e14e0add8",
+      "index.html": "dc94723e7fda061878dc201f3d552f364f41e330f8e26aed3a434188de72b037",
+      "field_core.py": "635d11e87ae391f0db67c4228270ded0aa181599e8c69a0b59a397a2788afee1",
+      "field.html": "4b33d749b4a12189fce368ba5b5a1e6199911f5d7a0074d7fdd7123b693d42f3",
+      "field.js": "74bbf92997590ecf07d9d872318f5f6daadd7ae1eb1bfd8c725b3957abdc0736"
+    },
+    "106": {
+      "robot_backend.py": "95ec5e86c540ff931ebe0303a547449efdaec76d20e0009caa744efcab259104",
+      "field_core.py": "635d11e87ae391f0db67c4228270ded0aa181599e8c69a0b59a397a2788afee1",
+      "field_worker.py": "d98b32436ca61a9ffd2b15ef0f41a0bd4007b50c74c806959de02135ac059bad",
+      "field_robot.py": "4c44502d91a441e8ae0dd5af2e4ac85eee9ff96dd6d1e65d5839600b3d59c421",
+      "field_preview.py": "17bc27d8cf6e550aad6fb959f4745a2b770dc52a8084ea8374b40588261788e0",
+      "field_recorder.py": "dec1eef2a444065a6c8f35fd98f1308ec8b16f0f0d0d9a40f22bfaf70148ae59",
+      "field-worker.sh": "d4fa9f8d5e0540bdc4f0d523099a63e024a3569b0fce9195747e9665e36e9a36"
+    }
+  },
+  "hotspot": "http://10.21.41.1:8080",
+  "field_path": "/field",
+  "worker": {
+    "active": true,
+    "enabled": true,
+    "demo": false,
+    "socket": "/var/opt/robot/data/s10_field_assistant/worker.sock",
+    "restart_count": 0
+  },
+  "final_source_age_ranges_seconds": {
+    "pose": [
+      0.0534,
+      0.2083
+    ],
+    "imu": [
+      0.0148,
+      0.1139
+    ],
+    "cloud": [
+      0.1582,
+      0.408
+    ],
+    "aligned_cloud": [
+      0.0534,
+      0.3049
+    ]
+  }
+}

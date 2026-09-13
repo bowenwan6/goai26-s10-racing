@@ -25,5 +25,7 @@ class SlowFakeAdapter(FakeEvidenceAdapter):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('root', type=Path)
+    p.add_argument('--socket-under-root', action='store_true', help='QA layout matching persistent production socket')
     args = p.parse_args()
-    run(args.root/'persist', args.root/'qa.sock', SlowFakeAdapter(), args.root/'operation.lock')
+    socket_path = args.root/'persist'/'worker.sock' if args.socket_under_root else args.root/'qa.sock'
+    run(args.root/'persist', socket_path, SlowFakeAdapter(), args.root/'operation.lock')
