@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f5f0">
+<title>48 号 · 实时高度图</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;color:#172a29;background:#f4f5f0;color-scheme:light}*{box-sizing:border-box}body{margin:0}main{max-width:1100px;margin:auto;padding:28px 20px}header{display:flex;justify-content:space-between;align-items:center;gap:16px}h1{font-size:26px;letter-spacing:-.6px;margin:0}h1 span{font-size:16px;font-weight:400;color:#63746c;margin-left:10px}a{color:#155e50;text-underline-offset:4px}.hint{font-size:14px;line-height:1.8;color:#586a63;margin:12px 0 24px}.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}#state{font-size:18px;font-weight:650}.live{color:#147853}.bad{color:#a34824}.controls{display:flex;gap:8px;flex-wrap:wrap}button{font:inherit;background:#f9faf6;border:1px solid #c6d1c9;color:#294537;border-radius:8px;padding:10px 14px;min-height:44px;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#166b54;color:white;border-color:#166b54}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #078b73;outline-offset:3px}.plot{position:relative;border:1px solid #ced8cf;border-radius:14px;background:#e8eee7;overflow:hidden}canvas{display:block;width:100%;height:560px;touch-action:none}#empty{position:absolute;inset:42% 20px auto;text-align:center;color:#586a63;line-height:1.7;pointer-events:none}.plot-foot{padding:10px 16px;background:#f0f3ed;display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#52665b}.legend{display:flex;align-items:center;gap:8px}.ramp{width:120px;height:10px;border-radius:5px;background:linear-gradient(90deg,hsl(190 62% 39%),hsl(114 62% 49%),hsl(38 62% 59%))}.adjust{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding:16px 0}label{font-size:13px;color:#52665b;display:flex;align-items:center;gap:8px}input[type=range]{width:150px;accent-color:#166b54;min-height:32px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;border-top:1px solid #d6ddd4;padding:18px 0}.metrics span{display:block;font-size:12px;color:#63746c;margin-bottom:7px}.metrics strong{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}#notice{background:#fff3d8;color:#694a12;line-height:1.7;font-size:14px;padding:12px 14px;border-radius:8px}#notice:empty{display:none}.small{font-size:12px;line-height:1.8;color:#64746b}details{font-size:13px;margin-top:18px}summary{cursor:pointer;min-height:36px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#e8eee7;padding:12px;max-height:240px;overflow:auto;font-size:12px}#updated{font-variant-numeric:tabular-nums}@media(max-width:640px){main{padding:22px 14px}h1{font-size:23px}h1 span{font-size:14px}header a{font-size:13px}canvas{height:400px}.metrics{grid-template-columns:repeat(2,1fr)}.plot-foot{flex-direction:column}.ramp{width:110px}.adjust{gap:10px 18px}input[type=range]{width:115px}}
+</style>
+<main>
+<header><h1>48 号<span>实时高度图</span></h1><a href="/">返回建图</a></header>
+<p class="hint">看狗周围的地形起伏。颜色表示高度，灰色留白表示未知，红色箭头表示狗的位置与朝向。</p>
+<div class="bar"><div id="state" role="status">正在连接高程图</div><div class="controls"><button id="three" aria-pressed="true">立体</button><button id="top" aria-pressed="false">俯视</button><button id="reset">复位视角</button></div></div>
+<section class="plot" aria-label="机器人周围的实时高度图"><canvas id="plot" aria-label="高度颜色图，可拖动旋转立体视角；也可用下方旋转滑块"></canvas><div id="empty">正在等待高程图…</div><div class="plot-foot"><div class="legend"><span id="low">—</span><span class="ramp"></span><span id="high">—</span><span>m</span></div><span id="updated">等待首帧</span></div></section>
+<div class="adjust"><label>缩放<input id="zoom" type="range" min="0.6" max="3" step="0.1" value="1"></label><label>旋转<input id="angle" type="range" min="-180" max="180" step="1" value="-30"></label><span class="small">立体图可拖动旋转 · 滚轮缩放</span></div>
+<div class="metrics"><div><span>范围 / 网格</span><strong id="size">—</strong></div><div><span>有效格覆盖</span><strong id="coverage">—</strong></div><div><span>源输出 / 网页刷新</span><strong id="rate">—</strong></div><div><span>测量延迟</span><strong id="age">—</strong></div></div>
+<p id="notice" role="status"></p>
+<p class="small" id="pose">等待狗的定位</p>
+<p class="small">高程是地图坐标系的 z，单位米，不是海拔或离机身的距离。颜色范围随当前图调整；网格保留原始分辨率，不插值填补未知。近身区域可能含厂商补地。</p>
+<details><summary>数据来源与服务状态</summary><p class="small">106 · traversability_estimation → /elevation_map_raw。只读取高程图，无需开始建图。停止查看约 30 秒后退出额外读取进程，高程图服务继续运行。</p><pre id="diagnostics">连接中…</pre></details>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),canvas=$('plot'),ctx=canvas.getContext('2d');
+let last=null,received=0,mode='three',pitch=.68,drag=null,online=false;
+const elapsed=()=>Math.max(0,(performance.now()-received)/1000);
+const fresh=s=>!!s&&!s.error&&Number.isFinite(s.stamp_age_s)&&s.stamp_age_s+elapsed()+(last?.transport_age||0)<2.5&&s.stamp_age_s>=-.25&&s.age+elapsed()+(last?.transport_age||0)<3;
+const color=(z,lo,hi)=>{const t=Math.max(0,Math.min(1,(z-lo)/Math.max(.05,hi-lo)));return `hsl(${190-152*t} 62% ${39+20*t}%)`};
+function draw(){
+ const w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+ const g=last?.streams?.grid,p=last?.streams?.pose,ok=online&&fresh(g)&&g.heights?.length===g.nx*g.ny;
+ $('empty').hidden=ok&&g.valid>0;
+ $('empty').textContent=!online?'连接中断，正在重连…':!ok?'等待新鲜的高程图数据…':g.valid?'':'当前图没有有效高度，灰色区域为未知';
+ if(!ok)return;
+ const lo=g.low??0,hi=Math.max(lo+.05,g.high??lo),ref=(lo+hi)/2,angle=Number($('angle').value)*Math.PI/180,zoom=Number($('zoom').value);
+ const scale=Math.min(w,h)*.76/Math.max(g.length_x,g.length_y,mode==='three'?(hi-lo)*2:0)*zoom,c=Math.cos(angle),s=Math.sin(angle),sp=Math.sin(pitch),cp=Math.cos(pitch);
+ const project=(x,y,z=ref)=>mode==='top'?[w/2-y*scale,h/2-x*scale]:[w/2+(-y*c+x*s)*scale,h/2-(x*c+y*s)*sp*scale-(z-ref)*cp*scale];
+ const line=(a,b,stroke,width=1)=>{ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke()};
+ for(let x=-Math.floor(g.length_x/2);x<=g.length_x/2;x++)line(project(x,-g.length_y/2,lo),project(x,g.length_y/2,lo),'#c8d6c9');
+ for(let y=-Math.floor(g.length_y/2);y<=g.length_y/2;y++)line(project(-g.length_x/2,y,lo),project(g.length_x/2,y,lo),'#c8d6c9');
+ const tiles=[],r=g.resolution;
+ for(let i=0;i<g.nx;i++)for(let j=0;j<g.ny;j++){const z=g.heights[i*g.ny+j];if(z===null)continue;const x=g.length_x/2-(i+.5)*r,y=g.length_y/2-(j+.5)*r;tiles.push([x,y,z,x*c+y*s])}
+ if(mode==='three')tiles.sort((a,b)=>b[3]-a[3]);
+ for(const [x,y,z] of tiles){ctx.fillStyle=color(z,lo,hi);if(mode==='top'){const [u,v]=project(x+r/2,y+r/2);ctx.fillRect(u,v,r*scale+.5,r*scale+.5)}else{ctx.beginPath();for(const [k,dx,dy] of [[0,-1,-1],[1,1,-1],[2,1,1],[3,-1,1]]){const [u,v]=project(x+dx*r/2,y+dy*r/2,z);if(k===0)ctx.moveTo(u,v);else ctx.lineTo(u,v)}ctx.closePath();ctx.fill()}}
+ for(const [text,x,y,col] of [['+X',g.length_x/2,0,'#2d684b'],['+Y',0,g.length_y/2,'#36648e']]){line(project(0,0,lo),project(x,y,lo),col,1.5);const [u,v]=project(x,y,lo);ctx.fillStyle=col;ctx.font='12px system-ui';ctx.fillText(text,u+5,v-7)}
+ const loc=last.localization?.status;
+ if(fresh(p)&&p.frame===g.frame&&Math.abs(p.stamp-g.stamp)<1.5&&loc?.fresh&&loc.code===0&&loc.mode==='全局'){
+  const x=p.xyz[0]-g.center[0],y=p.xyz[1]-g.center[1],z=p.xyz[2];
+  if(Math.abs(x)<=g.length_x/2&&Math.abs(y)<=g.length_y/2){const [u,v]=project(x,y,z),[fx,fy]=project(x+Math.cos(p.yaw)*.45,y+Math.sin(p.yaw)*.45,z),a=Math.atan2(fy-v,fx-u);line(project(x,y,lo),[u,v],'#b64932',2);ctx.save();ctx.translate(u,v);ctx.rotate(a);ctx.fillStyle='#c84632';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-8,-7);ctx.lineTo(-5,0);ctx.lineTo(-8,7);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
+ }
+}
+function render(){
+ const g=last?.streams?.grid,p=last?.streams?.pose,ok=online&&fresh(g),loc=last?.localization?.status;
+ $('state').textContent=ok?'高程图正在更新':online?'等待有效数据':'连接中断';$('state').className=ok?'live':'bad';
+ $('size').textContent=ok?`${g.length_x} × ${g.length_y} m / ${Math.round(g.resolution*100)} cm`:'—';
+ $('coverage').textContent=ok?`${(100*g.valid/(g.nx*g.ny)).toFixed(1)}% · ${g.valid.toLocaleString()} 格`:'—';
+ $('rate').textContent=ok?`${last.source_hz.toFixed(1)} Hz / 1 Hz`:'—';
+ $('age').textContent=ok?`${Math.round((g.stamp_age_s+elapsed()+(last.transport_age||0))*1000)} ms`:'—';
+ $('low').textContent=ok&&g.low!==null?g.low.toFixed(2):'—';$('high').textContent=ok&&g.high!==null?Math.max(g.low+.05,g.high).toFixed(2):'—';
+ $('updated').textContent=ok?`${g.nx} × ${g.ny} 格 · 收到于 ${new Date().toLocaleTimeString('zh-CN',{hour12:false})}`:'等待首帧 / 数据已过期';
+ $('pose').textContent=ok&&fresh(p)?`狗的位置：X ${p.xyz[0].toFixed(2)} · Y ${p.xyz[1].toFixed(2)} · Z ${p.xyz[2].toFixed(2)} m　定位状态：${loc?.label||'未知'}`:'狗的位置：等待新鲜的定位数据';
+ $('notice').textContent=last?.error||g?.error||(!online?'正在恢复连接，旧图已隐藏。':last.service!=='active'?`高程图服务状态：${last.service||'未知'}`:!fresh(g)?'尚未收到有效的新鲜高程图，请检查定位输入。':!loc?.fresh||loc.code!==0||loc.mode!=='全局'?'当前定位未确认正常；高度图仍展示原始输出，狗的位置箭头已隐藏。':'');
+ $('diagnostics').textContent=`高程图服务：${last?.service||'未知'}\n定位服务：${last?.localization?.service||'未知'}\n地图：${last?.localization?.active_map||'未知'}\n坐标系：${g?.frame||'未知'}\n\n厂商遥测：\n${last?.streams?.telemetry?.text||'等待遥测'}`;
+ draw();
+}
+async function poll(){
+ if(document.hidden){setTimeout(poll,1000);return}
+ try{const response=await fetch('/phone/heightmap',{cache:'no-store',signal:AbortSignal.timeout(5000)});if(response.status===401){location.reload();return}if(!response.ok)throw Error('读取失败');last=await response.json();received=performance.now();online=!!last.online}catch(e){online=false}
+ render();setTimeout(poll,1000);
+}
+for(const name of ['three','top'])$(name).onclick=()=>{mode=name;$('three').setAttribute('aria-pressed',mode==='three');$('top').setAttribute('aria-pressed',mode==='top');$('angle').disabled=mode==='top';draw()};
+$('zoom').oninput=$('angle').oninput=draw;
+$('reset').onclick=()=>{$('zoom').value=1;$('angle').value=-30;pitch=.68;draw()};
+canvas.onpointerdown=e=>{drag=[e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId)};
+canvas.onpointermove=e=>{if(!drag||mode==='top')return;$('angle').value=((Number($('angle').value)+(e.clientX-drag[0])*.5+540)%360)-180;pitch=Math.max(.2,Math.min(1.45,pitch+(e.clientY-drag[1])*.008));drag=[e.clientX,e.clientY];draw()};
+canvas.onpointerup=canvas.onpointercancel=()=>{drag=null};
+canvas.addEventListener('wheel',e=>{e.preventDefault();$('zoom').value=Math.max(.6,Math.min(3,Number($('zoom').value)+(e.deltaY<0?.1:-.1)));draw()},{passive:false});
+setInterval(()=>{if(online&&(!fresh(last?.streams?.grid)||elapsed()>5)){online=false;render()}},500);
+window.addEventListener('resize',draw);poll();
+</script>
+</html>

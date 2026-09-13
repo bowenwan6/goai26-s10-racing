@@ -16,6 +16,8 @@ CONFIG = Path.home()/'.config/s10-mapping-web/config.json'
 state = dict(online=False, active=False, streams={}, trail=[], error='正在连接定位板')
 guard, operation = threading.Lock(), threading.Lock()
 last_view = 0.0
+last_height_view = 0.0
+height_state = dict(online=False, streams={})
 operation_name = ''
 csrf = secrets.token_urlsafe(24)
 login_cookie = secrets.token_urlsafe(32)
@@ -94,6 +96,32 @@ def read_stream():
             time.sleep(3)
 
 
+def read_height_stream():
+    global height_state
+    while True:
+        if time.monotonic()-last_height_view > 30:
+            time.sleep(1)
+            continue
+        try:
+            with connect() as client:
+                stdin, stdout, stderr = client.exec_command('s10-mapping', timeout=12)
+                stdin.write('{"action":"heightmap_stream"}\n'); stdin.flush()
+                stdin.channel.shutdown_write()
+                for line in stdout:
+                    if time.monotonic()-last_height_view > 30:
+                        break
+                    if line.startswith('S10_RESULT '):
+                        row = json.loads(line[11:])
+                        with guard:
+                            height_state = dict(row, online=True, received=time.monotonic())
+                if time.monotonic()-last_height_view <= 30:
+                    raise RuntimeError('高程图读取已退出：'+stderr.read(2048).decode(errors='replace'))
+        except Exception as exc:
+            with guard:
+                height_state.update(online=False, error=str(exc))
+            time.sleep(3)
+
+
 class Handler(BaseHTTPRequestHandler):
     def reply(self, code, data, kind='application/json; charset=utf-8', cookie=None):
         raw = data if isinstance(data, bytes) else json.dumps(data, ensure_ascii=False).encode()
@@ -120,16 +148,24 @@ class Handler(BaseHTTPRequestHandler):
             return False
 
     def do_GET(self):
-        global last_view
+        global last_view, last_height_view
         if self.path == '/':
             return self.reply(200, (HERE/'index.html').read_bytes(), 'text/html; charset=utf-8')
-        if self.path == '/localization':
-            page = HERE/('localization.html' if self.authenticated() else 'index.html')
+        if self.path in ('/localization', '/heightmap'):
+            page = HERE/(self.path[1:]+'.html' if self.authenticated() else 'index.html')
             if not page.is_file():
                 return self.reply(404, dict(detail='当前地图的定位页面尚未准备'))
             return self.reply(200, page.read_bytes(), 'text/html; charset=utf-8')
         if not self.authenticated():
             return self.reply(401, dict(detail='请登录'))
+        if self.path == '/phone/heightmap':
+            last_height_view = time.monotonic()
+            with guard:
+                result = dict(height_state)
+                result['transport_age'] = last_height_view-result.get('received', 0)
+                if result['transport_age'] > 5:
+                    result['online'] = False
+            return self.reply(200, result)
         if self.path == '/phone/state':
             last_view = time.monotonic()
             with guard:
@@ -198,4 +234,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = json.loads(CONFIG.read_text())
     threading.Thread(target=read_stream, daemon=True).start()
+    threading.Thread(target=read_height_stream, daemon=True).start()
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
