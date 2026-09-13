@@ -1,0 +1,419 @@
+{
+  "collected_date": "2026-09-13",
+  "scope": "Master read-only, 5-second ROS subscription window; no recording files, map switch, service restart or motion commands on robot.",
+  "runtime": {
+    "python": "3.12.3",
+    "rosbag2": "0.26.9",
+    "storage_plugins": [
+      "mcap",
+      "sqlite3"
+    ],
+    "tf2": "0.36.19",
+    "data_mount": "/dev/mmcblk0p11 ext4 /var/opt/robot/data",
+    "data_free_approx_gb": 13,
+    "root_overlay_upper": "/userdata/rootfs_overlay on /dev/mmcblk0p13 ext4 (not tmpfs)",
+    "user_linger": false
+  },
+  "planner_observation": {
+    "collected_at": "2026-09-13T17:17:44+08:00",
+    "service_active": true,
+    "service_invocation": "b52f93e4e33f4c92a3b4172337d67c01",
+    "service_start_monotonic_us": 28057400,
+    "log_path": "/var/opt/robot/log/2026_0913/planner.2026_0913.log",
+    "monitor_stamp_text": "[2026-09-13 17:17:44.219.639]",
+    "goal_present": false,
+    "status_code": 999,
+    "status_label": "Idle/Reached Goal",
+    "warning_code": 0,
+    "command_x_y_yaw": [0, 0, 0],
+    "motion_x_y_yaw": [0, 0, 0],
+    "parser_smoke_test": "The development parser was run locally on a later read-only 64KiB live log tail with 106 epoch/uptime/service start and InvocationID; returned fresh=true and idle=true. No new code ran on the robot.",
+    "clock_note": "Mac wall time was approximately 3.5 seconds behind 106 in this observation. Compare ROS/log timestamps with the originating board clock, not the phone/Mac clock; use browser monotonic time only for time since response receipt.",
+    "limitation": "A single read-only monitor block, not a certified physical stop or future guarantee. Parse fresh complete blocks and service identity; reject unknown or active state."
+  },
+  "interpretation": {
+    "empty_odom_child": "Do not infer a verified base reference from an empty child_frame_id.",
+    "zero_covariance": "Not a localization accuracy estimate.",
+    "tf_static_absent": "No publisher in this observation. Optional recording evidence; missing extrinsics still block verified route admission.",
+    "single_window": "No cold boot, field alignment, physical safety or recording load acceptance."
+  },
+  "observation": {
+    "duration_s": 5.007604351999817,
+    "topics": {
+      "/ODOM": {
+        "frame": "map",
+        "source_age_s": 0.03096485137939453,
+        "serialized_bytes": 708,
+        "child_frame": "",
+        "xyz": [
+          0.5192732879399813,
+          -0.1333302681173818,
+          0.01634209554986064
+        ],
+        "qxyzw": [
+          0.02396169614537759,
+          0.014505074641840079,
+          -0.010198325237055227,
+          0.9995556183073696
+        ],
+        "covariance": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "messages": 51,
+        "hz": 10.076318505920122,
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "nav_msgs/msg/Odometry",
+            "reliability": "1",
+            "durability": "2"
+          }
+        ]
+      },
+      "/IMU": {
+        "frame": "",
+        "source_age_s": 0.009761571884155273,
+        "serialized_bytes": 316,
+        "messages": 1004,
+        "hz": 200.56385939535025,
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "sensor_msgs/msg/Imu",
+            "reliability": "2",
+            "durability": "2"
+          }
+        ]
+      },
+      "/LIDAR/POINTS": {
+        "frame": "lidar_link",
+        "source_age_s": 0.11957716941833496,
+        "serialized_bytes": 1215697,
+        "points": 46750,
+        "fields": [
+          {
+            "name": "x",
+            "type": 7,
+            "offset": 0
+          },
+          {
+            "name": "y",
+            "type": 7,
+            "offset": 4
+          },
+          {
+            "name": "z",
+            "type": 7,
+            "offset": 8
+          },
+          {
+            "name": "intensity",
+            "type": 7,
+            "offset": 12
+          },
+          {
+            "name": "ring",
+            "type": 4,
+            "offset": 16
+          },
+          {
+            "name": "timestamp",
+            "type": 8,
+            "offset": 18
+          }
+        ],
+        "messages": 51,
+        "hz": 10.108574649656997,
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "sensor_msgs/msg/PointCloud2",
+            "reliability": "2",
+            "durability": "2"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "sensor_msgs/msg/PointCloud2",
+            "reliability": "2",
+            "durability": "2"
+          }
+        ]
+      },
+      "/ALIGNED_POINTS": {
+        "frame": "map",
+        "source_age_s": 0.03191995620727539,
+        "serialized_bytes": 66969,
+        "points": 1390,
+        "fields": [
+          {
+            "name": "x",
+            "type": 7,
+            "offset": 0
+          },
+          {
+            "name": "y",
+            "type": 7,
+            "offset": 4
+          },
+          {
+            "name": "z",
+            "type": 7,
+            "offset": 8
+          },
+          {
+            "name": "normal_x",
+            "type": 7,
+            "offset": 16
+          },
+          {
+            "name": "normal_y",
+            "type": 7,
+            "offset": 20
+          },
+          {
+            "name": "normal_z",
+            "type": 7,
+            "offset": 24
+          },
+          {
+            "name": "intensity",
+            "type": 7,
+            "offset": 32
+          },
+          {
+            "name": "curvature",
+            "type": 7,
+            "offset": 36
+          }
+        ],
+        "messages": 51,
+        "hz": 10.097838378135327,
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "sensor_msgs/msg/PointCloud2",
+            "reliability": "1",
+            "durability": "2"
+          }
+        ]
+      },
+      "/REGIS_ALIGNED_POINTS": {
+        "frame": "map",
+        "source_age_s": 0.028510332107543945,
+        "serialized_bytes": 66969,
+        "points": 1390,
+        "fields": [
+          {
+            "name": "x",
+            "type": 7,
+            "offset": 0
+          },
+          {
+            "name": "y",
+            "type": 7,
+            "offset": 4
+          },
+          {
+            "name": "z",
+            "type": 7,
+            "offset": 8
+          },
+          {
+            "name": "normal_x",
+            "type": 7,
+            "offset": 16
+          },
+          {
+            "name": "normal_y",
+            "type": 7,
+            "offset": 20
+          },
+          {
+            "name": "normal_z",
+            "type": 7,
+            "offset": 24
+          },
+          {
+            "name": "intensity",
+            "type": 7,
+            "offset": 32
+          },
+          {
+            "name": "curvature",
+            "type": 7,
+            "offset": 36
+          }
+        ],
+        "messages": 51,
+        "hz": 10.103279597644665,
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "sensor_msgs/msg/PointCloud2",
+            "reliability": "1",
+            "durability": "2"
+          }
+        ]
+      },
+      "/LIDAR/POINTS_MERGED": {
+        "frame": "lidar_link",
+        "source_age_s": 0.12591552734375,
+        "serialized_bytes": 748497,
+        "points": 46772,
+        "fields": [
+          {
+            "name": "x",
+            "type": 7,
+            "offset": 0
+          },
+          {
+            "name": "y",
+            "type": 7,
+            "offset": 4
+          },
+          {
+            "name": "z",
+            "type": 7,
+            "offset": 8
+          },
+          {
+            "name": "intensity",
+            "type": 7,
+            "offset": 12
+          }
+        ],
+        "messages": 50,
+        "hz": 10.014987641568524,
+        "publishers": [
+          {
+            "node": "dual_airy_merger",
+            "type": "sensor_msgs/msg/PointCloud2",
+            "reliability": "2",
+            "durability": "2"
+          }
+        ]
+      },
+      "/elevation_map_raw": {
+        "frame": "map",
+        "source_age_s": 0.03481435775756836,
+        "serialized_bytes": 480384,
+        "layers": [
+          "elevation",
+          "variance",
+          "time"
+        ],
+        "resolution": 0.05,
+        "nx": 200,
+        "ny": 200,
+        "messages": 46,
+        "hz": 10.003772685000408,
+        "publishers": [
+          {
+            "node": "traversability_estimation_node",
+            "type": "grid_map_msgs/msg/GridMap",
+            "reliability": "1",
+            "durability": "2"
+          }
+        ]
+      },
+      "/tf": {
+        "messages": 146,
+        "hz": null,
+        "publishers": [
+          {
+            "node": "traversability_estimation_node",
+            "type": "tf2_msgs/msg/TFMessage",
+            "reliability": "1",
+            "durability": "2"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "tf2_msgs/msg/TFMessage",
+            "reliability": "1",
+            "durability": "2"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "tf2_msgs/msg/TFMessage",
+            "reliability": "1",
+            "durability": "2"
+          }
+        ]
+      },
+      "/tf_static": {
+        "messages": 0,
+        "hz": null,
+        "publishers": []
+      }
+    },
+    "transforms": [
+      {
+        "topic": "/tf",
+        "parent": "map",
+        "child": "base_link",
+        "xyz": [
+          0.5207280252257471,
+          -0.13421200518091514,
+          0.015849497989476446
+        ],
+        "qxyzw": [
+          0.023934430113696392,
+          0.014463740330535314,
+          -0.010275261666067181,
+          0.9995560826029096
+        ]
+      },
+      {
+        "topic": "/tf",
+        "parent": "base_link",
+        "child": "base_gravity",
+        "xyz": [
+          0,
+          0,
+          0
+        ],
+        "qxyzw": [
+          -0.02378963537483785,
+          -0.014700679506364188,
+          0.0003498606588381742,
+          0.9996088339287038
+        ]
+      }
+    ]
+  }
+}
