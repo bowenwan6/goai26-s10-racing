@@ -267,9 +267,28 @@ def dispatch(request):
     raise ValueError('不支持的操作')
 
 
+def field_pending():
+    """Legacy writes share the worker lock and respect its durable reservation."""
+    from field_core import DEFAULT_ROOT
+    import sqlite3
+    path = DEFAULT_ROOT/'field.sqlite3'
+    if not path.exists():
+        return False  # Backward compatible before explicit field deployment.
+    with sqlite3.connect(f'file:{path}?mode=ro', uri=True, timeout=3) as db:
+        return db.execute("SELECT 1 FROM jobs WHERE state IN ('QUEUED','RUNNING')").fetchone() is not None
+
+
 def main():
     import fcntl
     request = json.loads(sys.stdin.readline(4096))
+    if request.get('action') == 'field':
+        from field_worker import rpc_call
+        try:
+            response = dict(ok=True, result=rpc_call(request.get('request', {})))
+        except Exception as exc:
+            response = dict(ok=False, error=str(exc), code=getattr(exc, 'code', 'unavailable'))
+        print('S10_RESULT '+json.dumps(response, ensure_ascii=False), flush=True)
+        return
     if request.get('action') == 'heightmap_stream':
         from heightmap import stream
         stream()
@@ -298,6 +317,8 @@ def main():
     try:
         with (HERE/'operation.lock').open('w') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if request.get('action') in ('start', 'save') and field_pending():
+                raise ValueError('已有持久现场任务，请在现场助手查询；未启动建图/保存')
             with redirect_stdout(sys.stderr):
                 result = dispatch(request)
         response = dict(ok=True, result=result)

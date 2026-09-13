@@ -1,5 +1,6 @@
 """48 phone mapping server on AGX; 103 relays HTTP, 106 runs vendor SLAM."""
 import argparse
+import base64
 from collections import deque, OrderedDict
 import hashlib
 import hmac
@@ -10,6 +11,8 @@ from pathlib import Path
 import secrets
 import threading
 import time
+from urllib.parse import urlsplit, parse_qs, quote
+from field_core import FieldError, ident
 
 HERE = Path(__file__).resolve().parent
 CONFIG = Path.home()/'.config/s10-mapping-web/config.json'
@@ -22,6 +25,15 @@ operation_name = ''
 csrf = secrets.token_urlsafe(24)
 login_cookie = secrets.token_urlsafe(32)
 config = {}
+field_transport = None
+
+
+def field_call(request):
+    return field_transport(request) if field_transport is not None else call('field', request=request)
+
+
+def error_status(exc):
+    return {'invalid': 400, 'conflict': 409, 'busy': 409, 'not_found': 404}.get(getattr(exc, 'code', ''), 503)
 
 
 def connect():
@@ -43,6 +55,8 @@ def call(action, **body):
             if line.startswith('S10_RESULT '):
                 response = json.loads(line[11:])
                 if not response['ok']:
+                    if 'code' in response:
+                        raise FieldError(response['error'], response['code'])
                     raise RuntimeError(response['error'])
                 return response['result']
         raise RuntimeError('定位板未返回操作结果；请先核对状态')
@@ -151,13 +165,17 @@ class Handler(BaseHTTPRequestHandler):
         global last_view, last_height_view
         if self.path == '/':
             return self.reply(200, (HERE/'index.html').read_bytes(), 'text/html; charset=utf-8')
-        if self.path in ('/localization', '/heightmap'):
+        if self.path in ('/localization', '/heightmap', '/field'):
             page = HERE/(self.path[1:]+'.html' if self.authenticated() else 'index.html')
             if not page.is_file():
                 return self.reply(404, dict(detail='当前地图的定位页面尚未准备'))
             return self.reply(200, page.read_bytes(), 'text/html; charset=utf-8')
         if not self.authenticated():
             return self.reply(401, dict(detail='请登录'))
+        if self.path == '/field.js':
+            return self.reply(200, (HERE/'field.js').read_bytes(), 'text/javascript; charset=utf-8')
+        if self.path.startswith('/phone/field/'):
+            return self.field_get()
         if self.path == '/phone/heightmap':
             last_height_view = time.monotonic()
             with guard:
@@ -199,6 +217,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, dict(message='已登录'), cookie=f's10={login_cookie}; HttpOnly; SameSite=Strict; Path=/')
             if not self.authenticated() or not hmac.compare_digest(self.headers.get('X-CSRF-Token', ''), csrf):
                 return self.reply(403, dict(detail='请刷新页面重新登录'))
+            if self.path == '/phone/field/submit':
+                try:
+                    return self.reply(202, field_call(dict(action='submit', request=body)))
+                except Exception as exc:
+                    return self.reply(error_status(exc), dict(detail=str(exc), code=getattr(exc, 'code', 'unavailable')))
             if self.path not in ('/phone/start', '/phone/save'):
                 return self.reply(404, dict(detail='无效操作'))
             if not operation.acquire(blocking=False):
@@ -225,6 +248,79 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         pass
+
+    def field_get(self):
+        try:
+            parsed = urlsplit(self.path)
+            path, params = parsed.path, parse_qs(parsed.query, strict_parsing=True)
+            allowed = {'/phone/field/list': ('list', 'session_id'),
+                       '/phone/field/job': ('job', 'job_id'),
+                       '/phone/field/session': ('session', 'session_id'),
+                       '/phone/field/preview': ('preview', 'session_id')}
+            if path in ('/phone/field/health', '/phone/field/live'):
+                if params:
+                    raise FieldError('无效查询参数')
+                result = field_call(dict(action=path.rsplit('/', 1)[1]))
+                if path.endswith('health'):
+                    result['csrf'] = csrf
+                return self.reply(200, result)
+            if path in allowed:
+                action, key = allowed[path]
+                if set(params)-{key} or any(len(v) != 1 for v in params.values()):
+                    raise FieldError('无效查询参数')
+                request = dict(action=action)
+                if key in params:
+                    request[key] = ident(params[key][0])
+                elif action != 'list':
+                    raise FieldError('缺少查询编号')
+                return self.reply(200, field_call(request))
+            if path == '/phone/field/download':
+                if set(params) != {'artifact_id'} or len(params['artifact_id']) != 1:
+                    raise FieldError('产物编号无效')
+                return self.download(ident(params['artifact_id'][0]))
+            return self.reply(404, dict(detail='不存在这个现场接口'))
+        except Exception as exc:
+            return self.reply(error_status(exc), dict(detail=str(exc), code=getattr(exc, 'code', 'unavailable')))
+
+    def download(self, artifact_id):
+        import re
+        info = field_call(dict(action='artifact_info', artifact_id=artifact_id))
+        size = info['size']
+        start, end, partial = 0, size-1, False
+        value = self.headers.get('Range')
+        if value:
+            match = re.fullmatch(r'bytes=(\d+)-(\d*)', value)
+            if not match:
+                return self.reply(416, dict(detail='仅支持单个 bytes=start-end 范围'))
+            start = int(match[1]); end = min(int(match[2]), size-1) if match[2] else size-1
+            if start > end or start >= size:
+                return self.reply(416, dict(detail='下载范围超出文件'))
+            partial = True
+        self.send_response(206 if partial else 200)
+        self.send_header('Content-Type', 'application/octet-stream')
+        self.send_header('Content-Length', str(max(0, end-start+1)))
+        self.send_header('Accept-Ranges', 'bytes')
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('ETag', '"'+info['sha256']+'"')
+        self.send_header('Content-Disposition', "attachment; filename*=UTF-8''"+quote(info['name'], safe=''))
+        if partial:
+            self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
+        self.end_headers()
+        try:
+            offset = start
+            while offset <= end:
+                length = min(262144, end-offset+1)
+                chunk = field_call(dict(action='artifact_read', artifact_id=artifact_id, offset=offset, length=length))
+                raw = base64.b64decode(chunk['data'], validate=True)
+                if chunk['offset'] != offset or len(raw) != length:
+                    raise RuntimeError('下载数据范围与请求不符')
+                self.wfile.write(raw)
+                offset += len(raw)
+        except Exception:
+            # Once headers were sent, abort rather than send a second HTTP reply
+            # or claim a truncated body is a complete download.
+            self.close_connection = True
 
 
 if __name__ == '__main__':
