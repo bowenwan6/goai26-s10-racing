@@ -270,6 +270,10 @@ def dispatch(request):
 def main():
     import fcntl
     request = json.loads(sys.stdin.readline(4096))
+    if request.get('action') == 'heightmap_stream':
+        from heightmap import stream
+        stream()
+        return
     if request.get('action') == 'stream':
         thread = threading.Thread(target=sense, daemon=True)
         thread.start()
