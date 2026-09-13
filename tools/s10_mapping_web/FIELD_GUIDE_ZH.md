@@ -1,12 +1,12 @@
 # S10 离线手机现场助手 v1
 
-状态：**本地开发/评审版本，尚未部署到机器人，尚未完成真机或手机无外网验收。**
+状态：**2026-09-13 已部署，实际热点登录、页面/API、自检和本次目标地图预览已通过。** 尚未做原地图现场定位、真实录制、手机无WAN冷启动和行走验收，详见[部署记录](DEPLOYMENT_20260913_ZH.md)。
 
 第一版只产出定位证据、原始短录制、地图绑定位置草稿/待审航点。网页不发布运动命令、不设导航目标、不播放 bag；停止录制、结束任务均不是停车或急停。使用者始终携带原厂手柄，负责机器人运动和接管。
 
 ## 现场六步
 
-部署验收通过后，手机连接 `<ROBOT_WIFI_SSID>`，打开 `http://10.21.41.1:8080/field`。沿用原网页登录，无需互联网、Tailscale、Codex、在线地图或CDN。
+手机连接 `<ROBOT_WIFI_SSID>`，打开 `http://10.21.41.1:8080/`，点击首屏绿色“现场助手”按钮；也可直接打开 `http://10.21.41.1:8080/field`。沿用原网页登录；升级后可能需要重新登录。功能不依赖互联网、Tailscale、Codex、在线地图或CDN。
 
 1. **现场自检**：目标填 `1209_01_F-20260912-175844`，新建会话。核对机器人身份、地图文件、106存储、传感器源时间、录制依赖。互联网不列为故障。参考点/外参未知明确显示未验证，不能以此生成有效导航航点。
 2. **加载本次图**：在地图覆盖内的明确位置，手柄停稳，确认可接管且没有其他导航任务，勾选后点击。后台另取3秒新鲜位姿/IMU静止证据及厂商同一完整新鲜规划器监视块（无目标、空闲、命令和运动速度均为零）。证据未知阻断，不由复选框覆盖。旧图不必先正常全局定位，静止数值检查与全局验收分开。官方切图最多等待新会话状态360秒，不伪造百分比，不自动重切或回退。
@@ -27,7 +27,7 @@ worker重启将原QUEUED/RUNNING标记INTERRUPTED，不自动重跑；清除人�
 
 ## 架构与API
 
-103热点转发不改；102仍为Python stdlib/Paramiko网页服务，新增`/field`、本地`field.js`；106新增系统级worker，Unix socket `/run/s10-field/worker.sock` 模式0600，持久根 `/var/opt/robot/data/s10_field_assistant` 模式0700。不会依赖用户linger或公网network-online。
+103热点转发不改；102仍为Python stdlib/Paramiko网页服务，新增`/field`、本地`field.js`；106新增系统级worker，Unix socket `/var/opt/robot/data/s10_field_assistant/worker.sock` 模式0600，持久根 `/var/opt/robot/data/s10_field_assistant` 必须属于运行用户且模式0700。不会依赖用户linger或公网network-online。实机overlay环境的systemd `RuntimeDirectory`曾报233启动失败，因此仅将本应用socket放在已有私有目录，不修改全局`/run`或扩大权限。worker取得单实例锁后才清理残留socket；普通文件、符号链接及错误目录权限均拒绝，不静默覆盖或回退。
 
 - `POST /phone/field/submit`：`{action,key,session_id?,params}`，复用登录及`X-CSRF-Token`。新会话仅允许`action:selfcheck`与`params.target_map`。
 - `GET /phone/field/health|live|list`，以及`job?job_id=…`、`session?session_id=…`、`preview?session_id=…`。
@@ -60,9 +60,9 @@ python3.12 -B tools/s10_mapping_web/qa/test_independent_robot.py
 
 独立评审结果见`qa/REVIEW.md`，以实际最新测试输出为准。演示跑通不代表手机无WAN、真机录制负载、服务冷启动、官方切图权限已验收。
 
-## 部署与回滚清单（本轮未执行）
+## 部署与回滚清单
 
-由维护者有人值守、机器人停稳且无活动建图/录制时进行；先比对2026-09-13 Git备份及实机最新哈希，避免覆盖新的高度图改动。任何下一步真机切图/录制测试仍需master安排，不能因下列示例认为已部署。
+本次已执行的上线范围、备份位置和实测结果见部署记录。以下为维护清单，不要盲目重复安装。由维护者有人值守、机器人停稳且无活动建图/录制时进行；先比对2026-09-13 Git备份及实机最新哈希，避免覆盖新的高度图改动。任何下一步真机切图/录制测试仍需安排现场人员接管。
 
 1. **106准备**：比对ROS Jazzy依赖/MCAP和数据分区挂载。复制`field_core.py, field_worker.py, field_robot.py, field_preview.py, field_recorder.py, field-worker.sh`及更新的`robot_backend.py`到已有app目录；保留原`heightmap.py/backend_key/known_hosts/受限authorized_keys`。
 2. 用明确路径创建数据子目录，owner user:user、0700；`/etc/s10-field/config.json`由root维护、user可读不可写。参考模板填写核对后的`robot_id`和106 `/etc/machine-id`去掉换行后的SHA256；其值是设备绑定，不是SSH凭据。标定仍保持false，除非确有独立核验文件与版本。

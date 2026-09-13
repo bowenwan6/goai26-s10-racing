@@ -7,9 +7,23 @@ import tempfile
 import time
 import unittest
 
-from field_core import FieldError, Store, binding
+from field_core import FieldError, Store, binding, localization_reasons
 from field_preview import read_pcd_preview
-from field_robot import parse_navigation
+from field_robot import PREVIEW_INTERVALS_S, parse_navigation
+
+
+class PreviewCadenceTests(unittest.TestCase):
+    def test_cloud_preview_budget_keeps_gate_and_pose_imu_cadence(self):
+        self.assertEqual(PREVIEW_INTERVALS_S, dict(pose=.1, imu=.1, cloud=.2, aligned_cloud=.2))
+        self.assertLess(.13+PREVIEW_INTERVALS_S['cloud'], .5)
+        # Increasing display rate must not turn stale source data into valid
+        # evidence. The actual source-age gate still rejects 0.567 seconds.
+        snap = dict(robot_id='test', boot_id='boot', map_identity='map-sha', invocation='inv',
+                    mapping_active=False, localization_active=True, started_at=1.,
+                    status=dict(fresh=True, code=0, mode='全局'),
+                    pose=dict(frame='map', child_frame='', xyz=[0., 0., 0.], quaternion=[0., 0., 0., 1.],
+                              stamp=2., age=.01, stamp_age_s=.567))
+        self.assertTrue(any('过期' in reason for reason in localization_reasons(snap)))
 
 
 class PreviewTests(unittest.TestCase):
