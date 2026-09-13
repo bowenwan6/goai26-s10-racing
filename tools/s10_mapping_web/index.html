@@ -22,7 +22,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #078b73;outline-offset:3p
 </style>
 <main>
   <header><h1>48 号<span>手机建图</span></h1><button id="maps" type="button" style="border:0;background:none;color:#155e50;min-height:44px">已保存地图 ↗</button></header>
-  <p class="hint">手机看建图，遥控器负责行走。电脑无需连接。<a href="/localization">查看狗的实时位置 →</a></p>
+  <p class="hint">手机看建图，遥控器负责行走。电脑无需连接。<a href="/localization">实时位置 →</a> · <a href="/heightmap">实时高度图 →</a></p>
   <form id="login" hidden><div class="inputs"><label>用户名<input id="username" value="golai" autocomplete="username" required></label><label>密码<input id="password" type="password" autocomplete="current-password" required></label></div><div class="actions"><button type="submit" style="background:#166b54;color:#fff">登录</button></div><p id="loginError" role="status"></p></form>
   <div class="state-line"><div id="state" role="status">正在连接</div><div id="connection" class="connection"><span class="dot"></span><span id="connectionText">连接中</span></div></div>
   <section class="plot" aria-label="点云和轨迹俯视预览">
@@ -97,7 +97,7 @@ async function action(path,body){
 $('form').addEventListener('submit',e=>{e.preventDefault();if(!$('start').disabled)action('/phone/start',{name:$('name').value,mode:$('mode').value})});
 $('save').addEventListener('click',()=>{if(!$('save').disabled)action('/phone/save',{})});
 $('zoomIn').onclick=()=>{zoom=Math.min(8,zoom*1.4);draw()};$('zoomOut').onclick=()=>{zoom=Math.max(.2,zoom/1.4);draw()};$('fit').onclick=()=>{zoom=1;draw()};
-$('login').addEventListener('submit',async e=>{e.preventDefault();try{const r=await fetch('/phone/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('username').value,password:$('password').value})});const d=await r.json();if(!r.ok)throw Error(d.detail);$('login').hidden=true;$('password').value='';$('loginError').textContent='';if(location.pathname==='/localization')location.reload()}catch(e){$('loginError').textContent=e.message}});
+$('login').addEventListener('submit',async e=>{e.preventDefault();try{const r=await fetch('/phone/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('username').value,password:$('password').value})});const d=await r.json();if(!r.ok)throw Error(d.detail);$('login').hidden=true;$('password').value='';$('loginError').textContent='';if(location.pathname!=='/')location.reload()}catch(e){$('loginError').textContent=e.message}});
 $('maps').onclick=async()=>{try{const r=await fetch('/phone/maps');const d=await r.json();if(!r.ok)throw Error(d.detail);$('mapList').textContent=d.maps.map(m=>`${m.name}（${m.saved?'文件齐全':'待检查'}）`).join(' · ');$('mapList').hidden=!$('mapList').hidden}catch(e){message=e.message;render()}};
 window.addEventListener('resize',draw);poll();
 </script>
