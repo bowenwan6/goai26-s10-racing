@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>48号 · 现场验收</title><style>
+:root{color-scheme:light;--ink:#162c27;--muted:#526a62;--line:#d5e0d8;--green:#146b51;--bg:#f3f6f2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1100px;margin:auto;padding:22px 16px 80px}h1{font-size:26px;margin:0}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:10px 0}a{color:var(--green)}header{display:flex;justify-content:space-between;gap:14px;align-items:center}.sub{color:var(--muted);font-size:14px}.banner{border:1px solid #d4ae59;background:#fff4d7;padding:12px 14px;border-radius:12px;margin:16px 0}.danger{background:#ffebe8;border-color:#dd887c}.status{position:sticky;top:0;z-index:4;background:#162c27;color:#fff;padding:10px 14px;border-radius:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}.card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:18px}.wide{grid-column:1/-1}label{display:block;margin:10px 0}input,select{font:inherit;max-width:100%;border:1px solid #aabeb3;border-radius:8px;padding:9px;background:white}input[type=text]{width:100%}input[type=checkbox]{width:20px;height:20px;vertical-align:middle;margin-right:7px}button{font:inherit;cursor:pointer;min-height:46px;border:1px solid #94b3a4;border-radius:9px;padding:9px 14px;background:#eff6ef;color:#174a37}button.primary{background:var(--green);color:white;border-color:var(--green)}button:disabled{opacity:.5;cursor:not-allowed}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tag{font-size:13px;border-radius:6px;padding:3px 7px;background:#e7eee7}.good{color:#116540}.bad{color:#a92e27}.unknown{color:#8a5908}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:400px;overflow:auto;background:#f4f7f4;padding:12px;border-radius:8px}.job{padding:12px 0;border-top:1px solid var(--line)}.job button{min-height:38px;padding:5px 10px;font-size:14px}canvas{display:block;width:100%;height:360px;background:#111f1d;touch-action:none;border-radius:10px}.legend{font-size:13px;color:var(--muted)}.steps{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}.steps span{background:white;border:1px solid var(--line);padding:5px 10px;border-radius:20px;font-size:13px}.hidden,[hidden]{display:none!important}#notice{white-space:pre-wrap;overflow-wrap:anywhere}#jobs{max-height:500px;overflow:auto}details{margin-top:10px}summary{cursor:pointer}.check{padding:5px 0;border-bottom:1px solid #eff1ee}@media(max-width:720px){.grid{grid-template-columns:1fr}header{align-items:flex-start}h1{font-size:23px}.card{padding:15px}canvas{height:300px}}
+.card{min-width:0}.sub,.check,.job,#identity,.legend{overflow-wrap:anywhere}select{min-width:0}pre{max-width:100%}
+</style></head><body><main>
+<header><div><h1>48号 · 现场验收</h1><div class="sub">手机＋原厂手柄 · 机器人局域网内使用 · 不需要互联网</div></div><a href="/">返回建图</a></header>
+<div id="demo" class="banner danger" hidden>演示模式：全部为模拟数据，不连接机器人，也不能据此验收真机。</div>
+<div class="banner"><strong>网页不控制行走或停车。</strong>停止录制、结束任务不是急停。先由手柄停稳、确认接管可用；首轮只做安全平地短段，不上楼梯自主跑。</div>
+<div id="connection" class="status" role="status">正在查询机器人后台…</div>
+<div class="steps"><span>1 自检</span><span>2 加载图</span><span>3 定位＋叠合</span><span>4 短录制</span><span>5 标点</span><span>6 导出</span></div>
+<p id="notice" role="alert" class="sub">任务接受后保存在机器人上。锁屏/断线后重新打开查询；不会自动补发未确认的操作。</p>
+<div class="grid">
+<section class="card"><h2>① 现场自检</h2><label>目标地图<input id="target" type="text" value="1209_01_F-20260912-175844" maxlength="100"></label>
+<div class="row"><button id="selfcheck" class="primary">新建本次会话并自检</button><button id="recheck">重新自检</button></div>
+<p class="sub">核对机器人身份、目标图、106存储和传感器时序。无互联网不是失败；参考点未知不等于不能录数据。</p><div id="checks"></div>
+<details><summary>恢复已有会话</summary><select id="sessionList" aria-label="已有会话"></select><button id="restore">查看此会话</button><div id="sessionId" class="sub"></div></details></section>
+<section class="card"><h2>② 加载本次地图</h2>
+<label><input type="checkbox" id="stationary">我已用手柄让机器人停稳</label><label><input type="checkbox" id="remote">手柄接管/急停可用，无其他人在发导航任务</label>
+<button id="load" class="primary">确认停稳后加载目标图</button>
+<p class="sub">调用官方地图接口；加载可能需要数分钟。显示真实阶段，不编造百分比，不自动重复切图或回退。加载完成 ≠ 全局定位通过。</p><div id="identity" class="sub">当前地图未知</div></section>
+<section class="card wide"><h2>③ 静止定位检查与叠合</h2>
+<div class="row"><button id="localize" class="primary">停稳后检查 30 秒</button><button id="preview">加载目标地图显示资源</button><a href="/heightmap" target="_blank" rel="noopener">厂商实时高度图 ↗</a></div>
+<p id="liveQuality" class="unknown">未取得新鲜定位证据。没有绿灯时，不按可导航路线继续。</p>
+<canvas id="map" width="1000" height="500" aria-label="地图与实时扫描叠合，可查看俯视及侧视"></canvas>
+<div class="row"><button id="top">俯视 XY</button><button id="side">侧视 XZ</button><button id="zoomIn">放大＋</button><button id="zoomOut">缩小－</button><button id="fit">全图</button><label><input id="follow" type="checkbox">跟随机器人</label></div>
+<div class="legend">灰点：目标地图抽样；青点：当前 map 系扫描；橙点：位姿。可拖动平移、滚轮缩放；切侧视核对楼层和坡道，不能只看XY重合。</div>
+<p id="pose" class="sub">XYZ / 参考点待确认</p>
+<label><input id="human" type="checkbox">我已看实时叠图，核对地标、方向和高度/楼层都对应</label>
+<button id="confirm">为最近一次通过的检查保存人工确认</button><p class="sub">自动稳定检查、人眼叠合与参考点语义分别记录；30秒稳定不证明全程精度。确认5分钟内提交，遇掉定位/换图/服务重启需重做。</p></section>
+<section class="card"><h2>④ 录制测试片段</h2><div class="row"><select id="kind" aria-label="录制类型"><option value="stationary">静止</option><option value="straight">平地直行</option><option value="turn">原地/小范围转向</option></select><select id="seconds" aria-label="录制时长"><option>10</option><option>20</option><option>30</option></select><span>秒</span></div>
+<p class="sub">先完成定位与人工确认。你用手柄操作，106在本地录原始ROS数据，到时收尾。单段最大512MiB，至少保留2GiB磁盘。</p><button id="record" class="primary">开始限时录制</button><p class="unknown">结束录制不会停车。定位异常需你用手柄停稳。</p></section>
+<section class="card"><h2>⑤ 标记当前位置</h2><label>名称<input id="pointName" type="text" maxlength="80" placeholder="如：首段起点 / 转弯1 / 安全停靠"></label><label>楼层 / 平地区段<input id="floor" type="text" maxlength="40" placeholder="如：1F广场（首段同一楼层）"></label>
+<label><input id="draft" type="checkbox" checked>保存待确认位置草稿（外参未核验时必须保留）</label><button id="waypoint" class="primary">停稳后重新采样 3 秒并标点</button>
+<p class="sub">保存实际XYZ、完整姿态、地图身份和源时间；Z是机器人参考点高度，不是地面。未验证参考点不能生成可导航航点；不自动跨楼层连线。</p></section>
+<section class="card wide"><h2>⑥ 结束并导出</h2><button id="finish" class="primary">汇总并生成报告（不停车）</button><p class="sub">保存失败原因与缺项；报告和航点先下载，大录制可稍后取回。部分文件保留机器人上，未完整收尾的不冒充合格录制。下一步是电脑离线影子回放，不是在实机播放bag。</p>
+<h3>任务记录与下载</h3><div id="jobs">尚无任务</div><details open><summary>所选任务详情 / 检查原因</summary><pre id="detail">选择一条任务查看真实结果。</pre></details></section>
+</div>
+<details class="card"><summary>离线现场操作帮助</summary><ol><li>回到本图已扫区域的明确位置，连 S10 PRO-048-5G。手机提示无互联网时保持连接。</li><li>自检后手柄停稳再切图。等待加载，运行30秒静止检查，再看叠图核对高度、地标和方向。</li><li>用手柄录静止、平地直行、转向各10–30秒。掉定位由你停稳，先保留证据。</li><li>到首段3–5个关键位置停稳标点；未验证参考点先保留草稿。</li><li>手柄停稳后汇总报告。只有数据/定位/参考点/人工确认都满足，才能作为后续影子回放输入；网页永远不发运动指令。</li></ol><p>手机Wi-Fi断开时不能操作。已接受任务仍按机器人截止时间执行；重连仅查询，不自动重试写操作。若无法判断某次点击是否接受，先查任务列表，不能反复点击。</p></details>
+</main><script src="/field.js" defer></script></body></html>
