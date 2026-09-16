@@ -32,13 +32,40 @@ def adjust(main, interface, angle_unit):
     return main, interface
 
 
-def prepare(source, angle_unit):
+def him_headers():
+    """Use the shared HIM implementation with the hardware SDK's original state set."""
+    integration = Path(__file__).resolve().parents[1] / 'integration'
+    return {
+        'run_policy/s10_policy_runner.hpp': (integration / 's10_policy_runner.hpp').read_text(encoding='utf-8'),
+        'state_machine/quadruped_wheel/rl_control_state.hpp': (integration / 'rl_control_state.hpp').read_text(encoding='utf-8'),
+        'state_machine/quadruped_wheel/standup_state.hpp': (integration / 'standup_state.hpp').read_text(encoding='utf-8'),
+    }
+
+
+def prepare(source, angle_unit, him_model=None):
     source = source.resolve(strict=True)
     names = ('main.cpp', 'interface/robot/hardware/dds_interface.hpp', 'policy/policy.onnx')
     baseline = {name: hashlib.sha256((source / name).read_bytes()).hexdigest() for name in names}
     main, interface = adjust((source / names[0]).read_text(), (source / names[1]).read_text(), angle_unit)
     if not (source / 'third_party').is_dir():
         raise ValueError('Expected bundled third_party directory is missing')
+    headers = {}
+    if him_model is not None:
+        him_model = him_model.resolve(strict=True)
+        him_model.with_suffix('.json').resolve(strict=True)
+        if him_model.suffix != '.onnx':
+            raise ValueError('HIM requires an ONNX model and its same-stem JSON sidecar')
+        if 'RemoteCommandType::kDDS' not in main or 'S10_MANUAL' in main or 'RemoteCommandType::kRosTopic' in main:
+            raise ValueError('Use the verified hardware DDS entry point, not the simulation SDK')
+        headers = him_headers()
+        parameters = 'state_machine/parameters/control_parameters.h'
+        text = (source / parameters).read_text(encoding='utf-8')
+        if 'policy_stand_pose_' not in text:
+            anchor = '    float pre_height_, stand_height_;'
+            if text.count(anchor) != 1:
+                raise ValueError('Unknown SDK control parameters; inspect before installing HIM')
+            text = text.replace(anchor, anchor + '\n    VecXf policy_stand_pose_;  // HIM sidecar pose; empty preserves legacy height planning\n')
+        headers[parameters] = text
     root = Path(tempfile.mkdtemp(prefix='s10-sdk-isolated-'))
     target = root / 'src/S10_sdk_deploy'
     shutil.copytree(source, target, ignore=shutil.ignore_patterns('third_party', 'S10_description', '__pycache__'))
@@ -49,9 +76,15 @@ def prepare(source, angle_unit):
         raise RuntimeError('Copied model differs from source')
     if any(hashlib.sha256((source / name).read_bytes()).hexdigest() != digest for name, digest in baseline.items()):
         raise RuntimeError('Source changed during preparation; inspect before using copy')
+    for name, text in headers.items():
+        (target / name).write_text(text, encoding='utf-8')
+    if him_model is not None:
+        shutil.copyfile(him_model, target / 'policy/policy.onnx')
+        shutil.copyfile(him_model.with_suffix('.json'), target / 'policy/policy.json')
     (root / 'original-baseline.json').write_text(json.dumps(baseline, indent=2))
     (root / 'preparation.json').write_text(json.dumps(dict(source=str(source), angle_unit=angle_unit,
-        scope='Only interface compatibility; joint calibration and policy not validated'), indent=2))
+        him_model=str(him_model) if him_model else None,
+        scope='Source/model preparation only; no build or motor control'), indent=2))
     print(root)
 
 
@@ -69,6 +102,11 @@ def check():
         pass
     else:
         raise AssertionError('Unknown source must not be patched blindly')
+    headers = him_headers()
+    rl = headers['state_machine/quadruped_wheel/rl_control_state.hpp']
+    assert 'kObstacle' not in rl and 'ApplyHighSpeed' not in rl
+    assert all(name in rl for name in ('BlendHimHandover(res,', 'GuardHimCommand(res,', 'policy_stand_pose_'))
+    assert 'monotonic_s' in headers['run_policy/s10_policy_runner.hpp']
     print('PREPARE_COPY_CHECK_OK')
 
 
@@ -76,11 +114,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, help='Existing S10_sdk_deploy source package')
     parser.add_argument('--imu-angle-unit', choices=('rad', 'deg'), help='Unit verified on this robot')
+    parser.add_argument('--him-model', type=Path, help='Install shared HIM headers and this ONNX + JSON into the isolated copy')
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     if args.check:
         check()
     elif args.source and args.imu_angle_unit:
-        prepare(args.source, args.imu_angle_unit)
+        prepare(args.source, args.imu_angle_unit, args.him_model)
     else:
         parser.error('--source and --imu-angle-unit are required')
