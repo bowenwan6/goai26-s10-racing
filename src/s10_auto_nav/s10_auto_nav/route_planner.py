@@ -110,6 +110,11 @@ class LocalGridConfig:
     #: scattered sparse/mixed cells (~5 %); treating each as UNKNOWN blocks every candidate.
     #: Larger gaps (possible holes/drops) stay UNKNOWN. 0 disables.
     fill_hole_min_neighbours: int = 6
+    #: Mark the cells under the robot's current footprint FREE (Nav2-style footprint
+    #: clearing). The body occludes the ground beneath it and its own edges produce step
+    #: artefacts; without this the very first footprint sample fails and every candidate
+    #: is "blocked at 0.00 m" while the robot is plainly standing there.
+    clear_own_footprint: bool = True
 
 
 @dataclass
@@ -338,7 +343,9 @@ class LocalGridBuilder:
                 self.frames.clear()
         self.frames.append(obs)
 
-    def build(self, center_xy, gait: str = "flat", now: float | None = None) -> LocalGrid:
+    def build(
+        self, center_xy, gait: str = "flat", now: float | None = None, yaw: float | None = None
+    ) -> LocalGrid:
         c = self.config
         grid = LocalGrid.centred(center_xy, c.size, c.resolution)
         if not self.frames:
@@ -348,6 +355,13 @@ class LocalGridBuilder:
             if now - obs.t > c.max_age:
                 continue
             self._apply(grid, obs, gait)
+        if c.clear_own_footprint and yaw is not None:
+            fp = self.footprint
+            body = (grid.cell_centers() - np.asarray(center_xy, float)[:2]) @ _rot(yaw)
+            under = (np.abs(body[..., 0]) <= fp.length / 2 + fp.margin) & (
+                np.abs(body[..., 1]) <= fp.width / 2 + fp.margin
+            )
+            grid.state[under] = FREE
         return grid
 
     def _apply(self, grid: LocalGrid, obs: Observation, gait: str) -> None:
