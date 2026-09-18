@@ -23,7 +23,7 @@ WP21,IMG_6997.HEIC,10,2026-09-14T14:48:18+08:00,"[65.368, -0.079, 5.491]",-2.937
 WP22,IMG_6996.HEIC,9,2026-09-14T14:47:58+08:00,"[56.207, -2.857, 5.379]",-2.763,asphalt_branch,False,medium,2.5,True,1.8,red dot on asphalt near a side-path branch
 WP23,IMG_6995.HEIC,8,2026-09-14T14:47:34+08:00,"[41.76, -11.814, 5.332]",-2.53,asphalt,False,medium,2.5,True,1.0,red dot on asphalt beside the robot
 WP24,IMG_6994.HEIC,7,2026-09-14T14:46:55+08:00,"[5.836, -23.688, 5.07]",-3.019,asphalt_curve,False,low,3.0,False,1.2,red dot on a wide asphalt curve
-WP25,IMG_6993.HEIC,6,2026-09-14T14:46:19+08:00,"[-19.816, -24.685, 4.766]",2.707,pavement_edge,False,low,3.0,False,2.5,red dot on the granular pavement edge below a grass mound
+WP25,IMG_6993.HEIC,6,2026-09-14T14:46:19+08:00,"[-19.816, -24.685, 4.766]",2.707,pavement_edge_mound,out,low,3.0,False,2.5,red dot on the granular pavement edge below a grass mound
 WP26,IMG_6992.HEIC,5,2026-09-14T14:45:54+08:00,"[-30.639, -19.832, 5.125]",2.504,dry_grass,False,medium,2.0,True,1.0,red flag on dry grass next to the robot's leg
 WP27,IMG_6991.HEIC,4,2026-09-14T14:45:40+08:00,"[-32.3, -18.168, 4.949]",2.351,gabion_top,True,low,3.0,False,2.8,"red dot on the gabion top, close-up of the ledge edge"
 WP28,IMG_6990.HEIC,3,2026-09-14T14:44:44+08:00,"[-39.607, -14.728, 5.791]",2.101,gabion_top,True,low,3.0,False,2.9,red dot on gabion top; a second flag on the grass behind it

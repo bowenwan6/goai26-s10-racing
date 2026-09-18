@@ -105,6 +105,11 @@ class LocalGridConfig:
     #: On stairs segments the risers sit in the scan's body-height band; only height-map
     #: evidence is used there (and cells beyond the height grid remain UNKNOWN).
     ignore_scan_on_stairs: bool = True
+    #: Fill an invalid height cell from its neighbours when at least this many of its 8
+    #: neighbours are valid and agree within the gait's step limit. Real single frames have
+    #: scattered sparse/mixed cells (~5 %); treating each as UNKNOWN blocks every candidate.
+    #: Larger gaps (possible holes/drops) stay UNKNOWN. 0 disables.
+    fill_hole_min_neighbours: int = 6
 
 
 @dataclass
@@ -278,6 +283,32 @@ def ground_reference(height: np.ndarray, mask: np.ndarray, footprint: FootprintC
     return float(np.median(height[sel])) if sel.any() else None
 
 
+def fill_isolated_holes(
+    height: np.ndarray, mask: np.ndarray, limit: float, min_neighbours: int = 6
+) -> tuple[np.ndarray, np.ndarray]:
+    """Fill single invalid cells surrounded by consistent valid ground (one pass).
+
+    Only cells with ``>= min_neighbours`` valid 8-neighbours whose heights span ``<= limit``
+    are filled (with the neighbour median). Cells on the ROI border have at most 5
+    neighbours, so with the default 6 they are never filled.
+    """
+    h = np.asarray(height, float)
+    m = np.asarray(mask, bool) & np.isfinite(h)
+    out_h, out_m = h.copy(), m.copy()
+    nx, ny = h.shape
+    for i, j in zip(*np.nonzero(~m), strict=True):
+        vals = [
+            h[a, b]
+            for a in range(max(i - 1, 0), min(i + 2, nx))
+            for b in range(max(j - 1, 0), min(j + 2, ny))
+            if (a, b) != (i, j) and m[a, b]
+        ]
+        if len(vals) >= min_neighbours and max(vals) - min(vals) <= limit:
+            out_h[i, j] = float(np.median(vals))
+            out_m[i, j] = True
+    return out_h, out_m
+
+
 class LocalGridBuilder:
     """Builds the planning grid from the last ``fuse_frames`` observations.
 
@@ -394,6 +425,8 @@ class LocalGridBuilder:
             h = np.asarray(obs.height, float)
             m = np.isfinite(h) if obs.mask is None else (np.asarray(obs.mask, bool) & np.isfinite(h))
             limit = c.max_step_stairs if gait == "stairs" else c.max_step_flat
+            if c.fill_hole_min_neighbours > 0:
+                h, m = fill_isolated_holes(h, m, limit, c.fill_hole_min_neighbours)
             steps = step_obstacles(h, m, limit, ground_reference(h, m, self.footprint))
             centers = grid.cell_centers().reshape(-1, 2)
             body = (centers - np.array([x, y])) @ rot  # world -> yaw frame
