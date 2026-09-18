@@ -305,3 +305,18 @@ def test_subroute_and_placeholder_schema():
     sub = subroute(r, 10.0, 30.0)
     assert sub.length == pytest.approx(20.0, abs=0.3)
     assert sub.wp_order[0] == "S0" and sub.wp_order[-1] == "S1"
+
+
+def test_clear_static_along_removes_only_cells_near_the_path():
+    import numpy as np
+
+    from sim_full_course.terrain import Terrain
+
+    t = Terrain.flat(size_x=4.0, size_y=4.0, res=0.1, origin=(0.0, 0.0))
+    t.obstacle_height[20, 20] = 0.5  # on the path (x=2.05, y=2.05)
+    t.obstacle_height[35, 20] = 0.5  # 1.5 m off the path
+    t.__post_init__()
+    path = np.array([[0.0, 2.05], [4.0, 2.05]])
+    assert t.clear_static_along(path, 0.35) == 1
+    assert not t.static_obstacle_at(2.05, 2.05)
+    assert t.static_obstacle_at(2.05, 3.55)

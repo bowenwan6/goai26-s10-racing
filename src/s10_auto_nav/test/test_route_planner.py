@@ -284,3 +284,22 @@ def test_fill_isolated_holes_fills_single_cell_but_not_gaps():
     h[5, 3] = 0.4  # neighbours disagree by more than the step limit -> not filled
     h3, m3 = fill_isolated_holes(h, m, limit=0.12)
     assert not m3[6, 4]
+
+
+def test_stair_riser_rows_are_filled_under_stairs_limit_only():
+    """A riser inside one 0.15 m cell fails the 0.08 m spread test, leaving a whole invalid
+    row across the grid. Under the stairs step limit (0.22 m) interior riser cells have 6
+    agreeing neighbours and are filled; under the flat limit (0.12 m) they are not."""
+    from s10_auto_nav.route_planner import fill_isolated_holes
+
+    h = np.zeros((13, 9))
+    for ix in range(13):
+        h[ix, :] = 0.15 * (ix // 2)  # 0.15 m rise every two 0.15 m cells
+    m = np.ones((13, 9), bool)
+    riser_rows = [5, 7, 9]
+    m[riser_rows, :] = False
+    h2, m2 = fill_isolated_holes(h, m, limit=0.22)
+    assert m2[riser_rows, 1:-1].all()  # interior columns filled
+    assert not m2[riser_rows][:, [0, -1]].any()  # border columns keep < 6 neighbours
+    _, m3 = fill_isolated_holes(h, m, limit=0.12)
+    assert not m3[riser_rows, 1:-1].any()

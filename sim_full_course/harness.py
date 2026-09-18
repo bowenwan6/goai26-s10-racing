@@ -45,6 +45,9 @@ class RunConfig:
     sensor_every: int = 1
     collision_mode: str = "block"  # "block": refuse moves into obstacles; "record": count only
     seed: int = 0
+    # Static obstacle cells within this distance of the taught centreline are treated as
+    # transients (the mapping robot drove through them) and removed; 0 keeps them.
+    clear_taught_path: float = 0.35
     limits: RobotLimits = field(default_factory=RobotLimits)
     sensors: SensorConfig = field(default_factory=SensorConfig)
 
@@ -192,6 +195,12 @@ def run(route: Route, terrain: Terrain, controller, cfg: RunConfig | None = None
         verbose: bool = True, meta: dict | None = None) -> dict:
     cfg = cfg or RunConfig()
     terrain.clear_injected()
+    if cfg.clear_taught_path > 0:
+        cleared = terrain.clear_static_along(
+            np.vstack([np.asarray(sg["centerline"], float) for sg in route.segments]),
+            cfg.clear_taught_path)
+        if verbose and cleared:
+            print(f"[harness] cleared {cleared} static obstacle cells on the taught path")
     terrain.inject(*obstacles)
     p0, h0 = route.point_at(0.0)
     robot = KinematicRobot(terrain, p0[0], p0[1], h0, gait=route.segments[0]["gait"],
