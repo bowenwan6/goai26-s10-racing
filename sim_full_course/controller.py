@@ -55,13 +55,14 @@ class PurePursuitController(Controller):
       deg (sec. 8.5 follower settings)
     - stops at a gait boundary (the segment's `from` WP), requests the new gait, waits for the
       receipt, then continues
-    - flat gait: stops with status BLOCKED if a known scan range ends inside the 0.52 m wide
-      lane within stop_range ahead (it does NOT detour; that's the planner's job); in stairs
+    - flat gait: stops with status BLOCKED if a known scan range ends inside the 0.48 m wide
+      lane within stop_range ahead (slightly narrower than the 0.5 m body, so grazing contact
+      is possible and is counted by the harness; it does NOT detour); in stairs
       gait the scan is ignored (steps themselves fall in the -0.25..0.75 m obstacle band)
     """
 
     def __init__(self, lookahead=0.5, pivot_deg=10.0, falloff_deg=30.0, k_yaw=1.2,
-                 k_lat=0.4, stop_range=0.75, lane_half_width=0.26, finish_tol=0.15):
+                 k_lat=0.4, stop_range=0.75, lane_half_width=0.24, finish_tol=0.15):
         self.lookahead = lookahead
         self.pivot = math.radians(pivot_deg)
         self.falloff = math.radians(falloff_deg)
