@@ -33,7 +33,8 @@ DEFAULT_RAW = Path(
 )
 
 # Visual review of every photo (2026-09-19). `robot` = robot visible in frame; `gap_m` = rough
-# robot-to-marker distance read from the image; `hard` = terrain that must be driven in stairs gait.
+# robot-to-marker distance read from the image; `hard` = terrain that must be driven in stairs gait
+# (True: segments on both sides; "out": only the segment leaving this WP in official order).
 PHOTO_NOTES = {
     "IMG_6988.HEIC": dict(robot=False, gap_m=None, terrain="pavement_fork", hard=False,
                           marker="red dot on granular pavement before a path fork"),
@@ -45,7 +46,9 @@ PHOTO_NOTES = {
                           marker="red dot on the gabion top, close-up of the ledge edge"),
     "IMG_6992.HEIC": dict(robot=True, gap_m=1.0, terrain="dry_grass", hard=False,
                           marker="red flag on dry grass next to the robot's leg"),
-    "IMG_6993.HEIC": dict(robot=False, gap_m=None, terrain="pavement_edge", hard=False,
+    # Hard: the route climbs from this pavement edge onto the grass mound (~0.24 m kerb in the
+    # course heightfield; the 1.8 m median profile alone smooths it to a 0.12 grade).
+    "IMG_6993.HEIC": dict(robot=False, gap_m=None, terrain="pavement_edge_mound", hard="out",
                           marker="red dot on the granular pavement edge below a grass mound"),
     "IMG_6994.HEIC": dict(robot=False, gap_m=None, terrain="asphalt_curve", hard=False,
                           marker="red dot on a wide asphalt curve"),
@@ -256,10 +259,11 @@ def main() -> None:
         max_grade = float(np.abs(zf[10:] - zf[:-10]).max() / 2.0) if len(zf) > 10 else 0.0
         climb = float(gz[-1] - gz[0])
         length = float(np.sum(np.linalg.norm(np.diff(line[:, :2], axis=0), axis=1)))
-        photo_hard = a["hard_terrain"] or b["hard_terrain"]
+        hard_ends = [w for w, side in ((a, "out"), (b, "in"))
+                     if w["hard_terrain"] is True or w["hard_terrain"] == side]
         reasons = []
-        if photo_hard:
-            reasons.append("photo:" + ",".join(w["terrain"] for w in (a, b) if w["hard_terrain"]))
+        if hard_ends:
+            reasons.append("photo:" + ",".join(w["terrain"] for w in hard_ends))
         if max_step > args.step_threshold:
             reasons.append(f"step {max_step:.2f}>{args.step_threshold}")
         if max_grade > args.grade_threshold:

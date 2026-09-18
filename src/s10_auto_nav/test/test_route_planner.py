@@ -267,3 +267,20 @@ def test_fusion_keeps_older_ground_but_expires_it():
     # A storey change clears the fusion.
     builder.add(flat_obs(t=1.5, pose=(1.0, 0.0, 1.5, 0.0)))
     assert len(builder.frames) == 1
+
+
+def test_fill_isolated_holes_fills_single_cell_but_not_gaps():
+    from s10_auto_nav.route_planner import fill_isolated_holes
+
+    h = np.zeros((13, 9))
+    m = np.ones((13, 9), bool)
+    m[6, 4] = False  # isolated sparse cell on flat ground -> filled
+    m[2:5, 2:5] = False  # 3x3 gap (possible hole) -> centre keeps too few neighbours
+    h2, m2 = fill_isolated_holes(h, m, limit=0.12)
+    assert m2[6, 4] and h2[6, 4] == 0.0
+    assert not m2[3, 3]
+
+    h[5:8, 3:6] = 0.0
+    h[5, 3] = 0.4  # neighbours disagree by more than the step limit -> not filled
+    h3, m3 = fill_isolated_holes(h, m, limit=0.12)
+    assert not m3[6, 4]

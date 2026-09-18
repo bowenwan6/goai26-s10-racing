@@ -23,7 +23,7 @@ WP21-WP22,flat,0.2,True,0.8,9.6,-0.11,0.072,0.055,0.0,
 WP22-WP23,flat,0.2,True,0.8,17.08,-0.05,0.094,0.059,0.0,
 WP23-WP24,flat,0.2,True,0.8,38.3,-0.26,0.117,0.067,0.0,
 WP24-WP25,flat,0.2,True,0.8,26.08,-0.3,0.081,0.061,0.0,
-WP25-WP26,flat,0.2,True,0.8,12.77,0.36,0.087,0.115,0.0,
+WP25-WP26,stairs,0.15,False,0.25,12.77,0.36,0.087,0.115,0.0,photo:pavement_edge_mound
 WP26-WP27,stairs,0.15,False,0.25,2.37,-0.18,0.077,0.083,0.0,photo:gabion_top
 WP27-WP28,stairs,0.15,False,0.25,8.55,0.84,0.322,0.23,0.0,"photo:gabion_top,gabion_top; step 0.32>0.12; grade 0.23>0.15"
 WP28-WP29,stairs,0.15,False,0.25,4.18,-0.08,0.064,0.082,0.0,photo:gabion_top
