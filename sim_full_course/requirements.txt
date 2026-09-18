@@ -1,0 +1,6 @@
+# Python 3.12; mujoco/numpy pinned as in deliverables/S10_v3_Map_MuJoCo_20260916/requirements.txt
+mujoco==3.13.0
+numpy==2.5.3
+scipy==1.18.1
+matplotlib==3.11.2
+pytest==9.1.1
