@@ -303,3 +303,22 @@ def test_stair_riser_rows_are_filled_under_stairs_limit_only():
     assert not m2[riser_rows][:, [0, -1]].any()  # border columns keep < 6 neighbours
     _, m3 = fill_isolated_holes(h, m, limit=0.12)
     assert not m3[riser_rows, 1:-1].any()
+
+
+def test_own_footprint_is_cleared_but_cells_ahead_are_not():
+    import math
+
+    from s10_auto_nav.route_planner import FREE, UNKNOWN, LocalGridBuilder, Observation
+
+    b = LocalGridBuilder()
+    h = np.zeros((13, 9))
+    m = np.zeros((13, 9), bool)  # nothing valid: everything under/around the body UNKNOWN
+    b.add(Observation(t=0.0, pose=(0.0, 0.0, 0.0, 0.0), height=h, mask=m, scan_ranges=None))
+    g = b.build((0.0, 0.0), yaw=0.0)
+    i0 = g.index(np.array([[0.0, 0.0]]))[:2]
+    i1 = g.index(np.array([[1.0, 0.0]]))[:2]
+    assert g.state[i0[0][0], i0[1][0]] == FREE
+    assert g.state[i1[0][0], i1[1][0]] == UNKNOWN
+    g2 = b.build((0.0, 0.0), yaw=math.pi / 2)  # rotated body: (0, 0.4) now under it
+    j = g2.index(np.array([[0.0, 0.4]]))[:2]
+    assert g2.state[j[0][0], j[1][0]] == FREE
