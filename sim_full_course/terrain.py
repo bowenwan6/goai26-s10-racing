@@ -45,10 +45,24 @@ class Terrain:
 
     # ---------- construction ----------
     @classmethod
-    def load(cls, npz: Path | str) -> Terrain:
+    def load(cls, npz: Path | str, despike: float | None = 0.04) -> Terrain:
+        """`despike`: replace cells deviating more than this from their 3x3 median.
+
+        The v3 cloud's ground layer is ~0.3 m thick, so the extracted heightfield carries
+        isolated 0.08-0.13 m spikes on smooth asphalt (5 % of neighbour pairs) that real
+        near-field LiDAR would not see; left in, every flat segment looks like a staircase to
+        a 0.12 m step detector. Real steps survive (edges move by at most one cell). None
+        keeps the raw heightfield.
+        """
         t = np.load(npz)
+        ground = t["ground_filled"]
+        if despike:
+            from scipy.ndimage import median_filter
+
+            med = median_filter(ground, size=3, mode="nearest")
+            ground = np.where(np.abs(ground - med) > despike, med, ground)
         return cls(
-            ground=t["ground_filled"],
+            ground=ground,
             known=t["known"],
             obstacle_height=np.where(t["obstacle"], t["obstacle_height"], 0.0),
             origin=tuple(t["origin"]),
@@ -111,6 +125,34 @@ class Terrain:
             if o.base_z is None:
                 o.base_z = float(self.ground_at(o.x, o.y))
             self.injected.append(o)
+
+    def clear_static_along(self, xy: np.ndarray, radius: float) -> int:
+        """Remove static obstacle cells within `radius` of a driven path; returns cells cleared.
+
+        The mapping robot physically drove the taught path, so an obstacle cell on it is a
+        transient (people walking alongside, the photographer). Scenario obstacles are injected
+        separately and are unaffected.
+        """
+        xy = np.asarray(xy, float)[:, :2]
+        # Densify so the vertex distance approximates the distance to the polyline.
+        pieces = [xy[:1]]
+        for a, b in zip(xy[:-1], xy[1:], strict=True):
+            n = max(1, int(np.ceil(np.linalg.norm(b - a) / (self.res / 2))))
+            pieces.append(a + (b - a) * (np.arange(1, n + 1)[:, None] / n))
+        xy = np.vstack(pieces)
+        iy, ix = np.nonzero(self._obstacle_mask)
+        if not len(iy):
+            return 0
+        cx = self.origin[0] + (ix + 0.5) * self.res
+        cy = self.origin[1] + (iy + 0.5) * self.res
+        from scipy.spatial import cKDTree
+
+        d, _ = cKDTree(xy).query(np.column_stack([cx, cy]))
+        hit = d <= radius
+        self.obstacle_height[iy[hit], ix[hit]] = 0.0
+        self._obstacle_mask = self.obstacle_height > 0
+        self._obst_top = self.ground + self.obstacle_height
+        return int(hit.sum())
 
     def clear_injected(self) -> None:
         self.injected.clear()
