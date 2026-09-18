@@ -309,7 +309,7 @@ class RouteFollowerCore:
         if terrain.hold:
             return self._stop("HOLD_TERRAIN", terrain.reason, **common)
 
-        grid = self.grid_builder.build((x, y), gait=gait, now=float(t))
+        grid = self.grid_builder.build((x, y), gait=gait, now=float(t), yaw=yaw)
         self.last_grid = grid
         lookahead = cfg.lookahead if cfg.lookahead is not None else self.controller.lookahead_distance()
         plan = self.planner.plan(
