@@ -42,6 +42,9 @@ from s10_auto_nav.pure_pursuit import (
     PursuitGains,
     wrap_angle,
 )
+from s10_auto_nav.route_follower import RouteFollowerConfig, RouteFollowerCore
+from s10_auto_nav.route_planner import LocalGridConfig
+from s10_auto_nav.route_v2 import RouteV2
 from s10_auto_nav.step_commit import StepCommit, StepCommitConfig
 from s10_auto_nav.terrain import (
     TerrainClassifier,
@@ -240,6 +243,14 @@ class WaypointFollowerNode(Node):
         # the router -- not the follower -- decides what reaches /cmd_vel, and there is never
         # a moment when both are writing to it.
         self.declare_parameter("cmd_vel_topic", "/cmd_vel")
+        # route_v2 mode. Empty keeps the legacy Course.lookahead_point + LocalPlanner path
+        # byte for byte. When set, RouteFollowerCore (taught-centreline projection + Frenet
+        # lateral-offset planner) produces the carrot; Course keeps the ordered XYZ gating
+        # and must describe the same waypoints (course_file generated from the route).
+        self.declare_parameter("route_v2_path", "")
+        self.declare_parameter("route_v2_body_z_offset", 0.0)
+        self.declare_parameter("route_v2_fuse_frames", 1)
+        self.declare_parameter("route_v2_lookahead", 1.0)
 
         course_file = self.get_parameter("course_file").value
         if not course_file:
@@ -423,6 +434,24 @@ class WaypointFollowerNode(Node):
         self.max_step = float(self.get_parameter("max_step").value)
         self.max_drop = float(self.get_parameter("max_drop").value)
 
+        route_v2_path = str(self.get_parameter("route_v2_path").value or "")
+        self.route_core: RouteFollowerCore | None = None
+        self._route_v2_time = 0.0
+        if route_v2_path:
+            self.route_core = RouteFollowerCore(
+                RouteV2.load(route_v2_path),
+                RouteFollowerConfig(
+                    body_z_offset=float(self.get_parameter("route_v2_body_z_offset").value),
+                    control_rate=self.control_rate,
+                    lookahead=float(self.get_parameter("route_v2_lookahead").value),
+                    grid=LocalGridConfig(
+                        fuse_frames=int(self.get_parameter("route_v2_fuse_frames").value)
+                    ),
+                ),
+                controller=self.controller,
+                course=self.course,
+            )
+
         self._pose_xy: np.ndarray | None = None
         self._yaw = 0.0
         self._tilt = 0.0
@@ -566,6 +595,8 @@ class WaypointFollowerNode(Node):
         self._corner_retreat_target = None
         self._corner_incoming_yaw = None
         self._corner_outgoing_yaw = None
+        if self.route_core is not None:
+            self.route_core.reset_transient()
         self.get_logger().info("Strategy handoff reset transient follower state")
 
     def _control_step(self) -> None:
@@ -576,6 +607,9 @@ class WaypointFollowerNode(Node):
         self._corner_preview_active = False
         self._scan_age += dt
         self._heightmap_age += dt
+        if self.route_core is not None:
+            self._route_v2_control_step(dt)
+            return
 
         course_position = self._pose_xy
         if self.course.height_tolerance is not None:
@@ -865,6 +899,59 @@ class WaypointFollowerNode(Node):
         self._last_forward = published.forward
         self._publish(published)
         self._log_state(published, scale, terrain, climbing, dt, verdict)
+
+    def _route_v2_control_step(self, dt: float) -> None:
+        """route_v2 mode: the pure-Python core owns carrot, detour and stops.
+
+        Observations are handed over only on the tick they arrived, so the core's own
+        staleness clock sees real sensor age. Gait switching remains the router's job; the
+        core only reports the gait of the segment into the current target.
+        """
+        core = self.route_core
+        t = self._route_v2_time
+        self._route_v2_time += dt
+        fresh = dt + 1e-9
+        height = mask = None
+        if self._heightmap is not None and self._heightmap_age <= fresh:
+            grid = np.asarray(self._heightmap, float)
+            if grid.shape == (13, 9):
+                height = grid
+                # real_transfer.geometry.height_grid marks unknown as -1 with a mask; a
+                # valid cell is always > -1 (its lowest return must be above -1 m).
+                mask = np.isfinite(grid) & (grid > -1.0)
+        ranges = angles = None
+        if self._ranges is not None and self._scan_age <= fresh:
+            ranges, angles = self._ranges, self._beam_angles
+        before = self.course.cursor
+        out = core.step(
+            t,
+            (float(self._pose_xy[0]), float(self._pose_xy[1]), float(self._pose_z), self._yaw),
+            height,
+            mask,
+            ranges,
+            angles,
+            pitch=self._pitch,
+        )
+        if self.course.cursor != before:
+            self.get_logger().info(
+                f"route_v2 waypoint {out.reached} reached ({self.course.cursor}/{len(self.course)})"
+            )
+            self._publish_progress()
+        if out.finished:
+            self._publish_stop()
+            return
+        self.terrain_pub.publish(String(data=f"route_v2:{out.status}:{out.reason}"))
+        command = Command(*out.command)
+        self._last_forward = command.forward
+        self._publish(command)
+        self._log_countdown -= dt
+        if self._log_countdown <= 0.0 or not out.moving:
+            self._log_countdown = 1.0
+            self.get_logger().info(
+                f"route_v2 {out.status} {out.reason} target={out.target_id} "
+                f"seg={out.segment_id} gait={out.gait_request} s={out.s:.2f} d={out.d:+.2f} "
+                f"cmd=({command.forward:.2f},{command.lateral:.2f},{command.yaw_rate:.2f})"
+            )
 
     def _forward_limit_for(
         self,
