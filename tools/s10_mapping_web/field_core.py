@@ -12,16 +12,17 @@ import uuid
 
 ACTIVE = ('QUEUED', 'RUNNING')
 ACTIONS = {'selfcheck', 'load_map', 'localization_check', 'confirm_overlay',
-           'record', 'waypoint', 'finish'}
+           'record', 'waypoint', 'waypoint_revisit', 'finish'}
 MAP_RE = re.compile(r'[A-Za-z0-9_-]{1,100}')
 ID_RE = re.compile(r'[a-f0-9]{32}')
 DEFAULT_ROOT = Path('/var/opt/robot/data/s10_field_assistant')
 
 
 class FieldError(ValueError):
-    def __init__(self, message, code='invalid'):
+    def __init__(self, message, code='invalid', details=None):
         super().__init__(message)
         self.code = code
+        self.details = details
 
 
 def canonical(value):
@@ -56,7 +57,8 @@ def validate_request(request):
         'selfcheck': {'target_map'}, 'load_map': {'stationary', 'remote_ready'},
         'localization_check': {'stationary'}, 'confirm_overlay': {'check_id', 'confirmed'},
         'record': {'kind', 'seconds', 'remote_ready'},
-        'waypoint': {'name', 'floor', 'segment', 'stationary', 'draft'}, 'finish': set(),
+        'waypoint': {'name', 'floor', 'segment', 'stationary', 'draft', 'marker_note'}, 'finish': set(),
+        'waypoint_revisit': {'waypoint_id', 'stationary', 'remote_ready', 'physical_confirmed', 'reference_note', 'ruler_offset_cm', 'alignment_mode'},
     }[action]
     if set(params) - allowed:
         raise FieldError('存在不支持的参数')
@@ -67,9 +69,9 @@ def validate_request(request):
             raise FieldError('目标地图名称无效')
     else:
         ident(session)
-    if action in ('load_map', 'localization_check', 'waypoint') and params.get('stationary') is not True:
+    if action in ('load_map', 'localization_check', 'waypoint', 'waypoint_revisit') and params.get('stationary') is not True:
         raise FieldError('需要现场人员确认机器人已停稳')
-    if action in ('load_map', 'record') and params.get('remote_ready') is not True:
+    if action in ('load_map', 'record', 'waypoint_revisit') and params.get('remote_ready') is not True:
         raise FieldError('需要确认手柄接管/急停可用；网页不控制停车')
     if action == 'confirm_overlay':
         ident(params.get('check_id'))
@@ -88,6 +90,19 @@ def validate_request(request):
             raise FieldError('首版仅标记平地短段；楼梯不生成自动连线')
         if type(params.get('draft', True)) is not bool:
             raise FieldError('草稿标志必须为布尔值')
+        if params.get('marker_note') is not None:
+            text(params['marker_note'], 200)
+    if action == 'waypoint_revisit':
+        ident(params.get('waypoint_id'))
+        if params.get('physical_confirmed') is not True:
+            raise FieldError('请确认已到达所选实体标记附近并停稳；不要求位置或朝向完全一致')
+        if params.get('reference_note') is not None:
+            text(params['reference_note'], 200)
+        if params.get('alignment_mode', 'nearby') not in ('nearby', 'careful'):
+            raise FieldError('请选择附近快速对照或尽量对准标记')
+        measured = params.get('ruler_offset_cm')
+        if measured is not None and (type(measured) not in (int, float) or not math.isfinite(measured) or not 0 <= measured <= 1000):
+            raise FieldError('尺量对点残差必须是0到1000厘米的有限数；未测量请留空')
     canonical(request)
     return action, key, session, params
 
@@ -101,7 +116,8 @@ def binding(snapshot):
     return {k: snapshot.get(k) for k in ('robot_id', 'boot_id', 'map_identity', 'invocation')}
 
 
-def localization_reasons(snap, expected=None, require_global=True):
+def localization_start_reasons(snap, expected=None):
+    """Read-only inspection can start with bad sensor/localization evidence."""
     reasons = []
     if expected is not None and binding(snap) != expected:
         reasons.append('地图内容、设备、开机会话或定位服务会话已变化')
@@ -111,9 +127,19 @@ def localization_reasons(snap, expected=None, require_global=True):
         reasons.append('建图正在运行或状态未知')
     if snap.get('localization_active') is not True:
         reasons.append('定位服务未运行')
+    return reasons
+
+
+def localization_reasons(snap, expected=None, require_global=True):
+    reasons = localization_start_reasons(snap, expected)
     status = snap.get('status', {})
-    if require_global and not (status.get('fresh') is True and type(status.get('code')) is int and status.get('code') == 0 and status.get('mode') == '全局'):
-        reasons.append('厂商状态不是新鲜的正常全局定位')
+    if require_global:
+        if status.get('fresh') is not True:
+            reasons.append('厂商定位状态消息过期/未知；与位姿消息新鲜度是两项检查')
+        if type(status.get('code')) is not int or status.get('code') != 0:
+            reasons.append('厂商定位状态非正常：Code'+str(status.get('code', '未知'))+'（'+str(status.get('label', '未给出标签'))+'）；数据更新不代表定位成功')
+        if status.get('mode') != '全局':
+            reasons.append('尚未完成全局定位，当前模式：'+str(status.get('mode', '未知')))
     pose = snap.get('pose', {})
     if pose.get('frame') != 'map':
         reasons.append('位姿不在 map 帧')
@@ -274,13 +300,32 @@ class Store:
             result['artifacts'] = [dict(r) for r in db.execute('SELECT id,name,size,sha256 FROM artifacts WHERE job_id=?', (job_id,))]
             return result
 
-    def jobs(self, session_id=None):
+    def jobs(self, session_id=None, limit=100):
         if session_id:
             ident(session_id)
+        if limit is not None and (type(limit) is not int or limit < 1):
+            raise FieldError('无效任务查询上限')
         with self.connect() as db:
             rows = db.execute('SELECT * FROM jobs '+('WHERE session_id=? ' if session_id else '')+
-                              'ORDER BY created DESC LIMIT 100', (session_id,) if session_id else ())
+                              'ORDER BY created DESC'+(' LIMIT ?' if limit is not None else ''),
+                              ((session_id,) if session_id else ()) + ((limit,) if limit is not None else ()))
             return [self.decode_job(r) for r in rows]
+
+    def session_headers(self):
+        with self.connect() as db:
+            return [dict(r) for r in db.execute('SELECT id,target,created FROM sessions ORDER BY created DESC')]
+
+    def active_job(self):
+        with self.connect() as db:
+            row = db.execute("SELECT id,action,session_id,state,stage,request FROM jobs WHERE state IN ('QUEUED','RUNNING') ORDER BY created LIMIT 1").fetchone()
+        if not row:
+            return None
+        job = dict(row)
+        params = json.loads(job.pop('request')).get('params', {})
+        job['duration_seconds'] = {'localization_check': 30, 'waypoint': 3, 'waypoint_revisit': 5}.get(job['action'])
+        if job['action'] == 'record':
+            job['duration_seconds'] = params.get('seconds', 10)
+        return job
 
     def session(self, session_id):
         ident(session_id)
@@ -295,6 +340,24 @@ class Store:
             db.execute('BEGIN IMMEDIATE')
             row = db.execute('SELECT data FROM sessions WHERE id=?', (session_id,)).fetchone()
             data = json.loads(row[0]); data.update(updates)
+            db.execute('UPDATE sessions SET data=? WHERE id=?', (canonical(data), session_id))
+
+    def revoke_checks(self, session_id):
+        # Invalidate the underlying static check as well as its human approval.
+        # Keeping only approved_check=None would allow re-confirming old evidence.
+        self.update_session(session_id, eligible_check=None, approved_check=None, approved_at=None)
+
+    def approve_eligible_check(self, session_id, check_id, calibration_identity):
+        # The health monitor may revoke evidence while preview/ROS I/O runs.
+        # Compare and grant in one DB transaction, never from a cached session.
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT data FROM sessions WHERE id=?', (session_id,)).fetchone()
+            data = json.loads(row[0])
+            if data.get('eligible_check') != check_id:
+                raise FieldError('静止检查已失效或被新检查取代；请重新检查30秒并核对叠合')
+            data.update(approved_check=check_id, approved_at=time.time(),
+                        approved_calibration=calibration_identity)
             db.execute('UPDATE sessions SET data=? WHERE id=?', (canonical(data), session_id))
 
     def update(self, job_id, state=None, stage=None, result=None, error=None):

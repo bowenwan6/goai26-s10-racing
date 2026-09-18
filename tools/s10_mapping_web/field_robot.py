@@ -23,6 +23,14 @@ import robot_backend as vendor
 # randomly exceed the unchanged 0.5 s evidence gate. Use 5 Hz cloud previews.
 PREVIEW_INTERVALS_S = dict(pose=.1, imu=.1, cloud=.2, aligned_cloud=.2)
 
+# Map-loading evidence only, NOT a motion-controller deadband or IMU calibration.
+# 2026-09-16 hand-controller move/stop capture: standing feedback Y ~= -0.018
+# while relative position stayed within 3.7 mm over the confirmed stop segment.
+# Feedback tolerance is paired with a longer, tighter relative-pose check below.
+MAP_STOP_SECONDS = 5
+MOTION_RESIDUAL_LIMIT = .02
+COMMAND_ZERO_LIMIT = .0005  # Existing planner log resolution/check is unchanged.
+
 PROFILE = {
     '/ODOM': ('nav_msgs/msg/Odometry', True),
     '/IMU': ('sensor_msgs/msg/Imu', True),
@@ -45,7 +53,7 @@ def parse_navigation(text, now, started_at, invocation):
             continue
         stamp = time.mktime(time.strptime(timestamp[1], '%Y-%m-%d %H:%M:%S'))+int(timestamp[2])/1000+int(timestamp[3])/1e6
         code = re.search(r'Planner Status\s*:\s*Code\s*=\s*(\d+)\b', block)
-        values = []
+        values, velocity = [], {}
         complete = bool(re.search(r'Goal\[NO\]', block)) and len(re.findall(r'=+\s*Planning Monitor\s*=+', block)) == 2
         for label in ('Cmd Velocity', 'Motion Vel'):
             match = re.search(re.escape(label)+r'\s*:\s*x_vel\s*=\s*([^|\s]+)\s*\|\s*y_vel\s*=\s*([^|\s]+)\s*\|\s*yaw_vel\s*=\s*([^|\s]+)', block)
@@ -55,10 +63,30 @@ def parse_navigation(text, now, started_at, invocation):
                 row = []
             complete = complete and finite_list(row, 3)
             values.extend(row)
+            velocity[label] = row if finite_list(row, 3) else None
         fresh = bool(invocation) and all(type(v) in (int, float) and math.isfinite(v) for v in (now, started_at)) and started_at <= stamp and -.05 <= now-stamp <= 2
-        idle = bool(fresh and complete and code and int(code[1]) == 999 and all(abs(v) < .0005 for v in values))
+        command_zero = bool(velocity.get('Cmd Velocity') is not None and
+                            all(abs(v) < COMMAND_ZERO_LIMIT for v in velocity['Cmd Velocity']))
+        feedback_within_tolerance = bool(velocity.get('Motion Vel') is not None and
+                                        all(abs(v) <= MOTION_RESIDUAL_LIMIT for v in velocity['Motion Vel']))
+        idle = bool(fresh and complete and code and int(code[1]) == 999 and command_zero and feedback_within_tolerance)
+        reasons = []
+        if not fresh:
+            reasons.append('导航监视数据过期、时间异常或服务会话未知')
+        if not complete:
+            reasons.append('最新监视块不完整、有导航目标或速度字段无效')
+        if not code or int(code[1]) != 999:
+            reasons.append('规划器不是空闲状态 Code999')
+        if velocity.get('Cmd Velocity') and not command_zero:
+            reasons.append('规划器仍有非零运动命令')
+        if velocity.get('Motion Vel') and not feedback_within_tolerance:
+            reasons.append('运动反馈超过 ±0.02 容差；先停稳，不把真实运动清零')
         return dict(fresh=bool(fresh and complete), idle=idle, invocation=invocation, stamp=stamp,
-                    reason='同一新鲜monitor中Goal[NO]/Code999/命令与运动速度均零；非安全停车认证' if idle else '最新导航monitor缺失、非空闲、过期或未完整收尾')
+                    planner_code=int(code[1]) if code else None, goal_none=bool(re.search(r'Goal\[NO\]', block)),
+                    command=velocity.get('Cmd Velocity'), motion=velocity.get('Motion Vel'),
+                    zero_limit=COMMAND_ZERO_LIMIT, feedback_limit=MOTION_RESIDUAL_LIMIT,
+                    stop_sample_seconds=MAP_STOP_SECONDS, velocity_units='厂商日志原值，单位未独立核实',
+                    reason='无导航目标、规划命令为零，运动反馈在 ±0.02 容差内；这不等于已停稳，加载前还要检查5秒位姿/IMU，仍须确认其他策略退出' if idle else '；'.join(reasons))
     return dict(fresh=False, idle=False, invocation=invocation, stamp=None, reason='没有可解析的完整导航monitor')
 
 
@@ -89,10 +117,54 @@ class RobotAdapter:
         self.lock = threading.Lock()
         self.latest, self.counts, self.error = {}, {}, None
         self.node = None
+        self.imu_diag, self.imu_diag_error = None, None
+        try:
+            from imu_diag import Diagnostic
+            self.imu_diag = Diagnostic(self.root/'imu_diagnostics', nav=navigation_status)
+        except Exception as exc:
+            self.imu_diag_error = '诊断初始化失败：'+str(exc)
         self.map_cache, self.status_cache = {}, None
         self.status_at = 0
         self.started = time.monotonic()
         threading.Thread(target=self.sense, daemon=True).start()
+
+    def diagnostic_wants(self):
+        try:
+            return self.imu_diag is not None and self.imu_diag.wants()
+        except Exception as exc:
+            self.imu_diag_error = '诊断采集失败：'+str(exc)
+            return False
+
+    def offer_diagnostic(self, key, raw, msg, stamp, now):
+        # This optional observer must never stop the original ROS evidence loop.
+        try:
+            import base64
+            evidence = dict(topic='imu' if key == 'imu' else 'odom', received=now,
+                            received_wall=time.time(), stamp=stamp, frame=msg.header.frame_id)
+            if key == 'imu':
+                w, a, q = msg.angular_velocity, msg.linear_acceleration, msg.orientation
+                evidence.update(values=[w.x,w.y,w.z,a.x,a.y,a.z], quaternion=[q.x,q.y,q.z,q.w],
+                    orientation_covariance=list(msg.orientation_covariance),
+                    angular_velocity_covariance=list(msg.angular_velocity_covariance),
+                    linear_acceleration_covariance=list(msg.linear_acceleration_covariance))
+                if msg.angular_velocity_covariance[0] == -1:
+                    evidence['values'][:3] = [None]*3
+                if msg.linear_acceleration_covariance[0] == -1:
+                    evidence['values'][3:] = [None]*3
+            else:
+                p, q = msg.pose.pose.position, msg.pose.pose.orientation
+                v, w = msg.twist.twist.linear, msg.twist.twist.angular
+                evidence.update(values=[p.x,p.y,p.z], quaternion=[q.x,q.y,q.z,q.w],
+                    child_frame=msg.child_frame_id, twist=[v.x,v.y,v.z,w.x,w.y,w.z],
+                    pose_covariance=list(msg.pose.covariance),twist_covariance=list(msg.twist.covariance))
+            if self.imu_diag.active:
+                evidence['cdr_b64'] = base64.b64encode(raw).decode()
+            self.imu_diag.ingest(evidence)
+        except Exception as exc:
+            self.imu_diag_error = '诊断采集失败：'+str(exc)
+            if self.imu_diag is not None:
+                self.imu_diag.error = self.imu_diag_error
+                self.imu_diag.dropped += 1
 
     def calibration(self):
         c = self.config.get('calibration', {})
@@ -114,13 +186,18 @@ class RobotAdapter:
 
             def receive(key, raw, kind):
                 now = time.monotonic()
+                diagnostic = key in ('pose', 'imu') and self.diagnostic_wants()
                 with self.lock:
                     old = self.latest.get(key)
                     self.counts[key] = self.counts.get(key, 0)+1
-                    if old and now-old['received'] < PREVIEW_INTERVALS_S[key]:
+                    if not diagnostic and old and now-old['received'] < PREVIEW_INTERVALS_S[key]:
                         return
                 msg = deserialize_message(raw, kind)
                 stamp = msg.header.stamp.sec+msg.header.stamp.nanosec/1e9
+                if diagnostic:
+                    self.offer_diagnostic(key, raw, msg, stamp, now)
+                    if old and now-old['received'] < PREVIEW_INTERVALS_S[key]:
+                        return  # Existing field preview gates and rate remain unchanged.
                 row = dict(frame=msg.header.frame_id, received=now, stamp=stamp,
                            **{k: v for k, v in vendor.measurement_time(stamp, now, time.time(), old).items() if k != 'stamp'})
                 if kind is Odometry:
@@ -146,6 +223,26 @@ class RobotAdapter:
                                      ('/ALIGNED_POINTS', PointCloud2, 'aligned_cloud')):
                 self.node.create_subscription(cls, topic, lambda raw, k=key, c=cls: receive(k, raw, c),
                                               qos_profile_sensor_data, raw=True)
+            # Optional diagnostic-only body feedback. Never feeds snapshot(),
+            # navigation_status(), waypoint gates or any control publisher.
+            try:
+                from drdds.msg import MotionInfo
+                def receive_body(raw):
+                    if not self.diagnostic_wants():return
+                    try:
+                        import base64
+                        msg=deserialize_message(raw,MotionInfo);d=msg.data;now=time.monotonic()
+                        row=dict(topic='body_motion',received=now,received_wall=time.time(),
+                                 stamp=msg.header.stamp.sec+msg.header.stamp.nanosec/1e9,
+                                 frame_id=msg.header.frame_id,motion_state=d.motion_state.state,
+                                 values=[d.vel_x,d.vel_y,d.vel_yaw])
+                        if self.imu_diag.active:row['cdr_b64']=base64.b64encode(raw).decode()
+                        self.imu_diag.ingest(row)
+                    except Exception as exc:
+                        self.imu_diag_error='本体速度诊断读取失败：'+str(exc)
+                self.node.create_subscription(MotionInfo,'/MOTION_INFO',receive_body,qos_profile_sensor_data,raw=True)
+            except Exception as exc:
+                self.imu_diag_error='本体速度诊断未接入：'+str(exc)
             while True:
                 rclpy.spin_once(self.node, timeout_sec=.1)
         except Exception as exc:
@@ -262,13 +359,15 @@ class RobotAdapter:
         deadline = time.monotonic()+seconds
         samples = []
         last_tick = -1
+        progress_interval = 1 if seconds <= 5 else 5
         while time.monotonic() < deadline:
             samples.append(self.snapshot())
             tick = int(seconds-(deadline-time.monotonic()))
-            if tick//5 != last_tick:
+            if tick//progress_interval != last_tick:
                 progress(f'采样 {tick}/{seconds} 秒（不是定位精度百分比）')
-                last_tick = tick//5
+                last_tick = tick//progress_interval
             time.sleep(.1)
+        progress('采样结束，正在检查数据与保存结果；请继续等待')
         return samples
 
     def load_map(self, target, progress):
@@ -286,11 +385,28 @@ class RobotAdapter:
             raise FieldError('检测到转动，请用手柄停稳再操作')
         if before['map_name'] == target:
             return dict(loaded=True, changed=False, map_identity=target_id, message='目标图已经启用；没有重复重启定位')
-        progress('采样3秒停稳证据，并核对实际厂商导航空闲/零命令')
-        samples = self.sample(3, progress)
-        stationary = pose_summary(samples, 3, binding(before), require_global=False)
+        progress('采样5秒停稳证据：允许小反馈残差，但位置/姿态必须稳定，规划命令必须为零')
+        samples = self.sample(MAP_STOP_SECONDS, progress)
+        stationary = pose_summary([before, *samples], MAP_STOP_SECONDS, binding(before), require_global=False)
+        pose0 = before.get('pose', {})
+        relative_distance, relative_angle = math.inf, math.inf
+        if (finite_list(pose0.get('xyz'), 3) and finite_list(pose0.get('quaternion'), 4)
+                and samples and all(finite_list(s.get('pose', {}).get('xyz'), 3)
+                                    and finite_list(s.get('pose', {}).get('quaternion'), 4) for s in samples)):
+            relative_distance = max(math.dist(pose0['xyz'], s['pose']['xyz']) for s in samples)
+            q0 = pose0['quaternion']
+            def angle_from_start(q):
+                norm = math.sqrt(sum(v*v for v in q0)*sum(v*v for v in q))
+                return 2*math.acos(min(1., abs(sum(a*b for a,b in zip(q0,q)))/norm)) if norm else math.inf
+            relative_angle = max(angle_from_start(s['pose']['quaternion']) for s in samples)
+        stationary.update(distance_from_start_m=relative_distance, angle_from_start_rad=relative_angle)
+        if relative_distance > .01:
+            stationary['reasons'].append('5秒内相对起点位置变化超过1厘米，或位置证据无效')
+        if relative_angle > math.radians(1):
+            stationary['reasons'].append('5秒内相对起点姿态变化超过1度，或姿态证据无效')
         if (not stationary['passed'] or stationary.get('spread_m', 999) > .03
-                or stationary.get('angle_rad', 999) > math.radians(2)):
+                or stationary.get('angle_rad', 999) > math.radians(2)
+                or relative_distance > .01 or relative_angle > math.radians(1)):
             raise FieldError('未通过连续新鲜位姿的静止证据；未切图：'+'；'.join(stationary['reasons']))
         for snap in [before, *samples]:
             sample_imu = snap.get('imu', {})
@@ -304,7 +420,16 @@ class RobotAdapter:
             if (nav.get('fresh') is not True or nav.get('idle') is not True or not nav.get('invocation')
                     or type(stamp) not in (int, float) or not math.isfinite(stamp)
                     or not -.05 <= snap.get('board_time', time.time())-stamp <= 2):
-                raise FieldError('无新鲜可核对的导航空闲/零命令证据，未切图')
+                detail = dict(target=target, current_map=before['map_name'], gate='navigation_idle',
+                              navigation=nav, board_time=snap.get('board_time'), stationary_summary=stationary,
+                              samples=[dict(board_time=s.get('board_time'), navigation=s.get('navigation'),
+                                            pose={k: v for k, v in s.get('pose', {}).items() if k != 'covariance'},
+                                            imu=s.get('imu')) for s in [before, *samples]],
+                              vendor_activation_called=False)
+                raise FieldError('未加载目标图，实际地图仍是 '+before['map_name']+'。原因：'+
+                                 nav.get('reason', '导航空闲/零命令证据未知')+
+                                 '。请停止所有 policy/导航程序，用手柄停稳后查看②的实时诊断；'
+                                 '若仍不通过，下载本次诊断交给维护者，不要继续录制或标点。', details=detail)
         if any(s.get('navigation', {}).get('invocation') != before.get('navigation', {}).get('invocation') for s in samples):
             raise FieldError('静止采样期间导航服务会话变化，未切图')
         progress('调用官方 drmap 激活；若响应丢失，不自动重试')

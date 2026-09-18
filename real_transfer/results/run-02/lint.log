@@ -1,0 +1,11 @@
+E501 Line too long (160 > 100)
+  --> scripts/real_transfer_verify.py:26:101
+   |
+24 | …
+25 | …
+26 | …_per_tick": "Unguarded rclpy import: failed in run-01 because ROS 2 is unavailable, not a pass",
+   |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+27 | …
+   |
+
+Found 1 error.

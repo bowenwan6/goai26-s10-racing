@@ -32,6 +32,19 @@ S10_QA_PLAYWRIGHT=/absolute/path/to/node_modules/playwright node tools/s10_mappi
 
 结果和现场未测关卡见[REVIEW.md](REVIEW.md)。本地通过不等于真机定位/安全/无外网验收通过。
 
+## 原生导航界面与代码整理回归
+
+原生适配代码位于仓库根目录 `native_transfer/`；本地测试不依赖旁边另建的 `s10-real-readiness` 工作区。
+
+```bash
+python3 -B -m unittest discover -s tools/s10_mapping_web/qa -p 'test_native_nav.py'
+S10_QA_PYTHON=python3 S10_QA_PLAYWRIGHT=/absolute/path/to/node_modules/playwright node tools/s10_mapping_web/qa/test_native_nav_ui.cjs
+node tools/s10_mapping_web/qa/test_field_guidance.cjs
+node tools/s10_mapping_web/qa/test_imu_ui.cjs
+```
+
+界面专项只启动 loopback HTTP 服务并使用合成导航反馈；`S10_QA_PYTHON` 可指定 Python 解释器。2026-09-18 的整理检查另存于 `evidence/github-sync-20260918/`。
+
 ## 首页入口专项
 
 同一个loopback demo可运行更短的入口/登录回归，不会提交任何建图或现场动作：

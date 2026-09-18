@@ -1,0 +1,74 @@
+{
+  "local_html_asset_references_checked": 31,
+  "missing": [],
+  "videos": [
+    {
+      "path": "media/07_scene_tour.mp4",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1280,
+            "height": 720,
+            "r_frame_rate": "24/1"
+          }
+        ],
+        "format": {
+          "duration": "24.000000",
+          "size": "1264082"
+        }
+      },
+      "complete_decode_pass": true
+    },
+    {
+      "path": "media/08_wheel_interfaces_1x.mp4",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1280,
+            "height": 720,
+            "r_frame_rate": "24/1"
+          }
+        ],
+        "format": {
+          "duration": "12.000000",
+          "size": "505462"
+        }
+      },
+      "complete_decode_pass": true
+    },
+    {
+      "path": "media/09_contact_counterexample_1x.mp4",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1280,
+            "height": 720,
+            "r_frame_rate": "24/1"
+          }
+        ],
+        "format": {
+          "duration": "6.000000",
+          "size": "123455"
+        }
+      },
+      "complete_decode_pass": true
+    }
+  ],
+  "external_cdn_required": false,
+  "portable_probe_script_executed": true,
+  "UI_checks": [
+    "Delivery page rendered",
+    "24s video played in browser",
+    "3D Start view button changed bounds and displayed mesh"
+  ],
+  "scope": "Local assets only. No credentials, robot connections, full map extension or policy execution."
+}

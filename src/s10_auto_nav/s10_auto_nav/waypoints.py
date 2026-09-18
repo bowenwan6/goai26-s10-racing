@@ -53,12 +53,18 @@ class Course:
         waypoints: list[Waypoint],
         advance_radius: float = 0.18,
         score_radius: float = 0.18,
+        height_tolerance: float | None = None,
     ) -> None:
         if not waypoints:
             raise ValueError("Course requires at least one waypoint")
         self.waypoints = waypoints
         self.advance_radius = float(advance_radius)
         self.score_radius = float(score_radius)
+        if height_tolerance is not None and (
+            not math.isfinite(height_tolerance) or height_tolerance <= 0
+        ):
+            raise ValueError("height_tolerance must be finite and positive")
+        self.height_tolerance = height_tolerance
         self._cursor = 0
 
     @classmethod
@@ -97,7 +103,15 @@ class Course:
         """
         if self.finished:
             return False
-        distance = float(np.linalg.norm(self.waypoints[self._cursor].xy - position_xy))
+        position = np.asarray(position_xy, dtype=float)
+        if position.shape not in ((2,), (3,)) or not np.isfinite(position).all():
+            return False
+        if self.height_tolerance is not None and (
+            position.shape != (3,)
+            or abs(position[2] - self.waypoints[self._cursor].position[2]) > self.height_tolerance
+        ):
+            return False
+        distance = float(np.linalg.norm(self.waypoints[self._cursor].xy - position[:2]))
         if distance <= self.score_radius:
             self._cursor += 1
             return True

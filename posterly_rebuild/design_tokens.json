@@ -1,0 +1,9 @@
+{
+  "hue_centers": {"accent": 191, "emph": 18},
+  "dark_ground": false,
+  "fonts": {
+    "serif": ["Georgia", "Times New Roman"],
+    "sans": ["Arial", "Helvetica Neue"],
+    "mono": []
+  }
+}

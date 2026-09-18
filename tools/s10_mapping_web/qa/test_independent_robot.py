@@ -36,7 +36,7 @@ class RobotGateTests(unittest.TestCase):
         before.update(map_name='old-map', board_time=100., imu=dict(age=.01, stamp_age_s=.01, angular_velocity=[0.,0.,0.]),
                       navigation=dict(idle=True, fresh=True, invocation='planner-one', stamp=100.))
         samples=[]
-        for i in range(31):
+        for i in range(51):
             snap=copy.deepcopy(before);snap['pose']['stamp']=100.+i*.1
             snap['pose']['xyz'][0]+=i*.01;snap['board_time']=100.+i*.1;snap['navigation']['stamp']=snap['board_time'];samples.append(snap)
         adapter=field_robot.RobotAdapter.__new__(field_robot.RobotAdapter)
@@ -50,7 +50,7 @@ class RobotGateTests(unittest.TestCase):
         before.update(map_name='old-map', board_time=100., imu=dict(age=.01,stamp_age_s=.01,angular_velocity=[0.,0.,0.]),
                       navigation=dict(idle=False,fresh=False,reason='unknown'))
         samples=[]
-        for i in range(31):
+        for i in range(51):
             snap=copy.deepcopy(before);snap['pose']['stamp']=100.+i*.1;snap['board_time']=100.+i*.1;samples.append(snap)
         adapter=field_robot.RobotAdapter.__new__(field_robot.RobotAdapter)
         adapter.map_identity=lambda _:'target-sha';adapter.snapshot=lambda:before;adapter.sample=lambda *args:samples
@@ -66,7 +66,7 @@ class RobotGateTests(unittest.TestCase):
         before.update(map_name='old-map',board_time=100.,imu=dict(age=.01,stamp_age_s=.01,angular_velocity=[0.,0.,0.]),
                       navigation=dict(idle=True,fresh=True,invocation='planner-one',stamp=100.))
         samples=[]
-        for i in range(31):
+        for i in range(51):
             snap=copy.deepcopy(before);snap['pose']['stamp']=100.+i*.1;snap['board_time']=100.+i*.1
             snap['navigation']['stamp']=snap['board_time'];samples.append(snap)
         adapter=field_robot.RobotAdapter.__new__(field_robot.RobotAdapter)
@@ -89,6 +89,19 @@ class NavigationParserTests(unittest.TestCase):
 
     def test_complete_same_block_idle_is_evidence(self):
         self.assertTrue(field_robot.parse_navigation(self.block(),100.1,90.,'planner-one')['idle'])
+
+    def test_residual_tolerance_is_symmetric_and_never_zeros_raw_feedback(self):
+        for value in ['-.018', '.018', '-.020', '.020']:
+            result=field_robot.parse_navigation(self.block(motion=value),100.1,90.,'planner-one')
+            self.assertTrue(result['idle'])
+            self.assertEqual(result['motion'][0],float(value))
+            self.assertEqual(result['stop_sample_seconds'],5)
+        for value in ['-.0201', '.0201', '-.1', '.1']:
+            self.assertFalse(field_robot.parse_navigation(self.block(motion=value),100.1,90.,'planner-one')['idle'])
+
+    def test_nonzero_command_does_not_inherit_feedback_tolerance(self):
+        for cmd in ['.001','-.001','.01','-.01']:
+            self.assertFalse(field_robot.parse_navigation(self.block(cmd=cmd,motion='.018'),100.1,90.,'planner-one')['idle'])
 
     def test_latest_incomplete_or_active_block_not_replaced_by_old_good(self):
         variants=[dict(ending=False),dict(goal='YES'),dict(code=1),dict(cmd='.1'),dict(motion='.1'),dict(cmd='nan'),dict(motion='inf')]
