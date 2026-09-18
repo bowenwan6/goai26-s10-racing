@@ -1,0 +1,31 @@
+id,photo,photo_order,photo_time_cst,position,yaw,terrain,hard_terrain,confidence,uncertainty_radius_m,robot_in_photo,nearest_keyframe_gap_s,marker
+WP01,IMG_7018 2.HEIC,30,2026-09-14T14:54:55+08:00,"[1.606, -0.154, -0.387]",0.257,door_start,False,high,1.5,True,2.5,red dot outside the glass doors beside the robot
+WP02,IMG_7017 2.HEIC,29,2026-09-14T14:54:39+08:00,"[5.563, 1.853, -0.358]",-0.162,door_plaza,False,high,1.4,True,0.8,red dot on flat ground beside the robot
+WP03,IMG_7016.HEIC,28,2026-09-14T14:54:24+08:00,"[11.903, 1.505, -0.387]",0.705,stairs_foot,False,medium,2.4,True,4.9,"red dot on flat ground beside the robot, stairs to the right"
+WP04,IMG_7015.HEIC,27,2026-09-14T14:54:04+08:00,"[16.453, 3.615, 0.478]",0.439,curved_stairs,True,high,1.4,True,0.6,red dot on a curved stair tread beside the robot
+WP05,IMG_7014.HEIC,26,2026-09-14T14:53:41+08:00,"[20.583, 5.401, 1.376]",0.324,stair_landing,True,high,1.4,True,2.0,red dot on the landing beside the robot
+WP06,IMG_7013.HEIC,25,2026-09-14T14:53:21+08:00,"[24.405, 8.966, 2.336]",1.44,stairs,True,high,1.5,True,1.8,red dot at the step edge the robot straddles
+WP07,IMG_7012.HEIC,24,2026-09-14T14:52:56+08:00,"[23.587, 14.409, 3.115]",1.18,stairs_railing,True,medium,2.4,True,4.4,red dot on a stair tread at the robot's front wheel
+WP08,IMG_7011.HEIC,23,2026-09-14T14:52:32+08:00,"[26.349, 19.618, 4.584]",1.28,step_edge,True,medium,3.0,True,1.0,"red dot on a step edge, robot about 2 m beyond it"
+WP09,IMG_7010.HEIC,22,2026-09-14T14:52:11+08:00,"[31.354, 27.983, 4.666]",0.706,low_steps,True,medium,2.2,True,1.8,red dot on the upper step ahead of the robot
+WP10,IMG_7009.HEIC,21,2026-09-14T14:51:53+08:00,"[36.462, 35.887, 5.094]",0.851,low_steps,True,medium,2.0,True,0.5,red dot on the upper step next to the robot
+WP11,IMG_7008.HEIC,20,2026-09-14T14:51:24+08:00,"[49.725, 38.86, 5.277]",-0.67,grass_to_pavement,True,medium,2.5,True,0.1,"red dot on pavement edge, robot still in the grass"
+WP12,IMG_7007.HEIC,19,2026-09-14T14:51:12+08:00,"[50.713, 37.934, 4.943]",-2.138,rock_grass,True,medium,3.0,True,0.7,red marker in tall grass in front of the robot
+WP13,IMG_7006.HEIC,18,2026-09-14T14:50:48+08:00,"[49.902, 33.106, 4.898]",-0.835,loose_cobbles,True,medium,1.7,True,0.2,red flag in cobbles beside the robot
+WP14,IMG_7005.HEIC,17,2026-09-14T14:50:36+08:00,"[51.059, 31.998, 4.971]",-0.47,flat_boulder_top,True,medium,2.0,True,0.8,"red dot on top of the flat boulder, robot behind it"
+WP15,IMG_7004.HEIC,16,2026-09-14T14:50:23+08:00,"[52.667, 30.944, 4.788]",-0.934,rock_bed,True,medium,3.0,True,5.3,red dot on a flat boulder just ahead of the robot
+WP16,IMG_7003.HEIC,15,2026-09-14T14:49:47+08:00,"[57.844, 24.479, 5.175]",-0.533,rock_bed_entry,True,low,3.0,False,5.6,red flags in the creek bed beside the wooden deck (two visible)
+WP17,IMG_7002.HEIC,14,2026-09-14T14:49:29+08:00,"[59.938, 22.307, 5.102]",-1.218,plaza,False,medium,2.5,True,0.2,red dot on plaza tiles near the pavilion deck
+WP18,IMG_7001.HEIC,13,2026-09-14T14:49:11+08:00,"[66.15, 13.134, 4.875]",-0.99,plaza,False,high,1.5,True,0.3,red dot on plaza tiles right by the robot
+WP19,IMG_6999.HEIC,12,2026-09-14T14:48:52+08:00,"[71.192, 6.187, 5.198]",-1.545,stepped_platform,True,medium,2.0,True,2.0,"red dot on a platform step, yellow bumps on the next tier"
+WP20,IMG_6998.HEIC,11,2026-09-14T14:48:35+08:00,"[70.818, 3.413, 5.485]",-2.432,low_platform_bumps,True,medium,3.0,True,1.3,red dot on a stone platform edge between yellow bumps
+WP21,IMG_6997.HEIC,10,2026-09-14T14:48:18+08:00,"[65.368, -0.079, 5.491]",-2.937,asphalt_curve,False,high,1.5,True,4.0,red dot at the robot's front leg
+WP22,IMG_6996.HEIC,9,2026-09-14T14:47:58+08:00,"[56.207, -2.857, 5.379]",-2.763,asphalt_branch,False,medium,2.5,True,1.8,red dot on asphalt near a side-path branch
+WP23,IMG_6995.HEIC,8,2026-09-14T14:47:34+08:00,"[41.76, -11.814, 5.332]",-2.53,asphalt,False,medium,2.5,True,1.0,red dot on asphalt beside the robot
+WP24,IMG_6994.HEIC,7,2026-09-14T14:46:55+08:00,"[5.836, -23.688, 5.07]",-3.019,asphalt_curve,False,low,3.0,False,1.2,red dot on a wide asphalt curve
+WP25,IMG_6993.HEIC,6,2026-09-14T14:46:19+08:00,"[-19.816, -24.685, 4.766]",2.707,pavement_edge,False,low,3.0,False,2.5,red dot on the granular pavement edge below a grass mound
+WP26,IMG_6992.HEIC,5,2026-09-14T14:45:54+08:00,"[-30.639, -19.832, 5.125]",2.504,dry_grass,False,medium,2.0,True,1.0,red flag on dry grass next to the robot's leg
+WP27,IMG_6991.HEIC,4,2026-09-14T14:45:40+08:00,"[-32.3, -18.168, 4.949]",2.351,gabion_top,True,low,3.0,False,2.8,"red dot on the gabion top, close-up of the ledge edge"
+WP28,IMG_6990.HEIC,3,2026-09-14T14:44:44+08:00,"[-39.607, -14.728, 5.791]",2.101,gabion_top,True,low,3.0,False,2.9,red dot on gabion top; a second flag on the grass behind it
+WP29,IMG_6989.HEIC,2,2026-09-14T14:44:21+08:00,"[-40.988, -10.868, 5.711]",1.427,dry_grass,False,medium,2.0,True,0.2,"red flag on dry grass, robot about 1 m in front"
+WP30,IMG_6988.HEIC,1,2026-09-14T14:43:58+08:00,"[-39.247, -1.274, 4.658]",1.761,pavement_fork,False,low,3.0,False,11.0,red dot on granular pavement before a path fork
