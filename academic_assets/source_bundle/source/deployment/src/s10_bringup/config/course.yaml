@@ -1,0 +1,118 @@
+# S10 perception racing course.
+#
+# Extracted from the contest track overlay by scripts/extract_waypoints.py.
+# Do not hand-edit: regenerate instead, so the course always matches the scored scene.
+#
+# Waypoints:      33
+# Course length:  224.2 m (horizontal)
+# Total climb:    6.70 m
+#
+# The scorer checks a 0.2 m horizontal radius and requires waypoints in order.
+
+metadata:
+  source: S10_sdk_deploy/S10_description/s10_mjcf/mjcf/track_overlay.xml
+  count: 33
+  length_m: 224.21
+  climb_m: 6.70
+  reach_radius_m: 0.2
+
+waypoints:
+  - index: 0
+    position: [0.0000, -1.7250, 0.0000]
+    kind: start
+  - index: 1
+    position: [-0.7125, 11.6550, 0.4750]
+    kind: waypoint
+  - index: 2
+    position: [-8.7300, 11.8425, 0.4750]
+    kind: waypoint
+  - index: 3
+    position: [-10.5375, 16.3275, 0.4750]
+    kind: waypoint
+  - index: 4
+    position: [-15.0225, 17.3700, 0.4750]
+    kind: waypoint
+  - index: 5
+    position: [-15.6000, 23.2800, 0.4750]
+    kind: waypoint
+  - index: 6
+    position: [-15.1200, 31.8600, 0.6000]
+    kind: waypoint
+  - index: 7
+    position: [-14.9325, 41.2050, 1.1650]
+    kind: waypoint
+  - index: 8
+    position: [-20.4600, 43.1100, 1.1650]
+    kind: waypoint
+  - index: 9
+    position: [-20.6550, 47.7825, 1.1650]
+    kind: waypoint
+  - index: 10
+    position: [-4.0500, 47.9700, 1.1650]
+    kind: waypoint
+  - index: 11
+    position: [-4.2450, 42.5400, 1.1650]
+    kind: waypoint
+  - index: 12
+    position: [-13.5000, 41.5500, 1.1650]
+    kind: waypoint
+  - index: 13
+    position: [-12.9225, 34.6275, 0.4750]
+    kind: waypoint
+  - index: 14
+    position: [2.7225, 34.5300, 0.4750]
+    kind: waypoint
+  - index: 15
+    position: [11.1225, 33.0075, 0.1000]
+    kind: waypoint
+  - index: 16
+    position: [16.2750, 31.2900, 0.4750]
+    kind: waypoint
+  - index: 17
+    position: [17.6100, 29.1900, 0.4750]
+    kind: waypoint
+  - index: 18
+    position: [25.7175, 29.9550, 2.2000]
+    kind: waypoint
+  - index: 19
+    position: [34.5975, 29.9550, 2.3600]
+    kind: waypoint
+  - index: 20
+    position: [33.9225, 24.4275, 2.3600]
+    kind: waypoint
+  - index: 21
+    position: [17.8950, 24.6150, 0.4750]
+    kind: waypoint
+  - index: 22
+    position: [19.0425, 16.8000, 0.4750]
+    kind: waypoint
+  - index: 23
+    position: [26.4825, 17.1825, 1.6700]
+    kind: waypoint
+  - index: 24
+    position: [31.6350, 15.4650, 1.6700]
+    kind: waypoint
+  - index: 25
+    position: [33.1650, 15.1800, 1.6700]
+    kind: waypoint
+  - index: 26
+    position: [33.6000, 21.3750, 2.7000]
+    kind: waypoint
+  - index: 27
+    position: [34.8825, 21.3750, 2.7000]
+    kind: waypoint
+  - index: 28
+    position: [35.0700, 15.6600, 3.7500]
+    kind: waypoint
+  - index: 29
+    position: [30.9350, 14.7150, 3.7500]
+    kind: waypoint
+  - index: 30
+    position: [29.5350, 16.3275, 3.7500]
+    kind: waypoint
+  - index: 31
+    position: [29.9175, 20.6175, 3.7500]
+    kind: waypoint
+  - index: 32
+    position: [32.9250, 18.4500, 3.7500]
+    kind: end

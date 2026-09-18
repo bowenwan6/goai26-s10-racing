@@ -1,0 +1,300 @@
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+
+CSS = r'''
+  @page { size: A3 portrait; margin: 0; }
+  :root {
+    /* ===== DESIGN TOKENS ===== */
+    --accent: #0E5A6B;
+    --accent-deep: #123746;
+    --accent-light: #DDEDEF;
+    --accent-soft: #B8D6D9;
+    --accent-ink: #FFFFFF;
+    --emph: #B95728;
+    --emph-soft: #F8E4D8;
+    --emph-ink: #321C11;
+    --emph-on-dark: #F2A36F;
+    --text-primary: #172B35;
+    --text-secondary: #4D626B;
+    --text-muted: #718087;
+    --bg-page: #F3F0E8;
+    --bg-card: #FCFBF7;
+    --bg-card-tint: #E9F1F1;
+    --border-soft: #CCD7D7;
+    --border-strong: #0E5A6B;
+    --ink-white: #FFFFFF;
+    --bg-screen: #263238;
+    --shadow: rgba(18,55,70,.10);
+    --ps-mark-ink: #0E5A6B;
+    --u: 1.6px;
+    --fs-1: calc(2.8 * var(--u));
+    --fs-2: calc(3.5 * var(--u));
+    --fs-3: calc(4.2 * var(--u));
+    --fs-4: calc(4.8 * var(--u));
+    --fs-5: calc(5.5 * var(--u));
+    --fs-6: calc(6.3 * var(--u));
+    --fs-7: calc(7.5 * var(--u));
+    --fs-8: calc(9.5 * var(--u));
+    --fs-9: calc(13.0 * var(--u));
+    --font-sans: Arial, "Helvetica Neue", sans-serif;
+    --font-serif: Georgia, "Times New Roman", serif;
+    /* ===== END DESIGN TOKENS ===== */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  p, li, dd, figcaption, .body-text, .caption, .section-title { text-wrap: pretty; }
+  .title, .display-line { text-wrap: balance; }
+  html, body { background: var(--bg-screen); font-family: var(--font-sans); color: var(--text-primary); }
+  .poster {
+    width: calc(297 * var(--u)); height: calc(420 * var(--u));
+    background: var(--bg-page); margin: 20px auto;
+    padding: calc(10 * var(--u)) calc(12 * var(--u)) calc(8 * var(--u));
+    display: grid; grid-template-columns: minmax(0,1fr);
+    grid-template-rows: auto minmax(0,1fr) auto auto;
+    gap: calc(8 * var(--u)); position: relative; overflow: hidden;
+    box-shadow: 0 0 calc(10 * var(--u)) var(--shadow);
+    border-top: calc(3 * var(--u)) solid var(--accent);
+  }
+  .header { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: calc(8 * var(--u)); }
+  .eyebrow { color: var(--emph); font-weight: 800; letter-spacing: .16em; text-transform: uppercase; font-size: var(--fs-2); margin-bottom: calc(2 * var(--u)); }
+  .title { color: var(--accent-deep); font-size: var(--fs-9); line-height: .98; letter-spacing: -.035em; max-width: calc(225 * var(--u)); }
+  .title em { color: var(--accent); font-style: normal; }
+  .subtitle { color: var(--text-secondary); font-family: var(--font-serif); font-size: var(--fs-4); line-height: 1.35; margin-top: calc(3 * var(--u)); }
+  .page-tag { min-width: calc(34 * var(--u)); border-left: calc(1 * var(--u)) solid var(--emph); padding-left: calc(4 * var(--u)); padding-bottom: calc(1 * var(--u)); }
+  .page-tag strong { display: block; color: var(--emph); font-size: var(--fs-7); line-height: 1; }
+  .page-tag span { color: var(--text-muted); font-size: var(--fs-2); letter-spacing: .08em; }
+  .body-grid { min-height: 0; }
+  .column { height: 100%; min-width: 0; display: grid; gap: calc(5 * var(--u)); }
+  .page-one .column { grid-template-rows: 1.65fr .50fr .72fr; }
+  .page-two .column { grid-template-rows: .86fr .98fr 1.04fr; }
+  .card { min-width: 0; background: var(--bg-card); border: calc(.35 * var(--u)) solid var(--border-soft); padding: calc(5 * var(--u)); position: relative; overflow: visible; }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(1.4 * var(--u)); background: var(--accent); }
+  .card.emph::before { background: var(--emph); }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: calc(5 * var(--u)); margin-bottom: calc(3 * var(--u)); }
+  .section-title { color: var(--accent-deep); font-size: var(--fs-6); line-height: 1.05; letter-spacing: -.02em; font-weight: 800; }
+  .section-kicker { color: var(--text-muted); font-size: var(--fs-2); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+  .body-text, .card p, .card li { color: var(--text-primary); font-family: var(--font-sans); font-size: var(--fs-3); line-height: 1.38; }
+  .small { color: var(--text-secondary); font-size: var(--fs-2); line-height: 1.35; }
+  .page-one .card:first-child, .page-two .card:first-child { display: flex; flex-direction: column; }
+  .hero-grid { display: grid; grid-template-columns: 1.76fr .74fr; gap: calc(5 * var(--u)); flex: 1; align-items: stretch; }
+  .hero-note, .support-note { color: var(--text-secondary); font-size: var(--fs-1); line-height: 1.3; margin-top: calc(2 * var(--u)); }
+  .map-frame { min-width: 0; background: var(--accent-deep); padding: calc(1.5 * var(--u)); display: flex; align-items: center; }
+  .map-frame img { width: 100%; height: auto; display: block; }
+  .metric-rail { display: grid; grid-template-rows: repeat(4,1fr); gap: calc(2.2 * var(--u)); }
+  .metric { background: var(--bg-card-tint); border-top: calc(.8 * var(--u)) solid var(--accent); padding: calc(2.2 * var(--u)) calc(3 * var(--u)); display: flex; flex-direction: column; justify-content: center; }
+  .metric.em { background: var(--emph-soft); border-color: var(--emph); }
+  .metric .num { color: var(--accent); font-weight: 900; font-size: var(--fs-7); line-height: 1; white-space: nowrap; }
+  .metric.em .num { color: var(--emph); }
+  .metric .lab { color: var(--text-secondary); font-size: var(--fs-2); margin-top: calc(.8 * var(--u)); }
+  .page-one .card:nth-child(2) { display: flex; flex-direction: column; }
+  .flow { display: flex; align-items: stretch; gap: calc(1.5 * var(--u)); margin-top: calc(2 * var(--u)); flex: 1; }
+  .flow-node { flex: 1; min-width: 0; background: var(--bg-card-tint); border-top: calc(.7 * var(--u)) solid var(--accent); padding: calc(3 * var(--u)) calc(2.4 * var(--u)); text-align: center; display: flex; flex-direction: column; justify-content: center; }
+  .flow-node.router { background: var(--emph-soft); border-color: var(--emph); }
+  .flow-node strong { color: var(--accent-deep); font-size: var(--fs-3); line-height: 1.15; }
+  .flow-node span { color: var(--text-secondary); font-size: var(--fs-1); line-height: 1.25; margin-top: calc(1 * var(--u)); }
+  .flow-arrow { align-self: center; color: var(--emph); font-size: var(--fs-5); font-weight: 800; flex: 0 0 auto; }
+  .ownership { margin-top: calc(3 * var(--u)); border-top: calc(.3 * var(--u)) solid var(--border-soft); padding-top: calc(2 * var(--u)); display: flex; justify-content: space-between; gap: calc(4 * var(--u)); color: var(--text-secondary); font-size: var(--fs-2); }
+  .ownership strong { color: var(--accent-deep); }
+  .split { display: grid; grid-template-columns: .92fr 1.08fr; gap: calc(5 * var(--u)); height: 100%; }
+  .panel { min-width: 0; display: flex; flex-direction: column; }
+  .panel + .panel { border-left: calc(.35 * var(--u)) solid var(--border-soft); padding-left: calc(5 * var(--u)); }
+  .mini-title { color: var(--accent-deep); font-weight: 800; font-size: var(--fs-5); margin-bottom: calc(2 * var(--u)); }
+  .state-line { display: flex; align-items: center; flex-wrap: wrap; gap: calc(1.1 * var(--u)); margin-bottom: calc(2 * var(--u)); }
+  .state { background: var(--accent-light); color: var(--accent-deep); border: calc(.25 * var(--u)) solid var(--accent-soft); padding: calc(1 * var(--u)) calc(1.8 * var(--u)); font-size: var(--fs-1); font-weight: 700; }
+  .state.hot { background: var(--emph-soft); border-color: var(--emph); color: var(--emph-ink); }
+  .state-arrow { color: var(--emph); font-size: var(--fs-2); font-weight: 800; }
+  .step-shot { margin-top: auto; padding-top: calc(2 * var(--u)); }
+  .step-shot img { display: block; width: 100%; height: calc(27 * var(--u)); object-fit: cover; object-position: center; border: calc(.3 * var(--u)) solid var(--border-soft); }
+  .equation { background: var(--accent-deep); color: var(--ink-white); padding: calc(2.5 * var(--u)) calc(3 * var(--u)); margin: calc(2 * var(--u)) 0; font-family: var(--font-serif); font-size: var(--fs-4); text-align: center; }
+  .train-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: calc(2 * var(--u)); margin-top: calc(2 * var(--u)); }
+  .train-item { background: var(--accent-light); padding: calc(2 * var(--u)); text-align: center; border-top: calc(.5 * var(--u)) solid var(--accent); }
+  .train-item b { display: block; color: var(--accent-deep); font-size: var(--fs-4); }
+  .train-item span { display: block; color: var(--text-secondary); font-size: var(--fs-1); line-height: 1.2; margin-top: calc(.5 * var(--u)); }
+  .result-row { display: grid; grid-template-columns: repeat(3,1fr); gap: calc(2 * var(--u)); margin-top: auto; padding-top: calc(2 * var(--u)); }
+  .result { background: var(--bg-card-tint); padding: calc(2 * var(--u)); text-align: center; border-bottom: calc(.7 * var(--u)) solid var(--accent); }
+  .result.warn { background: var(--emph-soft); border-color: var(--emph); }
+  .result b { display: block; color: var(--accent); font-size: var(--fs-6); line-height: 1; }
+  .result.warn b { color: var(--emph); }
+  .result span { color: var(--text-secondary); font-size: var(--fs-1); }
+  .support-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: calc(4 * var(--u)); flex: 1; }
+  .support { background: var(--bg-card-tint); padding: calc(4 * var(--u)); border-top: calc(1 * var(--u)) solid var(--accent); display: flex; flex-direction: column; }
+  .support.em { background: var(--emph-soft); border-color: var(--emph); }
+  .support .idx { color: var(--emph); font-size: var(--fs-7); font-weight: 900; line-height: 1; }
+  .support h3 { color: var(--accent-deep); font-size: var(--fs-6); margin: calc(1 * var(--u)) 0 calc(2 * var(--u)); }
+  .support ul { padding-left: calc(5 * var(--u)); flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+  .support li { margin-bottom: calc(1.2 * var(--u)); }
+  .risk-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: calc(3 * var(--u)); height: calc(100% - 12 * var(--u)); }
+  .risk { border-top: calc(.7 * var(--u)) solid var(--emph); background: var(--bg-card); padding: calc(3 * var(--u)); display: flex; flex-direction: column; }
+  .risk b { display: block; color: var(--emph); font-size: var(--fs-5); margin-bottom: calc(1 * var(--u)); }
+  .risk p { font-size: var(--fs-3); color: var(--text-secondary); margin-top: auto; }
+  .roadmap { display: grid; grid-template-columns: .9fr 1.05fr 1.05fr; gap: calc(4 * var(--u)); height: calc(100% - 12 * var(--u)); position: relative; }
+  .phase { background: var(--bg-card-tint); border-top: calc(1 * var(--u)) solid var(--accent); padding: calc(4 * var(--u)); position: relative; display: flex; flex-direction: column; }
+  .phase.current { background: var(--accent-deep); color: var(--ink-white); }
+  .phase .when { color: var(--emph); font-size: var(--fs-2); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .phase h3 { color: var(--accent-deep); font-size: var(--fs-6); margin: calc(1.5 * var(--u)) 0 calc(2 * var(--u)); line-height: 1.1; }
+  .phase.current h3, .phase.current p { color: var(--ink-white); }
+  .phase.current .when { color: var(--emph-on-dark); }
+  .phase p { color: var(--text-secondary); font-size: var(--fs-3); }
+  .phase .decision { margin-top: auto; padding-top: calc(2 * var(--u)); border-top: calc(.3 * var(--u)) solid var(--accent-soft); font-weight: 700; }
+  .footer-strip { background: var(--accent-deep); color: var(--ink-white); padding: calc(3 * var(--u)) calc(5 * var(--u)); display: flex; justify-content: space-between; align-items: center; gap: calc(6 * var(--u)); }
+  .footer-strip .lead { color: var(--accent-light); font-size: var(--fs-3); font-weight: 700; }
+  .footer-strip .items { display: flex; gap: calc(5 * var(--u)); color: var(--ink-white); font-size: var(--fs-2); }
+  .footer-strip b { color: var(--emph-on-dark); }
+  .footer { display: flex; justify-content: space-between; align-items: center; gap: calc(8 * var(--u)); color: var(--text-muted); font-size: var(--fs-1); }
+  .footer strong { color: var(--accent); }
+  .ps-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .corner-sig { position: absolute; right: calc(3 * var(--u)); bottom: calc(2 * var(--u)); width: calc(5 * var(--u)); height: calc(5 * var(--u)); color: var(--ps-mark-ink); opacity: .45; }
+  .corner-sig svg, [data-ps-mark="woven"] svg { display: block; width: 100%; height: 100%; }
+  [data-ps-mark="woven"] { display: inline-block; width: .82em; height: .82em; vertical-align: -.12em; line-height: 0; }
+  @media print {
+    :root { --u: 1mm; }
+    html, body { background: var(--ink-white); margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    .poster { margin: 0; box-shadow: none; page-break-after: avoid; }
+  }
+'''
+
+SPRITE = r'''
+<svg class="ps-sprite" data-color-exempt="logo" aria-hidden="true"><defs>
+  <symbol id="psReg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="8"/>
+    <line x1="50" y1="7" x2="50" y2="93" stroke="currentColor" stroke-width="8"/>
+    <line x1="7" y1="50" x2="93" y2="50" stroke="currentColor" stroke-width="8"/>
+  </symbol>
+</defs></svg>
+'''
+
+CORNER = r'''<span class="corner-sig" data-ps-mark="corner" data-color-exempt="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#psReg"/></svg></span>'''
+
+PAGE1 = r'''
+<div class="poster page-one" data-measure-role="poster" data-posterly-contract="identity-v1" data-ps-identity="on">
+  {sprite}
+  <header class="header" data-measure-role="header">
+    <div>
+      <div class="eyebrow">GOAI 2026 · Track 4 Challenge 2</div>
+      <h1 class="title">让轮足机器人<br><em>跑完整条赛道</em></h1>
+      <div class="subtitle">固定 MuJoCo 仿真比赛系统：感知约束导航、规则 router 与高台阶残差策略</div>
+    </div>
+    <div class="page-tag"><strong>01</strong><span>比赛方法</span></div>
+  </header>
+
+  <main class="body-grid" data-measure-role="body">
+    <div class="column" data-measure-role="column">
+      <section class="card" data-measure-role="card">
+        <div class="section-head"><h2 class="section-title">比赛是一条有序、立体、连续的路线</h2><span class="section-kicker">COURSE OVERVIEW</span></div>
+        <div class="hero-grid">
+          <figure class="map-frame"><img src="assets/course_height_overview.png" data-source="paper" data-asset-id="course-map" alt="赛道俯视高度图与有序航点路线"></figure>
+          <div class="metric-rail">
+            <div class="metric"><div class="num">33</div><div class="lab">必须按序通过的航点</div></div>
+            <div class="metric"><div class="num">224.21 m</div><div class="lab">水平路线长度</div></div>
+            <div class="metric em"><div class="num">6.70 m</div><div class="lab">沿路线累计爬升</div></div>
+            <div class="metric"><div class="num">0.20 m</div><div class="lab">比赛到点判定半径</div></div>
+          </div>
+        </div>
+        <p class="hero-note">高度进程：地面起步 → 1.165 m 高架环线 → 跨越高差 0.377 m 的高台阶 → 2.36／2.70 m 平台 → 3.75 m 终段；非航点结构最高 6.37 m。</p>
+      </section>
+
+      <section class="card" data-measure-role="card">
+        <div class="section-head"><h2 class="section-title">一个周期内，命令怎样到达机器人？</h2><span class="section-kicker">50 Hz 配置控制循环</span></div>
+        <div class="flow">
+          <div class="flow-node"><strong>仿真感知</strong><span>合成 LiDAR 8×64<br>几何高度图 13×9<br>IMU／真值里程计</span></div><div class="flow-arrow">→</div>
+          <div class="flow-node"><strong>导航</strong><span>航点跟踪<br>净空与速度约束</span></div><div class="flow-arrow">→</div>
+          <div class="flow-node router"><strong>规则 router</strong><span>判断进入、验证、交还与故障</span></div><div class="flow-arrow">→</div>
+          <div class="flow-node"><strong>策略</strong><span>基础运动<br>或高台阶残差</span></div><div class="flow-arrow">→</div>
+          <div class="flow-node"><strong>安全执行</strong><span>单一 owner<br>16D 动作检查与限幅</span></div>
+        </div>
+        <div class="ownership"><span><strong>速度边界：</strong>启用 router 时，其为最终速度命令的唯一发布者</span><span><strong>关节边界：</strong>请求 owner 与实际 owner 分开确认</span></div>
+      </section>
+
+      <section class="card emph" data-measure-role="card">
+        <div class="split">
+          <div class="panel">
+            <div class="mini-title">Router <span data-ps-mark="woven" data-color-exempt="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#psReg"/></svg></span>：把困难路段变成可审计的状态转换</div>
+            <div class="state-line"><span class="state">NAVIGATE</span><span class="state-arrow">→</span><span class="state">APPROACH</span><span class="state-arrow">→</span><span class="state">ALIGN</span></div>
+            <div class="state-line"><span class="state hot">CLIMB READY</span><span class="state-arrow">→</span><span class="state hot">CLIMB</span><span class="state-arrow">→</span><span class="state hot">VERIFY CLEAR</span><span class="state-arrow">→</span><span class="state">HANDOFF</span><span class="state-arrow">→</span><span class="state">NAVIGATE</span></div>
+            <p>当前比赛配置只在 <strong>WP15→WP16</strong> 启用专用策略。完成信号必须经过四轮越沿、目标高度、接触、姿态与持续时间复核；异常进入有界 RECOVER 或主动停机 ABORT。</p>
+            <figure class="step-shot"><img src="assets/high_step.png" data-source="paper" data-asset-id="gate16-step" data-fig-layout="beside-text" alt="高台阶专用策略通过障碍的仿真画面"></figure>
+          </div>
+          <div class="panel">
+            <div class="mini-title">高台阶：冻结基础策略，只学习有限修正</div>
+            <div class="equation">a<sub>t</sub> = clip{{ π<sub>b</sub>(o<sub>t</sub>) + m<sub>t</sub>s ⊙ clip[μ<sub>θ</sub>(o<sub>t</sub>), −4, 4], −a<sub>max</sub>, a<sub>max</sub> }}</div>
+            <p class="small">PPO 训练 174D 高度图条件 residual；入口门同时检查距离、速度、横向／航向误差、yaw rate、倾角与控制权。</p>
+            <div class="train-grid"><div class="train-item"><b>174D</b><span>57D 本体＋117D 高度图</span></div><div class="train-item"><b>PPO</b><span>冻结基础 actor</span></div><div class="train-item"><b>20 ms</b><span>训练与部署策略步长</span></div></div>
+            <div class="result-row"><div class="result"><b>33/33</b><span>固定版本单次完整路线</span></div><div class="result"><b>38/45</b><span>选模固定入口矩阵完成</span></div><div class="result warn"><b>20/45</b><span>完成且保持前轮几何支撑</span></div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="footer-strip" data-measure-role="footer-strip"><div class="lead">当前原则：稳定路段沿用基础能力，困难地形调用专用能力，所有交接由规则约束。</div><div class="items"><span><b>392.257 s</b> · 固定版本 3660b81 · seed 8 单次 MuJoCo 仿真</span></div></div>
+  <footer class="footer" data-measure-role="footer"><span><strong>GOAI LAI／狗來</strong> · Lynx S10</span><span>比赛方法与验证 · 1/2</span></footer>
+  {corner}
+</div>
+'''
+
+PAGE2 = r'''
+<div class="poster page-two" data-measure-role="poster" data-posterly-contract="identity-v1" data-ps-identity="on">
+  {sprite}
+  <header class="header" data-measure-role="header">
+    <div>
+      <div class="eyebrow">FROM SIMULATION TO THE FIELD</div>
+      <h1 class="title">怎样把一次成功仿真<br><em>变成稳定实地完赛？</em></h1>
+      <div class="subtitle">我们寻求能够直接缩短赛前验证周期的知识、设备与模型支持</div>
+    </div>
+    <div class="page-tag"><strong>02</strong><span>合作重点</span></div>
+  </header>
+
+  <main class="body-grid" data-measure-role="body">
+    <div class="column" data-measure-role="column">
+      <section class="card" data-measure-role="card">
+        <div class="section-head"><h2 class="section-title">企业支持应落到可测试的输入</h2><span class="section-kicker">WHAT WE NEED</span></div>
+        <div class="support-grid">
+          <div class="support"><div class="idx">01</div><h3>技术知识与指导</h3><ul><li>强化学习、课程与域随机化</li><li>近场导航与状态估计</li><li>轮足动力学、接触与系统辨识</li></ul></div>
+          <div class="support em"><div class="idx">02</div><h3>GPU 与实机设施</h3><ul><li>并行训练与批量回放算力</li><li>S10 或相近轮足平台</li><li>LiDAR／IMU、可调障碍与安全设备</li></ul></div>
+          <div class="support"><div class="idx">03</div><h3>可评估的模型</h3><ul><li>运动、地形感知与导航模型</li><li>router 或高层决策模型</li><li>权重／API、时延、部署与许可说明</li></ul></div>
+        </div>
+        <p class="support-note"><strong>资源优先级：</strong>实机与测试条件 → 轮足系统技术评审 → 训练 GPU → 可部署模型。</p>
+      </section>
+
+      <section class="card emph" data-measure-role="card">
+        <div class="section-head"><h2 class="section-title">现场风险集中在六个断点</h2><span class="section-kicker">FIELD BOTTLENECKS</span></div>
+        <div class="risk-grid">
+          <div class="risk"><b>数据不完整</b><p>缺少成功／失败实机样本，以及传感、动作、电流与控制命令的时间同步记录。</p></div>
+          <div class="risk"><b>算力受限</b><p>域随机化、超参数筛选和多模型回放需要稳定、可持续的 GPU 训练与验证配额。</p></div>
+          <div class="risk"><b>赛前时间有限</b><p>任何接口或硬件变更都可能触发重新标定、回放和安全验证。</p></div>
+          <div class="risk"><b>仿真—实机差异</b><p>质量、质心、摩擦、执行器响应、延迟和轮胎接触误差可能改变策略行为。</p></div>
+          <div class="risk"><b>真实感知与状态估计</b><p>尚未完成实机闭环验证；定位漂移与运动畸变可能污染高度网格。</p></div>
+          <div class="risk"><b>连续可靠性不足</b><p>电池、温升、丢包、传感停更、接管、回退和重新起步仍需系统测试。</p></div>
+        </div>
+      </section>
+
+      <section class="card" data-measure-role="card">
+        <div class="section-head"><h2 class="section-title">技术路线：先守住比赛主链，再增加学习决策</h2><span class="section-kicker">IMPROVEMENT PATH</span></div>
+        <div class="roadmap">
+          <div class="phase current"><div class="when">NOW · 比赛近期</div><h3>规则 router ＋ 专用策略</h3><p>稳定当前 50 Hz 配置控制链，完成真实接口、系统辨识、连续路线与故障处置测试。测试阶段及规则允许时，手动操作用于安全接管和数据采集。</p><p class="decision">准入标准：可重复完成、交接可追溯、失败能够安全停止。</p></div>
+          <div class="phase"><div class="when">NEXT · 并行验证</div><h3>轻量学习型 router <span data-ps-mark="woven" data-color-exempt="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#psReg"/></svg></span></h3><p>根据高度图、姿态、速度、航点阶段和策略置信度选择基础、专用或恢复模式；规则继续保留硬性边界。</p><p class="decision">先离线回放与影子运行，再低速实机验证。</p></div>
+          <div class="phase"><div class="when">LATER · 架构比较</div><h3>分层模型或单一全地形模型</h3><p>比较“大模型决策＋小模型执行”和单一模型处理全部地形。评价完整路线完成率、时延、恢复与连续稳定性。</p><p class="decision">只有稳定优于当前主链，才进入比赛版本。</p></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="footer-strip" data-measure-role="footer-strip"><div class="lead">合作后首先形成</div><div class="items"><span><b>A</b> 同步实机数据集</span><span><b>B</b> 仿真／实机参数与延迟表</span><span><b>C</b> 连续路线与故障处置流程</span></div></div>
+  <footer class="footer" data-measure-role="footer"><span><strong>资源优先级</strong>：实机与测试条件 → 技术评审 → 训练 GPU → 可部署模型</span><span>合作需求与路线 · 2/2</span></footer>
+  {corner}
+</div>
+'''
+
+def write(name: str, body: str, title: str) -> None:
+    html = f'''<!DOCTYPE html>
+<!-- DESIGN DIRECTION: Cartographic control board; portrait single-column band stack; warm paper canvas; petrol accent #0E5A6B derived from the course height map; burnt-orange register #D76A32; editorial sans typography; hairline cards; claim-sentence headings; asymmetric masthead; map is the sole hero. -->
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="posterly"><title>{title}</title><style>{CSS}</style></head><body>
+{body.format(sprite=SPRITE, corner=CORNER)}
+</body></html>'''
+    (ROOT / name).write_text(html, encoding='utf-8')
+
+write('poster_page1.html', PAGE1, 'GOAI Lynx S10 — 比赛方法')
+write('poster_page2.html', PAGE2, 'GOAI Lynx S10 — 合作重点')
+
+if __name__ == '__main__':
+    pass

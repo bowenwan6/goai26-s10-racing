@@ -1,0 +1,222 @@
+{
+  "metadata": {
+    "map_id": "0914_fr_v3-20260914-142008",
+    "z_reference": "ground",
+    "status": "DRAFT; field XYZ reference, corridor and staging clearance unverified",
+    "scope": "Start through Area B upper landing; no post-B extension",
+    "kind_semantics": "gait for incoming segment; switch at previous target",
+    "body_clearance_margin_m": 0.7,
+    "landing_flat_station_intervals": [
+      [
+        7.762500000000001,
+        9.512500000000001
+      ],
+      [
+        15.1875,
+        15.762500000000003
+      ]
+    ],
+    "upper_flat_starts_at_station": 24.437500000000004,
+    "ground_z_method": "interpolate existing simulation-route ground heights; field check required",
+    "sources": {
+      "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/course_full.yaml": "b8c4cfa53e7ac78b67556228ac5dcf40dea18aabc15086d0aed519d0499f4bcc",
+      "map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/delivery/repair_report.json": "5c486a6f915ff2d16d75e1043685e977d086b6994f9a66bb1d54a146d9d1e530"
+    }
+  },
+  "waypoints": [
+    {
+      "index": 0,
+      "position": [
+        0.0,
+        0.5,
+        -0.42930552770514474
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "index": 1,
+      "position": [
+        4.0,
+        0.5,
+        -0.35352293427957093
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "index": 2,
+      "position": [
+        8.0,
+        0.5,
+        -0.4201891359733825
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "index": 3,
+      "position": [
+        10.5,
+        1.4,
+        -0.3786498725896159
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "position": [
+        12.891745794,
+        2.056971555,
+        -0.3486563870191688
+      ],
+      "kind": "flat",
+      "b_station": 0.0,
+      "staging_candidate": false,
+      "index": 4
+    },
+    {
+      "position": [
+        18.993174443,
+        4.521834368,
+        1.266100462666273
+      ],
+      "kind": "stairs",
+      "b_station": 6.580499999676943,
+      "staging_candidate": false,
+      "index": 5
+    },
+    {
+      "position": [
+        19.958555782870548,
+        5.2038628640274425,
+        1.3294098986600837
+      ],
+      "kind": "stairs",
+      "b_station": 7.762500000000001,
+      "staging_candidate": true,
+      "index": 6
+    },
+    {
+      "position": [
+        21.387842876196874,
+        6.21363432572102,
+        1.4231421431261475
+      ],
+      "kind": "flat",
+      "b_station": 9.512500000000001,
+      "staging_candidate": true,
+      "index": 7
+    },
+    {
+      "position": [
+        21.666321289,
+        6.410375453,
+        1.4414046788960864
+      ],
+      "kind": "stairs",
+      "b_station": 9.853465243918427,
+      "staging_candidate": false,
+      "index": 8
+    },
+    {
+      "position": [
+        23.676936311,
+        8.551742823,
+        2.221133350439552
+      ],
+      "kind": "stairs",
+      "b_station": 12.79081557712568,
+      "staging_candidate": false,
+      "index": 9
+    },
+    {
+      "position": [
+        22.895283819,
+        10.038051581,
+        2.385344486054577
+      ],
+      "kind": "stairs",
+      "b_station": 14.470129229293526,
+      "staging_candidate": false,
+      "index": 10
+    },
+    {
+      "position": [
+        23.067788638219135,
+        10.734372563026373,
+        2.485271302476643
+      ],
+      "kind": "stairs",
+      "b_station": 15.1875,
+      "staging_candidate": true,
+      "index": 11
+    },
+    {
+      "position": [
+        23.20605782216333,
+        11.292500355535767,
+        2.5653664524171726
+      ],
+      "kind": "flat",
+      "b_station": 15.762500000000003,
+      "staging_candidate": true,
+      "index": 12
+    },
+    {
+      "position": [
+        23.649611434,
+        13.082918084,
+        2.822303624050874
+      ],
+      "kind": "stairs",
+      "b_station": 17.607042070263617,
+      "staging_candidate": false,
+      "index": 13
+    },
+    {
+      "position": [
+        25.114925774,
+        15.886426318,
+        3.767960096929844
+      ],
+      "kind": "stairs",
+      "b_station": 20.770395438623755,
+      "staging_candidate": false,
+      "index": 14
+    },
+    {
+      "position": [
+        25.697540493,
+        19.01088399,
+        4.566065523303708
+      ],
+      "kind": "stairs",
+      "b_station": 23.948708773541366,
+      "staging_candidate": false,
+      "index": 15
+    },
+    {
+      "position": [
+        25.84097809593781,
+        19.47815534277737,
+        4.577890268907692
+      ],
+      "kind": "stairs",
+      "b_station": 24.437500000000004,
+      "staging_candidate": true,
+      "index": 16
+    },
+    {
+      "position": [
+        26.516563974,
+        21.678986371,
+        4.633584389404064
+      ],
+      "kind": "flat",
+      "b_station": 26.73968884834076,
+      "staging_candidate": false,
+      "index": 17
+    }
+  ]
+}

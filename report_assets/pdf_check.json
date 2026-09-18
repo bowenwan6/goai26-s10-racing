@@ -1,0 +1,121 @@
+{
+  "pages": 18,
+  "bookmarks": 45,
+  "source_text_fragments_checked": 669,
+  "missing_text_fragments": [],
+  "hashes_present": true,
+  "missing_glyph_markers": 0,
+  "out_of_page_text": [],
+  "blank_pages": [],
+  "latex_errors_or_overflow": [],
+  "page_summary": [
+    {
+      "page": 1,
+      "characters": 962,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 2,
+      "characters": 1808,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 3,
+      "characters": 1336,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 4,
+      "characters": 581,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 5,
+      "characters": 1170,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 6,
+      "characters": 1402,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 7,
+      "characters": 1037,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 8,
+      "characters": 1129,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 9,
+      "characters": 1673,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 10,
+      "characters": 1504,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 11,
+      "characters": 1667,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 12,
+      "characters": 1874,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 13,
+      "characters": 1004,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 14,
+      "characters": 1371,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 15,
+      "characters": 1060,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 16,
+      "characters": 1497,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 17,
+      "characters": 1988,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 18,
+      "characters": 1046,
+      "width": 595.3,
+      "height": 841.9
+    }
+  ]
+}

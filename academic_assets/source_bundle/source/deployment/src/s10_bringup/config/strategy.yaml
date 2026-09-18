@@ -1,0 +1,48 @@
+# Strategy router configuration.
+#
+# This file is only read when the race is launched with strategy_router:=true. The default
+# scored run does not start this node at all, so nothing here can change it.
+#
+# The segment-to-policy mapping lives here and only here. The temptation is to write
+# `if waypoint == 16` in the follower, in the router and in the runner, and the moment that
+# test exists in three files two of them are wrong and the third is the one in the run.
+#
+# The default remains observation/plumbing-safe: enabling the router does not silently enable
+# actuator takeover. Use strategy_gate16.yaml for the reviewed stable Gate16 configuration.
+
+strategy_router:
+  ros__parameters:
+    control_rate: 50.0
+
+    nav_cmd_topic: /strategy/nav_cmd_vel
+    cmd_vel_topic: /cmd_vel
+
+    climb_enabled: false
+    measurement_only: false
+    # mock | scripted. The stable Gate16 configuration is isolated in strategy_gate16.yaml.
+    climb_policy: mock
+    climb_segment: [15, 16]
+    scripted_trajectory: ""
+    # succeed | fail | never_finish | go_silent | raise | lie
+    mock_scenario: succeed
+    mock_duration: 2.0
+
+    # Gate 16's leading edge, measured off the MJCF rather than assumed from the waypoint:
+    # the lip sits at x = 12.6459 with a 0.3769 m rise from a floor at z = 0.102. The
+    # waypoint is not on the lip, and approaching as though it were starts the align phase
+    # in the wrong place. Leave as NaN for any segment whose geometry has not been measured.
+    climb_obstacle_x: 12.6459
+    climb_edge_center: [12.64593, 32.49969]
+    climb_normal: [1.0, 0.0]
+    climb_tangent: [0.0, 1.0]
+    # Must match nav.yaml: the router runs its own cursor over the same course file, and
+    # two cursors advancing on different rules disagree about which segment is current.
+    advance_radius: 0.18
+    score_radius: 0.18
+
+    approach_enter: 3.0
+    approach_speed_scale: 0.5
+    align_enter: 1.2
+    climb_timeout: 20.0
+    max_retries: 3
+    sensor_timeout: 0.5

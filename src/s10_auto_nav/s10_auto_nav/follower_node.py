@@ -122,8 +122,8 @@ def pitch_from_quaternion(x: float, y: float, z: float, w: float) -> float:
 
 
 class WaypointFollowerNode(Node):
-    def __init__(self) -> None:
-        super().__init__("waypoint_follower")
+    def __init__(self, **node_kwargs) -> None:
+        super().__init__("waypoint_follower", **node_kwargs)
 
         self.declare_parameter("course_file", "")
         self.declare_parameter("control_rate", CONTROL_RATE_HZ)
@@ -132,6 +132,7 @@ class WaypointFollowerNode(Node):
         # constant only so a stricter scorer can be raced against; it is not a tuning
         # parameter and raising it above 0.2 makes the follower claim gates it did not take.
         self.declare_parameter("score_radius", 0.18)
+        self.declare_parameter("height_tolerance", 0.0)
         self.declare_parameter("max_forward", PursuitGains.max_forward)
         self.declare_parameter("terrain_max_forward", PursuitGains.max_forward)
         self.declare_parameter("waypoint_speed_limit_indices", [16, 24, 25, 26, 27, 28, 29, 31, 32])
@@ -249,6 +250,7 @@ class WaypointFollowerNode(Node):
             course_file,
             advance_radius=float(self.get_parameter("advance_radius").value),
             score_radius=float(self.get_parameter("score_radius").value),
+            height_tolerance=_optional_positive(self.get_parameter("height_tolerance").value),
         )
         self.controller = PurePursuitController(
             PursuitGains(
@@ -512,6 +514,7 @@ class WaypointFollowerNode(Node):
         q = msg.pose.pose.orientation
         v = msg.twist.twist.linear
         self._pose_xy = np.array([p.x, p.y])
+        self._pose_z = float(p.z)
         self._yaw = yaw_from_quaternion(q.x, q.y, q.z, q.w)
         self._tilt = tilt_from_quaternion(q.x, q.y, q.z, q.w)
         self._pitch = pitch_from_quaternion(q.x, q.y, q.z, q.w)
@@ -574,7 +577,10 @@ class WaypointFollowerNode(Node):
         self._scan_age += dt
         self._heightmap_age += dt
 
-        if self.course.update(self._pose_xy):
+        course_position = self._pose_xy
+        if self.course.height_tolerance is not None:
+            course_position = np.array([*self._pose_xy, self._pose_z])
+        if self.course.update(course_position):
             # The stall ratchet measures the gap to *a* gate, so it means nothing once the
             # gate changes: the new one is metres further off than the old one was, and a
             # reference carried over from the last approach is one the robot cannot beat for

@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "skill": "posterly",
+  "timestamp": "2026-09-03T19:12:22Z",
+  "poster_html": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html",
+  "canvas": {
+    "source": "page-rule",
+    "width_cm": 29.7,
+    "height_cm": 42.0,
+    "orientation": "portrait",
+    "source_url": null
+  },
+  "overall": "PASS",
+  "hard_failures": 0,
+  "warnings": 0,
+  "soft_advisories": 0,
+  "gates": [
+    {
+      "name": "preflight",
+      "severity": "hard",
+      "status": "PASS",
+      "command": [
+        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
+        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/poster_check.py",
+        "preflight",
+        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html"
+      ],
+      "summary": {
+        "exit_code": 0,
+        "tail": "[preflight] /Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html\n  problems: 0   warnings: 0\n[preflight] PASS"
+      },
+      "artifacts": []
+    },
+    {
+      "name": "style",
+      "severity": "hard",
+      "status": "PASS",
+      "command": [
+        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
+        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/style_check.py",
+        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html",
+        "--tokens",
+        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/design_tokens.json",
+        "--disable",
+        "4,5",
+        "--json",
+        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/style_check.json"
+      ],
+      "summary": {
+        "gate": "style",
+        "status": "WARN",
+        "rules": [
+          {
+            "id": 1,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 2,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 3,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 4,
+            "severity": "hard",
+            "status": "SKIPPED",
+            "detail": "disabled via --disable (rule 4)"
+          },
+          {
+            "id": 5,
+            "severity": "hard",
+            "status": "SKIPPED",
+            "detail": "disabled via --disable (rule 5)"
+          },
+          {
+            "id": 6,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 7,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 8,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 9,
+            "severity": "warn",
+            "status": "PASS",
+            "detail": "9 --fs-* token(s) defined"
+          },
+          {
+            "id": 10,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 11,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 12,
+            "severity": "warn",
+            "status": "WARN",
+            "detail": "dark (L<0.18) backgrounds cover 8.0% of the poster (> 8% threshold); large dark slabs read as 'kitsch'. Lighten or shrink them."
+          },
+          {
+            "id": 13,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          },
+          {
+            "id": 14,
+            "severity": "hard",
+            "status": "PASS",
+            "detail": "ok"
+          }
+        ]
+      },
+      "artifacts": [
+        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/style_check.json"
+      ]
+    },
+    {
+      "name": "asset",
+      "severity": "hard",
+      "status": "NOT_RUN",
+      "command": [],
+      "summary": {
+        "not_run": "no --manifest: real-figure provenance gate opted out (NOT verified)"
+      },
+      "artifacts": []
+    },
+    {
+      "name": "measure",
+      "severity": "hard",
+      "status": "PASS",
+      "command": [
+        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
+        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/poster_check.py",
+        "measure",
+        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html"
+      ],
+      "summary": {
+        "exit_code": 0,
+        "tail": "[measure] canvas = 11.69in x 16.54in\n[measure] viewport = 1123 x 1587 px\n[measure] columns found: 1\n  col0    last-card-bottom =  1437.03 px\n  spread = 0.00 px   (target < 5.0 px)\n  intercard gap in [18.89 (col0), 18.89 (col0)] px   (target [12.0, 50.0])\n  gap -> footer-strip in [30.23, 30.23] px   (target [30.0, 50.0])\n[measure] PASS"
+      },
+      "artifacts": []
+    },
+    {
+      "name": "polish",
+      "severity": "soft",
+      "status": "PASS",
+      "command": [
+        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
+        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/poster_check.py",
+        "polish",
+        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html"
+      ],
+      "summary": {
+        "exit_code": 0,
+        "tail": "  contrast pairs (<7) : 14\n  case-corrupt runs   : 0\n  beside-text floats  : 0\n  flex/<br> parents   : 0\n  header logos        : 0\n  banner images       : 0\n  warnings            : 0\n[polish] PASS"
+      },
+      "artifacts": [],
+      "advisories": 0
+    }
+  ]
+}

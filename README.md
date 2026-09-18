@@ -19,6 +19,12 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 
 ## 真机与录制研究
 
+### 2026-09-18 现场文件交付
+
+- [GitHub 文件索引](docs/GITHUB_FILE_INDEX_ZH.md)：app、v3 点云、MuJoCo 场景、真机适配、现场照片和报告的入口及上传范围。
+- [地图与 MuJoCo 包](deliverables/S10_v3_Map_MuJoCo_20260916/README.md)包含 v3 全场点云；精细碰撞场景覆盖 Start＋B＋B 后短平台。
+- 点云、二进制网格/数据、图片/PDF、视频、分享 ZIP 和原始/预览照片使用 Git LFS；克隆后执行 `git lfs pull` 获取文件内容。
+
 ### 当前真机：48 号（2026-09-11）
 
 - [48 号环境、账号与传感器](docs/S10_48_SETUP_ZH.md)：使用本队 `golai`，Windows 登录 `ssh s10-48-golai`。

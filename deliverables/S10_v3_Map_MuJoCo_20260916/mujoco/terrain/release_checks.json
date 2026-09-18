@@ -1,0 +1,30 @@
+{
+  "imported_visual_collision_centroid_rays": 6832,
+  "misses": [],
+  "maximum_imported_visual_collision_difference_m": 5.965535214147444e-07,
+  "imported_visual_collision_pass": true,
+  "unknown_mask_rays": [
+    {
+      "name": "Start",
+      "unknown_support_centers_tested": 81,
+      "collision_hits": 0,
+      "passed": true
+    },
+    {
+      "name": "Post_B",
+      "unknown_support_centers_tested": 224,
+      "collision_hits": 0,
+      "passed": true
+    }
+  ],
+  "manifest_records": 237,
+  "unique_source_files": 235,
+  "changed_source_files": [],
+  "original_B_byte_copies": {
+    "B_geometry": true,
+    "B_visual": true,
+    "B_original_collision": true
+  },
+  "all_passed": true,
+  "limitations": "These are bounded export/implementation checks, not surveyed geometry truth, full obstacle coverage or robot policy acceptance."
+}
