@@ -1,0 +1,154 @@
+dds:
+  domain: 0
+  network_interface: ""
+
+# ==============================
+# 雷达列表（默认前后双雷达，最多支持 kMaxLidars=2）
+# 通过 rs_driver SDK 接收 MSOP/DIFOP UDP 数据并解码
+# x/y/z/roll/pitch/yaw 由 SDK 内部坐标变换使用
+# 启动时若读取到 HWI model，会被 extrinsics 节覆盖
+# ==============================
+common:
+  msg_source: 1                # 1: 在线雷达, 3: PCAP 文件
+  send_separately: false       # true: 前后雷达独立发送 false: 前后雷达数据合并发送
+  send_by_rows: true
+
+# ==============================
+# 故障检测参数
+# ==============================
+fault_detect:
+  timeout_ms: 2000             # 雷达数据超时阈值（毫秒）
+  power_on_timeout_ms: 20000   # 开机真空期超时阈值（毫秒）
+  zero_cloud_frames: 5         # 点云为0连续帧数阈值
+  time_sync_normal_modes: [0x00]  # PTP 正常时间同步模式列表（gps=0x00 ,gPTP=0x03, E2E-L4=0x01, P2P=0x02, E2E-L2=0x04）
+
+lidar:
+  - driver:
+      lidar_type: RSAIRY                # RS16, RS32, RSBP, RSAIRY, RSHELIOS, RSHELIOS_16P, RS128, RS80, RS48,
+                                        # RSP128, RSP80, RSP48, RSM1, RSM1_JUMBO, RSM2, RSM3, RSE1, RSMX
+      host_address: ""                  # 主机网卡地址, 留空时自动选取
+      group_address: 224.10.10.201      # 组播地址
+      msop_port: 6691                   # MSOP 端口
+      difop_port: 7781                  # DIFOP 端口
+      imu_port: 6681                    # IMU 端口（仅 RSAIRY/RSE1）
+      user_layer_bytes: 0
+      tail_layer_bytes: 0
+
+      min_distance: 0.2
+      max_distance: 60
+      use_lidar_clock: true             # true: 使用雷达时间戳; false: 使用系统时间戳
+      dense_points: true                # true: 丢弃 NAN 点
+      ts_first_point: true              # true: 帧时间戳为首点
+
+      start_angle: 0
+      end_angle: 360
+
+      split_frame_mode: 1          # -- 分帧模式设置，默认值为```1```。 1 -- 角度分帧 2 -- 固定block数分帧  3 -- 自定义block数分帧
+      split_angle: 180             # 用于分帧的角度(单位为度)， 在```split_frame_mode = 1``` 时才生效，默认值为```0```
+
+      # PCAP 模式参数（msg_source=3 时生效）
+      pcap_repeat: true
+      pcap_rate: 1.0
+      pcap_path: ""
+
+      # 默认外参，会被 extrinsics[<HWI_model>] 覆盖
+      x: 0.32028
+      y: 0
+      z: -0.013
+      roll: 0
+      pitch: -1.57079
+      yaw: -3.14159
+
+  - driver:
+      lidar_type: RSAIRY
+      host_address: ""
+      group_address: 224.10.10.202
+      msop_port: 6692
+      difop_port: 7782
+      imu_port: 6682
+      user_layer_bytes: 0
+      tail_layer_bytes: 0
+
+      min_distance: 0.2
+      max_distance: 60
+      use_lidar_clock: true
+      dense_points: true
+      ts_first_point: true
+
+      start_angle: 0
+      end_angle: 360
+
+      split_frame_mode: 1          # -- 分帧模式设置，默认值为```1```。 1 -- 角度分帧 2 -- 固定block数分帧  3 -- 自定义block数分帧
+      split_angle: 180             # 用于分帧的角度(单位为度)， 在```split_frame_mode = 1``` 时才生效，默认值为```0```
+
+      pcap_repeat: true
+      pcap_rate: 1.0
+      pcap_path: ""
+
+      x: -0.32028
+      y: 0
+      z: -0.013
+      roll: 0
+      pitch: -1.57079
+      yaw: 0
+
+# DDS 话题配置
+publish:
+  frame_id: lidar_link
+  point_cloud_topic: /LIDAR/POINTS       # 合并后或前雷达独立模式下的点云话题
+  point_cloud_topic2: /LIDAR/POINTS2     # send_separately=true 时后雷达点云话题
+  status_topic: /LIDAR/STATUS            # 雷达状态话题
+  brand_topic: /LIDAR_BRAND              # 多品牌互斥话题
+
+# ==============================
+# 各机型激光雷达外参配置
+# 程序启动时读取 HWI model 字段，匹配对应机型外参覆盖 lidar[N].driver 中的 x/y/z/roll/pitch/yaw
+# 未配置机型将使用 lidar[N].driver 中的默认值
+# lidar_index 对应 lidar 列表下标（0=前雷达, 1=后雷达）
+# ==============================
+extrinsics:
+  CD1:
+    - lidar_index: 0
+      x: 0.22341
+      y: 0
+      z: -0.0001
+      roll: 0
+      pitch: -1.5707
+      yaw: -3.14159
+    - lidar_index: 1
+      x: -0.22341
+      y: 0
+      z: -0.0001
+      roll: 0
+      pitch: -1.5707
+      yaw: 0
+  CC3:
+    - lidar_index: 0
+      x: 0.449
+      y: 0
+      z: -0.06138
+      roll: -1.5707
+      pitch: 0
+      yaw: -1.5707
+    - lidar_index: 1
+      x: -0.449
+      y: 0
+      z: -0.06138
+      roll: -1.5707
+      pitch: 0
+      yaw: 1.5707
+  CA9C:
+    - lidar_index: 0
+      x: 0.360
+      y: 0
+      z: -0.013
+      roll: -1.5707
+      pitch: 0
+      yaw: -1.5707
+    - lidar_index: 1
+      x: -0.360
+      y: 0
+      z: -0.013
+      roll: -1.5707
+      pitch: 0
+      yaw: 1.5707

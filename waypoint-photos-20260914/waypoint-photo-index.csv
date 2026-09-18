@@ -1,0 +1,31 @@
+provisional_wp,source_heic,preview_jpg,captured_cst,terrain_group,review_status
+WP01,IMG_6988.HEIC,WP01__IMG_6988.jpg,2026-09-14T14:43:58+08:00,flat_pavement,provisional
+WP02,IMG_6989.HEIC,WP02__IMG_6989.jpg,2026-09-14T14:44:21+08:00,grass,provisional
+WP03,IMG_6990.HEIC,WP03__IMG_6990.jpg,2026-09-14T14:44:44+08:00,gabion_ledge,needs_marker_confirmation
+WP04,IMG_6991.HEIC,WP04__IMG_6991.jpg,2026-09-14T14:45:40+08:00,narrow_ledge,provisional
+WP05,IMG_6992.HEIC,WP05__IMG_6992.jpg,2026-09-14T14:45:54+08:00,grass_transition,provisional
+WP06,IMG_6993.HEIC,WP06__IMG_6993.jpg,2026-09-14T14:46:19+08:00,pavement_edge,provisional
+WP07,IMG_6994.HEIC,WP07__IMG_6994.jpg,2026-09-14T14:46:55+08:00,asphalt_curve,provisional
+WP08,IMG_6995.HEIC,WP08__IMG_6995.jpg,2026-09-14T14:47:34+08:00,asphalt,provisional
+WP09,IMG_6996.HEIC,WP09__IMG_6996.jpg,2026-09-14T14:47:58+08:00,asphalt_branch,provisional
+WP10,IMG_6997.HEIC,WP10__IMG_6997.jpg,2026-09-14T14:48:18+08:00,asphalt_curve,provisional
+WP11,IMG_6998.HEIC,WP11__IMG_6998.jpg,2026-09-14T14:48:35+08:00,low_platform_obstacle,provisional
+WP12,IMG_6999.HEIC,WP12__IMG_6999.jpg,2026-09-14T14:48:52+08:00,stepped_platform,provisional
+WP13,IMG_7001.HEIC,WP13__IMG_7001.jpg,2026-09-14T14:49:11+08:00,plaza_flat,provisional
+WP14,IMG_7002.HEIC,WP14__IMG_7002.jpg,2026-09-14T14:49:29+08:00,plaza_turn,provisional
+WP15,IMG_7003.HEIC,WP15__IMG_7003.jpg,2026-09-14T14:49:47+08:00,rock_garden_entry,needs_marker_confirmation
+WP16,IMG_7004.HEIC,WP16__IMG_7004.jpg,2026-09-14T14:50:23+08:00,rock_garden_approach,provisional
+WP17,IMG_7005.HEIC,WP17__IMG_7005.jpg,2026-09-14T14:50:36+08:00,rock_step,provisional
+WP18,IMG_7006.HEIC,WP18__IMG_7006.jpg,2026-09-14T14:50:48+08:00,loose_rock,provisional
+WP19,IMG_7007.HEIC,WP19__IMG_7007.jpg,2026-09-14T14:51:12+08:00,rock_grass_transition,provisional
+WP20,IMG_7008.HEIC,WP20__IMG_7008.jpg,2026-09-14T14:51:24+08:00,terrain_exit,provisional
+WP21,IMG_7009.HEIC,WP21__IMG_7009.jpg,2026-09-14T14:51:53+08:00,step_approach,provisional
+WP22,IMG_7010.HEIC,WP22__IMG_7010.jpg,2026-09-14T14:52:11+08:00,step_sequence,provisional
+WP23,IMG_7011.HEIC,WP23__IMG_7011.jpg,2026-09-14T14:52:32+08:00,step_exit_or_link,needs_direction_confirmation
+WP24,IMG_7012.HEIC,WP24__IMG_7012.jpg,2026-09-14T14:52:56+08:00,stairs,provisional
+WP25,IMG_7013.HEIC,WP25__IMG_7013.jpg,2026-09-14T14:53:21+08:00,stairs_contact,provisional
+WP26,IMG_7014.HEIC,WP26__IMG_7014.jpg,2026-09-14T14:53:41+08:00,stair_landing,provisional
+WP27,IMG_7015.HEIC,WP27__IMG_7015.jpg,2026-09-14T14:54:04+08:00,curved_stairs,provisional
+WP28,IMG_7016.HEIC,WP28__IMG_7016.jpg,2026-09-14T14:54:24+08:00,stairs_exit,provisional
+WP29,IMG_7017 2.HEIC,WP29__IMG_7017-2.jpg,2026-09-14T14:54:39+08:00,finish_approach,provisional
+WP30,IMG_7018 2.HEIC,WP30__IMG_7018-2.jpg,2026-09-14T14:54:55+08:00,finish,provisional

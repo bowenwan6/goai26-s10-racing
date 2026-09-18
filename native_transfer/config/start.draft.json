@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "map_id": "0914_fr_v3-20260914-142008",
+    "z_reference": "ground",
+    "status": "DRAFT; field XYZ reference, corridor and staging clearance unverified",
+    "scope": "Start through Area B upper landing; no post-B extension",
+    "kind_semantics": "gait for incoming segment; switch at previous target",
+    "body_clearance_margin_m": 0.7,
+    "landing_flat_station_intervals": [
+      [
+        7.762500000000001,
+        9.512500000000001
+      ],
+      [
+        15.1875,
+        15.762500000000003
+      ]
+    ],
+    "upper_flat_starts_at_station": 24.437500000000004,
+    "ground_z_method": "interpolate existing simulation-route ground heights; field check required",
+    "sources": {
+      "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/course_full.yaml": "b8c4cfa53e7ac78b67556228ac5dcf40dea18aabc15086d0aed519d0499f4bcc",
+      "map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/delivery/repair_report.json": "5c486a6f915ff2d16d75e1043685e977d086b6994f9a66bb1d54a146d9d1e530"
+    }
+  },
+  "waypoints": [
+    {
+      "index": 0,
+      "position": [
+        0.0,
+        0.5,
+        -0.42930552770514474
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "index": 1,
+      "position": [
+        4.0,
+        0.5,
+        -0.35352293427957093
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "index": 2,
+      "position": [
+        8.0,
+        0.5,
+        -0.4201891359733825
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "index": 3,
+      "position": [
+        10.5,
+        1.4,
+        -0.3786498725896159
+      ],
+      "kind": "flat",
+      "b_station": null
+    },
+    {
+      "position": [
+        12.891745794,
+        2.056971555,
+        -0.3486563870191688
+      ],
+      "kind": "flat",
+      "b_station": 0.0,
+      "staging_candidate": false,
+      "index": 4
+    }
+  ]
+}

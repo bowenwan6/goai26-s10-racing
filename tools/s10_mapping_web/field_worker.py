@@ -13,7 +13,8 @@ import threading
 import time
 
 from field_core import (DEFAULT_ROOT, FieldError, Store, binding, canonical, exclusive,
-                        finite_list, ident, localization_reasons, pose_summary)
+                        finite_list, ident, localization_reasons, localization_start_reasons, pose_summary)
+from waypoint_review import REVISIT_SECONDS, REFERENCE_LIMITS, source_compatible, strict_stationary, compare, comparison_svg
 
 # The robot's overlay environment cannot reliably create systemd RuntimeDirectory.
 # Use the existing private data root, with the same default for server and RPC.
@@ -45,6 +46,23 @@ class Engine:
 
     def rpc(self, request):
         action = request.get('action')
+        if action == 'imu_diag':
+            diagnostic = getattr(self.adapter, 'imu_diag', None)
+            if diagnostic is None:
+                raise FieldError(getattr(self.adapter, 'imu_diag_error', None) or
+                                 '此worker尚未安装真实IMU诊断；不会自动使用模拟值', 'unavailable')
+            payload = request.get('request')
+            if not isinstance(payload, dict):
+                raise FieldError('诊断请求格式无效')
+            return diagnostic.rpc(payload)
+        if action == 'dashboard':
+            # One SSH/RPC round trip, rather than ageing live data behind several queries.
+            listing = self.rpc(dict(action='list', session_id=request.get('session_id')))
+            try:
+                live, error = self.adapter.snapshot(), None
+            except Exception as exc:
+                live, error = None, str(exc)
+            return dict(health=self.rpc(dict(action='health')), live=live, live_error=error, listing=listing)
         if action == 'submit':
             # Serialize reservation with legacy mapping start/save. A retry of an
             # already reserved key is still discoverable while that job runs.
@@ -60,13 +78,21 @@ class Engine:
             with exclusive(self.lock_path):
                 return self.store.submit(payload)
         if action == 'list':
-            return dict(jobs=self.store.jobs(request.get('session_id')), demo=self.adapter.demo)
+            sid = request.get('session_id')
+            jobs = self.store.jobs(sid)
+            eligible = {sid: self.store.session(sid).get('eligible_check')
+                        for sid in {job['session_id'] for job in jobs}}
+            return dict(jobs=jobs, eligible_checks=eligible, demo=self.adapter.demo,
+                        active_job=self.store.active_job(),
+                        sessions=self.store.session_headers(),
+                        session=self.store.session(sid) if sid else None,
+                        overview=self.overview(sid) if sid else None)
         if action == 'job':
             return self.store.job(request.get('job_id'))
         if action == 'session':
             return self.store.session(request.get('session_id'))
         if action == 'health':
-            return dict(worker=True, demo=self.adapter.demo, storage=str(self.store.root),
+            return dict(worker=True, demo=self.adapter.demo, ui_contract=2, features=['waypoint_revisit_v1','field_workflow_v2'], storage=str(self.store.root),
                         warning='演示模式：所有数据是模拟的，不可用于现场验收' if self.adapter.demo else '不控制行走或停车')
         if action == 'preview':
             session = self.store.session(request.get('session_id'))
@@ -91,6 +117,37 @@ class Engine:
             return dict(offset=offset, data=base64.b64encode(raw).decode(), eof=offset+len(raw) >= info['size'])
         raise FieldError('不支持的 worker RPC')
 
+    def overview(self, session_id):
+        # History on screen is bounded; counts and reports must cover the whole session.
+        jobs = self.store.jobs(session_id, limit=None)
+        points = []
+        for job in reversed(jobs):
+            result = job.get('result') or {}
+            if job['action'] == 'waypoint' and job['state'] == 'SUCCEEDED' and result.get('pose', {}).get('passed'):
+                points.append(dict(job_id=job['id'], created=job['created'], name=result['name'],
+                                   floor=result.get('floor'), xyz=result['pose']['xyz'],
+                                   yaw=result['pose'].get('yaw'), marker_note=result.get('marker_note', ''),
+                                   draft=result.get('draft', True), binding=result.get('binding')))
+        def latest(action):
+            row = next((j for j in jobs if j['action'] == action), None)
+            if row:
+                row = dict(row)
+                row['result'] = {k: v for k, v in (row.get('result') or {}).items() if k != 'snapshot'}
+            return row
+        session = self.store.session(session_id)
+        eligible = session.get('eligible_check')
+        report = latest('finish')
+        names = [p['name'] for p in points]
+        revisits = [dict(job_id=j['id'], created=j['created'], **{k:(j['result'] or {}).get(k) for k in
+                    ('source_waypoint_id','source_name','metrics','within_reference','reference_verified','binding')})
+                    for j in reversed(jobs) if j['action']=='waypoint_revisit' and j['state']=='SUCCEEDED']
+        return dict(total_jobs=len(jobs), saved_points=points, saved_waypoint_count=len(points),
+                    revisits=revisits, revisit_count=len(revisits), latest_revisit=latest('waypoint_revisit'),
+                    duplicate_names=sorted({name for name in names if names.count(name) > 1}),
+                    selfcheck=latest('selfcheck'), report=report,
+                    eligible_job=self.store.job(eligible) if eligible else None,
+                    report_outdated=bool(report and any(j['action'] != 'finish' and j['created'] > report['created'] for j in jobs)))
+
     def stage(self, job, message):
         self.store.update(job['id'], stage=message)
 
@@ -107,24 +164,24 @@ class Engine:
         try:
             snap = self.adapter.snapshot()
         except Exception:
-            self.store.update_session(session['id'], approved_check=None, approved_at=None)
+            self.store.revoke_checks(session['id'])
             raise
         if snap.get('map_name') != session['target']:
-            self.store.update_session(session['id'], approved_check=None, approved_at=None)
+            self.store.revoke_checks(session['id'])
             raise FieldError('当前图不是本次目标图')
         if require_good:
             reasons = localization_reasons(snap, session.get('binding'))
             if not session.get('binding'):
                 reasons.append('尚未保存当前目标地图与定位会话绑定')
             if reasons:
-                self.store.update_session(session['id'], approved_check=None, approved_at=None)
+                self.store.revoke_checks(session['id'])
                 raise FieldError('；'.join(reasons))
         return snap
 
     def approved(self, session):
         snap = self.current(session)
         check_id = session.get('approved_check')
-        if not check_id:
+        if not check_id or self.store.session(session['id']).get('eligible_check') != check_id:
             raise FieldError('先完成静止检查并人工核对实时叠合')
         check = self.store.job(check_id)
         result = check.get('result') or {}
@@ -133,7 +190,7 @@ class Engine:
         if result.get('binding') != binding(snap):
             raise FieldError('确认后地图/定位会话已改变；请重新静止检查')
         if session.get('approved_calibration') != self.calibration_identity():
-            self.store.update_session(session['id'], approved_check=None, approved_at=None)
+            self.store.revoke_checks(session['id'])
             raise FieldError('标定/参考点配置已变化，需要重新检查和确认')
         # Human confirmation is bounded; new observations still gate every action.
         age = time.time()-session.get('approved_at', 0)
@@ -150,11 +207,11 @@ class Engine:
             ids = [r[0] for r in db.execute('SELECT id FROM sessions')]
         for session_id in ids:
             session = self.store.session(session_id)
-            if session.get('approved_check'):
+            if session.get('approved_check') or session.get('eligible_check'):
                 try:
                     self.current(session)
                 except Exception:
-                    self.store.update_session(session_id, approved_check=None, approved_at=None)
+                    self.store.revoke_checks(session_id)
 
     def execute(self, job_id):
         job = self.store.job(job_id)
@@ -165,9 +222,16 @@ class Engine:
                 self.store.update(job_id, state='RUNNING', stage='开始执行（手机断线不取消任务）')
                 result = self.perform(job)
                 result['demo'] = self.adapter.demo
+                self.store.update(job_id, stage='检查结束，正在保存结果文件；请等待最终结果')
                 self.evidence(job, 'result.json', result)
                 self.store.update(job_id, state='SUCCEEDED', stage='任务完成；请阅读质量结论', result=result)
         except Exception as exc:
+            if getattr(exc, 'details', None) is not None:
+                try:
+                    self.evidence(job, 'failure-diagnostics.json', exc.details)
+                except Exception:
+                    # A failed evidence write must never convert the failed operation into success.
+                    pass
             self.store.update(job_id, state='FAILED', stage='检查/操作失败，未自动重试', error=str(exc))
         return self.store.job(job_id)
 
@@ -181,13 +245,13 @@ class Engine:
             snap = self.adapter.snapshot()
             updates = dict(last_selfcheck=job['id'])
             if session.get('binding') != binding(snap):
-                updates.update(binding=binding(snap), approved_check=None, approved_at=None)
+                updates.update(binding=binding(snap), eligible_check=None, approved_check=None, approved_at=None)
             self.store.update_session(session['id'], **updates)
             return result
         if action == 'load_map':
             # Clearing approval before any external operation prevents a response
             # loss or partial vendor failure from leaving an old green light.
-            self.store.update_session(session['id'], approved_check=None, approved_at=None)
+            self.store.revoke_checks(session['id'])
             result = self.adapter.load_map(session['target'], progress)
             snap = self.adapter.snapshot()
             if snap.get('map_name') != session['target']:
@@ -197,14 +261,26 @@ class Engine:
                           next='加载不代表定位成功；继续 30 秒静止检查和人工叠合确认')
             return result
         if action == 'localization_check':
-            snap = self.current(session)
-            progress('连续采样 30 秒；源时间相同的重复样本不计数')
+            # A new attempt supersedes old evidence even if it fails or raises.
+            self.store.revoke_checks(session['id'])
+            snap = self.current(session, require_good=False)
+            setup = localization_start_reasons(snap, session.get('binding'))
+            if not session.get('binding'):
+                setup.append('先重新自检绑定当前地图/设备/定位会话')
+            if setup:
+                raise FieldError('；'.join(setup))
+            progress('连续诊断30秒；允许异常时检查，检查不等于修复定位，也不自动通过')
             samples = self.adapter.sample(30, progress)
             result = pose_summary(samples, 30, binding(snap))
+            after = self.adapter.snapshot()
+            result['reasons'] = list(dict.fromkeys(result['reasons']+localization_reasons(after, binding(snap))))
+            result['passed'] = not result['reasons']
             result.update(binding=binding(snap), human_confirmed=False,
+                          inspection_only=True, before_status=snap.get('status'), after_status=after.get('status'),
                           limitation='静止稳定不是全场精度或碰撞安全证明')
-            self.store.update_session(session['id'], approved_check=None, approved_at=None)
             self.evidence(job, 'localization-samples.json', samples)
+            if result['passed']:
+                self.store.update_session(session['id'], eligible_check=job['id'])
             return result
         if action == 'confirm_overlay':
             snap = self.current(session)
@@ -213,6 +289,8 @@ class Engine:
             age = time.time()-check['updated']
             if check['action'] != 'localization_check' or check['session_id'] != session['id'] or check['state'] != 'SUCCEEDED' or not r.get('passed'):
                 raise FieldError('只能确认本会话已通过的静止检查')
+            if self.store.session(session['id']).get('eligible_check') != check['id']:
+                raise FieldError('静止检查已失效或被新检查取代；请重新检查30秒并核对叠合')
             if r.get('binding') != binding(snap) or not 0 <= age <= 300:
                 raise FieldError('检查已过期（5 分钟）或地图/会话变化，需要重新检查')
             # Require current same-frame live scan and an identity-bound map
@@ -229,8 +307,7 @@ class Engine:
             valid_points = isinstance(points, list) and bool(points) and all(finite_list(p, 3) for p in points)
             if preview.get('map_identity') != snap['map_identity'] or cloud.get('frame') != 'map' or cloud.get('error') or not valid_points or not valid_time:
                 raise FieldError('当前地图/扫描叠合不可用或不同步，不能确认')
-            self.store.update_session(session['id'], approved_check=check['id'], approved_at=time.time(),
-                                      approved_calibration=self.calibration_identity())
+            self.store.approve_eligible_check(session['id'], check['id'], self.calibration_identity())
             return dict(confirmed=True, check_id=check['id'], binding=binding(snap), expires_s=1800)
         if action == 'record':
             snap = self.approved(session)
@@ -262,17 +339,50 @@ class Engine:
             if not draft and not calibrated:
                 raise FieldError('参考点/外参未核实：仅能保存位置草稿，不能生成有效导航航点')
             return dict(name=params['name'], floor=params.get('floor', '未填写'), segment='flat',
+                        marker_note=params.get('marker_note', ''),
                         navigation_valid=not draft and calibrated, draft=draft,
                         binding=binding(snap), pose=quality, calibration=calibration,
                         calibration_identity=calibration_identity,
                         note='Z 是机器人参考点高度，不是地面；不同楼层不自动连线')
+        if action == 'waypoint_revisit':
+            snap = self.approved(session)
+            source_job = self.store.job(params['waypoint_id'])
+            if (source_job['session_id'] != session['id'] or source_job['action'] != 'waypoint'
+                    or source_job['state'] != 'SUCCEEDED'):
+                raise FieldError('只能复测本会话成功保存的原航点；请恢复该点所在会话，不能仅凭同名匹配')
+            source = source_job['result'] or {}
+            calibration_id = self.calibration_identity()
+            source_compatible(source, snap, calibration_id)
+            progress('在所选实体标记附近停稳，连续采样5秒；无需与原位置/朝向完全一致，不控制行走')
+            samples = self.adapter.sample(REVISIT_SECONDS, progress)
+            self.evidence(job, 'revisit-samples.json', dict(source_waypoint_id=source_job['id'],
+                          before=snap, samples=samples, human_confirmation=params))
+            quality = pose_summary(samples, REVISIT_SECONDS, binding(snap))
+            strict_stationary(quality, samples)
+            if any(quality.get(k) != source['pose'].get(k) for k in ('frame', 'child_frame')):
+                raise FieldError('复测采样的定位参考帧与原航点不同，不能比较')
+            after = self.approved(session)
+            if binding(after) != binding(snap) or calibration_id != self.calibration_identity():
+                raise FieldError('采样期间地图、定位会话或参考点配置改变，复测不可比')
+            source_compatible(source, after, calibration_id)
+            result = compare(source, quality, binding(snap), params.get('reference_note', '未填写'), params.get('ruler_offset_cm'), params.get('alignment_mode', 'nearby'))
+            result.update(source_waypoint_id=source_job['id'], source_name=source['name'],
+                          source_created=source_job['created'], source_floor=source.get('floor'),
+                          source_marker_note=source.get('marker_note', ''), calibration_identity=calibration_id, demo=self.adapter.demo)
+            self.evidence(job, 'waypoint-revisit.json', result)
+            root = self.store.root/'jobs'/job['id']
+            drawing = root/'revisit-xy.svg'
+            with drawing.open('x', encoding='utf-8') as f:
+                f.write(comparison_svg(result)); f.flush(); os.fsync(f.fileno())
+            self.store.artifact(job['id'], drawing)
+            return result
         if action == 'finish':
             progress('汇总实际结果、缺项与产物校验；不发送停车命令')
             return self.finish(job, session)
         raise FieldError('无效任务')
 
     def finish(self, job, session):
-        jobs = self.store.jobs(session['id'])
+        jobs = self.store.jobs(session['id'], limit=None)
         try:
             snap = self.adapter.snapshot()
         except Exception as exc:
@@ -284,9 +394,15 @@ class Engine:
         except Exception as exc:
             reasons.append(str(exc))
         points = []
+        drafts = []
+        saved_count = 0
         kinds = set()
         for item in reversed(jobs):
             result = item.get('result') or {}
+            if item['action'] == 'waypoint' and item['state'] == 'SUCCEEDED' and result.get('pose', {}).get('passed'):
+                saved_count += 1
+                if result.get('draft'):
+                    drafts.append(dict(result, source_job_id=item['id']))
             if item['state'] != 'SUCCEEDED' or result.get('binding') != current_binding:
                 continue
             if (item['action'] == 'waypoint' and result.get('navigation_valid')
@@ -302,14 +418,25 @@ class Engine:
         if len({p['floor'] for p in points}) > 1 or any(p['floor'] == '未填写' for p in points):
             reasons.append('楼层未明确或跨楼层；不生成自动连接路线')
         passed = not reasons and not self.adapter.demo
+        revisits = [dict(job_id=item['id'], created=item['created'], state=item['state'],
+                         source_waypoint_id=item['request']['params']['waypoint_id'],
+                         error=item.get('error'), result=item.get('result'))
+                    for item in reversed(jobs) if item['action']=='waypoint_revisit']
         report = dict(passed=passed, demo=self.adapter.demo, session=session, binding=current_binding,
                       reasons=reasons, valid_waypoint_count=len(points), recordings=sorted(kinds),
+                      saved_waypoint_count=saved_count, draft_waypoint_count=len(drafts),
+                      revisit_count=sum(r['state']=='SUCCEEDED' for r in revisits),
+                      report_scope='整个会话；历史/其他绑定的草稿保留原身份，不自动拼接为导航路线',
                       jobs=jobs, no_motion_commands=True,
                       next='先做离线影子回放与人工路线审阅，尚未授权自主运动')
         self.evidence(job, 'field-report.json', report)
         # Route is deliberately not an executable controller configuration.
         self.evidence(job, 'waypoints-review.json', dict(navigation_ready=False, field_checks_passed=passed,
-                      requires_human_route_review=True, map_binding=current_binding, waypoints=points))
+                      requires_human_route_review=True, map_binding=current_binding, waypoints=points,
+                      draft_waypoints=drafts))
+        self.evidence(job, 'waypoint-revisits.json', dict(absolute_accuracy_verified=False,navigation_ready=False,demo=self.adapter.demo,
+                      reference_limits=REFERENCE_LIMITS, trials=revisits,
+                      note='原WP未覆盖；跨会话记录保留各自身份，不合并为导航授权'))
         return {k: v for k, v in report.items() if k not in ('jobs', 'session')}
 
 
@@ -347,7 +474,7 @@ def run(root, socket_path, adapter, lock_path=OPERATION_LOCK):
         with store.connect() as db:
             sessions = [r[0] for r in db.execute('SELECT id FROM sessions')]
         for session_id in sessions:
-            store.update_session(session_id, approved_check=None, approved_at=None)
+            store.revoke_checks(session_id)
         socket_path = Path(socket_path)
         socket_path.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
         parent_stat = socket_path.parent.stat()

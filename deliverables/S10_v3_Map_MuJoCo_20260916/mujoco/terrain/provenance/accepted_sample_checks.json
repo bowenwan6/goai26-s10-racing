@@ -1,0 +1,54 @@
+{
+  "status": "START_SAMPLE_FOR_SHAPE_REVIEW_NOT_FIELD_ACCEPTED",
+  "roi_xy": [
+    3,
+    8,
+    -1.1,
+    1.4
+  ],
+  "area_roi_m2": 12.5,
+  "source_points": 71829,
+  "source_frames": 96,
+  "vertices": 1626,
+  "triangles": 2669,
+  "pavement_triangles": 1200,
+  "transition_triangles": 1469,
+  "numerical_sliver_area_removed_m2": 1.1482692668528078e-10,
+  "plane_internal_max_error_m": 1.0547118733938987e-15,
+  "all_faces_upward": true,
+  "self_intersecting": false,
+  "edge_manifold_allow_boundary": true,
+  "vertex_manifold": true,
+  "support_nearest_xy_p50_p95_max_m": [
+    0.008634236051854855,
+    0.03052229853974376,
+    0.10456967702380815
+  ],
+  "support_unknown_road_area_m2": 0.08436810530483572,
+  "support_mask_raw_area_m2": 0.08375000000000024,
+  "support_mask_topology_expansion_m": 0.0001,
+  "support_mask_clipped_before_triangulation": true,
+  "unknown_island_area_m2": 0.001216016245001777,
+  "old_road_area_in_roi_m2": 12.080540702439963,
+  "requested_model_domain_road_m2": 12.098238425674545,
+  "model_road_area_m2": 12.013870320369698,
+  "raw_source_residuals": {
+    "count": 64491,
+    "p50_p95_max_m": [
+      0.024733847221361238,
+      0.10130121501063258,
+      0.2768486218847871
+    ]
+  },
+  "root_cause_audit": false,
+  "IMU_assumed_normal": true,
+  "MuJoCo_not_run": true,
+  "gate": "User approves sample shape/detail before completing Start and short post-B platform",
+  "assumptions": [
+    "Local pavement plane retains 1.9-degree overall slope",
+    "Single convex front boundary regularized from low-return profiles",
+    "Raised band pooled monotone profile is not proven concrete or soil dimensions",
+    "Photos only semantic reference, not registered geometry",
+    "No field dimensions independently measured"
+  ]
+}

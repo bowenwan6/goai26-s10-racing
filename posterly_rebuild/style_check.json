@@ -1,0 +1,90 @@
+{
+  "gate": "style",
+  "status": "WARN",
+  "rules": [
+    {
+      "id": 1,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 2,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 3,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 4,
+      "severity": "hard",
+      "status": "SKIPPED",
+      "detail": "disabled via --disable (rule 4)"
+    },
+    {
+      "id": 5,
+      "severity": "hard",
+      "status": "SKIPPED",
+      "detail": "disabled via --disable (rule 5)"
+    },
+    {
+      "id": 6,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 7,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 8,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 9,
+      "severity": "warn",
+      "status": "PASS",
+      "detail": "9 --fs-* token(s) defined"
+    },
+    {
+      "id": 10,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 11,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 12,
+      "severity": "warn",
+      "status": "WARN",
+      "detail": "dark (L<0.18) backgrounds cover 8.0% of the poster (> 8% threshold); large dark slabs read as 'kitsch'. Lighten or shrink them."
+    },
+    {
+      "id": 13,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": 14,
+      "severity": "hard",
+      "status": "PASS",
+      "detail": "ok"
+    }
+  ]
+}

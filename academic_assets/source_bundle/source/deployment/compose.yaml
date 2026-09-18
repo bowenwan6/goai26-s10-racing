@@ -1,0 +1,26 @@
+name: goai26-s10-racing
+
+services:
+  s10:
+    build:
+      context: ./docker
+    image: s10-racing:dev
+    working_dir: /ws
+    stdin_open: true
+    tty: true
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-1}
+      S10_USE_VIEWER: ${S10_USE_VIEWER:-0}
+      S10_BUILD_BASE: /opt/s10-build/build
+      S10_INSTALL_BASE: /opt/s10-build/install
+      S10_LOG_BASE: /opt/s10-build/log
+      S10_UPSTREAM_OFFLINE: ${S10_UPSTREAM_OFFLINE:-0}
+      S10_UPSTREAM_REF: ${S10_UPSTREAM_REF:-13dd084be6cb5e2514098bc87e586d00dfe580b2}
+      S10_UPSTREAM_URL: ${S10_UPSTREAM_URL:-https://github.com/DeepRoboticsLab/goai_embodied_future_material.git}
+    volumes:
+      - .:/ws
+      - s10-build:/opt/s10-build
+
+volumes:
+  s10-build:
+    name: ${BUILD_VOLUME:-s10-racing-build}

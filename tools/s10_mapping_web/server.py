@@ -26,10 +26,47 @@ csrf = secrets.token_urlsafe(24)
 login_cookie = secrets.token_urlsafe(32)
 config = {}
 field_transport = None
+native_transport = None
+imu_state = dict(online=False, error='等待连接IMU诊断采集器', rows=[])
+imu_last_view = 0.
+imu_thread = None
+
+
+def imu_call(request):
+    return field_call(dict(action='imu_diag', request=request))
+
+
+def read_imu_stream():
+    global imu_state
+    history = deque(maxlen=3600)
+    epoch = None
+    while True:
+        if time.monotonic()-imu_last_view > 30:
+            time.sleep(.5); continue
+        try:
+            with connect() as client:
+                stdin, stdout, stderr = client.exec_command('s10-mapping', timeout=12)
+                stdin.write('{"action":"imu_diag_stream"}\n'); stdin.flush(); stdin.channel.shutdown_write()
+                for line in stdout:
+                    if time.monotonic()-imu_last_view > 30:break
+                    if not line.startswith('S10_RESULT '):continue
+                    row=json.loads(line[11:])
+                    if epoch != row['epoch']:history.clear();epoch=row['epoch']
+                    last_seq=history[-1]['seq'] if history else 0
+                    history.extend(b for b in row['rows'] if b['seq']>last_seq)
+                    with guard:imu_state=dict(row,rows=list(history),online=True,received=time.monotonic())
+                if time.monotonic()-imu_last_view <= 30:raise RuntimeError('IMU诊断连接已退出')
+        except Exception as exc:
+            with guard:imu_state.update(online=False,error=str(exc))
+            time.sleep(2)
 
 
 def field_call(request):
     return field_transport(request) if field_transport is not None else call('field', request=request)
+
+
+def native_call(request):
+    return native_transport(request) if native_transport is not None else call('native_nav', request=request)
 
 
 def error_status(exc):
@@ -165,13 +202,21 @@ class Handler(BaseHTTPRequestHandler):
         global last_view, last_height_view
         if self.path == '/':
             return self.reply(200, (HERE/'index.html').read_bytes(), 'text/html; charset=utf-8')
-        if self.path in ('/localization', '/heightmap', '/field'):
-            page = HERE/(self.path[1:]+'.html' if self.authenticated() else 'index.html')
+        if self.path in ('/localization', '/heightmap', '/field', '/imu-check', '/native-nav'):
+            page = HERE/({'/imu-check': 'imu_diag.html', '/native-nav': 'native_nav.html'}.get(self.path, self.path[1:]+'.html') if self.authenticated() else 'index.html')
             if not page.is_file():
                 return self.reply(404, dict(detail='当前地图的定位页面尚未准备'))
             return self.reply(200, page.read_bytes(), 'text/html; charset=utf-8')
         if not self.authenticated():
             return self.reply(401, dict(detail='请登录'))
+        if self.path == '/native_nav.js':
+            return self.reply(200, (HERE/'native_nav.js').read_bytes(), 'text/javascript; charset=utf-8')
+        if self.path.startswith('/phone/native/'):
+            return self.native_get()
+        if self.path == '/imu_diag.js':
+            return self.reply(200, (HERE/'imu_diag.js').read_bytes(), 'text/javascript; charset=utf-8')
+        if self.path.startswith('/phone/imu/'):
+            return self.imu_get()
         if self.path == '/field.js':
             return self.reply(200, (HERE/'field.js').read_bytes(), 'text/javascript; charset=utf-8')
         if self.path.startswith('/phone/field/'):
@@ -217,6 +262,20 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, dict(message='已登录'), cookie=f's10={login_cookie}; HttpOnly; SameSite=Strict; Path=/')
             if not self.authenticated() or not hmac.compare_digest(self.headers.get('X-CSRF-Token', ''), csrf):
                 return self.reply(403, dict(detail='请刷新页面重新登录'))
+            if self.path == '/phone/native/submit':
+                try:
+                    if body.get('action') not in ('submit', 'cancel', 'heartbeat'):
+                        raise FieldError('无效导航操作')
+                    return self.reply(202, native_call(body))
+                except Exception as exc:
+                    return self.reply(error_status(exc), dict(detail=str(exc), code=getattr(exc, 'code', 'unavailable')))
+            if self.path == '/phone/imu/submit':
+                try:
+                    if body.get('action') not in ('start','stop','event','zero_start','zero_clear'):
+                        raise FieldError('此入口仅允许诊断采集、标记事件或本次显示参考复零；不允许硬件校准')
+                    return self.reply(202, imu_call(body))
+                except Exception as exc:
+                    return self.reply(error_status(exc), dict(detail=str(exc)))
             if self.path == '/phone/field/submit':
                 try:
                     return self.reply(202, field_call(dict(action='submit', request=body)))
@@ -249,11 +308,28 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+    def native_get(self):
+        try:
+            parsed = urlsplit(self.path)
+            params = parse_qs(parsed.query, strict_parsing=True)
+            if parsed.path == '/phone/native/status' and not params:
+                result = native_call(dict(action='status'))
+                return self.reply(200, dict(result, csrf=csrf))
+            if parsed.path == '/phone/native/report' and set(params) == {'id'} and len(params['id']) == 1:
+                from re import fullmatch
+                if not fullmatch('[a-f0-9]{32}', params['id'][0]):
+                    raise FieldError('测试编号无效')
+                return self.reply(200, native_call(dict(action='report', id=params['id'][0])))
+            raise FieldError('无效导航查询')
+        except Exception as exc:
+            return self.reply(error_status(exc), dict(detail=str(exc), code=getattr(exc, 'code', 'unavailable')))
+
     def field_get(self):
         try:
             parsed = urlsplit(self.path)
             path, params = parsed.path, parse_qs(parsed.query, strict_parsing=True)
             allowed = {'/phone/field/list': ('list', 'session_id'),
+                       '/phone/field/dashboard': ('dashboard', 'session_id'),
                        '/phone/field/job': ('job', 'job_id'),
                        '/phone/field/session': ('session', 'session_id'),
                        '/phone/field/preview': ('preview', 'session_id')}
@@ -271,9 +347,12 @@ class Handler(BaseHTTPRequestHandler):
                 request = dict(action=action)
                 if key in params:
                     request[key] = ident(params[key][0])
-                elif action != 'list':
+                elif action not in ('list', 'dashboard'):
                     raise FieldError('缺少查询编号')
-                return self.reply(200, field_call(request))
+                result = field_call(request)
+                if action == 'dashboard':
+                    result['health']['csrf'] = csrf
+                return self.reply(200, result)
             if path == '/phone/field/download':
                 if set(params) != {'artifact_id'} or len(params['artifact_id']) != 1:
                     raise FieldError('产物编号无效')
@@ -282,9 +361,37 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as exc:
             return self.reply(error_status(exc), dict(detail=str(exc), code=getattr(exc, 'code', 'unavailable')))
 
-    def download(self, artifact_id):
+    def imu_get(self):
+        global imu_last_view, imu_thread
+        try:
+            parsed=urlsplit(self.path);params=parse_qs(parsed.query,strict_parsing=True)
+            if any(len(v)!=1 for v in params.values()):raise FieldError('重复参数')
+            if parsed.path=='/phone/imu/live':
+                if set(params)-{'cursor'}:raise FieldError('未知参数')
+                value=params.get('cursor',['0'])[0]
+                if not value.isdigit() or len(value)>12:raise FieldError('游标无效')
+                imu_last_view=time.monotonic()
+                with guard:
+                    if imu_thread is None:
+                        imu_thread=threading.Thread(target=read_imu_stream,daemon=True);imu_thread.start()
+                    row=dict(imu_state,csrf=csrf,transport_age=imu_last_view-imu_state.get('received',0))
+                    row['rows']=[b for b in imu_state.get('rows',[]) if b['seq']>int(value)][-600:]
+                    if row['transport_age']>2:row['online']=False
+                return self.reply(200,row)
+            if parsed.path=='/phone/imu/list':
+                if params:raise FieldError('未知参数')
+                return self.reply(200,imu_call(dict(action='list')))
+            if parsed.path in ('/phone/imu/report','/phone/imu/download'):
+                if set(params)!={'id'}:raise FieldError('需要诊断编号')
+                sid=ident(params['id'][0])
+                if parsed.path.endswith('download'):return self.download(sid,provider=imu_call)
+                return self.reply(200,imu_call(dict(action='report',id=sid)))
+            return self.reply(404,dict(detail='没有这个诊断接口'))
+        except Exception as exc:return self.reply(error_status(exc),dict(detail=str(exc)))
+
+    def download(self, artifact_id, provider=field_call):
         import re
-        info = field_call(dict(action='artifact_info', artifact_id=artifact_id))
+        info = provider(dict(action='artifact_info', artifact_id=artifact_id))
         size = info['size']
         start, end, partial = 0, size-1, False
         value = self.headers.get('Range')
@@ -311,7 +418,7 @@ class Handler(BaseHTTPRequestHandler):
             offset = start
             while offset <= end:
                 length = min(262144, end-offset+1)
-                chunk = field_call(dict(action='artifact_read', artifact_id=artifact_id, offset=offset, length=length))
+                chunk = provider(dict(action='artifact_read', artifact_id=artifact_id, offset=offset, length=length))
                 raw = base64.b64decode(chunk['data'], validate=True)
                 if chunk['offset'] != offset or len(raw) != length:
                     raise RuntimeError('下载数据范围与请求不符')

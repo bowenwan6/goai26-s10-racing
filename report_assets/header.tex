@@ -1,0 +1,54 @@
+\usepackage{xeCJK}
+\setCJKmainfont{Songti SC}
+\setCJKsansfont{Heiti SC}
+\setCJKmonofont{Heiti SC}
+\usepackage{graphicx,multicol,placeins,tocloft}
+\usepackage{titlesec,needspace,seqsplit,fancyhdr,caption,fvextra,etoolbox}
+\definecolor{ReportNavy}{HTML}{18384C}
+\definecolor{ReportTeal}{HTML}{236A78}
+\definecolor{ReportGray}{HTML}{657582}
+\definecolor{ReportRule}{HTML}{D9E2E7}
+\definecolor{ReportCode}{HTML}{F3F6F8}
+\AtBeginDocument{\hypersetup{colorlinks=true,linkcolor=ReportNavy,urlcolor=ReportTeal,bookmarksopen=true,bookmarksdepth=2,pdftitle={Lynx S10 地形感知自主导航与残差越障控制},pdfauthor={GOAI LAI / 狗來}}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}GOAI LAI / Lynx S10}
+\fancyhead[R]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}TECHNICAL SYSTEM REPORT}
+\fancyfoot[L]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}2026-09-02}
+\fancyfoot[R]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}\thepage}
+\renewcommand{\headrulewidth}{0.35pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{15pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt minus 1pt}
+\setlength{\emergencystretch}{3em}
+\widowpenalty=10000
+\clubpenalty=10000
+\displaywidowpenalty=10000
+\raggedbottom
+\titleformat{\section}{\sffamily\Large\bfseries\color{ReportNavy}}{}{0pt}{}
+\titleformat{\subsection}{\sffamily\normalsize\bfseries\color{ReportNavy}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{5pt}
+\pretocmd{\section}{\Needspace{6\baselineskip}}{}{}
+\pretocmd{\subsection}{\Needspace{5\baselineskip}}{}{}
+\captionsetup{font=small,labelfont=bf,justification=centering,skip=5pt}
+\renewcommand{\figurename}{图}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.60}
+\renewcommand{\arraystretch}{1.22}
+\setlength{\tabcolsep}{4pt}
+\AtBeginEnvironment{longtable}{\fontsize{8.5}{12.6}\selectfont}
+\AtEndEnvironment{longtable}{\normalsize}
+\DefineVerbatimEnvironment{ReportCode}{Verbatim}{fontsize=\footnotesize,breaklines=true,breakanywhere=true,frame=single,rulecolor=\color{ReportRule},framesep=5pt,baselinestretch=1.12}
+\setcounter{tocdepth}{2}
+\setlength{\cftbeforesecskip}{5pt}
+\setlength{\cftbeforesubsecskip}{1pt}
+\setlength{\cftsubsecindent}{1em}
+\renewcommand{\cftsecfont}{\sffamily\small\bfseries}
+\renewcommand{\cftsubsecfont}{\small}
+\renewcommand{\cftsecpagefont}{\small}
+\renewcommand{\cftsubsecpagefont}{\small}
+\renewcommand{\contentsname}{目录}
+\newcommand{\reporttitle}{\begingroup\sffamily\color{ReportNavy}\fontsize{24}{32}\selectfont\bfseries Lynx S10\par 地形感知自主导航与残差越障控制\par\endgroup\vspace{7pt}{\sffamily\color{ReportTeal}\large GOAI LAI / 狗來 · Technical System Report}\par\vspace{10pt}\textcolor{ReportRule}{\rule{\linewidth}{0.8pt}}\vspace{5pt}}

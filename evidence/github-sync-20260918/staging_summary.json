@@ -1,0 +1,30 @@
+{
+  "staged_files_before_this_summary": 643,
+  "groups": {
+    "(root)": 18,
+    "academic_assets": 157,
+    "backups": 3,
+    "deliverables": 120,
+    "docs": 4,
+    "evidence": 9,
+    "map-reviews": 2,
+    "native_transfer": 17,
+    "poster_assets": 38,
+    "posterly_rebuild": 19,
+    "real_transfer": 31,
+    "recordings": 18,
+    "report_assets": 60,
+    "scripts": 2,
+    "src": 2,
+    "tests_real": 7,
+    "tools": 71,
+    "waypoint-photos-20260914": 65
+  },
+  "lfs_files": 228,
+  "lfs_bytes": 415753027,
+  "lfs_objects_sha256_verified": true,
+  "excluded_content_staged": [],
+  "modified_files_diff_check_exit_code": 0,
+  "final_changed_files": 644,
+  "latex_aux_excluded": true
+}

@@ -1,0 +1,50 @@
+# ============================================================
+# 用户参数模板 — 首次安装时复制到 /var/opt/robot/conf/slam/params.yaml
+# 用户可编辑此文件，仅包含开放给用户修改的参数子集。
+# 升级时不会被完全覆盖，只在 params.yaml.update 中有对应字段时才强制更新。
+# 完整默认参数见 /opt/robot/share/slam/conf/params.yaml
+# ============================================================
+
+lio:
+  acc_cov: 0.5
+  gyr_cov: 0.5
+  b_acc_cov: 0.001
+  b_gyr_cov: 0.001
+  max_iteration: 3
+  enable_downsample: true
+  leaf_size: 0.15
+  leaf_size_body: 0.05
+  skip_num: 5
+  esti_plane_threshold: 0.1
+  init_time: 0.1
+  lidar_cov: 0.001
+
+occ_grid_2d:
+  output_prefix: "occ_grid"
+  min_height: -0.2
+  max_height: 0.4
+  resolution: 0.05
+  min_range: 0.2
+  max_range: 30.0
+  angle_increment: 0.006
+  max_level: 8
+
+ght:
+  vio_default_cov: [0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
+  viro_default_cov: [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+  rtk_default_cov: [0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001]
+
+pgo:
+  prior_noise_sigmas: [1e6, 1e4, 0.001, 0.01, 0.01, 0.01]
+  odom_noise_sigmas: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+  loop_noise_sigmas: [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+  prior_noise_default_sigmas: [0.000001, 0.000001, 0.000001, 0.0000001, 0.0000001, 0.0000001]
+  gps_noise_precision: [1.0, 1.0, 0.2]
+  enable_imu_gravity: true
+  imu_gravity_noise: [1e-1, 1e-1, 1e-1]
+  distance_threshold_factor: 0.03
+  segment_num: 15
+  matching_error_threshold: 0.16
+  inlier_fraction_threshold: 0.95
+  max_search_distance: 8.0
+  keyframe_time: 60.0

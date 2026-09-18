@@ -1,0 +1,286 @@
+{
+  "start": 0,
+  "end": 32,
+  "seed": 8,
+  "reached": true,
+  "arrived": true,
+  "closest_goal_m": 0.177,
+  "valid": true,
+  "outcome": "reached the end waypoint",
+  "elapsed_s": 674.01,
+  "distance_m": 249.94,
+  "goal_distance_m": 0.177,
+  "max_tilt_deg": 44.6,
+  "stalls": 2,
+  "final_xyz": [
+    32.7493,
+    18.4668,
+    4.1813
+  ],
+  "mode_seconds": {
+    "-": 0.05,
+    "align": 12.8,
+    "approach": 0.05,
+    "climb": 6.45,
+    "handoff": 0.3,
+    "navigate": 653.9,
+    "verify_clear": 0.35
+  },
+  "sources": [
+    "-",
+    "nav",
+    "policy",
+    "router"
+  ],
+  "transitions": [
+    "1787238696.665 navigate -> approach: segment (15, 16) uses climb_policy",
+    "1787238696.685 approach -> align: within align radius",
+    "1787238709.505 align -> climb_ready: stable_fallback entry envelope held",
+    "1787238709.524 climb_ready -> climb: started climb_policy (stable_fallback)",
+    "1787238716.025 climb -> verify_clear: four-wheel candidate: four wheels over, contacts and attitude sane",
+    "1787238716.365 verify_clear -> handoff: verified: four wheels over, contacts and attitude sane; returning official owner",
+    "1787238716.645 handoff -> navigate: official owner acknowledged; follower resumed"
+  ],
+  "waypoints": [
+    {
+      "index": 0,
+      "passed": true,
+      "first_entry_s": 0.0,
+      "entry_distance_m": 0.11,
+      "closest_m": 0.11
+    },
+    {
+      "index": 1,
+      "passed": true,
+      "first_entry_s": 18.501,
+      "entry_distance_m": 0.178,
+      "closest_m": 0.178
+    },
+    {
+      "index": 2,
+      "passed": true,
+      "first_entry_s": 30.6,
+      "entry_distance_m": 0.14,
+      "closest_m": 0.14
+    },
+    {
+      "index": 3,
+      "passed": true,
+      "first_entry_s": 40.201,
+      "entry_distance_m": 0.172,
+      "closest_m": 0.172
+    },
+    {
+      "index": 4,
+      "passed": true,
+      "first_entry_s": 49.9,
+      "entry_distance_m": 0.171,
+      "closest_m": 0.171
+    },
+    {
+      "index": 5,
+      "passed": true,
+      "first_entry_s": 63.502,
+      "entry_distance_m": 0.146,
+      "closest_m": 0.146
+    },
+    {
+      "index": 6,
+      "passed": true,
+      "first_entry_s": 75.752,
+      "entry_distance_m": 0.15,
+      "closest_m": 0.15
+    },
+    {
+      "index": 7,
+      "passed": true,
+      "first_entry_s": 94.303,
+      "entry_distance_m": 0.154,
+      "closest_m": 0.154
+    },
+    {
+      "index": 8,
+      "passed": true,
+      "first_entry_s": 108.351,
+      "entry_distance_m": 0.174,
+      "closest_m": 0.174
+    },
+    {
+      "index": 9,
+      "passed": true,
+      "first_entry_s": 116.937,
+      "entry_distance_m": 0.171,
+      "closest_m": 0.171
+    },
+    {
+      "index": 10,
+      "passed": true,
+      "first_entry_s": 134.403,
+      "entry_distance_m": 0.164,
+      "closest_m": 0.164
+    },
+    {
+      "index": 11,
+      "passed": true,
+      "first_entry_s": 146.553,
+      "entry_distance_m": 0.172,
+      "closest_m": 0.172
+    },
+    {
+      "index": 12,
+      "passed": true,
+      "first_entry_s": 159.803,
+      "entry_distance_m": 0.168,
+      "closest_m": 0.168
+    },
+    {
+      "index": 13,
+      "passed": true,
+      "first_entry_s": 177.753,
+      "entry_distance_m": 0.173,
+      "closest_m": 0.173
+    },
+    {
+      "index": 14,
+      "passed": true,
+      "first_entry_s": 190.654,
+      "entry_distance_m": 0.146,
+      "closest_m": 0.146
+    },
+    {
+      "index": 15,
+      "passed": true,
+      "first_entry_s": 201.854,
+      "entry_distance_m": 0.179,
+      "closest_m": 0.179
+    },
+    {
+      "index": 16,
+      "passed": true,
+      "first_entry_s": 228.054,
+      "entry_distance_m": 0.161,
+      "closest_m": 0.161
+    },
+    {
+      "index": 17,
+      "passed": true,
+      "first_entry_s": 231.853,
+      "entry_distance_m": 0.146,
+      "closest_m": 0.146
+    },
+    {
+      "index": 18,
+      "passed": true,
+      "first_entry_s": 257.454,
+      "entry_distance_m": 0.162,
+      "closest_m": 0.162
+    },
+    {
+      "index": 19,
+      "passed": true,
+      "first_entry_s": 278.006,
+      "entry_distance_m": 0.167,
+      "closest_m": 0.167
+    },
+    {
+      "index": 20,
+      "passed": true,
+      "first_entry_s": 288.606,
+      "entry_distance_m": 0.179,
+      "closest_m": 0.179
+    },
+    {
+      "index": 21,
+      "passed": true,
+      "first_entry_s": 345.158,
+      "entry_distance_m": 0.178,
+      "closest_m": 0.178
+    },
+    {
+      "index": 22,
+      "passed": true,
+      "first_entry_s": 374.308,
+      "entry_distance_m": 0.178,
+      "closest_m": 0.178
+    },
+    {
+      "index": 23,
+      "passed": true,
+      "first_entry_s": 402.707,
+      "entry_distance_m": 0.169,
+      "closest_m": 0.169
+    },
+    {
+      "index": 24,
+      "passed": true,
+      "first_entry_s": 455.258,
+      "entry_distance_m": 0.174,
+      "closest_m": 0.174
+    },
+    {
+      "index": 25,
+      "passed": true,
+      "first_entry_s": 472.358,
+      "entry_distance_m": 0.164,
+      "closest_m": 0.164
+    },
+    {
+      "index": 26,
+      "passed": true,
+      "first_entry_s": 503.459,
+      "entry_distance_m": 0.162,
+      "closest_m": 0.162
+    },
+    {
+      "index": 27,
+      "passed": true,
+      "first_entry_s": 524.959,
+      "entry_distance_m": 0.178,
+      "closest_m": 0.178
+    },
+    {
+      "index": 28,
+      "passed": true,
+      "first_entry_s": 595.509,
+      "entry_distance_m": 0.178,
+      "closest_m": 0.178
+    },
+    {
+      "index": 29,
+      "passed": true,
+      "first_entry_s": 610.011,
+      "entry_distance_m": 0.175,
+      "closest_m": 0.175
+    },
+    {
+      "index": 30,
+      "passed": true,
+      "first_entry_s": 615.111,
+      "entry_distance_m": 0.172,
+      "closest_m": 0.172
+    },
+    {
+      "index": 31,
+      "passed": true,
+      "first_entry_s": 637.711,
+      "entry_distance_m": 0.173,
+      "closest_m": 0.173
+    },
+    {
+      "index": 32,
+      "passed": true,
+      "first_entry_s": 674.012,
+      "entry_distance_m": 0.177,
+      "closest_m": 0.177
+    }
+  ],
+  "waypoint_pass_count": 33,
+  "wheel_speed": {
+    "mean_abs_rad_s": 10.825,
+    "p95_abs_rad_s": 28.723,
+    "p99_abs_rad_s": 38.44,
+    "max_abs_rad_s": 84.021
+  },
+  "router_status": "{\"mode\": \"navigate\", \"source\": \"nav\", \"reason\": \"navigating\", \"policy_status\": \"idle\", \"active_policy\": \"\", \"retries\": 0, \"joint_owner\": \"official\", \"joint_owner_actual\": \"official\"}",
+  "csv": "/evidence/00_32_mac_lowload_a4_seed8.csv"
+}

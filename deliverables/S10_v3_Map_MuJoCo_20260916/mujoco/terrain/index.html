@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Start · B · 短平台 — 精细模型交付</title>
+<style>
+:root{--ink:#183248;--muted:#596d7f;--line:#dce5ec;--blue:#6e96ac;--gold:#d9a958;--green:#82ae94}*{box-sizing:border-box}body{margin:0;background:#f2f5f8;color:var(--ink);font:16px/1.65 system-ui,-apple-system,sans-serif}header{background:#142a3d;color:white;padding:46px max(5vw,24px) 38px}.eyebrow{font-size:12px;letter-spacing:2px;color:#a3c9dc}h1{font-size:clamp(28px,4vw,48px);margin:10px 0 8px;line-height:1.2}header p{max-width:800px;color:#c4d4df}nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}a{color:#165f88}nav a{border:1px solid #658098;border-radius:8px;color:white;padding:9px 17px;text-decoration:none}nav a.primary{background:#d9a958;color:#182d3d;border-color:#d9a958;font-weight:650}main{max-width:1250px;padding:30px 24px 64px;margin:auto}.notice{background:#fff1d8;border-left:5px solid #c89638;padding:15px 20px;border-radius:7px;margin:0 0 26px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:white}.pad{padding:18px 21px}.card h3{margin:0 0 6px;font-size:19px}.card p{margin:0;color:var(--muted)}.bar{height:5px}.blue{background:var(--blue)}.gold{background:var(--gold)}.green{background:var(--green)}h2{font-size:25px;margin:34px 0 15px}.hero{width:100%;display:block;background:black}.caption{padding:15px 20px;background:white;margin:0;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;color:var(--muted)}img,video{max-width:100%;display:block}video{width:100%;background:#101a25;aspect-ratio:16/9}.wide{margin:18px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.imglink{display:block;background:#f8fafc}.imglink img{width:100%}.small{font-size:13px;color:var(--muted)}.pill{display:inline-block;background:#e1efe7;color:#286247;padding:3px 9px;border-radius:15px;font-size:12px}.warn{background:#fff0d6;color:#956019}.table{width:100%;border-collapse:collapse;background:white;font-size:14px}.table th,.table td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}.table th{background:#e8eef3}.foot{margin-top:35px;border-top:1px solid var(--line);padding-top:18px;font-size:13px;color:var(--muted)}code{background:#e6edf2;padding:2px 6px;border-radius:4px}details{background:white;padding:18px;border:1px solid var(--line);border-radius:10px;margin-top:18px}summary{cursor:pointer;font-weight:600}@media(max-width:720px){.grid,.two{grid-template-columns:1fr}main{padding:22px 14px}header{padding:30px 20px}.table{font-size:12px}.table td,.table th{padding:10px 7px}}
+</style></head>
+<body>
+<header><div class="eyebrow">V3 / LOCAL RECONSTRUCTION / 2026.09.16</div><h1>Start → 原 B → B 后短平台</h1><p>按区域恢复表面，保留曲边与台阶。已制作有限碰撞层，并在 MuJoCo 3.13.0 中实际导入、运行受约束物理测试。</p><nav><a class="primary" href="interactive.html">打开可旋转 3D 模型 ↗</a><a href="#videos">看视频</a><a href="#evidence">源点与检查</a><a href="README.md">完整报告 MD</a></nav></header>
+<main>
+<div class="notice"><strong>当前状态：局部模型与工程检查完成，现场/策略未验收。</strong><br>仅处理这三段；原 B 和已确认的 Start 样板保持不变。B 后侧边仍有未建模抬高结构。没有运行完整机器狗 policy/follower，也没有接触真机。</div>
+<div class="grid">
+<article class="card"><div class="bar blue"></div><div class="pad"><h3>01 / Start</h3><p>局部微坡面＋受保护抬高曲边。已确认样板不变；其余路面分面连接，不整段压平。</p></div></article>
+<article class="card"><div class="bar gold"></div><div class="pad"><h3>02 / 原 B</h3><p>32 个结构面原样保留。台阶没有重新平滑，原几何、OBJ、原碰撞 XML 均做了字节复核。</p></div></article>
+<article class="card"><div class="bar green"></div><div class="pad"><h3>03 / B 后约 4.88 m</h3><p>沿预定终止点截取的主平台微坡。未知侧边不补成地板，不扩展后续全场。</p></div></article>
+</div>
+<h2>实际导入的模型</h2>
+<a href="media/10_mujoco_overview.png"><img class="hero" src="media/10_mujoco_overview.png" alt="MuJoCo 实际加载的 Start、原 B 及短平台总览"></a>
+<p class="caption">XYZ 等比例，不放大高度；颜色仅表示区域。黑色空白是未建模，不代表现场真的有洞。点击图片可看原尺寸。</p>
+<div class="grid wide">
+<article class="card"><a class="imglink" href="media/11_mujoco_Start.png"><img loading="lazy" src="media/11_mujoco_Start.png" alt="Start 局部"></a><div class="pad"><h3>Start 局部</h3><p>蓝灰色差用于辨认保留样板；不是该处有高低差。</p></div></article>
+<article class="card"><a class="imglink" href="media/12_mujoco_B.png"><img loading="lazy" src="media/12_mujoco_B.png" alt="原 B 台阶"></a><div class="pad"><h3>B 的台阶和平台</h3><p>原 B 资产不变，既有未确定问题没有被宣称解决。</p></div></article>
+<article class="card"><a class="imglink" href="media/13_mujoco_Post.png"><img loading="lazy" src="media/13_mujoco_Post.png" alt="B 后短平台"></a><div class="pad"><h3>短平台与支持边界</h3><p>边侧的锯齿空白是保守观测掩码，不能作为真实边界解释。</p></div></article>
+</div>
+<h2 id="videos">三段视频，各自证明什么</h2>
+<article class="card wide"><video controls playsinline preload="metadata" poster="media/10_mujoco_overview.png"><source src="media/07_scene_tour.mp4" type="video/mp4"></video><div class="pad"><h3>① 场景浏览 · 24 秒</h3><p>实际 MuJoCo 画面，依次查看全段、Start、B、B 后。<strong>只有摄像机移动，不是机器狗运动。</strong></p></div></article>
+<div class="two">
+<article class="card"><video controls playsinline preload="metadata" poster="media/14_wheel_video_check.png"><source src="media/08_wheel_interfaces_1x.mp4" type="video/mp4"></video><div class="pad"><h3>② 导轨轮接口测试 · 12 秒</h3><p>三处各 4 秒、1×速度；有导轨和外加推进，检查是否卡接缝。不是自主 policy/follower。</p></div></article>
+<article class="card"><video controls playsinline preload="metadata" poster="media/15_probe_video_check.png"><source src="media/09_contact_counterexample_1x.mp4" type="video/mp4"></video><div class="pad"><h3>③ 落球 / 关闭碰撞反例 · 6 秒</h3><p>36 个探针。2 秒开启＋1 秒关闭，同一实验从两处镜头完整回放；不是整机稳定性验证。</p></div></article>
+</div>
+<h2 id="evidence">数据证据与工程检查</h2>
+<div class="notice"><strong>平面假设更规整，不等于实地尺寸已准确。</strong> 固定低位候选点的高度偏差：Start P50 / P95 ≈ 2.11 / 9.08 cm；B 后 ≈ 2.27 / 16.95 cm。包括边缘混合观测，不是只统计拟合内点。</div>
+<div class="card wide"><a class="imglink" href="media/03_source_sections.png"><img loading="lazy" src="media/03_source_sections.png" alt="相同区域固定截面源点和 mesh 的对比"></a><div class="pad"><h3>固定截面，而非只看平滑后的外观</h3><p>侧边抬高点仍可见；橙线是导出的 mesh，断开的橙线是缺少建模支持的范围。每个截面的半宽和显示窗口有记录。</p></div></div>
+<div class="two">
+<article class="card"><a class="imglink" href="media/01_scope_chart.png"><img loading="lazy" src="media/01_scope_chart.png" alt="三段编号范围图"></a><div class="pad"><h3>编号范围图</h3><p>1、2、3 是区域编号，不是真实 WP。黑虚线为本次截取线。</p></div></article>
+<article class="card"><a class="imglink" href="media/04_support_masks.png"><img loading="lazy" src="media/04_support_masks.png" alt="点云观测支持与未知掩码"></a><div class="pad"><h3>源点与未知掩码</h3><p>新增未知面积：Start 样板外约 0.204 m²，B 后约 0.546 m²；已确认样板原有小孔也保留。</p></div></article>
+</div>
+<div class="card wide"><a class="imglink" href="media/05_quality_dashboard.png"><img loading="lazy" src="media/05_quality_dashboard.png" alt="质量仪表板：数据偏差、接触参数对照和接缝高度差"></a></div>
+<table class="table"><thead><tr><th>项目</th><th>结果</th><th>含义</th></tr></thead><tbody>
+<tr><td>可视 / 碰撞射线</td><td><span class="pill">6832 / 6832 命中</span></td><td>最大导入高度差 0.00060 mm；只是实现一致性。</td></tr>
+<tr><td>B 前 / 后接缝</td><td><span class="pill">各 41 点通过</span></td><td>最大相邻高度差 0.169 / 0.035 mm。</td></tr>
+<tr><td>候选接触参数</td><td><span class="pill">1 ms、2 ms 通过</span></td><td>36/36 受支持；最大瞬时穿入 7.80 / 8.94 mm。</td></tr>
+<tr><td>默认接触参数</td><td><span class="pill warn">未通过，保留对照</span></td><td>瞬时穿入 16.61 / 17.72 mm，超过同一 15 mm 门槛。</td></tr>
+<tr><td>导轨轮</td><td><span class="pill">3 / 3 通过</span></td><td>只检查三个局部接口，不是机器狗全程通过。</td></tr>
+<tr><td>输入保护</td><td><span class="pill">235 个文件无变化</span></td><td>原始 v3、保存帧、原 B 和已确认样板均保留。</td></tr>
+</tbody></table>
+<h2>处理流程 diagram</h2><div class="card"><a class="imglink" href="media/06_pipeline_diagram.png"><img loading="lazy" src="media/06_pipeline_diagram.png" alt="源点到分面、可视 mesh、有限碰撞层和 MuJoCo 检查的流程图"></a></div>
+<details><summary>给队友：怎么自己打开和复核？</summary><p>解压完整目录后，直接打开 <code>index.html</code> 或 <code>interactive.html</code>；不需要互联网。</p><p>已安装 MuJoCo 3.13.0 的 Python 环境，在该目录运行 <code>python check_scene.py</code> 重现 36 个探针检查；用 <code>python -m mujoco.viewer --mjcf scene_contact_v1.xml</code> 打开原生场景。macOS 可用 <code>mjpython</code> 替代第二条的 Python。</p><p><a href="README.md">完整报告与文件说明</a> · <a href="mujoco_checks.json">落球 / 默认参数对照</a> · <a href="interface_checks.json">接口与轮测试</a> · <a href="release_checks.json">发布复核</a></p></details>
+<p class="foot">three_regions_02 · 离线文件，无外部 CDN。没有切换机器人地图、重启 SLAM 或发布运动命令。完整策略与现场尺寸验收留在后续独立任务。</p>
+</main></body></html>
