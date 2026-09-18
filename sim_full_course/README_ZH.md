@@ -31,7 +31,7 @@ $V -m sim_full_course.route_check            # 路线静态检查
 $V -m pytest -q sim_full_course/tests
 ```
 
-- 路线默认 `GOAI/wt-wp-match/tools/wp_match/out/route_v2.json`（环境变量 `NAV_SIM_ROUTE` 可改），不存在时退回 `routes/placeholder_route_v2.json`。
+- 路线默认 `GOAI/tools/wp_match/out/route_v2.json`（环境变量 `NAV_SIM_ROUTE` 可改），不存在时退回 `routes/placeholder_route_v2.json`。
 - 产物目录默认 `GOAI/wt-nav-sim-artifacts/`（`NAV_SIM_ARTIFACTS` 可改）；每次运行输出 `runs/<name>/{log.csv, summary.json, topview.png}`。
 - 场景：`nominal`、`detour_box`（中心线上 0.5 m 箱）、`offset_cylinder`（左 0.30 m 立柱）、`slalom`（两箱交错）、`blocked_corridor`（整条走廊封死，应停车报告）、`low_curb`（0.12 m 横向路缘）。`--obstacle-s` 用全路线弧长。
 - `--collision-mode block`（默认，撞入障碍的移动被拒绝、机器人停下）/ `record`（只计数，便于跑完全程统计）。

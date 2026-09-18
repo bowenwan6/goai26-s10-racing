@@ -16,9 +16,9 @@ ARTIFACTS = Path(os.environ.get("NAV_SIM_ARTIFACTS", str(GOAI / "wt-nav-sim-arti
 REPO = Path(__file__).resolve().parents[1]
 PKG = Path(__file__).resolve().parent
 
-# Matched route (WP-matching agent output); the harness falls back to the placeholder.
+# Photo-matched route committed in this repo; the harness falls back to the placeholder.
 REAL_ROUTE = Path(os.environ.get(
-    "NAV_SIM_ROUTE", str(GOAI / "wt-wp-match" / "tools" / "wp_match" / "out" / "route_v2.json")))
+    "NAV_SIM_ROUTE", str(REPO / "tools" / "wp_match" / "out" / "route_v2.json")))
 
 # Official course (reverse of photo/mapping time order), see route_v2 contract.
 COURSE_EPOCH = (1789368238.0, 1789368895.0)

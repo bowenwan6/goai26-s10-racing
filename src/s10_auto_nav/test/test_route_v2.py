@@ -23,8 +23,8 @@ REAL_ROUTE = Path(
     os.environ.get(
         "S10_ROUTE_V2",
         str(
-            Path(__file__).resolve().parents[4]
-            / "wt-wp-match/tools/wp_match/out/route_v2.json"
+            Path(__file__).resolve().parents[3]
+            / "tools/wp_match/out/route_v2.json"
         ),
     )
 )
