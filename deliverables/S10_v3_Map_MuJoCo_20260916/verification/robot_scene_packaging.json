@@ -1,0 +1,64 @@
+{
+  "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/scene_full.xml",
+  "source_sha256": "477e58c52bedfae10008a9e5134926db2829f17207f91172ed53b2f98c4a37b3",
+  "changes": [
+    "relative terrain resource paths",
+    "added static start_pose keyframe from existing replay"
+  ],
+  "file_path_rewrites": [
+    [
+      "terrain/collision/new_surfaces.xml",
+      "../terrain/collision/new_surfaces.xml"
+    ],
+    [
+      "terrain/collision/B_preserved.xml",
+      "../terrain/collision/B_preserved.xml"
+    ],
+    [
+      "terrain/visual/Start_sample_plane.obj",
+      "../terrain/visual/Start_sample_plane.obj"
+    ],
+    [
+      "terrain/visual/Start_raised_band.obj",
+      "../terrain/visual/Start_raised_band.obj"
+    ],
+    [
+      "terrain/visual/Start_remaining.obj",
+      "../terrain/visual/Start_remaining.obj"
+    ],
+    [
+      "terrain/visual/Post_B_platform.obj",
+      "../terrain/visual/Post_B_platform.obj"
+    ],
+    [
+      "terrain/visual/B_preserved.obj",
+      "../terrain/visual/B_preserved.obj"
+    ]
+  ],
+  "start_pose": [
+    0.0,
+    0.5,
+    0.002767465092347543,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -0.3,
+    0.6,
+    0.0,
+    0.0,
+    -0.3,
+    0.6,
+    0.0,
+    0.0,
+    0.3,
+    -0.6,
+    0.0,
+    0.0,
+    0.3,
+    -0.6,
+    0.0
+  ],
+  "simulation_rerun": false
+}

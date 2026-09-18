@@ -1,0 +1,1041 @@
+{
+  "engine": "3.13.0",
+  "load": {
+    "baseline": {
+      "compile_s": 1.8079752920020837,
+      "ngeom": 3851,
+      "ray_error_max_m": 7.628918941016138e-09,
+      "ray_misses": 0,
+      "new_surface_samples": 6832,
+      "B_riser_rays": [
+        {
+          "from_patch": 0,
+          "to_patch": 1,
+          "hit": true,
+          "distance_m": 0.3710676062858209
+        },
+        {
+          "from_patch": 1,
+          "to_patch": 2,
+          "hit": true,
+          "distance_m": 0.32741507244011253
+        },
+        {
+          "from_patch": 2,
+          "to_patch": 3,
+          "hit": true,
+          "distance_m": 0.35059151053334303
+        },
+        {
+          "from_patch": 3,
+          "to_patch": 4,
+          "hit": true,
+          "distance_m": 0.3002753988847279
+        },
+        {
+          "from_patch": 4,
+          "to_patch": 5,
+          "hit": true,
+          "distance_m": 0.5826159799042471
+        },
+        {
+          "from_patch": 5,
+          "to_patch": 6,
+          "hit": true,
+          "distance_m": 0.382302503159427
+        },
+        {
+          "from_patch": 6,
+          "to_patch": 7,
+          "hit": true,
+          "distance_m": 0.30753068549792545
+        },
+        {
+          "from_patch": 7,
+          "to_patch": 8,
+          "hit": true,
+          "distance_m": 0.25215420994543136
+        },
+        {
+          "from_patch": 8,
+          "to_patch": 9,
+          "hit": true,
+          "distance_m": 0.3575573444878114
+        },
+        {
+          "from_patch": 9,
+          "to_patch": 10,
+          "hit": true,
+          "distance_m": 0.2993203718033692
+        },
+        {
+          "from_patch": 10,
+          "to_patch": 11,
+          "hit": true,
+          "distance_m": 0.4174466285430582
+        },
+        {
+          "from_patch": 11,
+          "to_patch": 12,
+          "hit": true,
+          "distance_m": 1.4118900544024449
+        },
+        {
+          "from_patch": 12,
+          "to_patch": 13,
+          "hit": true,
+          "distance_m": 0.354073112333778
+        },
+        {
+          "from_patch": 13,
+          "to_patch": 14,
+          "hit": true,
+          "distance_m": 0.318440811335037
+        },
+        {
+          "from_patch": 14,
+          "to_patch": 15,
+          "hit": true,
+          "distance_m": 0.27466383001843836
+        },
+        {
+          "from_patch": 15,
+          "to_patch": 16,
+          "hit": true,
+          "distance_m": 0.33688923573900453
+        },
+        {
+          "from_patch": 16,
+          "to_patch": 17,
+          "hit": true,
+          "distance_m": 0.5808486936296815
+        },
+        {
+          "from_patch": 17,
+          "to_patch": 18,
+          "hit": true,
+          "distance_m": 0.5909516494574322
+        },
+        {
+          "from_patch": 18,
+          "to_patch": 19,
+          "hit": true,
+          "distance_m": 1.0574399215122652
+        },
+        {
+          "from_patch": 19,
+          "to_patch": 20,
+          "hit": true,
+          "distance_m": 0.35768518349815087
+        },
+        {
+          "from_patch": 20,
+          "to_patch": 21,
+          "hit": true,
+          "distance_m": 0.3862617470053291
+        },
+        {
+          "from_patch": 21,
+          "to_patch": 22,
+          "hit": true,
+          "distance_m": 0.3409796707903851
+        },
+        {
+          "from_patch": 22,
+          "to_patch": 23,
+          "hit": true,
+          "distance_m": 0.3647783587949977
+        },
+        {
+          "from_patch": 23,
+          "to_patch": 24,
+          "hit": true,
+          "distance_m": 0.3449980519592265
+        },
+        {
+          "from_patch": 24,
+          "to_patch": 25,
+          "hit": true,
+          "distance_m": 0.4527605721368382
+        },
+        {
+          "from_patch": 25,
+          "to_patch": 26,
+          "hit": true,
+          "distance_m": 0.31152579648219614
+        },
+        {
+          "from_patch": 26,
+          "to_patch": 27,
+          "hit": true,
+          "distance_m": 0.3283089026203568
+        },
+        {
+          "from_patch": 27,
+          "to_patch": 28,
+          "hit": true,
+          "distance_m": 0.3833974273989469
+        },
+        {
+          "from_patch": 28,
+          "to_patch": 29,
+          "hit": true,
+          "distance_m": 0.42637074927711177
+        },
+        {
+          "from_patch": 29,
+          "to_patch": 30,
+          "hit": true,
+          "distance_m": 0.32128661012676785
+        },
+        {
+          "from_patch": 30,
+          "to_patch": 31,
+          "hit": true,
+          "distance_m": 0.28460297725456374
+        }
+      ],
+      "void_rays": [
+        {
+          "origin": [
+            -2,
+            -2,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        },
+        {
+          "origin": [
+            0,
+            5,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        },
+        {
+          "origin": [
+            35,
+            25,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        },
+        {
+          "origin": [
+            -10,
+            0,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        }
+      ],
+      "finite_geom": true,
+      "infinite_planes": 0
+    },
+    "contact_v1": {
+      "compile_s": 1.7778721670038067,
+      "ngeom": 3851,
+      "ray_error_max_m": 7.628918941016138e-09,
+      "ray_misses": 0,
+      "new_surface_samples": 6832,
+      "B_riser_rays": [
+        {
+          "from_patch": 0,
+          "to_patch": 1,
+          "hit": true,
+          "distance_m": 0.3710676062858209
+        },
+        {
+          "from_patch": 1,
+          "to_patch": 2,
+          "hit": true,
+          "distance_m": 0.32741507244011253
+        },
+        {
+          "from_patch": 2,
+          "to_patch": 3,
+          "hit": true,
+          "distance_m": 0.35059151053334303
+        },
+        {
+          "from_patch": 3,
+          "to_patch": 4,
+          "hit": true,
+          "distance_m": 0.3002753988847279
+        },
+        {
+          "from_patch": 4,
+          "to_patch": 5,
+          "hit": true,
+          "distance_m": 0.5826159799042471
+        },
+        {
+          "from_patch": 5,
+          "to_patch": 6,
+          "hit": true,
+          "distance_m": 0.382302503159427
+        },
+        {
+          "from_patch": 6,
+          "to_patch": 7,
+          "hit": true,
+          "distance_m": 0.30753068549792545
+        },
+        {
+          "from_patch": 7,
+          "to_patch": 8,
+          "hit": true,
+          "distance_m": 0.25215420994543136
+        },
+        {
+          "from_patch": 8,
+          "to_patch": 9,
+          "hit": true,
+          "distance_m": 0.3575573444878114
+        },
+        {
+          "from_patch": 9,
+          "to_patch": 10,
+          "hit": true,
+          "distance_m": 0.2993203718033692
+        },
+        {
+          "from_patch": 10,
+          "to_patch": 11,
+          "hit": true,
+          "distance_m": 0.4174466285430582
+        },
+        {
+          "from_patch": 11,
+          "to_patch": 12,
+          "hit": true,
+          "distance_m": 1.4118900544024449
+        },
+        {
+          "from_patch": 12,
+          "to_patch": 13,
+          "hit": true,
+          "distance_m": 0.354073112333778
+        },
+        {
+          "from_patch": 13,
+          "to_patch": 14,
+          "hit": true,
+          "distance_m": 0.318440811335037
+        },
+        {
+          "from_patch": 14,
+          "to_patch": 15,
+          "hit": true,
+          "distance_m": 0.27466383001843836
+        },
+        {
+          "from_patch": 15,
+          "to_patch": 16,
+          "hit": true,
+          "distance_m": 0.33688923573900453
+        },
+        {
+          "from_patch": 16,
+          "to_patch": 17,
+          "hit": true,
+          "distance_m": 0.5808486936296815
+        },
+        {
+          "from_patch": 17,
+          "to_patch": 18,
+          "hit": true,
+          "distance_m": 0.5909516494574322
+        },
+        {
+          "from_patch": 18,
+          "to_patch": 19,
+          "hit": true,
+          "distance_m": 1.0574399215122652
+        },
+        {
+          "from_patch": 19,
+          "to_patch": 20,
+          "hit": true,
+          "distance_m": 0.35768518349815087
+        },
+        {
+          "from_patch": 20,
+          "to_patch": 21,
+          "hit": true,
+          "distance_m": 0.3862617470053291
+        },
+        {
+          "from_patch": 21,
+          "to_patch": 22,
+          "hit": true,
+          "distance_m": 0.3409796707903851
+        },
+        {
+          "from_patch": 22,
+          "to_patch": 23,
+          "hit": true,
+          "distance_m": 0.3647783587949977
+        },
+        {
+          "from_patch": 23,
+          "to_patch": 24,
+          "hit": true,
+          "distance_m": 0.3449980519592265
+        },
+        {
+          "from_patch": 24,
+          "to_patch": 25,
+          "hit": true,
+          "distance_m": 0.4527605721368382
+        },
+        {
+          "from_patch": 25,
+          "to_patch": 26,
+          "hit": true,
+          "distance_m": 0.31152579648219614
+        },
+        {
+          "from_patch": 26,
+          "to_patch": 27,
+          "hit": true,
+          "distance_m": 0.3283089026203568
+        },
+        {
+          "from_patch": 27,
+          "to_patch": 28,
+          "hit": true,
+          "distance_m": 0.3833974273989469
+        },
+        {
+          "from_patch": 28,
+          "to_patch": 29,
+          "hit": true,
+          "distance_m": 0.42637074927711177
+        },
+        {
+          "from_patch": 29,
+          "to_patch": 30,
+          "hit": true,
+          "distance_m": 0.32128661012676785
+        },
+        {
+          "from_patch": 30,
+          "to_patch": 31,
+          "hit": true,
+          "distance_m": 0.28460297725456374
+        }
+      ],
+      "void_rays": [
+        {
+          "origin": [
+            -2,
+            -2,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        },
+        {
+          "origin": [
+            0,
+            5,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        },
+        {
+          "origin": [
+            35,
+            25,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        },
+        {
+          "origin": [
+            -10,
+            0,
+            8
+          ],
+          "hit": false,
+          "note": "No hit at a sampled unmodeled coordinate is not proof of a real field hole."
+        }
+      ],
+      "finite_geom": true,
+      "infinite_planes": 0
+    }
+  },
+  "tests": [
+    {
+      "variant": "baseline",
+      "dt": 0.001,
+      "collisions": true,
+      "duration_s": 2.0,
+      "fixtures": 36,
+      "supported": 36,
+      "maximum_height_error_m": 0.00036754659233545484,
+      "deepest_contact_m": -0.016610613465886145,
+      "minimum_drop_m": 0.2901157106739678,
+      "finite": true,
+      "warnings": {},
+      "passed": false
+    },
+    {
+      "variant": "baseline",
+      "dt": 0.002,
+      "collisions": true,
+      "duration_s": 2.0,
+      "fixtures": 36,
+      "supported": 36,
+      "maximum_height_error_m": 0.0003675465893306362,
+      "deepest_contact_m": -0.017724944369082396,
+      "minimum_drop_m": 0.290115710673605,
+      "finite": true,
+      "warnings": {},
+      "passed": false
+    },
+    {
+      "variant": "baseline",
+      "dt": 0.001,
+      "collisions": false,
+      "duration_s": 1.0,
+      "fixtures": 36,
+      "supported": 0,
+      "maximum_height_error_m": 4.610130022845127,
+      "deepest_contact_m": 0.0,
+      "minimum_drop_m": 4.900094999999969,
+      "finite": true,
+      "warnings": {},
+      "passed": true
+    },
+    {
+      "variant": "contact_v1",
+      "dt": 0.001,
+      "collisions": true,
+      "duration_s": 2.0,
+      "fixtures": 36,
+      "supported": 36,
+      "maximum_height_error_m": 0.00010787349294572035,
+      "deepest_contact_m": -0.007803329302076008,
+      "minimum_drop_m": 0.2900338987125921,
+      "finite": true,
+      "warnings": {},
+      "passed": true
+    },
+    {
+      "variant": "contact_v1",
+      "dt": 0.002,
+      "collisions": true,
+      "duration_s": 2.0,
+      "fixtures": 36,
+      "supported": 36,
+      "maximum_height_error_m": 0.00010787349396340629,
+      "deepest_contact_m": -0.008941233254602297,
+      "minimum_drop_m": 0.29003389871230434,
+      "finite": true,
+      "warnings": {},
+      "passed": true
+    },
+    {
+      "variant": "contact_v1",
+      "dt": 0.001,
+      "collisions": false,
+      "duration_s": 1.0,
+      "fixtures": 36,
+      "supported": 0,
+      "maximum_height_error_m": 4.610130022845127,
+      "deepest_contact_m": 0.0,
+      "minimum_drop_m": 4.900094999999969,
+      "finite": true,
+      "warnings": {},
+      "passed": true
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "new_0_surface2",
+      "xyz": [
+        -0.06666666666666682,
+        0.5333333333333328,
+        -0.43076697415681126
+      ],
+      "normal": [
+        -0.020727115434628705,
+        0.002379650465723471,
+        0.9997823382863995
+      ]
+    },
+    {
+      "name": "new_1_surface0",
+      "xyz": [
+        5.083333333333333,
+        0.4833333333333332,
+        -0.3720622564532674
+      ],
+      "normal": [
+        0.016657218774132725,
+        -0.029017252947344384,
+        0.9994401113093773
+      ]
+    },
+    {
+      "name": "new_2_surface2",
+      "xyz": [
+        10.066666666666663,
+        0.4666666666666661,
+        -0.41358152172350926
+      ],
+      "normal": [
+        -0.010728414259175046,
+        -0.03242387897801449,
+        0.9994166264373945
+      ]
+    },
+    {
+      "name": "new_3_surface3",
+      "xyz": [
+        28.06666666666666,
+        24.066666666666663,
+        4.6173833020766
+      ],
+      "normal": [
+        -0.0002478117234695224,
+        0.006945999983094231,
+        0.9999758455450735
+      ]
+    },
+    {
+      "name": "B0",
+      "xyz": [
+        13.275328332130762,
+        2.757332535040082,
+        -0.32936950069290744
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B1",
+      "xyz": [
+        13.875425337197083,
+        2.5808277385376406,
+        -0.21220915916329203
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B2",
+      "xyz": [
+        14.454678653769749,
+        2.5519002530884034,
+        -0.03997571065046404
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B3",
+      "xyz": [
+        15.034909170841525,
+        2.8054674495672285,
+        0.13070644729427455
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B4",
+      "xyz": [
+        15.591190659271348,
+        2.909587570711206,
+        0.29439808674854834
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B5",
+      "xyz": [
+        16.121463585844204,
+        3.6816287492124125,
+        0.4608211611245261
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B6",
+      "xyz": [
+        16.925276629358365,
+        3.5845025887921174,
+        0.6376619590920198
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B7",
+      "xyz": [
+        17.48548971520915,
+        3.6623511276495244,
+        0.7965469635458733
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B8",
+      "xyz": [
+        17.96595002556325,
+        3.9251735039036326,
+        0.9469063251021081
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B9",
+      "xyz": [
+        18.49115977934287,
+        4.309651259935079,
+        1.1182529171557898
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B10",
+      "xyz": [
+        19.066370351536438,
+        4.39029921670164,
+        1.2638251441208657
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B11",
+      "xyz": [
+        20.790593381885756,
+        5.822787119067619,
+        1.4200862525957176
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B12",
+      "xyz": [
+        22.123386092980194,
+        6.809708181694658,
+        1.5943695754747598
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B13",
+      "xyz": [
+        22.638146441646633,
+        7.191795956492515,
+        1.7398595969129653
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B14",
+      "xyz": [
+        23.146791507364682,
+        7.620498493766855,
+        1.89946898602144
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B15",
+      "xyz": [
+        23.16458192145708,
+        8.223468854859535,
+        2.04823428136845
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B16",
+      "xyz": [
+        23.94215754417361,
+        8.55467644117369,
+        2.2236589736309273
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B17",
+      "xyz": [
+        23.438860069639034,
+        9.491676044959576,
+        2.3781147048393922
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B18",
+      "xyz": [
+        23.246450614446672,
+        10.915133782403188,
+        2.528512451829725
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B19",
+      "xyz": [
+        23.436115120290445,
+        12.27739858038333,
+        2.6723298915450826
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B20",
+      "xyz": [
+        23.423630363384515,
+        12.938684046361962,
+        2.816968454279188
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B21",
+      "xyz": [
+        23.976283206036705,
+        13.277581301071352,
+        2.9622433924040106
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B22",
+      "xyz": [
+        24.18577120861329,
+        13.781535894942097,
+        3.1224402072801234
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B23",
+      "xyz": [
+        24.23577148322535,
+        14.37216792876075,
+        3.232912702684296
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B24",
+      "xyz": [
+        24.87181101822187,
+        14.657570383143556,
+        3.35628384154251
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B25",
+      "xyz": [
+        24.82134168216263,
+        15.487328389736437,
+        3.5867756301575717
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B26",
+      "xyz": [
+        25.060365239532466,
+        15.99715448341609,
+        3.7699409348891426
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B27",
+      "xyz": [
+        25.279786692398456,
+        16.540312697394764,
+        3.9499796606139594
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B28",
+      "xyz": [
+        25.38428664843237,
+        17.29001343185631,
+        4.116534353159725
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B29",
+      "xyz": [
+        25.141186330862887,
+        18.05073137599764,
+        4.256980646995198
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B30",
+      "xyz": [
+        25.46656998077393,
+        18.590857041792464,
+        4.410289766481273
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    },
+    {
+      "name": "B31",
+      "xyz": [
+        26.188566892199137,
+        19.770401297963545,
+        4.587677467253968
+      ],
+      "normal": [
+        -0.009271553226193618,
+        -0.022452408240882328,
+        0.9997049202964635
+      ]
+    }
+  ],
+  "new_mesh_same_xy_vertex_height_difference_m": 0.0,
+  "duplicate_xy_note": "This diagnostic can include distinct elevations of an intentional raised feature; continuous seam tests are separate.",
+  "new_mesh_export_checks_pass": true,
+  "contact_v1_passed": true,
+  "baseline_passed": false,
+  "contact_change": "candidate solref=.01 1 versus MuJoCo default; same 0.35m spawn height/radius/duration. Not measured material calibration.",
+  "field_accuracy_accepted": false,
+  "policy_run": false,
+  "network_interfaces_used": false,
+  "scope": "New mesh and preserved B export/rays plus slide sphere contact, not full robot-route acceptance."
+}

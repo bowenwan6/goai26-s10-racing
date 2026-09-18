@@ -1,0 +1,751 @@
+[
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/full_cloud.pcd",
+    "path": "maps/v3/full_cloud.pcd",
+    "bytes": 53536704,
+    "sha256": "87a80cf2a88c4d8ab782772ff5b437e6df1c74c277364ae000ef90028dde81ea",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/occ_grid.pgm",
+    "path": "maps/v3/occ_grid.pgm",
+    "bytes": 6414921,
+    "sha256": "2ef143bc7379db87b39e326d1db19cff3fc3371c593f3b4ee1fda040528e1659",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/occ_grid.yaml",
+    "path": "maps/v3/vendor_reference/occ_grid.yaml",
+    "bytes": 170,
+    "sha256": "6987081b519add5e47d98b35f33b0a35f0564564f41771d40bd57cbfb2c421d9",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/occ_grid_id_map.toml",
+    "path": "maps/v3/vendor_reference/occ_grid_id_map.toml",
+    "bytes": 331,
+    "sha256": "5054b7a7dc944d789d7badcced624c5c2d592f96ccdd17940453cb8379655251",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/analysis/trajectory.csv",
+    "path": "maps/v3/trajectory.csv",
+    "bytes": 326083,
+    "sha256": "024eac12d2a3e4f37a235364f1357663ce3d07f2d9f75b7cc3b0a86939641425",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/visuals/01_full_map_top.png",
+    "path": "visuals/full_map_top.png",
+    "bytes": 7943683,
+    "sha256": "53dd9a587bcc56e3ec71ba6bfd746285f5cce641287eb8358ebecbb6954d64ef",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/visuals/02_full_map_3d.png",
+    "path": "visuals/full_map_3d.png",
+    "bytes": 1796260,
+    "sha256": "045c01a0ef930b788dafe32babd25157b59be3bad41b42c20285dba0ad2d2223",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/visuals/03_elevation_overview.png",
+    "path": "visuals/elevation_overview.png",
+    "bytes": 2487689,
+    "sha256": "c34f33253c0766f33fa307b1de65eb3579a1c9416f91fa91e89d6626cff86b93",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/visuals/map_3d_offline.html",
+    "path": "visuals/full_map_interactive.html",
+    "bytes": 16965067,
+    "sha256": "0e34ffdc05777987880fb3b011d493d0ecfba60e72fd618241d57b7e7870d2f5",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/README.md",
+    "path": "mujoco/terrain/README.md",
+    "bytes": 7274,
+    "sha256": "6b2744247cfdecb878bae5c991f9d3f3420943e90acbf10b7457bb45927756cd",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/SHA256_manifest.json",
+    "path": "mujoco/terrain/SHA256_manifest.json",
+    "bytes": 12027,
+    "sha256": "5d827dcaf0542614e1d56190ecd9546b8cc9843ba878624b70f9353866daa6b5",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/build_report.json",
+    "path": "mujoco/terrain/build_report.json",
+    "bytes": 1735,
+    "sha256": "a78589b6e3421c450e8aadfe8e626f836160956788693121221098aa3114ab78",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/check_scene.py",
+    "path": "mujoco/terrain/check_scene.py",
+    "bytes": 2127,
+    "sha256": "0069722439aa87705bbf78077254169b1ba0bc3a4b77915168686e48ca98d370",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/build_three.py",
+    "path": "mujoco/terrain/code_snapshot/build_three.py",
+    "bytes": 17751,
+    "sha256": "2d8d3e5dbc4cf3f7ef76888529495b02f9266cf32c2eb3ab4ad665e8282ca9fc",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/check_three_engine.py",
+    "path": "mujoco/terrain/code_snapshot/check_three_engine.py",
+    "bytes": 7439,
+    "sha256": "c2f9fe0973f4a2acf03b2b33f7ed3e3b51a0b08e21574e248dd5b8e761ea098f",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/check_three_interfaces.py",
+    "path": "mujoco/terrain/code_snapshot/check_three_interfaces.py",
+    "bytes": 6403,
+    "sha256": "86f7ae17ad02ca0f873a2d9544ca60aeb453c5a5036f4ea48b2e3c86f51b225d",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/check_three_release.py",
+    "path": "mujoco/terrain/code_snapshot/check_three_release.py",
+    "bytes": 2691,
+    "sha256": "8aa3e2201714246c3e701207f75d4cbd50fbb29fa1792bf0e909d3435e3570d4",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/export_precise_obj.py",
+    "path": "mujoco/terrain/code_snapshot/export_precise_obj.py",
+    "bytes": 1232,
+    "sha256": "d410dfe08b5f57c8052d213ddb2c164549cbe0bdde17a7fac54c0ac57db7b673",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/extract_features.py",
+    "path": "mujoco/terrain/code_snapshot/extract_features.py",
+    "bytes": 5909,
+    "sha256": "1d5894e75d3dd6b65f74da562f068477b00722cf5a56f68f544079f8f892f868",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/inspect_start.py",
+    "path": "mujoco/terrain/code_snapshot/inspect_start.py",
+    "bytes": 5418,
+    "sha256": "e7e57c90e679ccf3d19e8fe97d282616cf616acd3bf37b71e9e65a4207e73a82",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/package_three.py",
+    "path": "mujoco/terrain/code_snapshot/package_three.py",
+    "bytes": 3938,
+    "sha256": "cfa775c34119a7eb7910ea4b132cf46c2aab9742db46dada66891fa2add0dc64",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/prepare_three.py",
+    "path": "mujoco/terrain/code_snapshot/prepare_three.py",
+    "bytes": 3943,
+    "sha256": "4c9b05ab6345f63db628e9b2f45911a59d8bb210fc68fcf25bdbf4a044903821",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/render_three.py",
+    "path": "mujoco/terrain/code_snapshot/render_three.py",
+    "bytes": 14706,
+    "sha256": "a88f48cb7ec1b8c67a4afc318c29400d0b9de88802cac16749ca98fd717f4ac5",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/code_snapshot/render_three_mujoco.py",
+    "path": "mujoco/terrain/code_snapshot/render_three_mujoco.py",
+    "bytes": 4597,
+    "sha256": "a3fa9dc828e4cd5215f27a51e321d7e18d0f0fa267550582125acbe54b8078a4",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/collision/B_original.xml",
+    "path": "mujoco/terrain/collision/B_original.xml",
+    "bytes": 42848,
+    "sha256": "39c35e50332e396bdc122f5fa5a6a6cf7d97c21dcff37e7fa56b14da37db56bf",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/collision/B_preserved.xml",
+    "path": "mujoco/terrain/collision/B_preserved.xml",
+    "bytes": 42848,
+    "sha256": "7deab9e5005fa617051d94414e5eb0adcd4a10fa47c58e0eb440fafc1504f363",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/collision/new_surfaces.xml",
+    "path": "mujoco/terrain/collision/new_surfaces.xml",
+    "bytes": 2189359,
+    "sha256": "40ef1bdf4d61c6185349fba0808a5bcdcfcda0726806c101dbc3609704967e0d",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/data/B_geometry_preserved.npz",
+    "path": "mujoco/terrain/data/B_geometry_preserved.npz",
+    "bytes": 6252301,
+    "sha256": "095fffcc2bd1d48bdaba4db2c1986cc5261b5c701134738942e293e5bb60b7c7",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/data/Post_B_sources.npz",
+    "path": "mujoco/terrain/data/Post_B_sources.npz",
+    "bytes": 3896225,
+    "sha256": "576ba7326221e735224cd5b470b5d7e9515271c7ba90c98fc75b8d16a0aa27e9",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/data/Post_B_support.npz",
+    "path": "mujoco/terrain/data/Post_B_support.npz",
+    "bytes": 41950,
+    "sha256": "e06a57a929cebeb97edb154a7071f5ac1b61c01a666444c1067ef1b763c8ff81",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/data/Start_sources.npz",
+    "path": "mujoco/terrain/data/Start_sources.npz",
+    "bytes": 13362758,
+    "sha256": "1b4ace78f3225087cf4f4738a0254473663c7813572272d4b19bc3418218cfa8",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/data/Start_support.npz",
+    "path": "mujoco/terrain/data/Start_support.npz",
+    "bytes": 265190,
+    "sha256": "35a42a66cc3f249c01c237bd91a5343b751a7e2dafb5f8a6c8a9ef6c9140fc19",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/data/post_raised_evidence.json",
+    "path": "mujoco/terrain/data/post_raised_evidence.json",
+    "bytes": 2714,
+    "sha256": "2936ab3153e9b33dd082bedf0fb5ad9f31fd6c9346bd6572856061663eb195e2",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/geometry.npz",
+    "path": "mujoco/terrain/geometry.npz",
+    "bytes": 161576,
+    "sha256": "d057e031be9347338671183e6efc0df413ab1069282c60463dc54fc8c1fa981b",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/index.html",
+    "path": "mujoco/terrain/index.html",
+    "bytes": 10617,
+    "sha256": "b87ed0f9576bc5e44ecdb3207f1614a2cd61329428737148c91a2529cc91b1c6",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/input_manifest.json",
+    "path": "mujoco/terrain/input_manifest.json",
+    "bytes": 74177,
+    "sha256": "a2507c3a380c0bac68e59f7b7f1bac1c34f3db7771e14f40b9e0816c871b3e23",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/interactive.html",
+    "path": "mujoco/terrain/interactive.html",
+    "bytes": 10109299,
+    "sha256": "9a081b5027bc2b89acbf30b0bb2f5500ae035cb93c6a1005382a6de13e353692",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/interface_checks.json",
+    "path": "mujoco/terrain/interface_checks.json",
+    "bytes": 15115,
+    "sha256": "6aefae901b04fb4d3ad5138da2d89c4f998a535f9a44ddaf4688ccb5683cab15",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/00_scene_overview.png",
+    "path": "mujoco/terrain/media/00_scene_overview.png",
+    "bytes": 173659,
+    "sha256": "904992748e7edb63f6e7db82d8effe868c6c7e9021fe91fc33325c5929165075",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/01_scope_chart.png",
+    "path": "mujoco/terrain/media/01_scope_chart.png",
+    "bytes": 245609,
+    "sha256": "6b2e8853ddbc9de485faa696d33eda703c8104f5a1ce7d3fc7d3efa72b3317f1",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/02_region_details.png",
+    "path": "mujoco/terrain/media/02_region_details.png",
+    "bytes": 233718,
+    "sha256": "1a67ff8912061bd6da983513764690705d9aee58d0772fb5716b7a59405a509d",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/03_source_sections.png",
+    "path": "mujoco/terrain/media/03_source_sections.png",
+    "bytes": 725995,
+    "sha256": "e2ce59f8f7731a2dbad8cbda5f13ffb6b56974069ca3372a41a9d20b60bae043",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/04_support_masks.png",
+    "path": "mujoco/terrain/media/04_support_masks.png",
+    "bytes": 1506843,
+    "sha256": "47b41ef5f1e767960764e67d2832e9b4edbe5367e43ff06b6e1c9ecd3d7b243a",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/05_quality_dashboard.png",
+    "path": "mujoco/terrain/media/05_quality_dashboard.png",
+    "bytes": 178256,
+    "sha256": "f25ff08fbb55c365db742f42777eed5c6573fbab2e953975932913753542fcfc",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/06_pipeline_diagram.png",
+    "path": "mujoco/terrain/media/06_pipeline_diagram.png",
+    "bytes": 143596,
+    "sha256": "db553695871a945190d6028a2592826e5f0668efa23855636e38d2cb8e4dd0d5",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/07_scene_tour.mp4",
+    "path": "mujoco/terrain/media/07_scene_tour.mp4",
+    "bytes": 1264082,
+    "sha256": "c7f1d75975b983e22ab40af84bea6235e30474f7d7e208f06c42b911bd8ab91d",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/08_wheel_interfaces_1x.mp4",
+    "path": "mujoco/terrain/media/08_wheel_interfaces_1x.mp4",
+    "bytes": 505462,
+    "sha256": "2ae92e4fa8f2300d80ac4c302d430d03cc6577f38bfca5b2b05bb27f41fd9196",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/09_contact_counterexample_1x.mp4",
+    "path": "mujoco/terrain/media/09_contact_counterexample_1x.mp4",
+    "bytes": 123455,
+    "sha256": "398426b45228b0400c593c7179a09059771feb16c6774b22e7a6678716dc4d1b",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/10_mujoco_overview.png",
+    "path": "mujoco/terrain/media/10_mujoco_overview.png",
+    "bytes": 89193,
+    "sha256": "f716c33fa72382137f750684c16e1c8009c4ea5421b2a207a8e46a9f620bf503",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/11_mujoco_Start.png",
+    "path": "mujoco/terrain/media/11_mujoco_Start.png",
+    "bytes": 78901,
+    "sha256": "146eefce702d7ec9dfc6d4b097d5fe2497e98a5400926ab1864f099dc9ce8a27",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/12_mujoco_B.png",
+    "path": "mujoco/terrain/media/12_mujoco_B.png",
+    "bytes": 97732,
+    "sha256": "a9d7356c215706d266b2ab514858fc57f7e03aad2115a405b5b7e4b789b31ea8",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/13_mujoco_Post.png",
+    "path": "mujoco/terrain/media/13_mujoco_Post.png",
+    "bytes": 55196,
+    "sha256": "beb7ddf0f7ea88d3b1581546c2cbabf37142a802cd20bccd357e0e812d90fa5e",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/14_wheel_video_check.png",
+    "path": "mujoco/terrain/media/14_wheel_video_check.png",
+    "bytes": 109671,
+    "sha256": "ed7aa7cf251dc4735c58e7306e5b3705411a81a563e67f7c1f1ca73525ae8cc0",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/media/15_probe_video_check.png",
+    "path": "mujoco/terrain/media/15_probe_video_check.png",
+    "bytes": 187620,
+    "sha256": "43620a80a992d2d207c316ec2f9bd8040bf4cd4d542e61384ec1616049be0ada",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/mujoco_checks.json",
+    "path": "mujoco/terrain/mujoco_checks.json",
+    "bytes": 23234,
+    "sha256": "5e186cbc2e203f8f87c8f7bccb58df0cb958141be77c95ad5aa68a5f0885bfe4",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/package_checks.json",
+    "path": "mujoco/terrain/package_checks.json",
+    "bytes": 1755,
+    "sha256": "c915905fede06529f3d7118d9ee395e617f44a11b6361e647fb8f0bb52e76c42",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/plane_fits.json",
+    "path": "mujoco/terrain/plane_fits.json",
+    "bytes": 1978,
+    "sha256": "c3088c48446711bc471a88c244aa48c89c6eb7dc2f0ac78276cff77858d90b96",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/probe_replay_baseline.npz",
+    "path": "mujoco/terrain/probe_replay_baseline.npz",
+    "bytes": 6865,
+    "sha256": "009b69f4ca83636d28c287c885940d27a33c26503aefbde50e0e3d58a91627fc",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/probe_replay_contact_v1.npz",
+    "path": "mujoco/terrain/probe_replay_contact_v1.npz",
+    "bytes": 6050,
+    "sha256": "da57172ea43d2a0c64584bffb6d7a3a6da246db7c236a1bfc294510f699cbd6c",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/probes_baseline.xml",
+    "path": "mujoco/terrain/probes_baseline.xml",
+    "bytes": 10390,
+    "sha256": "e1db791d3b65c545c84890c8855fb13d364cd008fe647566715e99cc91b28bed",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/probes_contact_v1.xml",
+    "path": "mujoco/terrain/probes_contact_v1.xml",
+    "bytes": 10443,
+    "sha256": "0cfbe2311567379740c83d4efc41d2cb93c32ef8409f371730c17cab54f3529c",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/provenance/accepted_sample_checks.json",
+    "path": "mujoco/terrain/provenance/accepted_sample_checks.json",
+    "bytes": 1759,
+    "sha256": "47ec8c0b2b5ff1e3a5f79e323b3f43164441e52bcea897c573ca610c1114a34d",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/provenance/accepted_sample_export_checks.json",
+    "path": "mujoco/terrain/provenance/accepted_sample_export_checks.json",
+    "bytes": 1730,
+    "sha256": "6f184d9e8ef46399dd3cf6b59a6741bb70e8d6179e785708d850681b0b789141",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/provenance/accepted_sample_historical_readme.md",
+    "path": "mujoco/terrain/provenance/accepted_sample_historical_readme.md",
+    "bytes": 6510,
+    "sha256": "0f03c44155ae10f9912927249d70c3db95b4b52c9b430184faefe4f1d07c6ee3",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/provenance/accepted_sample_surface_patches.json",
+    "path": "mujoco/terrain/provenance/accepted_sample_surface_patches.json",
+    "bytes": 118045,
+    "sha256": "8b0b4762379928c4d714ac4e10940a2e74b9e4d896536d22c115956c77813328",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/provenance/original_B_repair_report.json",
+    "path": "mujoco/terrain/provenance/original_B_repair_report.json",
+    "bytes": 92453,
+    "sha256": "5c486a6f915ff2d16d75e1043685e977d086b6994f9a66bb1d54a146d9d1e530",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/release_checks.json",
+    "path": "mujoco/terrain/release_checks.json",
+    "bytes": 844,
+    "sha256": "ae2ef729343b4bd23bddcbdbca90542b40c25a07b49d95e4b2a2798dc4b9a261",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/scene_baseline.xml",
+    "path": "mujoco/terrain/scene_baseline.xml",
+    "bytes": 1628,
+    "sha256": "abd88dcc1c57fda8f541852ec8306f3d10568e6122334af04283db5b219b1030",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/scene_contact_v1.xml",
+    "path": "mujoco/terrain/scene_contact_v1.xml",
+    "bytes": 1681,
+    "sha256": "48e6a54a46c7470e27747311c4c8ef6bd9c12cb0e6c2b464e28552822d40c35e",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/scope.json",
+    "path": "mujoco/terrain/scope.json",
+    "bytes": 26520,
+    "sha256": "569391fb24813c6a5cc01fd8712956278e4866a2d90c71ac6fb7b24e8648474f",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/section_display_settings.json",
+    "path": "mujoco/terrain/section_display_settings.json",
+    "bytes": 707,
+    "sha256": "3be4d73387e2226ff2df931925235470e2d652f400eb84c1dbf185891f2cee27",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/surface_regions.json",
+    "path": "mujoco/terrain/surface_regions.json",
+    "bytes": 189386,
+    "sha256": "ece38d5713c8dfeeebb4e56224d7579d29126e90df58e8135ea1bf463a0c3bbd",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/B_preserved.obj",
+    "path": "mujoco/terrain/visual/B_preserved.obj",
+    "bytes": 100038,
+    "sha256": "68b2b6d1a90ece2f0f5a8d8d06ca38c77bf8238325d6563e71c02b218312f0fc",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Post_B_platform.obj",
+    "path": "mujoco/terrain/visual/Post_B_platform.obj",
+    "bytes": 102108,
+    "sha256": "60b6ca3cac428b5f68f62d891522a66ab0b5f75dec8a2abac09afb35c8484703",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Post_B_platform.ply",
+    "path": "mujoco/terrain/visual/Post_B_platform.ply",
+    "bytes": 42905,
+    "sha256": "81a8fcacb741a2c376399dd575ac2c6787c6b92590c431b10bf7a98de5af5562",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_B_short_combined.obj",
+    "path": "mujoco/terrain/visual/Start_B_short_combined.obj",
+    "bytes": 942592,
+    "sha256": "a5459e56b9368d974e9bc48fe9bec629f131105cd4b22e7e609c8d01b66f2812",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_B_short_combined.ply",
+    "path": "mujoco/terrain/visual/Start_B_short_combined.ply",
+    "bytes": 360278,
+    "sha256": "cc39791f853eac46e7c95456745e764855244f3e9293e1addc4c68eddec69ca4",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_raised_band.obj",
+    "path": "mujoco/terrain/visual/Start_raised_band.obj",
+    "bytes": 150036,
+    "sha256": "ee9d816810dc07319b57c06a2a687cfa29d7461ba8010cb4ba31fa02a7a17635",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_raised_band.ply",
+    "path": "mujoco/terrain/visual/Start_raised_band.ply",
+    "bytes": 62921,
+    "sha256": "f74d3b737ea2a69895df3d96a140ac4b377e15dfc369d9ecc1a726ba456412bb",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_remaining.obj",
+    "path": "mujoco/terrain/visual/Start_remaining.obj",
+    "bytes": 368389,
+    "sha256": "f88975eda7fc2a4fc5262ba4e60fd7a6eaa5d206ea2595a8461178a2238f0947",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_remaining.ply",
+    "path": "mujoco/terrain/visual/Start_remaining.ply",
+    "bytes": 148332,
+    "sha256": "f2818cd55fa58888f19ebcc116a103cfcfbb47fd60629744ee973c1c1e3ed92d",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_sample_plane.obj",
+    "path": "mujoco/terrain/visual/Start_sample_plane.obj",
+    "bytes": 149500,
+    "sha256": "4c59d80c9ce2ae91d6e9ca8c53edc4261923c76d446008bb3311b9a498a9b120",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/visual/Start_sample_plane.ply",
+    "path": "mujoco/terrain/visual/Start_sample_plane.ply",
+    "bytes": 63300,
+    "sha256": "cc15d6450d6a4229b6897b3117785b35c03b4098bd195bf65721ecaa47193127",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/wheel_B_Post.xml",
+    "path": "mujoco/terrain/wheel_B_Post.xml",
+    "bytes": 2374,
+    "sha256": "d9699ea30240940d23c9d5e12d670b4a0fed6c0dfd8a0af2f502074d889ba78a",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/wheel_B_Post_replay.npz",
+    "path": "mujoco/terrain/wheel_B_Post_replay.npz",
+    "bytes": 3053,
+    "sha256": "ff205db335ecfde8ea4b083cbb831ac8fe32693ffa46fe919dda45c870d00824",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/wheel_Start_B.xml",
+    "path": "mujoco/terrain/wheel_Start_B.xml",
+    "bytes": 2376,
+    "sha256": "bf26dbea5e07b08156b3527c8281b117d3fec0d30b4ca47e8136146ed1e3f09d",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/wheel_Start_B_replay.npz",
+    "path": "mujoco/terrain/wheel_Start_B_replay.npz",
+    "bytes": 3053,
+    "sha256": "ab20ffbd44b102340252261f736718cfb24106d927222d0ab75cb0d34f3abde8",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/wheel_Start_mesh_seam.xml",
+    "path": "mujoco/terrain/wheel_Start_mesh_seam.xml",
+    "bytes": 2271,
+    "sha256": "85f05496c11a4e9a40b9baca507fdd3a77af82dafed1efc6993c069ad7b71e21",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/three_regions_02/wheel_Start_mesh_seam_replay.npz",
+    "path": "mujoco/terrain/wheel_Start_mesh_seam_replay.npz",
+    "bytes": 3004,
+    "sha256": "2b96c59778b388bbe6d6093961b135ba9e3387f77de32d1b8262e0dc077a298c",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/base_link.STL",
+    "path": "mujoco/robot_scene/robot/base_link.STL",
+    "bytes": 4830534,
+    "sha256": "394585c0badd48741c72fc57874d0485e123c7ecc76cf9cebe8a0685c0eaf9af",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fl_hipx.STL",
+    "path": "mujoco/robot_scene/robot/fl_hipx.STL",
+    "bytes": 850884,
+    "sha256": "72d06cc250037d44013640698a7a54874e4884dd2f5c057323ce55a85fdb78a4",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fl_hipy.STL",
+    "path": "mujoco/robot_scene/robot/fl_hipy.STL",
+    "bytes": 826884,
+    "sha256": "03f98411f2d7ce43b270912f44466421bbeaf30173663c15bdd219b674a4855c",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fl_knee.STL",
+    "path": "mujoco/robot_scene/robot/fl_knee.STL",
+    "bytes": 770534,
+    "sha256": "47d0405e3eb4791d7caf342f03bc957cc1051ee7d249631f81c9ecb09bf7a0db",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fl_wheel.STL",
+    "path": "mujoco/robot_scene/robot/fl_wheel.STL",
+    "bytes": 731384,
+    "sha256": "ebef6a0bd850f0b7883d46f24233c7e0dacd403caf5f1b8dc18d742d0bfaf2f9",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fr_hipx.STL",
+    "path": "mujoco/robot_scene/robot/fr_hipx.STL",
+    "bytes": 863184,
+    "sha256": "ad314bb25f6d33e15b963b5c7dc6a84052dba48e865f634d09dc061051338f73",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fr_hipy.STL",
+    "path": "mujoco/robot_scene/robot/fr_hipy.STL",
+    "bytes": 826534,
+    "sha256": "aa844e64649fe0e0d84303f804dfa6a81c755e27c243379b36e2cf78d887815c",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fr_knee.STL",
+    "path": "mujoco/robot_scene/robot/fr_knee.STL",
+    "bytes": 770134,
+    "sha256": "eeb40a8b020990d696d2a3a382e7895cffd23bc862ae23c3ef558f4f00444bc1",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/fr_wheel.STL",
+    "path": "mujoco/robot_scene/robot/fr_wheel.STL",
+    "bytes": 731684,
+    "sha256": "3ba672f805fb63cfbda409959325d5a17e16985622d5c4dc97cafb64bf3a2784",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hl_hipx.STL",
+    "path": "mujoco/robot_scene/robot/hl_hipx.STL",
+    "bytes": 863184,
+    "sha256": "e4e0b5e2dbaaab069a9b3b12e18ad56aa2f03ecb1c9167d9360d16e86fa1f52f",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hl_hipy.STL",
+    "path": "mujoco/robot_scene/robot/hl_hipy.STL",
+    "bytes": 826534,
+    "sha256": "d6649a94ca73d931ede00ecf3f741f1f7685e794e811152af1ab5744053b0ae5",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hl_knee.STL",
+    "path": "mujoco/robot_scene/robot/hl_knee.STL",
+    "bytes": 769834,
+    "sha256": "0d393cc959dac947c9e7147aa9150f49a614991f7ba66b7aca679662f29b74fd",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hl_wheel.STL",
+    "path": "mujoco/robot_scene/robot/hl_wheel.STL",
+    "bytes": 731284,
+    "sha256": "e57e1e80dd230a2da4f49e439e59c06adf9f23f37e20130e7ec5eb150ba27adc",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hr_hipx.STL",
+    "path": "mujoco/robot_scene/robot/hr_hipx.STL",
+    "bytes": 851484,
+    "sha256": "0258c98230264d511011dc97e625b625493797f05f6ae4b8e48f7f5aa0d78a12",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hr_hipy.STL",
+    "path": "mujoco/robot_scene/robot/hr_hipy.STL",
+    "bytes": 826534,
+    "sha256": "312c0795118f105279e509baa36e4025d34e263ea2cfd22100e0f5141e63eb50",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hr_knee.STL",
+    "path": "mujoco/robot_scene/robot/hr_knee.STL",
+    "bytes": 770134,
+    "sha256": "a27c78d383457f6cda39eca3b19949a89504bc85a42a1bc750faa150ba03f634",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/robot/hr_wheel.STL",
+    "path": "mujoco/robot_scene/robot/hr_wheel.STL",
+    "bytes": 731584,
+    "sha256": "9e74e87e07e1c4717f8185d5669fbaacba0a0079c299d45a9a5d5494e0b3b212",
+    "identical": true
+  },
+  {
+    "source": "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/course_full.yaml",
+    "path": "mujoco/robot_scene/simulation_route.yaml",
+    "bytes": 1369,
+    "sha256": "b8c4cfa53e7ac78b67556228ac5dcf40dea18aabc15086d0aed519d0499f4bcc",
+    "identical": true
+  }
+]

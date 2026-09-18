@@ -1,0 +1,38 @@
+[
+  {
+    "source": "/var/opt/robot/conf/rslidar/config.yaml",
+    "local": "var__opt__robot__conf__rslidar__config.yaml",
+    "bytes": 4811,
+    "sha256": "93b05d28ebd2a6c1921b363e89e6758ef811764cba923ac5bb615b65523c754d"
+  },
+  {
+    "source": "/var/opt/robot/conf/yesense_node/yesense.yaml",
+    "local": "var__opt__robot__conf__yesense_node__yesense.yaml",
+    "bytes": 518,
+    "sha256": "a9e5b1c96abfd22382c771b925961bfcb1df68e7be2e79c8f81b62bac9f611f0"
+  },
+  {
+    "source": "/var/opt/robot/conf/slam/params.yaml",
+    "local": "var__opt__robot__conf__slam__params.yaml",
+    "bytes": 1637,
+    "sha256": "5988432757df29ed8ae6a3a515c9e9d80716f50631c421153966ca8d544b1459"
+  },
+  {
+    "source": "/opt/robot/share/slam/conf/params.yaml",
+    "local": "opt__robot__share__slam__conf__params.yaml",
+    "bytes": 4439,
+    "sha256": "fa18cfd5d706a6ac40f90c9e2f4e4b37a580d9684819cb153ad0509ffbe20cab"
+  },
+  {
+    "source": "/var/opt/robot/conf/robot_hardware_info.toml",
+    "local": "var__opt__robot__conf__robot_hardware_info.toml",
+    "bytes": 502,
+    "sha256": "ca4eb6801ce6343c3c78a27b7b97a4dfb58e1a2f733e685a5fdd71ad855a73fd"
+  },
+  {
+    "source": "/opt/robot/fastdds.xml",
+    "local": "opt__robot__fastdds.xml",
+    "bytes": 2772,
+    "sha256": "df6b4b95bb2d75dddf88d436036dd926c9efb3304ac1fce41dce6d4be54c363e"
+  }
+]

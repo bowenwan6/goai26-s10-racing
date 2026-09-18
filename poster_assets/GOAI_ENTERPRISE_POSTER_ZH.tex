@@ -1,0 +1,223 @@
+\documentclass[12pt]{article}
+\usepackage[a3paper,portrait,top=11mm,bottom=10mm,left=13mm,right=13mm]{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setCJKmainfont{Songti SC}
+\setCJKsansfont{Heiti SC}
+\usepackage{xcolor,graphicx,tikz,tcolorbox,tabularx,array,booktabs,ragged2e,enumitem,amsmath}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\renewcommand{\familydefault}{\sfdefault}
+\definecolor{navy}{HTML}{123044}
+\definecolor{deep}{HTML}{0B2233}
+\definecolor{teal}{HTML}{137888}
+\definecolor{cyan}{HTML}{35A7B4}
+\definecolor{orange}{HTML}{EF8B45}
+\definecolor{green}{HTML}{2E8B57}
+\definecolor{red}{HTML}{D65A4A}
+\definecolor{gold}{HTML}{D9A11E}
+\definecolor{ink}{HTML}{18323F}
+\definecolor{muted}{HTML}{526874}
+\definecolor{pale}{HTML}{EFF5F6}
+\definecolor{paleBlue}{HTML}{E7F2F5}
+\definecolor{paleOrange}{HTML}{FFF1E7}
+\definecolor{line}{HTML}{C9D9DE}
+\newcommand{\posterheader}[3]{%
+\begin{tcolorbox}[colback=navy,colframe=navy,boxrule=0pt,arc=0mm,left=8mm,right=8mm,top=7mm,bottom=6mm]
+{\color{white}\fontsize{31}{35}\selectfont\bfseries #1}\hfill
+\raisebox{1mm}{\tcbox[colback=orange,colframe=orange,boxrule=0pt,arc=1.5mm,left=3mm,right=3mm,top=1.5mm,bottom=1.5mm]{\color{white}\bfseries #3}}\\[2mm]
+{\color{white!82}\fontsize{15}{18}\selectfont #2}
+\end{tcolorbox}\vspace{2mm}}
+\newcommand{\sectiontitle}[1]{\vspace{1mm}{\color{navy}\fontsize{20}{23}\selectfont\bfseries #1}\par\vspace{1.5mm}{\color{teal}\rule{\linewidth}{1.2pt}}\vspace{2mm}}
+\newtcolorbox{softbox}[1][]{colback=pale,colframe=line,boxrule=.6pt,arc=2mm,left=4mm,right=4mm,top=3mm,bottom=3mm,#1}
+\newtcolorbox{accentbox}[1][]{colback=paleBlue,colframe=teal,boxrule=1pt,arc=2mm,left=4mm,right=4mm,top=3mm,bottom=3mm,#1}
+\newcommand{\bigmetric}[3]{\begin{tcolorbox}[colback=#3!9,colframe=#3,boxrule=.9pt,arc=2mm,left=3mm,right=3mm,top=2.5mm,bottom=2mm]
+{\color{#3}\fontsize{25}{28}\selectfont\bfseries #1}\par{\color{ink}\bfseries #2}\end{tcolorbox}}
+\newcommand{\pill}[2]{\tcbox[colback=#1!10,colframe=#1,boxrule=.7pt,arc=3mm,left=2.3mm,right=2.3mm,top=1mm,bottom=1mm]{\color{#1}\bfseries #2}}
+\newcommand{\cardhead}[2]{{\color{#1}\fontsize{17}{20}\selectfont\bfseries #2}\par\vspace{1mm}}
+\newcommand{\sub}{\fontseries{m}\selectfont\scriptsize\color{muted}}
+\setlist[itemize]{leftmargin=5mm,itemsep=1.2mm,topsep=1mm}
+\begin{document}
+
+% ==================== PAGE 1 ====================
+\posterheader{Lynx S10 轮足机器人比赛系统}{感知约束导航 · 规则策略路由 · 强化学习运动控制}{比赛方法与验证}
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tcolorbox}[colback=black,colframe=navy,boxrule=1pt,arc=2mm,left=0mm,right=0mm,top=0mm,bottom=0mm]
+\includegraphics[width=\linewidth]{img/course_height_overview.png}
+\end{tcolorbox}
+{\color{muted}\small 比赛场景网格的俯视重建：颜色表示地表高度，白线表示 WP0→WP32 的有序路线。}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\linewidth}
+\begin{softbox}[height=93mm]
+\cardhead{navy}{比赛如何进行？}
+机器人从 WP0 出发，必须按编号依次进入 WP1--WP32 的水平判定圆。路线跨越普通路面、坡道、楼梯、高台阶、窄平台和多层高架结构。
+\vspace{2mm}
+\begin{tabularx}{\linewidth}{@{}X X@{}}
+\bigmetric{33}{有序航点}{teal}&\bigmetric{224.21 m}{水平路线}{cyan}\\[-1mm]
+\bigmetric{6.70 m}{累计爬升}{orange}&\bigmetric{0.20 m}{判定半径}{green}
+\end{tabularx}
+\vspace{2mm}
+{\small\color{ink}\textbf{高度进程：}地面起步 $\rightarrow$ 1.165 m 高架环线 $\rightarrow$ 0.377 m 高台阶 $\rightarrow$ 2.36／2.70 m 平台 $\rightarrow$ 3.75 m 终段。}
+\par\vspace{1mm}{\small\color{muted}累计爬升是所有上升段之和；图中色条上限 6.37 m 包含不在航点路线上的更高结构。}
+\end{softbox}
+\end{minipage}
+
+\sectiontitle{1  当前比赛方法：分层控制与受约束策略切换}
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={rounded corners=2mm,draw=line,very thick,fill=pale,minimum height=15mm,text width=34mm,align=center,font=\bfseries\small,inner sep=2.5mm},
+  sub/.style={font=\scriptsize\normalfont,text=muted},
+  arr/.style={-{Stealth[length=3mm]},very thick,draw=teal},
+  branch/.style={-{Stealth[length=2.5mm]},thick,draw=orange}
+]
+\node[box,fill=paleBlue] (sense) at (0,0) {地形＋本体感知\\[-1mm]{\sub LiDAR 8×64 · 高度图 13×9}};
+\node[box] (nav) at (4.3,0) {导航与路径跟踪\\[-1mm]{\sub 航点 · 净空 · 速度约束}};
+\node[box,fill=paleOrange,draw=orange] (router) at (8.6,0) {规则 router\\[-1mm]{\sub 接近 · 对齐 · 验证 · 交还}};
+\node[box,fill=white] (base) at (13.0,0.95) {基础运动策略\\[-1mm]{\sub 普通路段 · 57D 观测}};
+\node[box,fill=white] (special) at (13.0,-0.95) {高台阶残差策略\\[-1mm]{\sub 高度图条件 · 174D 观测}};
+\node[box,fill=green!8,draw=green] (arbiter) at (17.5,0) {安全仲裁\\[-1mm]{\sub 单一控制权 · 限幅 · 急停}};
+\node[box] (act) at (22.0,0) {动作执行\\[-1mm]{\sub 12 关节位置＋4 轮速}};
+\node[font=\scriptsize\bfseries,text=orange] at (13.0,1.95) {router 每周期只授权一个策略};
+\draw[arr] (sense)--(nav); \draw[arr] (nav)--(router);
+\draw[branch] (router.east) to[out=15,in=180] (base.west);
+\draw[branch] (router.east) to[out=-15,in=180] (special.west);
+\draw[arr] (base.east) to[out=0,in=165] (arbiter.west);
+\draw[arr] (special.east) to[out=0,in=195] (arbiter.west);
+\draw[arr] (arbiter)--(act);
+\node[font=\scriptsize,text=muted] at (11.0,-2.05) {图中箭头表示控制权流程；两类策略均读取本体状态，专用策略额外读取高度图。};
+\end{tikzpicture}
+\end{center}
+
+\begin{minipage}[t]{0.47\linewidth}
+\begin{accentbox}[height=49mm]
+\cardhead{teal}{为什么使用残差策略？}
+基础策略负责稳定运动；高台阶策略只学习有限动作修正：
+\[
+ a_t=\operatorname{clip}\!\left(\pi_b(o_t)+m_t\,s\odot\mu_\theta(o_t)\right).
+\]
+门控量 $m_t$ 只在入口条件满足时授权残差。通过障碍后，系统独立确认四轮越沿、接触和姿态，再交回控制权。
+\end{accentbox}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.50\linewidth}
+\begin{softbox}[height=49mm]
+\cardhead{navy}{强化学习训练}
+\begin{itemize}
+\item 冻结基础 actor，仅训练高台阶 residual；算法为 PPO。
+\item 固定高台阶约 \textbf{0.377 m}；入口距离 0.55--0.65 m，初始速度 0.18--0.40 m/s。
+\item 奖励覆盖前进、前后轮越沿、完成、跌倒与动作平滑。
+\item 部署使用策略均值；训练与部署周期均为 20 ms。
+\end{itemize}
+\end{softbox}
+\end{minipage}
+
+\sectiontitle{2  已完成验证：结果明确，适用范围明确}
+
+\begin{minipage}[t]{0.53\linewidth}
+\begin{tcolorbox}[colback=black,colframe=navy,boxrule=1pt,arc=2mm,left=0mm,right=0mm,top=0mm,bottom=0mm]
+\includegraphics[width=\linewidth,height=46mm,keepaspectratio]{img/high_step_close.png}
+\end{tcolorbox}
+{\color{muted}\small 高台阶局部评测放大图：机器人处于前轮越沿、后轮推进行程。}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.44\linewidth}
+\begin{tabularx}{\linewidth}{@{}X X@{}}
+\bigmetric{33/33}{完整路线航点}{green}&\bigmetric{392.257 s}{一次归档整圈}{teal}\\[-1mm]
+\bigmetric{38/45}{高台阶完成}{green}&\bigmetric{20/45}{完成且保持前轮支撑}{orange}
+\end{tabularx}
+\vspace{1mm}
+\begin{tikzpicture}[x=0.19\linewidth,y=1cm]
+\fill[green] (0,0) rectangle (4.222,0.34);
+\fill[red] (4.222,0) rectangle (4.444,0.34);
+\fill[gold] (4.444,0) rectangle (5,0.34);
+\node[anchor=west,font=\scriptsize] at (0,-0.25) {成功 38};
+\node[anchor=center,font=\scriptsize] at (2.7,-0.25) {跌倒 2};
+\node[anchor=east,font=\scriptsize] at (5,-0.25) {超时 5};
+\end{tikzpicture}
+\end{minipage}
+
+\begin{tcolorbox}[colback=paleOrange,colframe=orange,boxrule=.8pt,arc=1.5mm,left=4mm,right=4mm,top=2.3mm,bottom=2.3mm]
+\textbf{证据边界：} 45-case 矩阵参与过模型选择，不能视为独立测试集；整圈结果是固定版本的一次成功仿真运行，不代表实地完赛率。38 次局部成功中有 18 次未持续满足前轮几何支撑，实机仍需检查接触、滑移、冲击与姿态。
+\end{tcolorbox}
+
+\vfill
+{\color{muted}\small GOAI LAI／狗來 · Lynx S10 · 企业技术交流海报 1/2 · 数据与表述对应 2026-09-03 技术报告}
+\newpage
+
+% ==================== PAGE 2 ====================
+\posterheader{从仿真到实地比赛}{合作需求 · 当前瓶颈 · 可执行的技术路线}{企业合作重点}
+
+\sectiontitle{1  我们希望企业提供的三类支持}
+
+\begin{minipage}[t]{0.32\linewidth}
+\begin{accentbox}[height=65mm]
+{\color{teal}\fontsize{24}{27}\selectfont\bfseries 01}\quad\cardhead{navy}{技术知识与指导}
+\begin{itemize}
+\item \textbf{强化学习：} 奖励、课程、域随机化、训练稳定性、仿真到实机
+\item \textbf{导航：} 近场地形建图、状态估计、规划与恢复
+\item \textbf{轮足机器人：} 动力学、执行器、接触、系统辨识与安全测试
+\end{itemize}
+\end{accentbox}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}
+\begin{softbox}[height=65mm,colframe=orange,colback=paleOrange]
+{\color{orange}\fontsize{24}{27}\selectfont\bfseries 02}\quad\cardhead{navy}{GPU 与硬件设施}
+\begin{itemize}
+\item 并行仿真、策略训练和批量回放所需 GPU
+\item S10 或相近轮足平台、机器人端计算单元
+\item LiDAR／IMU、可调台阶与楼梯、同步日志设备
+\item 牵引、急停、电池与易损备件
+\end{itemize}
+\end{softbox}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}
+\begin{softbox}[height=65mm,colframe=cyan,colback=paleBlue]
+{\color{cyan}\fontsize{24}{27}\selectfont\bfseries 03}\quad\cardhead{navy}{开源或闭源模型}
+\begin{itemize}
+\item 预训练运动、地形感知、导航或 router 模型
+\item 可评估的视觉语言／语言模型
+\item 权重或 API、输入输出定义、推理延迟
+\item 部署环境、许可和技术支持范围
+\end{itemize}
+\end{softbox}
+\end{minipage}
+
+\sectiontitle{2  当前瓶颈：哪些问题会阻碍实地完赛？}
+
+\begin{tabularx}{\linewidth}{@{}X@{\hspace{4mm}}X@{\hspace{4mm}}X@{}}
+\begin{softbox}[height=39mm]\pill{teal}{数据}\par\textbf{同步实机数据集不完整}\par\small 缺少真实成功／失败样本，以及 LiDAR、IMU、关节、轮速、电流／力矩与命令的对齐记录。\end{softbox}&
+\begin{softbox}[height=39mm]\pill{orange}{算力}\par\textbf{训练与验证资源受限}\par\small 并行仿真、域随机化、超参数筛选与多模型回放需要持续 GPU 资源。\end{softbox}&
+\begin{softbox}[height=39mm]\pill{red}{时间}\par\textbf{赛前集成窗口有限}\par\small 接口或硬件变更会触发重新标定、回放与安全验证，需要缩短问题闭环。\end{softbox}\\[4mm]
+\begin{softbox}[height=39mm]\pill{gold}{迁移}\par\textbf{仿真到实机存在系统差异}\par\small 质量、质心、摩擦、执行器响应、延迟和轮胎接触误差可能使策略失效。\end{softbox}&
+\begin{softbox}[height=39mm]\pill{cyan}{感知}\par\textbf{真实地形输入尚未闭环}\par\small 遮挡、空洞、运动畸变、不同步和定位漂移会改变 13×9 控制网格。\end{softbox}&
+\begin{softbox}[height=39mm]\pill{navy}{可靠性}\par\textbf{连续运行与恢复仍需验证}\par\small 需覆盖电池、温升、丢包、传感器停更、急停、接管、回退和重新起步。\end{softbox}
+\end{tabularx}
+
+\sectiontitle{3  技术路线：先提高完赛可靠性，再升级模型架构}
+
+\begin{tabularx}{\linewidth}{@{}X@{\hspace{3mm}}X@{\hspace{3mm}}X@{\hspace{3mm}}X@{}}
+\begin{softbox}[height=39mm,colback=paleBlue,colframe=teal]\pill{teal}{近期首选}\par\textbf{Router 架构}\par\small 保留基础＋专用策略与安全规则；并行评估轻量学习型 router。\end{softbox}&
+\begin{softbox}[height=39mm,colback=paleOrange,colframe=orange]\pill{orange}{测试保障}\par\textbf{手动操作／接管}\par\small 用于安全保护、危险地形对齐和数据采集；正式使用以比赛规则为准。\end{softbox}&
+\begin{softbox}[height=39mm]\pill{cyan}{中期候选}\par\textbf{大模型决策＋小模型执行}\par\small 大模型选择目标和技能；轻量策略按 50 Hz 执行动作。\end{softbox}&
+\begin{softbox}[height=39mm]\pill{navy}{长期候选}\par\textbf{单一全地形模型}\par\small 减少切换接口；需要更完整数据、算力和跨地形回归。\end{softbox}
+\end{tabularx}
+\begin{tcolorbox}[colback=white,colframe=teal,boxrule=.8pt,arc=2mm,left=4mm,right=4mm,top=2mm,bottom=2mm]
+\small\textbf{实施顺序：}真实接口与同步数据 $\rightarrow$ 稳定当前比赛主链 $\rightarrow$ 学习型 router 离线／低速验证 $\rightarrow$ 比较分层大小模型与单一通用模型。
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=navy,colframe=navy,boxrule=0pt,arc=2mm,left=5mm,right=5mm,top=4mm,bottom=4mm]
+{\color{white}\fontsize{18}{21}\selectfont\bfseries 合作后首先形成的三项成果}\par\vspace{2mm}
+{\color{white!92}
+\textbf{A.} 覆盖成功与失败的同步实机数据集\qquad
+\textbf{B.} 仿真／实机参数及延迟对照表\\[1.5mm]
+\textbf{C.} 连续路线测试与故障处置流程\\[2mm]
+\textbf{资源优先级：} 实机与测试条件 $\rightarrow$ 技术评审 $\rightarrow$ 训练 GPU $\rightarrow$ 可部署模型}
+\end{tcolorbox}
+
+\vfill
+{\color{muted}\small GOAI LAI／狗來 · Lynx S10 · 企业技术交流海报 2/2 · 完整训练配置、源码和原始评测记录见技术附件}
+\end{document}

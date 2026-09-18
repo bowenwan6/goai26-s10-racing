@@ -1,0 +1,56 @@
+...............ssssss.ssssssssssssssssssssssssssssss...sssssssss........ [ 20%]
+........................................................................ [ 40%]
+........................................................................ [ 60%]
+.F...sssss.......................................ss..................... [ 80%]
+.....................................................................sss [100%]
+=================================== FAILURES ===================================
+_____ test_ordered_evidence_accepts_exactly_018_and_only_one_gate_per_tick _____
+
+    def test_ordered_evidence_accepts_exactly_018_and_only_one_gate_per_tick():
+>       from s10_auto_nav.segment_recorder import OrderedWaypointEvidence
+
+src/s10_auto_nav/test/test_segment_recorder.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Watch a segment run, record it, and decide when it is over.
+    
+    This is the only node the full-stack segment harness adds to the race launch. Everything
+    that drives the robot -- simulator, perception, follower with its local planner, step commit
+    and stall recovery, the strategy router, and the SDK's ``rl_deploy`` -- is the production
+    stack, launched from the production launch file with the production parameters. The one
+    thing that differs is where the robot starts, and that is done by the simulator reading
+    ``S10_SPAWN_XY``; see :mod:`s10_perception.segment_spawn`.
+    
+    The distinction matters because the earlier, cheaper harness
+    (``training/s10_climb/segment_runner.py``) composed only the pure-pursuit controller and the
+    course. It reported four "the robot stalls on the approach" failures that the production
+    follower's :class:`~s10_auto_nav.step_commit.StepCommit` exists specifically to prevent, and
+    three "the robot drives into a wall" failures on a stack that had no lidar and no local
+    planner. Those results describe pure pursuit on its own; they do not describe the race. This
+    node exists so that a claim about the race is made against the thing that runs in the race.
+    
+    It records rather than judges wherever it can. The outcome is decided from ground truth --
+    did the base reach the end waypoint, did it fall, did it run out of time -- and the router's
+    own account of itself is written down beside it, not trusted in place of it.
+    
+    Subscribed: ``/ground_truth/odom``, ``/cmd_vel``, ``/scan``, ``/nav/finished``,
+    ``/strategy/mode``, ``/strategy/source``, ``/strategy/status``, ``/strategy/transition``.
+    Written: ``<out>/<name>.csv`` per control tick, ``<out>/<name>.json`` for the summary.
+    """
+    
+    from __future__ import annotations
+    
+    import contextlib
+    import csv
+    import json
+    import math
+    from pathlib import Path
+    
+    import numpy as np
+>   import rclpy
+E   ModuleNotFoundError: No module named 'rclpy'
+
+src/s10_auto_nav/s10_auto_nav/segment_recorder.py:36: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED src/s10_auto_nav/test/test_segment_recorder.py::test_ordered_evidence_accepts_exactly_018_and_only_one_gate_per_tick
+1 failed, 304 passed, 55 skipped in 4.17s

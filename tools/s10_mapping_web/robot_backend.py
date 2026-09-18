@@ -281,6 +281,30 @@ def field_pending():
 def main():
     import fcntl
     request = json.loads(sys.stdin.readline(4096))
+    if request.get('action') == 'native_nav':
+        from field_worker import rpc_call
+        from native_nav import SOCKET
+        try:
+            response = dict(ok=True, result=rpc_call(request.get('request', {}), socket_path=SOCKET))
+        except Exception as exc:
+            response = dict(ok=False, error=str(exc), code=getattr(exc, 'code', 'unavailable'))
+        print('S10_RESULT '+json.dumps(response, ensure_ascii=False), flush=True)
+        return
+    if request.get('action') == 'imu_diag_stream':
+        from field_worker import rpc_call
+        cursor = 0
+        epoch = None
+        try:
+            while True:
+                row = rpc_call(dict(action='imu_diag', request=dict(action='live', cursor=cursor)))
+                if epoch is not None and epoch != row['epoch']:
+                    row = rpc_call(dict(action='imu_diag', request=dict(action='live', cursor=0)))
+                epoch, cursor = row['epoch'], row['seq']
+                print('S10_RESULT '+json.dumps(row, ensure_ascii=False, allow_nan=False), flush=True)
+                time.sleep(.2)
+        except (BrokenPipeError, KeyboardInterrupt):
+            pass
+        return
     if request.get('action') == 'field':
         from field_worker import rpc_call
         try:

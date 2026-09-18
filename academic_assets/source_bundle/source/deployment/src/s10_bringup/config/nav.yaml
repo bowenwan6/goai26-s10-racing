@@ -1,0 +1,308 @@
+# Waypoint follower tuning.
+#
+# max_forward is the single most important number here: the course is ~224 m, so lap time
+# is dominated by the commanded speed ceiling. It must not exceed the velocity range the
+# locomotion policy was trained on, or the policy will be driven out of distribution and
+# fall. Raise it together with the training command range, never alone.
+#
+# The figures below are inherited from the upstream template's teleop caps. That file is not
+# vendored here, so the numbers cannot be checked against their source from this tree and
+# should be treated as convention rather than as a measured envelope -- the earlier version
+# of this comment cited it as though it were on disk, and quoted a lateral cap of 0.5 that
+# does not match the 0.4 actually set below.
+#
+# What is measured, and what actually constrains these: at 1.2 rad/s the robot pivoted on the
+# spot at waypoint 0 indefinitely, because the policy does not follow a yaw rate it never saw
+# in training. That is the failure mode raising these buys, and it is why the ceiling moves
+# only together with the training command range, never alone.
+
+waypoint_follower:
+  ros__parameters:
+    control_rate: 50.0
+
+    # Two internal radii. score_radius is deliberately 0.02 m tighter than the contest's
+    # independent 0.20 m evaluator; advance_radius is
+    # is only the outer bound at which an approach is considered to have begun, so that a
+    # gate the robot has already passed its closest point to releases the cursor instead of
+    # sending it back round. Advancing on advance_radius alone lost gates 17, 21 and 22 of
+    # the continuous waypoint 16 to 32 run at closest approaches of 0.34, 0.32 and 0.34 m.
+    # A strict ordered run gains nothing by abandoning an unscored gate: the entire tail
+    # is invalid afterwards. Keep the fallback radius at the internal score radius so the follower
+    # cannot reproduce escape16's 0.348 m advance at WP24.
+    advance_radius: 0.18
+    score_radius: 0.18
+
+    # TPE screening followed by independent seeds 6/7/8 kept 2.1 on the admitted flat
+    # legs. WP1->2 took 14.80-16.70 s and WP13->14 20.95-23.65 s, with 9.9 deg maximum
+    # tilt and no stalls. Earlier 2.5 and 3.0 probes produced 24-28 deg flat-ground tilt.
+    max_forward: 2.1
+    # max_forward is admitted only on measured-clear, level course legs by the scheduler
+    # below. Every turn, obstacle, ramp, stair, route hint and Gate16 approach retains the
+    # independently seeded WP6->7 and WP22->23 runs accepted 1.2: 30.30-34.75 s with
+    # 38.6 deg maximum tilt and no stalls. Narrow and edge-adjacent legs remain capped by
+    # the paired waypoint limits below.
+    terrain_max_forward: 1.2
+    # When terrain_max_forward is raised after segmented validation, keep the known narrow
+    # decks, barrier final approaches, Gate16 entry and body-clear tail at their separately
+    # validated ceiling. The paired arrays avoid a hidden waypoint-specific code branch and
+    # keep every exception visible in the competition configuration.
+    waypoint_speed_limit_indices: [16, 24, 25, 26, 27, 28, 29, 31, 32]
+    waypoint_speed_limit_values: [0.7, 0.7, 0.7, 0.95, 0.7, 0.95, 0.7, 0.7, 0.7]
+    fast_flat_waypoints: [2, 10, 14, 22]
+    fast_flat_min_gate_distance: 1.5
+    fast_flat_max_heading_deg: 7.0
+    fast_flat_max_cross_track: 0.26
+    fast_flat_max_tilt_deg: 13.0
+    fast_flat_max_pitch_deg: 6.0
+    max_lateral: 0.4
+    max_yaw_rate: 0.7
+
+    lookahead: 1.5
+    lookahead_speed_gain: 0.7
+    yaw_gain: 1.8
+    lateral_gain: 0.9
+    # A 75-degree threshold let the WP26->27 right-angle turn translate north while
+    # rotating and walk off the narrow elevated deck. Hold position until a new leg is
+    # within 30 degrees of the nose, then resume normal pursuit.
+    pivot_threshold_deg: 30.0
+    align_falloff_deg: 60.0
+    min_speed_fraction: 0.15
+    # Command-rate limits are part of the policy interface. They ship at the previously
+    # hard-coded values and are exposed here so segmented trials can tune acceleration
+    # without changing controller code between candidates.
+    forward_slew: 5.0
+    lateral_slew: 2.0
+    yaw_slew: 6.0
+    # WP26 and WP27 are right-angle gates on a narrow elevated transfer deck. The learned
+    # policy drifts roughly 0.6 m in the old travel direction under a pure yaw command, so
+    # score each gate, retreat over the known-safe incoming path, and turn with margin.
+    corner_retreat_waypoints: [26, 27]
+    corner_retreat_distance: 0.7
+    corner_retreat_speed: 0.35
+    corner_align_tolerance_deg: 9.0
+    # WP27->28 is a validated spiral ramp, while the direct WP29->30 corridor is body-clear
+    # in the 5 cm MuJoCo terrain cast. The stacked storey nevertheless makes their local
+    # height maps alternate DROP/HIGH_BARRIER (WP30 reported a nonexistent 0.9-1.0 m drop).
+    # Keep these known routes instead of letting that projection steer or throttle off them.
+    committed_terrain_waypoints: [28, 30]
+    # Only WP28 has a final riser that needs momentum. Keeping this list separate prevents
+    # the clear WP30 approach from backing away merely because it is also terrain-committed.
+    committed_runup_waypoints: [28]
+    # The final 0.231 m riser leaves a standing push 0.31-0.32 m from WP28. Back over the
+    # already traversed ramp until there is enough distance for a genuine momentum attempt;
+    # 20 s bounds a reverse that cannot dislodge the chassis.
+    committed_runup_trigger: 0.55
+    committed_runup_distance: 1.3
+    committed_runup_timeout: 20.0
+    # WP28->29 is a level z=3.760 m upper-deck corridor in the MuJoCo ray cast, including
+    # the centreline and +/-0.30 m samples. The local height map nevertheless sees the
+    # lower storey and overhead spiral, reports a nonexistent 0.73-0.79 m rise and steers
+    # the robot into the side structure. After a stable WP28 exit, reject cross-storey
+    # height-derived terrain labels. Horizontal lidar still vets every heading and
+    # BLOCKED/UNSTABLE/UNKNOWN retain their ordinary safety behaviour.
+    same_level_corridor_waypoints: [29]
+    same_level_corridor_max_tilt_deg: 12.0
+    same_level_corridor_stable_hold: 0.4
+    # WP30->31 starts beside the upper-deck drop and a pillar. WP31->32 crosses a two-tier
+    # wall whose south end is y=19.124; a 0.45 m body envelope must first pass west of the
+    # wall at y=18.5. These measured body-clear points shape the legs without advancing or
+    # relaxing the strict waypoint cursor.
+    route_hint_waypoints: [31, 32]
+    route_hint_points: [29.35, 17.8, 30.55, 18.5]
+    route_hint_radius: 0.28
+    route_hint_speed: 0.75
+    # A gate may score before the rear wheels have cleared its lip. In that pose the normal
+    # terrain recovery must retain ownership; the connector arms only after settling.
+    route_hint_max_tilt_deg: 12.0
+    route_hint_stable_hold: 0.4
+    # Preserve translation through selected broad corners while previewing the next
+    # body-clear corridor. The current gate remains the world-frame translation target,
+    # so this cannot relax or skip the strict 0.18 m acceptance check. Every unlisted
+    # transition retains the conservative 30 degree in-place pivot.
+    corner_preview_waypoints: [13, 19, 20, 21, 22, 23]
+    corner_preview_distance: 0.8
+    corner_preview_speed: 0.7
+    corner_preview_max_tilt_deg: 10.0
+
+    # Distance from the gate at which forward speed starts coming off. Zero means "use the
+    # lookahead", which is what the brake did before this was a parameter, so the shipped
+    # value below changes nothing about a flat leg.
+    #
+    # Measured, on the sixteen post-gate-16 segments, at 0.4 against the inherited 1.4: the
+    # segments that passed still passed, and four that did not began to. What it buys is the
+    # run-in to a raised gate -- braking 1.4 m out arrives at the lip with no momentum, which
+    # on this course is the difference between stepping up and stopping against it. What it
+    # costs is overshoot on the flat, which the strict 0.18 m capture now has to control.
+    #
+    # It is left at zero on the flat and applied only where it was measured to help. The
+    # terrain classifier picks between the two from the live height map and lidar; there is
+    # no per-segment operator switch, and stair_brake_distance is never selected by waypoint
+    # number. See TerrainClassifier and _brake_distance_for.
+    brake_distance: 0.0
+    stair_brake_distance: 0.35
+
+    # Stall watchdog, two clocks. The fast one is for wedging against a ledge while the gait
+    # keeps cycling, which never trips a fall detector: under stall_speed for stall_timeout.
+    #
+    # The slow one is for the other shape of stuck, where the wheels never stop. Between two
+    # avoidance choices the robot swings left and right at 0.04-0.11 m/s, so every tick above
+    # stall_speed resets the fast clock and it never reaches 2.5 s; a run sat at (18.9, 29.6)
+    # short of the waypoint-18 staircase until the time limit, reporting zero stalls. The slow
+    # clock ignores speed entirely and asks only whether the gate is getting closer.
+    #
+    # 12 s, not 2.5, because a legitimate detour around an obstacle covers ground sideways and
+    # closes nothing for as long as it lasts. At the 0.7 m/s terrain ceiling that is 8 m of driving --
+    # longer than any detour this course asks for, and short enough to leave 99 attempts inside
+    # a 1200 s run.
+    stall_speed: 0.08
+    stall_timeout: 2.5
+    progress_timeout: 12.0
+    recovery_duration: 1.0
+
+    # Obstacle avoidance. Not optional on this course: 12 of the 32 legs cross terrain
+    # more than 0.35 m above the gate plane, and gate 11 sits 0.34 m from the face of a
+    # 2.6 m block that the line to gate 12 runs straight through.
+    avoidance_enabled: true
+
+    # How far off the bearing to the gate the follower may steer. Ninety degrees is what
+    # the gate 11 block needs -- the only clear route there is square to the goal.
+    max_deviation_deg: 90.0
+
+    # Half-width of the corridor a candidate heading must keep clear. The S10 is about
+    # 0.5 m across; the rest is margin for pose and tracking error.
+    corridor_half_width: 0.45
+
+    probe_distance: 4.0
+    blocked_distance: 0.8
+    clearance_weight: 1.6
+    deviation_weight: 1.0
+
+    # A low wall can sit below the horizontal scan ring. Once the height map confirms one,
+    # commit far enough toward its lower-relief edge to clear the body's corner instead of
+    # shaving a few degrees off the gate bearing on every tick. Measured on WP23->24: the
+    # free route is south/right of the wall and requires the centre to move about 0.8 m
+    # laterally before continuing east.
+    barrier_escape_angle_deg: 60.0
+
+    # Move the body off the wall first, then follow a temporary point beyond its far corner.
+    # Turning directly back to WP24 after 1.0 m clipped the near corner; continuing the
+    # lateral escape to 1.7 m met the deck boundary. The two-phase route follows the
+    # surviving escape1 trace for about 3.0 m, then rejoins the map's body-clear Dijkstra
+    # corridor. Going straight to that corridor drifted into the wall. The temporary target
+    # is constructed in the live goal frame, not keyed to a waypoint number; once reached,
+    # the follower carries a continuous diagonal through the gate instead of stopping beside
+    # the wall to make the wedged 90-degree pivot measured in escape17.
+    barrier_escape_distance: 1.2
+    barrier_bypass_forward: 3.0
+    barrier_bypass_gate_standoff: 0.6
+    barrier_bypass_lateral: 1.2
+
+    # Gait motion made the same WP24 wall alternate HIGH_BARRIER/BLOCKED at roughly 1 Hz.
+    # Keep the selected edge until the wall has been absent continuously, then do not let
+    # that wall -- still visible beside the robot -- start another escape before the gate.
+    barrier_clear_dwell: 2.0
+
+    # Keep this much clear beyond a short target for the robot's forward footprint, but do
+    # not let obstacles farther beyond the target veto reaching it. WP24 is the measured
+    # case: its pillar is 0.40 m beyond the gate along the final approach, and treating the
+    # full 4 m probe as one indivisible corridor parked the robot 0.58 m short forever.
+    target_clearance_margin: 0.25
+
+    # Time with no drivable heading at all before backing off, seconds. Long enough to
+    # let a turn in place bring a gap into view, short enough not to wedge.
+    blocked_timeout: 0.4
+
+    # Back-offs at one high barrier before giving up on going round it and climbing it.
+    #
+    # A HIGH_BARRIER verdict is a reason to replan, not a ruling that the rise cannot be
+    # taken: barrier_rise is a threshold on a plane-fit residual and is set below anything
+    # the robot has been measured crossing, precisely so a wall is caught early enough to
+    # steer. Treating it as a traversability limit would abandon rises the machine could
+    # have climbed, so the planner gets first refusal and this is the fallback behind it.
+    #
+    # Counted in back-offs rather than seconds because every back-off resets the clock a
+    # timer would have been kept on, so no such timer could ever mature. Three, matching
+    # climb_attempts: past that the evidence is that there is nothing to steer onto.
+    #
+    # Every back-off counts, not just the ones taken for want of a heading. Counting only
+    # those made this parameter unreachable on the leg it was written for: in front of the
+    # rise to waypoint 19 the planner always had some heading to offer, so the blocked clock
+    # never accumulated and the no-progress clock did all the work. The robot backed off for
+    # 1100 s inside a 0.25 m box and never once reached the count.
+    #
+    # It always had a heading because the planner is fed ranges and bearings only. A rise the
+    # height map sees and the lidar does not is one it cannot steer around, and it reported a
+    # clear corridor for all 892 ticks of that wedge. So the first phase is a real detour only
+    # where the obstacle is also in the scan; elsewhere it is three attempts that got nowhere,
+    # which is the evidence this needs either way.
+    #
+    # It switches back as well. A climb that gets nowhere returns the decision to the
+    # planner, which by then is looking from somewhere else. Alternating costs seconds and
+    # cannot wedge; committing for good to either answer is how the two runs before this one
+    # were lost -- one leaning on a wall to 70 degrees of tilt, one parked at 0.24 m/s.
+    barrier_detour_attempts: 3
+
+    # Terrain the height map may see underfoot before forward speed is cut back. Relief
+    # inside a quarter of these costs nothing at all; see FREE_RELIEF_FRACTION.
+    max_step: 0.35
+    max_drop: 0.5
+
+    # Committing to a step. Between gates 5 and 6 the course is a staircase of four
+    # 0.125 m steps; the robot cleared the two rises at 0.6 m/s and then stopped dead on
+    # the first drop for a minute at a time, pitched 16 degrees, with nothing within 8 m
+    # and forward still commanded. Once the body is on a step, sideways command, turning
+    # and speed scaling all work against getting off it, so lateral is zeroed, yaw is
+    # clamped to a crawl, scaling is dropped and forward is floored.
+    #
+    # 8 degrees is comfortably above the 1-3 degrees of gait pitch seen on the flat, and
+    # well under the 14.5 degrees a 0.125 m step puts under a 0.5 m wheelbase.
+    climb_pitch_deg: 8.0
+
+    # A bounded sweep found 1.2 unsafe (75 deg fall) and retained 1.1. WP25->29 passed for
+    # seeds 6/7/8 in 203.45-237.05 s with 53.8 deg maximum tilt. This is simulation evidence,
+    # not a claim about a hardware-trained command envelope, so 1.2 remains a hard rejection.
+    climb_speed: 1.1
+
+    # Enough authority to hold a line, not enough to walk the wheels along the lip. The
+    # thrash that lost the second run had yaw saturated at +/-0.70 alternating every second.
+    climb_yaw_rate: 0.125
+
+    # Pitch alone over-triggers: the approach to gate 1 holds a steady +8 degrees for four
+    # seconds and the robot crosses it at 0.83 m/s wanting no help at all. What marks the
+    # ledge is being pitched and getting nowhere. Now that climb_speed is the policy ceiling
+    # this no longer protects the robot's speed, only its steering: a slope taken at pace
+    # keeps full yaw and lateral instead of being held to a straight line it never needed,
+    # on a course where 12 of 32 legs cross raised terrain.
+    #
+    # This was a speed, 0.35 m/s, and as a speed it could not do the job. A legged gait
+    # oscillates, so the base touches 0.35 m/s while going nowhere, and every touch zeroed
+    # both the push clock and the failure tally. At the 0.16 m step to waypoint 19 that
+    # happened 94 times in 53 s: pitched over 8 degrees for 1004 of 1060 samples, net
+    # progress +0.01 m, longest unbroken push 3.9 s against a 12 s timeout. The run-up
+    # never fired, and the run-up is exactly how the baseline crossed that step.
+    #
+    # Measured as distance from where the push began it is not fooled: 0.25 m is above the
+    # wedge's 0.13 m of oscillation plus its drift inside one cycle, and a real crossing
+    # covers it in under a second, having done 0.54 m in 1.8 s.
+    climb_progress_distance: 0.25
+    climb_progress_window: 1.5
+    climb_level_dwell: 0.7
+
+    # Push for this long, then reverse straight for a run-up and try again. It never hands
+    # back to free steering while still pitched: an earlier version did, and the follower
+    # spent the next minute scrabbling sideways along the edge instead of over it.
+    #
+    # This was 40 s, on the reasoning that the escapes seen took twenty-odd seconds of steady
+    # push and cutting one short would repeat the stall watchdog's mistake. Sound reasoning,
+    # artefactual evidence: those escapes were slow only because climb_speed was too low. The
+    # slowest genuine crossing measured is 7.1 s, so this is that with margin -- no real
+    # attempt is interrupted, and a true wedge buys its run-up in seconds not in most of a
+    # minute.
+    climb_timeout: 12.0
+    climb_backup: 3.0
+    # Complete push-and-run-up cycles to fail before deciding this is not a step and letting
+    # the planner look for a way round. The commit used to be unbounded: on the leg to
+    # waypoint 19 that meant 130 s at 0.7 m/s against a 0.544 m rise, then a fall at 70
+    # degrees, with the deck clear 0.2 m to the left the whole time -- 8.966 m round against
+    # 8.88 m straight. Three cycles is 45 s; the slowest genuine crossing measured is 7.1 s.
+    climb_attempts: 3

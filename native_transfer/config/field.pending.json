@@ -1,0 +1,24 @@
+{
+  "map_id": "0914_fr_v3-20260914-142008",
+  "cloud_topic": "/NAV_POINTS",
+  "frames": {
+    "map": "map",
+    "odom_child": "",
+    "cloud": "base_link"
+  },
+  "body_z_offset": null,
+  "odom_child_from_base": null,
+  "base_from_cloud": null,
+  "healthy_location_code": null,
+  "verified": {
+    "map_and_global_status": false,
+    "odom_reference": false,
+    "cloud_frame_deskew_self_filter": false,
+    "perception_projection": false,
+    "route_and_staging_points": false,
+    "operator_on_site": false,
+    "native_command_timeout_and_stop": false
+  },
+  "policy_call_acceptance": "pending",
+  "note": "Fill from field evidence; observer tolerates pending fields but arm refuses them."
+}

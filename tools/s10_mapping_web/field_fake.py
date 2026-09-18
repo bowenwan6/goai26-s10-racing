@@ -20,9 +20,12 @@ class FakeAdapter:
     def snapshot(self):
         now = time.time()
         return dict(robot_id='DEMO-NOT-A-ROBOT', boot_id='demo-boot', map_name=self.map_name,
+                    board_time=now,
                     map_identity=self.map_name+':demo-sha', invocation=self.invocation,
                     started_at=self.start, mapping_active=False, localization_active=True,
                     status=dict(fresh=True, code=self.status_code, mode='全局'),
+                    navigation=dict(fresh=True, idle=True, command=[0,0,0], motion=[0,0,0],
+                                    reason='演示：模拟空闲，不代表真实停车', stamp=now, invocation='demo-planner'),
                     pose=dict(frame='map', child_frame='', xyz=[0, 0, 1], quaternion=[0, 0, 0, 1],
                               age=0, stamp_age_s=0, stamp=now, covariance=[0]*36),
                     aligned_cloud=dict(frame='map', age=0, stamp=now,
@@ -42,9 +45,16 @@ class FakeAdapter:
 
     def sample(self, seconds, progress):
         # Keep actual bounded waiting, so phone-close/reconnect tests are real.
-        end, rows = time.monotonic()+seconds, []
+        start=time.monotonic()
+        end, rows, last_tick = start+seconds, [], -1
+        progress_interval = 1 if seconds <= 5 else 5
         while time.monotonic() < end:
+            tick=int(time.monotonic()-start)
+            if tick//progress_interval != last_tick:
+                progress(f'采样 {tick}/{seconds} 秒（演示计时，不连接机器人）')
+                last_tick=tick//progress_interval
             rows.append(self.snapshot()); time.sleep(.1)
+        progress('采样结束，正在检查数据与保存结果；请继续等待')
         return rows
 
     def preview(self, target):

@@ -49,3 +49,14 @@ results/
 # Runtime artefacts
 MUJOCO_LOG.TXT
 .race.log
+
+# Keep the selected field handoff and its historical evidence reproducible.
+!deliverables/**/*.mp4
+!real_transfer/results/
+!real_transfer/results/**
+!tools/s10_mapping_web/qa/native-nav-evidence/*.log
+
+# Full raw recordings and the multi-GB LiDAR/IMU archive stay in the local workspace.
+/recordings/**/raw_bag/*.mcap
+/deliverables/S10_048_LiDAR_IMU_*.zip
+/academic_assets/*.aux

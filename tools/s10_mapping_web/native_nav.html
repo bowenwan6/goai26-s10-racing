@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f5f0">
+<title>48 号 · 自动导航测试</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;color:#172a29;background:#f4f5f0;color-scheme:light}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}main{max-width:960px;margin:auto;padding:22px 18px 170px}a{color:#155e50;text-underline-offset:4px}header{display:flex;align-items:center;justify-content:space-between;gap:12px}header a{padding:12px 0;flex:none}h1{font-size:24px;margin:0}h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:0 0 7px}p{line-height:1.65;margin:8px 0}.muted,small{color:#586a63;font-size:13px;line-height:1.65}.card{background:white;border:1px solid #d7dfd8;border-radius:14px;padding:18px;margin:16px 0;min-width:0}.banner{background:#fff3d8;border:1px solid #dbc699;color:#694a12;border-radius:10px;padding:13px 15px;overflow-wrap:anywhere}.banner[data-tone=good]{background:#e6f3eb;border-color:#9fbfab;color:#244c34}.banner[data-tone=bad]{background:#fff0ef;border-color:#dcaaa4;color:#822b23}.eyebrow{font-size:12px;letter-spacing:.04em;color:#53685c;margin-bottom:6px}.status{font-size:22px;font-weight:650}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}.metrics span{display:block;font-size:12px;color:#586a63}.metrics strong{display:block;margin-top:6px;font-size:17px;overflow-wrap:anywhere}button,select{font:inherit;min-height:48px;border-radius:9px;padding:12px 15px;border:1px solid #b7c8bd;touch-action:manipulation}button{cursor:pointer;background:#edf3ee;color:#214c3b;font-weight:600}button.primary{background:#166b54;border-color:#166b54;color:white}button:disabled{opacity:.5;cursor:not-allowed}select{width:100%;background:white;color:#243b30;margin:8px 0 12px}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #078b73;outline-offset:3px}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.row button{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid>.card{margin:0}.checks{display:grid;gap:5px;margin-top:12px}.check{display:flex;align-items:flex-start;gap:10px;min-height:48px;padding:10px 0;font-size:14px;line-height:1.6}.check input{width:22px;height:22px;flex:none;margin:0;accent-color:#166b54}ul{padding-left:21px;line-height:1.65;font-size:14px;margin:8px 0}li+li{margin-top:8px}.mode-line{padding:12px;border-radius:8px;background:#edf3ee;line-height:1.7;font-size:14px}#routePlot{display:block;width:100%;height:190px;border-radius:9px;background:#f1f5f0;margin-top:12px}svg text{font:13px system-ui;fill:#344e3e}details{margin-top:14px}summary{cursor:pointer;min-height:44px;padding:12px 0;color:#155e50;font-size:14px}pre{font-size:12px;background:#f0f3ef;border-radius:8px;padding:12px;max-height:280px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}.dock{position:fixed;bottom:0;left:0;right:0;background:#f4f5f0f5;border-top:1px solid #c4cfc5;padding:12px 18px max(12px,env(safe-area-inset-bottom));z-index:5}.dock-inner{max-width:924px;margin:auto}.dock button{width:100%;background:#a3382c;color:white;border-color:#a3382c;min-height:52px}.dock p{margin:5px 0 0;font-size:12px;color:#65463f}.history-item{padding:12px 0;border-bottom:1px solid #e3e8e0}.history-item p{font-size:14px}.history-item a{display:inline-block;min-height:44px;padding:12px 0;font-size:13px}#message:empty{display:none}#message{margin:12px 0}#progress{height:8px;background:#e3e9e2;border-radius:4px;overflow:hidden}#bar{height:100%;width:0;background:#166b54}@media(max-width:700px){.grid{grid-template-columns:1fr}h1{font-size:22px}.card{padding:15px}.metrics{gap:8px}.metrics strong{font-size:15px}}@media(max-width:360px){main{padding:16px 12px 175px}h1{font-size:20px}header a{font-size:13px}}
+</style>
+<main>
+  <header><h1>自动导航测试</h1><a href="/">返回首页</a></header>
+  <p class="muted">48 号 · 我们的 follower / router + 原厂普通、楼梯模式</p>
+  <div id="connection" class="banner" role="status">正在读取机器人测试服务…</div>
+  <section class="card" aria-label="当前测试状态">
+    <div class="eyebrow">先检查，再进行现场测试</div>
+    <div id="state" class="status" aria-live="polite">尚未开始</div>
+    <p id="statusDetail">进入页面不会启动机器人。</p>
+    <p id="mapStatus" class="muted" style="overflow-wrap:anywhere">当前地图与全局定位：等待实机检查。</p>
+    <div class="metrics"><div><span>原厂当前模式</span><strong id="gait">—</strong></div><div><span>实测前进速度</span><strong id="speed">—</strong></div><div><span>读数时间</span><strong id="age">尚无读数</strong></div></div>
+    <div id="progress" role="progressbar" aria-label="已通过航点" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="bar"></div></div><p id="progressText" class="muted">路线进度将在测试开始后显示。</p>
+    <button id="observe" class="primary" type="button" disabled>运行实机检查 · 不运动</button>
+    <p class="muted">约 15 秒，读取原厂状态、控制权和定位信息。检查结果不会自动授权行走。</p>
+    <p id="message" class="banner" role="alert"></p>
+  </section>
+  <div class="grid">
+    <section class="card">
+      <h2>1. 选择测试</h2>
+      <label for="kind" class="muted">建议先验证原地切换，再测试路线</label>
+      <select id="kind"><option value="flat">原地切换普通模式（零速度）</option><option value="stairs">原地切换楼梯模式（零速度）</option><option value="start">Start 平地段</option><option value="b">Area B 楼梯段</option><option value="start_b">Start → Area B</option></select>
+      <p id="scope"></p>
+      <div id="modes" class="mode-line"></div>
+      <svg id="routePlot" viewBox="0 0 350 190" role="img" aria-label="选定路线的示意图"></svg>
+      <p id="routeHint" class="muted"></p>
+      <p class="muted">路线使用 v3 地图。示意图不表示实时障碍物，工程师须完成路线与坐标验收后才能启动。</p>
+      <div class="row"><a href="/localization">查看实时位置 →</a><a href="/field">现场助手 →</a></div>
+    </section>
+    <section class="card">
+      <h2>2. 核对启动条件</h2>
+      <p id="readyTitle">正在获取条件…</p>
+      <ul id="blockers"></ul>
+      <div class="checks">
+        <label class="check"><input id="supervisor" type="checkbox"><span>我在现场，手持遥控器，可随时接管</span></label>
+        <label class="check"><input id="clear" type="checkbox"><span>测试范围无人、无障碍，留有接管空间</span></label>
+        <label class="check"><input id="position" type="checkbox"><span id="positionLabel">机器人站稳，适合原地切换模式</span></label>
+      </div>
+      <button id="startTest" class="primary" type="button" disabled>开始原地模式测试</button>
+      <p id="startHelp" class="muted">勾选现场条件不能跳过工程校验。</p>
+      <p class="muted">运动测试期间保持本页前台在线；离开、锁屏或网络中断导致约 4 秒无心跳时，控制程序请求停止，测试不会自动续跑。</p>
+    </section>
+  </div>
+  <section class="card">
+    <h2>记录与使用说明</h2>
+    <p class="muted">原地模式反馈 ≠ 速度响应验收 ≠ 自动导航成功。每次测试分别保留结果，失败后不会自动重试。</p>
+    <div id="history"><p class="muted">尚无测试记录。</p></div>
+    <details><summary>查看使用步骤</summary><ol><li>点“运行实机检查”，看下方未满足条件。</li><li>原地分别验证普通与楼梯模式。切换可能改变站姿，需现场接管。</li><li>工程师完成速度响应、停车、坐标与路线验收后，解锁路线测试。</li><li>机器人放到对应起点并确认现场条件，点“开始”。平地用普通模式，楼梯用楼梯模式；切换时先停稳并等原厂反馈。</li><li>遇到异常先用遥控器接管；本页“停止”用于结束当前测试。最后下载结果并核对现场到达位置。</li></ol></details>
+    <details><summary>展开诊断详情</summary><pre id="diagnostics">尚无读数</pre></details>
+  </section>
+</main>
+<div class="dock"><div class="dock-inner"><button id="stop" type="button" disabled>停止本次测试</button><p id="stopHint">软件停止不是遥控器急停。现场接管优先。</p></div></div>
+<script src="/native_nav.js"></script>
+</html>
