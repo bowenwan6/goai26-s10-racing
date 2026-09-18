@@ -30,8 +30,8 @@ from native_transfer.contracts import (
     SourceClock,
     admission_reasons,
     conservative_scan,
-    validate_route,
 )
+from native_transfer.route_v2_bridge import CorridorMonitor, TerrainMonitor, load_route
 from native_transfer.router import Feedback, Limits, NativeGaitRouter
 from real_transfer.geometry import (
     base_pose,
@@ -57,7 +57,13 @@ class NativeTest(Node):
         super().__init__("native_start_b", enable_rosout=False)
         self.args = args
         self.config = json.loads(Path(args.config).read_text())
-        self.points = validate_route(json.loads(Path(args.route).read_text()))
+        # Legacy draft (kind per target) or s10_route_v2 (gait/speed/corridor per segment).
+        self.points, self.route_v2 = load_route(
+            json.loads(Path(args.route).read_text()), expected_map_id=self.config.get("map_id")
+        )
+        self.corridor = CorridorMonitor(self.points, self.route_v2)
+        self.terrain_monitor = TerrainMonitor(self.route_v2)
+        self.latest_height = None
         if args.velocity_probe:
             distance = np.linalg.norm(
                 np.subtract(self.points[-1]["position"], self.points[0]["position"])
@@ -77,6 +83,9 @@ class NativeTest(Node):
             if args.velocity_probe
             else None,
             probe_only=bool(args.probe_gait),
+            speed_caps=None
+            if args.probe_gait or self.route_v2 is None
+            else [p["speed_limit"] for p in self.points],
         )
         self.source_clock = SourceClock()
         self.motion = self.location = self.hes = None
@@ -116,6 +125,9 @@ class NativeTest(Node):
                 yaml.safe_dump({"waypoints": body_points}, handle)
             overrides = {
                 "course_file": str(course.resolve()),
+                # Empty for legacy drafts: the original Course/LocalPlanner path runs.
+                "route_v2_path": "" if self.route_v2 is None else str(Path(args.route).resolve()),
+                "route_v2_body_z_offset": float(offset or 0),
                 "control_rate": 10.0,
                 "height_tolerance": 0.20,
                 "score_radius": 0.03 if args.velocity_probe else 0.20,
@@ -314,6 +326,7 @@ class NativeTest(Node):
             )
             grid, valid, _ = height_grid(points)
             ranges = conservative_scan(points)
+            self.latest_height = (grid, valid)
             self.sensor_info["height_valid_fraction"] = float(valid.mean())
             self.sensor_info["scan_known_fraction"] = float(np.isfinite(ranges).mean())
             # Unknown terrain is never converted into a clear scan or a flat cell.
@@ -325,6 +338,9 @@ class NativeTest(Node):
             scan = LaserScan()
             scan.header = msg.header
             scan.angle_min, scan.angle_increment = -math.pi, 2 * math.pi / len(ranges)
+            if self.route_v2 is not None:
+                # route_v2 planner models each bin by its centre (legacy input unchanged).
+                scan.angle_min += scan.angle_increment / 2
             scan.range_min, scan.range_max = 0.05, 11.0
             scan.ranges = ranges.astype(float).tolist()
             height = Float32MultiArray(data=grid.ravel().tolist())
@@ -360,17 +376,22 @@ class NativeTest(Node):
         pitch = math.asin(float(np.clip(-self.map_from_base[2, 0], -1, 1)))
         roll = math.atan2(self.map_from_base[2, 1], self.map_from_base[2, 2])
         if not self.args.probe_gait and cursor < len(self.points):
-            target = np.array(self.points[cursor]["position"][:2])
-            start = np.array(self.points[max(0, cursor - 1)]["position"][:2])
-            line = target - start
-            length = np.linalg.norm(line)
-            along = 0.0 if length < 1e-6 else float(np.dot(xyz[:2] - start, line / length))
-            closest = start if length < 1e-6 else start + np.clip(along, 0, length) * line / length
-            if np.linalg.norm(xyz[:2] - closest) > 0.35:
-                self.fault("route", "route_corridor_exceeded")
+            # Legacy: fixed 0.35 m around the straight target segment (unchanged).
+            # route_v2: segment corridor_half_width + 0.10 m around the taught centreline.
+            ground = np.array([*xyz[:2], xyz[2] - float(self.config.get("body_z_offset") or 0)])
+            ok, why, along, info = self.corridor.check(cursor, ground)
+            self.sensor_info["route_corridor"] = info
+            if not ok:
+                self.fault("route", why)
             else:
                 self.valid("route")
             self.progress = max(self.progress, cursor * 100.0 + max(0.0, along))
+            # Terrain cross-check: warn/hold only, never a gait request.
+            height, mask = self.latest_height if self.latest_height else (None, None)
+            check = self.terrain_monitor.update(cursor, 0.1, pitch=pitch, height=height, mask=mask)
+            self.sensor_info["terrain_check"] = {"level": check.level, "reason": check.reason}
+            if check.hold:
+                self.command = (0.0, 0.0, 0.0)
         robot = RobotState(
             t=now,
             segment=(max(0, cursor - 1), cursor),
