@@ -117,6 +117,11 @@ BASELINE = ObservationSpec(
 HEIGHTMAP_ROWS = 13
 HEIGHTMAP_COLS = 9
 
+PHASE = BASELINE.extended_with(
+    "phase",
+    ObservationTerm("phase", 2, "sin/cos of 2*pi*policy_step*0.02/0.6; reset on RL entry/model switch"),
+)
+
 #: Baseline plus a body-frame terrain height map. This is what we deploy.
 PERCEPTIVE = BASELINE.extended_with(
     "perceptive",
@@ -141,6 +146,6 @@ def cpp_constant(spec: ObservationSpec) -> str:
 
 
 if __name__ == "__main__":
-    for spec in (BASELINE, PERCEPTIVE):
+    for spec in (BASELINE, PHASE, PERCEPTIVE):
         print(spec.describe())
         print(f"\n  {cpp_constant(spec)}\n")

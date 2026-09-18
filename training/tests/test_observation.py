@@ -8,6 +8,7 @@ from s10_rl.observation import (
     DEFAULT_JOINT_POS,
     MOTOR_NUM,
     PERCEPTIVE,
+    PHASE,
     POLICY_ORDER,
     ROBOT_ORDER,
     ObservationTerm,
@@ -39,6 +40,11 @@ def test_perception_is_appended_not_inserted():
 
     assert perceptive_offsets["heightmap"][0] == BASELINE.dim
     assert PERCEPTIVE.dim > BASELINE.dim
+
+
+def test_phase_preserves_the_official_prefix():
+    assert PHASE.dim == 59 and PHASE.offsets()['phase'] == (57, 59)
+    assert PHASE.terms[:-1] == BASELINE.terms
 
 
 def test_joint_orders_are_permutations_of_each_other():

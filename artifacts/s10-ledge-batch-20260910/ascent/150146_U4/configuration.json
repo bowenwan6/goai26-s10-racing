@@ -1,0 +1,22 @@
+{
+  "id": "150146_U4",
+  "recording": "150146",
+  "start": 104.0,
+  "end": 110.0,
+  "mode": "up",
+  "peak": 106.2,
+  "height": 0.3,
+  "evidence": "前方立面变台面，后方地面降低；上台候选。",
+  "source_recording_id": "gait_20260909_150146_9b19dc6690ec",
+  "human_review": "candidate_not_confirmed",
+  "time_basis": "source_stamp_ns minus manifest.started_wall_ns",
+  "reference_kind": "measured state, not original action",
+  "parent_mode": "up",
+  "parent_end": 110.0,
+  "crop_reason": "Entire original ascent-only interval retained",
+  "controller": {
+    "kp_leg": 160.0,
+    "kd_leg": 4.0,
+    "kd_wheel": 0.6
+  }
+}

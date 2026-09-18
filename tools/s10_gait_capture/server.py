@@ -11,6 +11,7 @@ import re
 import secrets
 import shutil
 import signal
+import struct
 import threading
 import time
 import zipfile
@@ -31,6 +32,7 @@ TOPICS = {
     '/tf': '动态坐标变换', '/tf_static': '静态坐标变换',
 }
 REQUIRED = ('/IMU', '/JOINTS_DATA', '/JOINTS_CMD')
+POINT_TOPICS = {'front': '/rslidar_front/points', 'rear': '/rslidar_rear/points'}
 TERRAINS = {'basic', 'stairs', 'ledge', 'gravel', 'mixed', 'unlabeled'}
 SID = re.compile(r'gait_\d{8}_\d{6}_[a-f0-9]{12}\Z')
 GAITS = {0x1001: '基础（标准运动模式）', 0x1003: '楼梯（标准运动模式）',
@@ -79,6 +81,32 @@ def atomic_json(path, value):
     temp.replace(path)
 
 
+def preview_points(msg, limit=2500):
+    """Bounded display sample; original CDR recording remains untouched."""
+    fields = {f.name: f for f in msg.fields}
+    formats = {7: 'f', 8: 'd'}  # PointField FLOAT32 / FLOAT64
+    readers = []
+    for name in ('x', 'y', 'z'):
+        f = fields.get(name)
+        if f is None or f.datatype not in formats or f.count != 1:
+            raise ValueError('点云预览需要浮点 x/y/z 字段')
+        reader = struct.Struct(('>' if msg.is_bigendian else '<') + formats[f.datatype])
+        if f.offset < 0 or f.offset + reader.size > msg.point_step:
+            raise ValueError('点云字段布局无效')
+        readers.append((f.offset, reader))
+    total = msg.width * msg.height
+    if msg.row_step < msg.width * msg.point_step or len(msg.data) < msg.row_step * msg.height:
+        raise ValueError('点云数据长度不足')
+    points = []
+    for i in range(0, total, max(1, math.ceil(total / limit))):
+        base = (i // msg.width) * msg.row_step + (i % msg.width) * msg.point_step
+        xyz = [r.unpack_from(msg.data, base + offset)[0] for offset, r in readers]
+        if all(math.isfinite(v) for v in xyz):
+            points.append([round(v, 3) for v in xyz])
+    return {'points': points, 'total': total, 'frame_id': msg.header.frame_id,
+            'source_stamp_ns': str(msg.header.stamp.sec * 10**9 + msg.header.stamp.nanosec)}
+
+
 class Recorder:
     def __init__(self, root, demo=False):
         self.root = Path(root).resolve()
@@ -97,6 +125,8 @@ class Recorder:
         self.static_messages = {}
         self.motion = None
         self.motion_seen = None
+        self.point_frames = {}
+        self._history_cache = {}
         for path in self.root.glob('gait_*/manifest.json'):
             item = json.loads(path.read_text(encoding='utf-8'))
             if item['status'] == 'recording':
@@ -154,6 +184,9 @@ class Recorder:
                                 source = (stamp.sec * 10**9 + getattr(stamp, 'nanosec', getattr(stamp, 'nsec', 0))) if stamp else None
                                 self.ingest(topic, kind, serialize_message(msg), source,
                                             node.get_clock().now().nanoseconds)
+                                if topic in POINT_TOPICS.values():
+                                    with self.lock:
+                                        self.point_frames[topic] = (msg, time.monotonic())
                                 if topic == '/MOTION_INFO':
                                     self.observe_motion(message_to_ordereddict(msg), source)
                             subscriptions[topic] = node.create_subscription(cls, topic, callback, qos)
@@ -247,14 +280,36 @@ class Recorder:
         return result
 
     def snapshot(self):
+        # File I/O and history decoding must not hold up ROS message ingestion.
+        # Cache text, not mutable records: each response owns its decoded history.
+        previous = self._history_cache
+        cache = {}
+        history = []
+        with os.scandir(self.root) as entries:
+            names = sorted((e.name for e in entries if e.name.startswith('gait_') and e.is_dir()), reverse=True)
+        for name in names:
+            path = self.root/name/'manifest.json'
+            try:
+                stat = path.stat()
+                signature = (stat.st_mtime_ns, stat.st_size)
+                cached = previous.get(name)
+                content = cached[1] if cached and cached[0] == signature else path.read_text(encoding='utf-8')
+            except FileNotFoundError:
+                continue
+            cache[name] = (signature, content)
+            history.append(json.loads(content))
+            if len(history) == 100:
+                break
+        # Replace, never mutate: concurrent HTTP requests can use the old cache.
+        self._history_cache = cache
+        free_gb = round(shutil.disk_usage(self.root).free/1024**3, 2)
         with self.lock:
-            history = []
-            for path in sorted(self.root.glob('gait_*/manifest.json'), reverse=True)[:100]:
-                history.append(json.loads(path.read_text(encoding='utf-8')))
+            # A start/mark/stop may have completed while history was being read.
+            # The active snapshot below is authoritative for the current recording.
             return {'mode': 'demo' if self.demo else 'ros', 'error': self.error,
                 'active': copy.deepcopy(self.active), 'health': self.health(), 'history': history,
                 'motion_feedback': self.motion_snapshot(),
-                'free_gb': round(shutil.disk_usage(self.root).free/1024**3, 2)}
+                'free_gb': free_gb}
 
     def action(self, payload):
         if not isinstance(payload, dict):
@@ -429,6 +484,20 @@ def create_app(recorder, token=None, secret=None, password_hash=None):
     @app.post('/api/action')
     def action():
         return jsonify(recorder.action(request.get_json()))
+
+    @app.get('/api/points/<side>')
+    def points(side):
+        if side not in POINT_TOPICS:
+            raise ValueError('未知雷达')
+        with recorder.lock:
+            frame = recorder.point_frames.get(POINT_TOPICS[side])
+        if frame is None:
+            return jsonify(points=[], fresh=False, message='本地演示没有真实点云' if recorder.demo else '等待雷达点云')
+        msg, seen = frame
+        age = time.monotonic() - seen
+        if age > 2:
+            return jsonify(points=[], fresh=False, age_s=age, message='点云已过期，等待新帧')
+        return jsonify(**preview_points(msg), fresh=True, age_s=age)
 
     @app.get('/api/download/<sid>')
     def download(sid):

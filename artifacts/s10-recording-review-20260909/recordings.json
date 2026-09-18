@@ -1,0 +1,339 @@
+[
+  {
+    "recording_id": "gait_20260909_144907_fd57c06d30d3",
+    "duration_s": 120.005768292,
+    "terrain_label": "basic",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "unlabeled",
+    "topic_count": 8,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 15,
+    "issues": [
+      "/HANDLE_STEER receive-source 中位数 -3.102s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -3.103s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 112466 与数据库实际 56233 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_144907_fd57c06d30d3",
+    "preview": "viewer.html?id=gait_20260909_144907_fd57c06d30d3"
+  },
+  {
+    "recording_id": "gait_20260909_145241_9cae0ba51169",
+    "duration_s": 16.698716726999976,
+    "terrain_label": "stairs",
+    "parameters_recorded_unverified": {
+      "height_cm": 15,
+      "depth_cm": 55
+    },
+    "recording_outcome_label": "unlabeled",
+    "topic_count": 8,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 7,
+    "issues": [
+      "/HANDLE_STEER receive-source 中位数 -3.241s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -3.241s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 15270 与数据库实际 7635 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_145241_9cae0ba51169",
+    "preview": "viewer.html?id=gait_20260909_145241_9cae0ba51169"
+  },
+  {
+    "recording_id": "gait_20260909_145331_616f9d8038d9",
+    "duration_s": 93.26002346299998,
+    "terrain_label": "stairs",
+    "parameters_recorded_unverified": {
+      "height_cm": 15,
+      "depth_cm": 55
+    },
+    "recording_outcome_label": "success",
+    "topic_count": 9,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 27,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "/HANDLE_STEER receive-source 中位数 -3.368s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -3.368s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 86864 与数据库实际 43432 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_145331_616f9d8038d9",
+    "preview": "viewer.html?id=gait_20260909_145331_616f9d8038d9"
+  },
+  {
+    "recording_id": "gait_20260909_145914_2e0541078764",
+    "duration_s": 39.444364042000075,
+    "terrain_label": "basic",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "success",
+    "topic_count": 8,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 13,
+    "issues": [
+      "/HANDLE_STEER receive-source 中位数 -3.706s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -3.706s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 36600 与数据库实际 18300 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_145914_2e0541078764",
+    "preview": "viewer.html?id=gait_20260909_145914_2e0541078764"
+  },
+  {
+    "recording_id": "gait_20260909_150146_9b19dc6690ec",
+    "duration_s": 114.63989696200008,
+    "terrain_label": "ledge",
+    "parameters_recorded_unverified": {
+      "height_cm": 30
+    },
+    "recording_outcome_label": "success",
+    "topic_count": 9,
+    "candidate_passages": 6,
+    "context_blocks": 0,
+    "segments": 57,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "/HANDLE_STEER receive-source 中位数 +0.395s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 +0.395s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 106446 与数据库实际 53223 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_150146_9b19dc6690ec",
+    "preview": "viewer.html?id=gait_20260909_150146_9b19dc6690ec"
+  },
+  {
+    "recording_id": "gait_20260909_150705_4fe2b5f8eebd",
+    "duration_s": 93.25584556100011,
+    "terrain_label": "ledge",
+    "parameters_recorded_unverified": {
+      "height_cm": 32
+    },
+    "recording_outcome_label": "success",
+    "topic_count": 9,
+    "candidate_passages": 5,
+    "context_blocks": 0,
+    "segments": 45,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "metadata.files 消息数 85804 与数据库实际 42902 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_150705_4fe2b5f8eebd",
+    "preview": "viewer.html?id=gait_20260909_150705_4fe2b5f8eebd"
+  },
+  {
+    "recording_id": "gait_20260909_150921_9ed8457a8250",
+    "duration_s": 89.36710523900001,
+    "terrain_label": "ledge",
+    "parameters_recorded_unverified": {
+      "height_cm": 38
+    },
+    "recording_outcome_label": "success",
+    "topic_count": 9,
+    "candidate_passages": 1,
+    "context_blocks": 1,
+    "segments": 18,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "/IMU 接收流提前结束 63.748s（距录制末尾 25.620s）",
+      "/JOINTS_DATA 接收流提前结束 63.743s（距录制末尾 25.624s）",
+      "/JOINTS_DATA 5s 窗源时间采样率范围 50.0–200.0Hz（事件话题不视为掉帧）",
+      "/MOTION_INFO 接收流提前结束 63.716s（距录制末尾 25.651s）",
+      "/rslidar_front/points 有 1 个源时间长间隔，见 topics.csv / inventory.json",
+      "/rslidar_rear/points 有 1 个源时间长间隔，见 topics.csv / inventory.json",
+      "实际运动状态 2：16.813–18.814s（源时间）",
+      "实际运动状态 0：18.814–63.714s（源时间）",
+      "metadata.files 消息数 43756 与数据库实际 21878 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_150921_9ed8457a8250",
+    "preview": "viewer.html?id=gait_20260909_150921_9ed8457a8250"
+  },
+  {
+    "recording_id": "gait_20260909_151135_f45a816f4062",
+    "duration_s": 26.31858701400006,
+    "terrain_label": "ledge",
+    "parameters_recorded_unverified": {
+      "height_cm": 38
+    },
+    "recording_outcome_label": "success",
+    "topic_count": 9,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 19,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "metadata.files 消息数 24166 与数据库实际 12083 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_151135_f45a816f4062",
+    "preview": "viewer.html?id=gait_20260909_151135_f45a816f4062"
+  },
+  {
+    "recording_id": "gait_20260909_151220_d3ace6be729a",
+    "duration_s": 13.335592623000139,
+    "terrain_label": "ledge",
+    "parameters_recorded_unverified": {
+      "height_cm": 38
+    },
+    "recording_outcome_label": "success",
+    "topic_count": 9,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 11,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "metadata.files 消息数 12384 与数据库实际 6192 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_151220_d3ace6be729a",
+    "preview": "viewer.html?id=gait_20260909_151220_d3ace6be729a"
+  },
+  {
+    "recording_id": "gait_20260909_151538_271bf7a9d4d2",
+    "duration_s": 24.862878365999904,
+    "terrain_label": "basic",
+    "parameters_recorded_unverified": {
+      "height_cm": 38
+    },
+    "recording_outcome_label": "failure",
+    "topic_count": 6,
+    "candidate_passages": 0,
+    "context_blocks": 1,
+    "segments": 1,
+    "issues": [
+      "metadata.files 消息数 22378 与数据库实际 11189 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_151538_271bf7a9d4d2",
+    "preview": "viewer.html?id=gait_20260909_151538_271bf7a9d4d2"
+  },
+  {
+    "recording_id": "gait_20260909_151616_30765a77bc55",
+    "duration_s": 56.93477197700008,
+    "terrain_label": "basic",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "failure",
+    "topic_count": 8,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 17,
+    "issues": [
+      "/HANDLE_STEER receive-source 中位数 -0.423s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -0.424s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 53702 与数据库实际 26851 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_151616_30765a77bc55",
+    "preview": "viewer.html?id=gait_20260909_151616_30765a77bc55"
+  },
+  {
+    "recording_id": "gait_20260909_151734_72594dc0ad20",
+    "duration_s": 58.36690297999985,
+    "terrain_label": "basic",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "failure",
+    "topic_count": 8,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 17,
+    "issues": [
+      "/HANDLE_STEER receive-source 中位数 -0.506s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -0.508s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 55230 与数据库实际 27615 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_151734_72594dc0ad20",
+    "preview": "viewer.html?id=gait_20260909_151734_72594dc0ad20"
+  },
+  {
+    "recording_id": "gait_20260909_151931_7a0441190ea8",
+    "duration_s": 120.00482879900005,
+    "terrain_label": "basic",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "unlabeled",
+    "topic_count": 8,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 26,
+    "issues": [
+      "/HANDLE_STEER receive-source 中位数 -0.665s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -0.665s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 111932 与数据库实际 55966 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_151931_7a0441190ea8",
+    "preview": "viewer.html?id=gait_20260909_151931_7a0441190ea8"
+  },
+  {
+    "recording_id": "gait_20260909_152145_fc06025e3eb8",
+    "duration_s": 69.69957151200015,
+    "terrain_label": "basic",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "failure",
+    "topic_count": 8,
+    "candidate_passages": 1,
+    "context_blocks": 0,
+    "segments": 34,
+    "issues": [
+      "/HANDLE_STEER receive-source 中位数 -0.767s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -0.767s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 65944 与数据库实际 32972 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_152145_fc06025e3eb8",
+    "preview": "viewer.html?id=gait_20260909_152145_fc06025e3eb8"
+  },
+  {
+    "recording_id": "gait_20260909_152557_7ddbfc67c108",
+    "duration_s": 120.00424284600012,
+    "terrain_label": "stairs",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "unlabeled",
+    "topic_count": 9,
+    "candidate_passages": 1,
+    "context_blocks": 1,
+    "segments": 19,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "/HANDLE_STEER receive-source 中位数 -1.002s；不得按源时间直接与机身话题混合",
+      "/JOINTS_DATA 5s 窗源时间采样率范围 50.0–200.0Hz（事件话题不视为掉帧）",
+      "/STEER receive-source 中位数 -1.002s；不得按源时间直接与机身话题混合",
+      "实际运动状态 2：40.396–42.398s（源时间）",
+      "实际运动状态 0：42.398–119.998s（源时间）",
+      "metadata.files 消息数 85048 与数据库实际 42524 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_152557_7ddbfc67c108",
+    "preview": "viewer.html?id=gait_20260909_152557_7ddbfc67c108"
+  },
+  {
+    "recording_id": "gait_20260909_154654_65c5ae680a24",
+    "duration_s": 111.55142463600009,
+    "terrain_label": "stairs",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "unlabeled",
+    "topic_count": 9,
+    "candidate_passages": 2,
+    "context_blocks": 1,
+    "segments": 34,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "/HANDLE_STEER receive-source 中位数 -2.251s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -2.252s；不得按源时间直接与机身话题混合",
+      "实际运动状态 4：52.891–54.491s（源时间）",
+      "实际运动状态 0：54.491–106.005s（源时间）",
+      "实际运动状态 1：106.005–107.606s（源时间）",
+      "metadata.files 消息数 68358 与数据库实际 34179 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_154654_65c5ae680a24",
+    "preview": "viewer.html?id=gait_20260909_154654_65c5ae680a24"
+  },
+  {
+    "recording_id": "gait_20260909_154856_5809460fe5ab",
+    "duration_s": 84.15241997300018,
+    "terrain_label": "stairs",
+    "parameters_recorded_unverified": {},
+    "recording_outcome_label": "unlabeled",
+    "topic_count": 9,
+    "candidate_passages": 2,
+    "context_blocks": 0,
+    "segments": 33,
+    "issues": [
+      "/GAIT 源时间缺失/非递增",
+      "/HANDLE_STEER receive-source 中位数 -2.409s；不得按源时间直接与机身话题混合",
+      "/STEER receive-source 中位数 -2.413s；不得按源时间直接与机身话题混合",
+      "metadata.files 消息数 53008 与数据库实际 26504 不一致；按实际表计数"
+    ],
+    "raw_path": "D:\\S10Data\\050\\2026-09-09\\gait_20260909_154856_5809460fe5ab",
+    "preview": "viewer.html?id=gait_20260909_154856_5809460fe5ab"
+  }
+]

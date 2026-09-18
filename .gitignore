@@ -5,6 +5,7 @@ log/
 
 # Upstream contest material (cloned by scripts/setup_upstream.sh, not vendored)
 upstream/
+/goai_embodied_future_material-main/
 
 # Python
 __pycache__/
@@ -29,6 +30,18 @@ wandb/
 results/
 *.mp4
 *.log
+
+# Share the S10 review/reconstruction tools and small results.
+# Each included directory excludes its raw recordings and generated caches.
+# Other local snapshots and task outputs remain private/local by default.
+/artifacts/*
+!/artifacts/s10-expert-analysis/
+!/artifacts/s10-recording-review-20260909/
+!/artifacts/s10-ledge-match-20260909/
+!/artifacts/s10-ledge-batch-20260910/
+/tmp/
+/.playwright-cli/
+/output/playwright/
 
 # Editor / OS
 .vscode/
