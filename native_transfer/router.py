@@ -71,9 +71,24 @@ class NativeGaitRouter:
     stay in the robot; the external SDK joint-policy branch is never activated.
     """
 
-    def __init__(self, kinds: list[str], limits: Limits | None = None, *, probe_only=False):
+    def __init__(
+        self,
+        kinds: list[str],
+        limits: Limits | None = None,
+        *,
+        probe_only=False,
+        speed_caps: list[float] | None = None,
+    ):
         if not kinds or any(k not in GAITS for k in kinds):
             raise ValueError("every target must explicitly select flat or stairs")
+        # Optional per-target forward cap (route_v2 segment speed_limit). It can only
+        # lower the gait cap below, never raise it.
+        if speed_caps is not None and (
+            len(speed_caps) != len(kinds)
+            or any(not math.isfinite(v) or v <= 0 for v in speed_caps)
+        ):
+            raise ValueError("speed_caps must give one positive finite cap per target")
+        self.speed_caps = None if speed_caps is None else tuple(float(v) for v in speed_caps)
         self.kinds = tuple(kinds)
         self.limits = limits or Limits()
         self.probe_only = probe_only
@@ -249,6 +264,8 @@ class NativeGaitRouter:
             self._set("fault", "follower_requested_reverse", now)
             return Decision(self.state, self.reason, publish=True)
         cap = c.max_stairs if required == GAITS["stairs"] else c.max_flat
+        if self.speed_caps is not None:
+            cap = min(cap, self.speed_caps[target])
         command = (
             min(cap, max(0.0, vx)),
             max(-c.max_lateral, min(c.max_lateral, vy)),
