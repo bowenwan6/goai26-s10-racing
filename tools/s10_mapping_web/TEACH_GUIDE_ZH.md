@@ -10,25 +10,25 @@
 
 **状态：**
 - 已在 AGX 上部署，AGX 原生测试通过：真实 ROS 模式和网页端到端各一套。
-- **尚未在新狗上实测**：新狗还没接上，x_nav 的位姿话题名也还没确认。
-- 背景和整体计划见 `wt-rl-nav/docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md`。
+- **新狗（050 号）09-19：** 后台已接通 x_nav 位姿 `/base_link/odom`、点云、IMU（10 / 10 / 199 Hz）。手机经机器人 Wi-Fi 访问、实际标点和录包还没验证。
+- 背景和整体计划见仓库 `docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md`。
 
-## 1. 每次上场前：启动（电脑 SSH 到 AGX，约 1 分钟）
+## 1. 每次上场前：启动（约 1 分钟）
 
 | 顺序 | 在哪 | 命令 | 作用 |
 |---|---|---|---|
-| 1 | AGX（golai） | `bash ~/ros1_gateway/scripts/start_gateway.sh` | 启动 ROS 1 master 和点云 / IMU 网关 |
-| 2 | 106（user，新狗首次需部署 tap） | `bash ~/ros1_gateway_tap/run_tap_106.sh start` | 把 106 的点云转给 AGX |
-| 3 | AGX（ysc） | `cd /opt/data/compose && sudo docker compose up -d` | 启动 x_nav（建图 / 定位） |
-| 4 | AGX（golai） | `bash ~/s10_mapping_web/teach-worker.sh start --pose-topic <x_nav 位姿话题>` | 启动采集助手后台 |
+| 1 | Mac（仓库目录） | `bash ros1_gateway/scripts/robot_session.sh up` | 部署并启动 106 点云 tap，启动 AGX 上的 ROS 1 master 和网关。会提示操作员输入 106 密码 |
+| 2 | AGX（ysc） | `cd /opt/data/compose && sudo docker compose up -d` | 启动 x_nav（建图 / 定位） |
+| 3 | AGX（golai） | `bash ~/s10_mapping_web/teach-worker.sh start --pose-topic /base_link/odom` | 启动采集助手后台 |
 
-- **位姿话题：** 配置里写的是 `/base_link/odom`，以厂商确认为准。可以在 AGX 上查：
+- 第 1 步也可以手动做：AGX 上 `bash ~/ros1_gateway/scripts/start_gateway.sh`，106 上 `bash ~/ros1_gateway_tap/run_tap_106.sh start`。
+- **位姿话题：** 新狗实测 x_nav 输出 `/base_link/odom`（10 Hz）。换版本后可以在 AGX 上再查一次：
 
   ```bash
   source ~/ros1_gateway/ros1/ros1_env.sh && rostopic list | grep -i -E "odom|pose"
   ```
 
-- **x_nav 还不能用时（目前建图模块缺软件包）：** 先跳过第 3 步，建图采集照样能录点云和 IMU，以后离线建图。
+- **x_nav 没启动或出问题时：** 建图采集照样能录点云和 IMU，以后离线建图。
 - **手机打开：** 连机器人 Wi-Fi，浏览器输入 `http://10.21.33.102:8080/teach`，账号沿用原网页登录。
   - 旧狗时的 `10.21.41.1:8080` 是 103 上的转发，新狗上没有。
   - 如果 `10.21.33.102` 也打不开，现场用电脑 SSH 确认路由，或让负责人改用 AGX 的 Wi-Fi 地址。
@@ -146,10 +146,12 @@
 bash ~/s10_mapping_web/teach-worker.sh stop
 ```
 
-后台停止时，如果还在录制，会先把正在录的包正常收尾，再退出。然后按需停止网关：
+后台停止时，如果还在录制，会先把正在录的包正常收尾，再退出。
+
+收工时在 Mac 上复原共用的机器人：停止并删除 106 上的 tap；加 `--agx` 同时停掉 AGX 网关。
 
 ```bash
-bash ~/ros1_gateway/scripts/stop_gateway.sh
+bash ros1_gateway/scripts/robot_session.sh down --agx
 ```
 
 ## 9. 培训 / 演示模式
