@@ -1,0 +1,19 @@
+[Unit]
+Description=S10 app native navigation tests (idle until explicit request)
+After=network.target s10-field-worker.service
+RequiresMountsFor=/var/opt/robot/data
+
+[Service]
+Type=simple
+User=user
+Group=user
+UMask=0077
+WorkingDirectory=/home/user/s10_mapping_web
+ExecStart=/bin/bash /home/user/s10_mapping_web/native-nav-worker.sh
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=8
+
+[Install]
+WantedBy=multi-user.target

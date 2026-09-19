@@ -1,0 +1,932 @@
+[
+ {
+  "id": "WP01",
+  "photo": "IMG_7018 2.HEIC",
+  "photo_order": 30,
+  "photo_time_cst": "2026-09-14T14:54:55+08:00",
+  "robot_pose_xyz": [
+   1.606,
+   -0.154,
+   0.048
+  ],
+  "robot_heading_in_mapping_run": -2.947,
+  "robot_pitch": 0.056,
+  "position": [
+   1.606,
+   -0.154,
+   -0.387
+  ],
+  "ground_points": 97,
+  "nearest_keyframe_gap_s": 2.5,
+  "terrain": "door_start",
+  "hard_terrain": false,
+  "marker": "red dot outside the glass doors beside the robot",
+  "robot_in_photo": true,
+  "confidence": "high",
+  "uncertainty_radius_m": 1.5,
+  "gps_latlon": [
+   30.31748833333333,
+   120.0350638333333
+  ],
+  "yaw": 0.257
+ },
+ {
+  "id": "WP02",
+  "photo": "IMG_7017 2.HEIC",
+  "photo_order": 29,
+  "photo_time_cst": "2026-09-14T14:54:39+08:00",
+  "robot_pose_xyz": [
+   5.563,
+   1.853,
+   0.07
+  ],
+  "robot_heading_in_mapping_run": 2.974,
+  "robot_pitch": 0.037,
+  "position": [
+   5.563,
+   1.853,
+   -0.358
+  ],
+  "ground_points": 106,
+  "nearest_keyframe_gap_s": 0.8,
+  "terrain": "door_plaza",
+  "hard_terrain": false,
+  "marker": "red dot on flat ground beside the robot",
+  "robot_in_photo": true,
+  "confidence": "high",
+  "uncertainty_radius_m": 1.4,
+  "gps_latlon": [
+   30.317505,
+   120.0350278333333
+  ],
+  "yaw": -0.162
+ },
+ {
+  "id": "WP03",
+  "photo": "IMG_7016.HEIC",
+  "photo_order": 28,
+  "photo_time_cst": "2026-09-14T14:54:24+08:00",
+  "robot_pose_xyz": [
+   11.903,
+   1.505,
+   0.04
+  ],
+  "robot_heading_in_mapping_run": -2.808,
+  "robot_pitch": 0.032,
+  "position": [
+   11.903,
+   1.505,
+   -0.387
+  ],
+  "ground_points": 111,
+  "nearest_keyframe_gap_s": 4.9,
+  "terrain": "stairs_foot",
+  "hard_terrain": false,
+  "marker": "red dot on flat ground beside the robot, stairs to the right",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.4,
+  "gps_latlon": [
+   30.31752833333333,
+   120.0352638333333
+  ],
+  "yaw": 0.705
+ },
+ {
+  "id": "WP04",
+  "photo": "IMG_7015.HEIC",
+  "photo_order": 27,
+  "photo_time_cst": "2026-09-14T14:54:04+08:00",
+  "robot_pose_xyz": [
+   16.453,
+   3.615,
+   0.95
+  ],
+  "robot_heading_in_mapping_run": -2.709,
+  "robot_pitch": 0.326,
+  "position": [
+   16.453,
+   3.615,
+   0.478
+  ],
+  "ground_points": 134,
+  "nearest_keyframe_gap_s": 0.6,
+  "terrain": "curved_stairs",
+  "hard_terrain": true,
+  "marker": "red dot on a curved stair tread beside the robot",
+  "robot_in_photo": true,
+  "confidence": "high",
+  "uncertainty_radius_m": 1.4,
+  "gps_latlon": [
+   30.31750333333333,
+   120.0350888333333
+  ],
+  "yaw": 0.439
+ },
+ {
+  "id": "WP05",
+  "photo": "IMG_7014.HEIC",
+  "photo_order": 26,
+  "photo_time_cst": "2026-09-14T14:53:41+08:00",
+  "robot_pose_xyz": [
+   20.583,
+   5.401,
+   1.859
+  ],
+  "robot_heading_in_mapping_run": -2.805,
+  "robot_pitch": 0.065,
+  "position": [
+   20.583,
+   5.401,
+   1.376
+  ],
+  "ground_points": 71,
+  "nearest_keyframe_gap_s": 2.0,
+  "terrain": "stair_landing",
+  "hard_terrain": true,
+  "marker": "red dot on the landing beside the robot",
+  "robot_in_photo": true,
+  "confidence": "high",
+  "uncertainty_radius_m": 1.4,
+  "gps_latlon": [
+   30.317605,
+   120.0352471666667
+  ],
+  "yaw": 0.324
+ },
+ {
+  "id": "WP06",
+  "photo": "IMG_7013.HEIC",
+  "photo_order": 25,
+  "photo_time_cst": "2026-09-14T14:53:21+08:00",
+  "robot_pose_xyz": [
+   24.405,
+   8.966,
+   2.867
+  ],
+  "robot_heading_in_mapping_run": -1.812,
+  "robot_pitch": 0.298,
+  "position": [
+   24.405,
+   8.966,
+   2.336
+  ],
+  "ground_points": 78,
+  "nearest_keyframe_gap_s": 1.8,
+  "terrain": "stairs",
+  "hard_terrain": true,
+  "marker": "red dot at the step edge the robot straddles",
+  "robot_in_photo": true,
+  "confidence": "high",
+  "uncertainty_radius_m": 1.5,
+  "gps_latlon": [
+   30.31772,
+   120.0352945
+  ],
+  "yaw": 1.44
+ },
+ {
+  "id": "WP07",
+  "photo": "IMG_7012.HEIC",
+  "photo_order": 24,
+  "photo_time_cst": "2026-09-14T14:52:56+08:00",
+  "robot_pose_xyz": [
+   23.587,
+   14.409,
+   3.581
+  ],
+  "robot_heading_in_mapping_run": -1.82,
+  "robot_pitch": 0.339,
+  "position": [
+   23.587,
+   14.409,
+   3.115
+  ],
+  "ground_points": 66,
+  "nearest_keyframe_gap_s": 4.4,
+  "terrain": "stairs_railing",
+  "hard_terrain": true,
+  "marker": "red dot on a stair tread at the robot's front wheel",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.4,
+  "gps_latlon": [
+   30.31786333333333,
+   120.0354471666667
+  ],
+  "yaw": 1.18
+ },
+ {
+  "id": "WP08",
+  "photo": "IMG_7011.HEIC",
+  "photo_order": 23,
+  "photo_time_cst": "2026-09-14T14:52:32+08:00",
+  "robot_pose_xyz": [
+   26.349,
+   19.618,
+   5.039
+  ],
+  "robot_heading_in_mapping_run": -1.907,
+  "robot_pitch": 0.062,
+  "position": [
+   26.349,
+   19.618,
+   4.584
+  ],
+  "ground_points": 90,
+  "nearest_keyframe_gap_s": 1.0,
+  "terrain": "step_edge",
+  "hard_terrain": true,
+  "marker": "red dot on a step edge, robot about 2 m beyond it",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.318005,
+   120.0354778333333
+  ],
+  "yaw": 1.28
+ },
+ {
+  "id": "WP09",
+  "photo": "IMG_7010.HEIC",
+  "photo_order": 22,
+  "photo_time_cst": "2026-09-14T14:52:11+08:00",
+  "robot_pose_xyz": [
+   31.354,
+   27.983,
+   5.1
+  ],
+  "robot_heading_in_mapping_run": -2.424,
+  "robot_pitch": 0.08,
+  "position": [
+   31.354,
+   27.983,
+   4.666
+  ],
+  "ground_points": 70,
+  "nearest_keyframe_gap_s": 1.8,
+  "terrain": "low_steps",
+  "hard_terrain": true,
+  "marker": "red dot on the upper step ahead of the robot",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.2,
+  "gps_latlon": [
+   30.31803666666667,
+   120.0352471666667
+  ],
+  "yaw": 0.706
+ },
+ {
+  "id": "WP10",
+  "photo": "IMG_7009.HEIC",
+  "photo_order": 21,
+  "photo_time_cst": "2026-09-14T14:51:53+08:00",
+  "robot_pose_xyz": [
+   36.462,
+   35.887,
+   5.543
+  ],
+  "robot_heading_in_mapping_run": -1.944,
+  "robot_pitch": 0.032,
+  "position": [
+   36.462,
+   35.887,
+   5.094
+  ],
+  "ground_points": 72,
+  "nearest_keyframe_gap_s": 0.5,
+  "terrain": "low_steps",
+  "hard_terrain": true,
+  "marker": "red dot on the upper step next to the robot",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.0,
+  "gps_latlon": [
+   30.31790333333333,
+   120.0355833333333
+  ],
+  "yaw": 0.851
+ },
+ {
+  "id": "WP11",
+  "photo": "IMG_7008.HEIC",
+  "photo_order": 20,
+  "photo_time_cst": "2026-09-14T14:51:24+08:00",
+  "robot_pose_xyz": [
+   49.725,
+   38.86,
+   5.682
+  ],
+  "robot_heading_in_mapping_run": 2.796,
+  "robot_pitch": 0.236,
+  "position": [
+   49.725,
+   38.86,
+   5.277
+  ],
+  "ground_points": 109,
+  "nearest_keyframe_gap_s": 0.1,
+  "terrain": "grass_to_pavement",
+  "hard_terrain": true,
+  "marker": "red dot on pavement edge, robot still in the grass",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.5,
+  "gps_latlon": [
+   30.31785833333333,
+   120.03575
+  ],
+  "yaw": -0.67
+ },
+ {
+  "id": "WP12",
+  "photo": "IMG_7007.HEIC",
+  "photo_order": 19,
+  "photo_time_cst": "2026-09-14T14:51:12+08:00",
+  "robot_pose_xyz": [
+   50.713,
+   37.934,
+   5.412
+  ],
+  "robot_heading_in_mapping_run": 2.421,
+  "robot_pitch": -0.196,
+  "position": [
+   50.713,
+   37.934,
+   4.943
+  ],
+  "ground_points": 63,
+  "nearest_keyframe_gap_s": 0.7,
+  "terrain": "rock_grass",
+  "hard_terrain": true,
+  "marker": "red marker in tall grass in front of the robot",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.31778666666667,
+   120.035775
+  ],
+  "yaw": -2.138
+ },
+ {
+  "id": "WP13",
+  "photo": "IMG_7006.HEIC",
+  "photo_order": 18,
+  "photo_time_cst": "2026-09-14T14:50:48+08:00",
+  "robot_pose_xyz": [
+   49.902,
+   33.106,
+   5.331
+  ],
+  "robot_heading_in_mapping_run": 1.759,
+  "robot_pitch": -0.007,
+  "position": [
+   49.902,
+   33.106,
+   4.898
+  ],
+  "ground_points": 79,
+  "nearest_keyframe_gap_s": 0.2,
+  "terrain": "loose_cobbles",
+  "hard_terrain": true,
+  "marker": "red flag in cobbles beside the robot",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 1.7,
+  "gps_latlon": [
+   30.31770833333333,
+   120.03575
+  ],
+  "yaw": -0.835
+ },
+ {
+  "id": "WP14",
+  "photo": "IMG_7005.HEIC",
+  "photo_order": 17,
+  "photo_time_cst": "2026-09-14T14:50:36+08:00",
+  "robot_pose_xyz": [
+   51.059,
+   31.998,
+   5.4
+  ],
+  "robot_heading_in_mapping_run": 2.546,
+  "robot_pitch": 0.156,
+  "position": [
+   51.059,
+   31.998,
+   4.971
+  ],
+  "ground_points": 51,
+  "nearest_keyframe_gap_s": 0.8,
+  "terrain": "flat_boulder_top",
+  "hard_terrain": true,
+  "marker": "red dot on top of the flat boulder, robot behind it",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.0,
+  "gps_latlon": [
+   30.31776333333333,
+   120.0356055
+  ],
+  "yaw": -0.47
+ },
+ {
+  "id": "WP15",
+  "photo": "IMG_7004.HEIC",
+  "photo_order": 16,
+  "photo_time_cst": "2026-09-14T14:50:23+08:00",
+  "robot_pose_xyz": [
+   52.667,
+   30.944,
+   5.249
+  ],
+  "robot_heading_in_mapping_run": 2.278,
+  "robot_pitch": 0.072,
+  "position": [
+   52.667,
+   30.944,
+   4.788
+  ],
+  "ground_points": 71,
+  "nearest_keyframe_gap_s": 5.3,
+  "terrain": "rock_bed",
+  "hard_terrain": true,
+  "marker": "red dot on a flat boulder just ahead of the robot",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.317755,
+   120.0355833333333
+  ],
+  "yaw": -0.934
+ },
+ {
+  "id": "WP16",
+  "photo": "IMG_7003.HEIC",
+  "photo_order": 15,
+  "photo_time_cst": "2026-09-14T14:49:47+08:00",
+  "robot_pose_xyz": [
+   57.844,
+   24.479,
+   5.654
+  ],
+  "robot_heading_in_mapping_run": 2.598,
+  "robot_pitch": 0.014,
+  "position": [
+   57.844,
+   24.479,
+   5.175
+  ],
+  "ground_points": 106,
+  "nearest_keyframe_gap_s": 5.6,
+  "terrain": "rock_bed_entry",
+  "hard_terrain": true,
+  "marker": "red flags in the creek bed beside the wooden deck (two visible)",
+  "robot_in_photo": false,
+  "confidence": "low",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.31773833333333,
+   120.0356055
+  ],
+  "yaw": -0.533
+ },
+ {
+  "id": "WP17",
+  "photo": "IMG_7002.HEIC",
+  "photo_order": 14,
+  "photo_time_cst": "2026-09-14T14:49:29+08:00",
+  "robot_pose_xyz": [
+   59.938,
+   22.307,
+   5.579
+  ],
+  "robot_heading_in_mapping_run": 1.935,
+  "robot_pitch": 0.011,
+  "position": [
+   59.938,
+   22.307,
+   5.102
+  ],
+  "ground_points": 101,
+  "nearest_keyframe_gap_s": 0.2,
+  "terrain": "plaza",
+  "hard_terrain": false,
+  "marker": "red dot on plaza tiles near the pavilion deck",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.5,
+  "gps_latlon": [
+   30.31768833333333,
+   120.0356528333333
+  ],
+  "yaw": -1.218
+ },
+ {
+  "id": "WP18",
+  "photo": "IMG_7001.HEIC",
+  "photo_order": 13,
+  "photo_time_cst": "2026-09-14T14:49:11+08:00",
+  "robot_pose_xyz": [
+   66.15,
+   13.134,
+   5.403
+  ],
+  "robot_heading_in_mapping_run": 2.08,
+  "robot_pitch": 0.033,
+  "position": [
+   66.15,
+   13.134,
+   4.875
+  ],
+  "ground_points": 87,
+  "nearest_keyframe_gap_s": 0.3,
+  "terrain": "plaza",
+  "hard_terrain": false,
+  "marker": "red dot on plaza tiles right by the robot",
+  "robot_in_photo": true,
+  "confidence": "high",
+  "uncertainty_radius_m": 1.5,
+  "gps_latlon": [
+   30.31743833333333,
+   120.0358666666667
+  ],
+  "yaw": -0.99
+ },
+ {
+  "id": "WP19",
+  "photo": "IMG_6999.HEIC",
+  "photo_order": 12,
+  "photo_time_cst": "2026-09-14T14:48:52+08:00",
+  "robot_pose_xyz": [
+   71.192,
+   6.187,
+   5.645
+  ],
+  "robot_heading_in_mapping_run": 1.924,
+  "robot_pitch": 0.021,
+  "position": [
+   71.192,
+   6.187,
+   5.198
+  ],
+  "ground_points": 72,
+  "nearest_keyframe_gap_s": 2.0,
+  "terrain": "stepped_platform",
+  "hard_terrain": true,
+  "marker": "red dot on a platform step, yellow bumps on the next tier",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.0,
+  "gps_latlon": [
+   30.31742,
+   120.0358583333333
+  ],
+  "yaw": -1.545
+ },
+ {
+  "id": "WP20",
+  "photo": "IMG_6998.HEIC",
+  "photo_order": 11,
+  "photo_time_cst": "2026-09-14T14:48:35+08:00",
+  "robot_pose_xyz": [
+   70.818,
+   3.413,
+   5.974
+  ],
+  "robot_heading_in_mapping_run": 1.116,
+  "robot_pitch": 0.036,
+  "position": [
+   70.818,
+   3.413,
+   5.485
+  ],
+  "ground_points": 84,
+  "nearest_keyframe_gap_s": 1.3,
+  "terrain": "low_platform_bumps",
+  "hard_terrain": true,
+  "marker": "red dot on a stone platform edge between yellow bumps",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.31741333333333,
+   120.0358361666667
+  ],
+  "yaw": -2.432
+ },
+ {
+  "id": "WP21",
+  "photo": "IMG_6997.HEIC",
+  "photo_order": 10,
+  "photo_time_cst": "2026-09-14T14:48:18+08:00",
+  "robot_pose_xyz": [
+   65.368,
+   -0.079,
+   5.948
+  ],
+  "robot_heading_in_mapping_run": 0.208,
+  "robot_pitch": 0.032,
+  "position": [
+   65.368,
+   -0.079,
+   5.491
+  ],
+  "ground_points": 100,
+  "nearest_keyframe_gap_s": 4.0,
+  "terrain": "asphalt_curve",
+  "hard_terrain": false,
+  "marker": "red dot at the robot's front leg",
+  "robot_in_photo": true,
+  "confidence": "high",
+  "uncertainty_radius_m": 1.5,
+  "gps_latlon": [
+   30.31745833333333,
+   120.0358195
+  ],
+  "yaw": -2.937
+ },
+ {
+  "id": "WP22",
+  "photo": "IMG_6996.HEIC",
+  "photo_order": 9,
+  "photo_time_cst": "2026-09-14T14:47:58+08:00",
+  "robot_pose_xyz": [
+   56.207,
+   -2.857,
+   5.897
+  ],
+  "robot_heading_in_mapping_run": 0.391,
+  "robot_pitch": 0.026,
+  "position": [
+   56.207,
+   -2.857,
+   5.379
+  ],
+  "ground_points": 104,
+  "nearest_keyframe_gap_s": 1.8,
+  "terrain": "asphalt_branch",
+  "hard_terrain": false,
+  "marker": "red dot on asphalt near a side-path branch",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.5,
+  "gps_latlon": [
+   30.31732166666667,
+   120.0357138333333
+  ],
+  "yaw": -2.763
+ },
+ {
+  "id": "WP23",
+  "photo": "IMG_6995.HEIC",
+  "photo_order": 8,
+  "photo_time_cst": "2026-09-14T14:47:34+08:00",
+  "robot_pose_xyz": [
+   41.76,
+   -11.814,
+   5.813
+  ],
+  "robot_heading_in_mapping_run": 0.591,
+  "robot_pitch": 0.029,
+  "position": [
+   41.76,
+   -11.814,
+   5.332
+  ],
+  "ground_points": 90,
+  "nearest_keyframe_gap_s": 1.0,
+  "terrain": "asphalt",
+  "hard_terrain": false,
+  "marker": "red dot on asphalt beside the robot",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.5,
+  "gps_latlon": [
+   30.317775,
+   120.0355833333333
+  ],
+  "yaw": -2.53
+ },
+ {
+  "id": "WP24",
+  "photo": "IMG_6994.HEIC",
+  "photo_order": 7,
+  "photo_time_cst": "2026-09-14T14:46:55+08:00",
+  "robot_pose_xyz": [
+   5.836,
+   -23.688,
+   5.603
+  ],
+  "robot_heading_in_mapping_run": 0.135,
+  "robot_pitch": 0.021,
+  "position": [
+   5.836,
+   -23.688,
+   5.07
+  ],
+  "ground_points": 113,
+  "nearest_keyframe_gap_s": 1.2,
+  "terrain": "asphalt_curve",
+  "hard_terrain": false,
+  "marker": "red dot on a wide asphalt curve",
+  "robot_in_photo": false,
+  "confidence": "low",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.31767833333333,
+   120.0350028333333
+  ],
+  "yaw": -3.019
+ },
+ {
+  "id": "WP25",
+  "photo": "IMG_6993.HEIC",
+  "photo_order": 6,
+  "photo_time_cst": "2026-09-14T14:46:19+08:00",
+  "robot_pose_xyz": [
+   -19.816,
+   -24.685,
+   5.231
+  ],
+  "robot_heading_in_mapping_run": -0.485,
+  "robot_pitch": 0.039,
+  "position": [
+   -19.816,
+   -24.685,
+   4.766
+  ],
+  "ground_points": 88,
+  "nearest_keyframe_gap_s": 2.5,
+  "terrain": "pavement_edge_mound",
+  "hard_terrain": "out",
+  "marker": "red dot on the granular pavement edge below a grass mound",
+  "robot_in_photo": false,
+  "confidence": "low",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.317495,
+   120.0350416666667
+  ],
+  "yaw": 2.707
+ },
+ {
+  "id": "WP26",
+  "photo": "IMG_6992.HEIC",
+  "photo_order": 5,
+  "photo_time_cst": "2026-09-14T14:45:54+08:00",
+  "robot_pose_xyz": [
+   -30.639,
+   -19.832,
+   5.563
+  ],
+  "robot_heading_in_mapping_run": -0.492,
+  "robot_pitch": 0.025,
+  "position": [
+   -30.639,
+   -19.832,
+   5.125
+  ],
+  "ground_points": 100,
+  "nearest_keyframe_gap_s": 1.0,
+  "terrain": "dry_grass",
+  "hard_terrain": false,
+  "marker": "red flag on dry grass next to the robot's leg",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.0,
+  "gps_latlon": [
+   30.31753333333333,
+   120.0350805
+  ],
+  "yaw": 2.504
+ },
+ {
+  "id": "WP27",
+  "photo": "IMG_6991.HEIC",
+  "photo_order": 4,
+  "photo_time_cst": "2026-09-14T14:45:40+08:00",
+  "robot_pose_xyz": [
+   -32.3,
+   -18.168,
+   5.369
+  ],
+  "robot_heading_in_mapping_run": -0.906,
+  "robot_pitch": 0.025,
+  "position": [
+   -32.3,
+   -18.168,
+   4.949
+  ],
+  "ground_points": 59,
+  "nearest_keyframe_gap_s": 2.8,
+  "terrain": "gabion_top",
+  "hard_terrain": true,
+  "marker": "red dot on the gabion top, close-up of the ledge edge",
+  "robot_in_photo": false,
+  "confidence": "low",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.31743333333333,
+   120.0347221666667
+  ],
+  "yaw": 2.351
+ },
+ {
+  "id": "WP28",
+  "photo": "IMG_6990.HEIC",
+  "photo_order": 3,
+  "photo_time_cst": "2026-09-14T14:44:44+08:00",
+  "robot_pose_xyz": [
+   -39.607,
+   -14.728,
+   6.225
+  ],
+  "robot_heading_in_mapping_run": -0.697,
+  "robot_pitch": 0.171,
+  "position": [
+   -39.607,
+   -14.728,
+   5.791
+  ],
+  "ground_points": 50,
+  "nearest_keyframe_gap_s": 2.9,
+  "terrain": "gabion_top",
+  "hard_terrain": true,
+  "marker": "red dot on gabion top; a second flag on the grass behind it",
+  "robot_in_photo": false,
+  "confidence": "low",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.31743333333333,
+   120.0346528333333
+  ],
+  "yaw": 2.101
+ },
+ {
+  "id": "WP29",
+  "photo": "IMG_6989.HEIC",
+  "photo_order": 2,
+  "photo_time_cst": "2026-09-14T14:44:21+08:00",
+  "robot_pose_xyz": [
+   -40.988,
+   -10.868,
+   6.153
+  ],
+  "robot_heading_in_mapping_run": -1.785,
+  "robot_pitch": -0.076,
+  "position": [
+   -40.988,
+   -10.868,
+   5.711
+  ],
+  "ground_points": 74,
+  "nearest_keyframe_gap_s": 0.2,
+  "terrain": "dry_grass",
+  "hard_terrain": false,
+  "marker": "red flag on dry grass, robot about 1 m in front",
+  "robot_in_photo": true,
+  "confidence": "medium",
+  "uncertainty_radius_m": 2.0,
+  "gps_latlon": [
+   30.31755833333333,
+   120.0346305
+  ],
+  "yaw": 1.427
+ },
+ {
+  "id": "WP30",
+  "photo": "IMG_6988.HEIC",
+  "photo_order": 1,
+  "photo_time_cst": "2026-09-14T14:43:58+08:00",
+  "robot_pose_xyz": [
+   -39.247,
+   -1.274,
+   5.163
+  ],
+  "robot_heading_in_mapping_run": -1.236,
+  "robot_pitch": 0.034,
+  "position": [
+   -39.247,
+   -1.274,
+   4.658
+  ],
+  "ground_points": 94,
+  "nearest_keyframe_gap_s": 11.0,
+  "terrain": "pavement_fork",
+  "hard_terrain": false,
+  "marker": "red dot on granular pavement before a path fork",
+  "robot_in_photo": false,
+  "confidence": "low",
+  "uncertainty_radius_m": 3.0,
+  "gps_latlon": [
+   30.31761166666667,
+   120.0346305
+  ],
+  "yaw": 1.761
+ }
+]

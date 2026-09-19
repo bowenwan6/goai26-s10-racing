@@ -1,0 +1,137 @@
+rosbag2_bagfile_information:
+  version: 9
+  storage_identifier: mcap
+  duration:
+    nanoseconds: 177823995930
+  starting_time:
+    nanoseconds_since_epoch: 1789635885984368023
+  message_count: 39121
+  topics_with_message_count:
+    - topic_metadata:
+        name: /ODOM
+        type: nav_msgs/msg/Odometry
+        serialization_format: cdr
+        offered_qos_profiles:
+          - history: unknown
+            depth: 0
+            reliability: reliable
+            durability: volatile
+            deadline:
+              sec: 9223372036
+              nsec: 854775807
+            lifespan:
+              sec: 9223372036
+              nsec: 854775807
+            liveliness: automatic
+            liveliness_lease_duration:
+              sec: 9223372036
+              nsec: 854775807
+            avoid_ros_namespace_conventions: false
+        type_description_hash: ""
+      message_count: 1777
+    - topic_metadata:
+        name: /IMU
+        type: sensor_msgs/msg/Imu
+        serialization_format: cdr
+        offered_qos_profiles:
+          - history: unknown
+            depth: 0
+            reliability: best_effort
+            durability: volatile
+            deadline:
+              sec: 9223372036
+              nsec: 854775807
+            lifespan:
+              sec: 9223372036
+              nsec: 854775807
+            liveliness: automatic
+            liveliness_lease_duration:
+              sec: 9223372036
+              nsec: 854775807
+            avoid_ros_namespace_conventions: false
+        type_description_hash: ""
+      message_count: 35566
+    - topic_metadata:
+        name: /LIDAR/POINTS
+        type: sensor_msgs/msg/PointCloud2
+        serialization_format: cdr
+        offered_qos_profiles:
+          - history: unknown
+            depth: 0
+            reliability: best_effort
+            durability: volatile
+            deadline:
+              sec: 9223372036
+              nsec: 854775807
+            lifespan:
+              sec: 9223372036
+              nsec: 854775807
+            liveliness: automatic
+            liveliness_lease_duration:
+              sec: 9223372036
+              nsec: 854775807
+            avoid_ros_namespace_conventions: false
+        type_description_hash: ""
+      message_count: 1778
+  compression_format: ""
+  compression_mode: ""
+  relative_file_paths:
+    - slam_test_20260917_170443_0.mcap
+    - slam_test_20260917_170443_1.mcap
+    - slam_test_20260917_170443_2.mcap
+    - slam_test_20260917_170443_3.mcap
+    - slam_test_20260917_170443_4.mcap
+    - slam_test_20260917_170443_5.mcap
+    - slam_test_20260917_170443_6.mcap
+    - slam_test_20260917_170443_7.mcap
+  files:
+    - path: slam_test_20260917_170443_0.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789635885984368023
+      duration:
+        nanoseconds: 28594086614
+      message_count: 6290
+    - path: slam_test_20260917_170443_1.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789635914583515964
+      duration:
+        nanoseconds: 21986483028
+      message_count: 4838
+    - path: slam_test_20260917_170443_2.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789635936581667238
+      duration:
+        nanoseconds: 21797356882
+      message_count: 4798
+    - path: slam_test_20260917_170443_3.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789635958383016411
+      duration:
+        nanoseconds: 20990963205
+      message_count: 4619
+    - path: slam_test_20260917_170443_4.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789635979378899739
+      duration:
+        nanoseconds: 21294807808
+      message_count: 4686
+    - path: slam_test_20260917_170443_5.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789636000678781968
+      duration:
+        nanoseconds: 21394857070
+      message_count: 4708
+    - path: slam_test_20260917_170443_6.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789636022078651921
+      duration:
+        nanoseconds: 21495146567
+      message_count: 4730
+    - path: slam_test_20260917_170443_7.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1789636043578834988
+      duration:
+        nanoseconds: 20229528965
+      message_count: 4452
+  custom_data: ~
+  ros_distro: jazzy

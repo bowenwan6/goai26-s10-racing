@@ -1,0 +1,175 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="Start + preserved B + bounded post-B, assumed geometry">
+  <compiler angle="radian" />
+  <option timestep=".001" integrator="implicitfast" gravity="0 0 -9.81" />
+  <default>
+    <geom solref=".01 1" />
+  </default>
+  <include file="collision/new_surfaces.xml" />
+  <include file="collision/B_preserved.xml" />
+  <asset>
+    <mesh name="Start_sample_plane" file="visual/Start_sample_plane.obj" inertia="shell" />
+    <mesh name="Start_raised_band" file="visual/Start_raised_band.obj" inertia="shell" />
+    <mesh name="Start_remaining" file="visual/Start_remaining.obj" inertia="shell" />
+    <mesh name="Post_B_platform" file="visual/Post_B_platform.obj" inertia="shell" />
+    <mesh name="B_visual" file="visual/B_preserved.obj" inertia="shell" />
+  </asset>
+  <worldbody>
+    <geom name="Start_sample_plane" type="mesh" mesh="Start_sample_plane" group="2" contype="0" conaffinity="0" rgba="0.66 0.72 0.76 1" />
+    <geom name="Start_raised_band" type="mesh" mesh="Start_raised_band" group="2" contype="0" conaffinity="0" rgba="0.73 0.5 0.27 1" />
+    <geom name="Start_remaining" type="mesh" mesh="Start_remaining" group="2" contype="0" conaffinity="0" rgba="0.62 0.73 0.77 1" />
+    <geom name="Post_B_platform" type="mesh" mesh="Post_B_platform" group="2" contype="0" conaffinity="0" rgba="0.63 0.75 0.67 1" />
+    <geom name="B_visual" type="mesh" mesh="B_visual" group="2" contype="0" conaffinity="0" rgba=".88 .64 .34 1" />
+  </worldbody>
+  <visual>
+    <global offwidth="1600" offheight="1000" />
+    <headlight ambient=".6 .6 .6" diffuse=".6 .6 .6" />
+  </visual>
+  <statistic center="14 11 2" extent="36" />
+  <worldbody>
+    <body name="probe_0" pos="-0.06666666666666682 0.5333333333333328 -0.08076697415681128">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_0" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_1" pos="5.083333333333333 0.4833333333333332 -0.022062256453267426">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_1" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_2" pos="10.066666666666663 0.4666666666666661 -0.06358152172350928">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_2" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_3" pos="28.06666666666666 24.066666666666663 4.9673833020766">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_3" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_4" pos="13.275328332130762 2.757332535040082 0.020630499307092542">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_4" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_5" pos="13.875425337197083 2.5808277385376406 0.13779084083670795">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_5" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_6" pos="14.454678653769749 2.5519002530884034 0.31002428934953596">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_6" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_7" pos="15.034909170841525 2.8054674495672285 0.48070644729427453">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_7" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_8" pos="15.591190659271348 2.909587570711206 0.6443980867485484">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_8" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_9" pos="16.121463585844204 3.6816287492124125 0.8108211611245261">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_9" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_10" pos="16.925276629358365 3.5845025887921174 0.9876619590920198">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_10" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_11" pos="17.48548971520915 3.6623511276495244 1.1465469635458732">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_11" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_12" pos="17.96595002556325 3.9251735039036326 1.2969063251021082">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_12" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_13" pos="18.49115977934287 4.309651259935079 1.4682529171557896">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_13" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_14" pos="19.066370351536438 4.39029921670164 1.6138251441208658">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_14" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_15" pos="20.790593381885756 5.822787119067619 1.7700862525957177">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_15" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_16" pos="22.123386092980194 6.809708181694658 1.9443695754747599">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_16" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_17" pos="22.638146441646633 7.191795956492515 2.0898595969129654">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_17" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_18" pos="23.146791507364682 7.620498493766855 2.24946898602144">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_18" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_19" pos="23.16458192145708 8.223468854859535 2.3982342813684503">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_19" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_20" pos="23.94215754417361 8.55467644117369 2.5736589736309274">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_20" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_21" pos="23.438860069639034 9.491676044959576 2.7281147048393923">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_21" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_22" pos="23.246450614446672 10.915133782403188 2.878512451829725">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_22" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_23" pos="23.436115120290445 12.27739858038333 3.0223298915450827">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_23" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_24" pos="23.423630363384515 12.938684046361962 3.1669684542791883">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_24" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_25" pos="23.976283206036705 13.277581301071352 3.3122433924040107">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_25" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_26" pos="24.18577120861329 13.781535894942097 3.4724402072801235">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_26" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_27" pos="24.23577148322535 14.37216792876075 3.582912702684296">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_27" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_28" pos="24.87181101822187 14.657570383143556 3.70628384154251">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_28" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_29" pos="24.82134168216263 15.487328389736437 3.936775630157572">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_29" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_30" pos="25.060365239532466 15.99715448341609 4.119940934889143">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_30" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_31" pos="25.279786692398456 16.540312697394764 4.2999796606139595">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_31" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_32" pos="25.38428664843237 17.29001343185631 4.466534353159725">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_32" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_33" pos="25.141186330862887 18.05073137599764 4.606980646995198">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_33" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_34" pos="25.46656998077393 18.590857041792464 4.7602897664812724">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_34" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+    <body name="probe_35" pos="26.188566892199137 19.770401297963545 4.937677467253968">
+      <joint type="slide" axis="0 0 1" />
+      <geom name="probe_geom_35" type="sphere" size="0.06" mass=".4" group="1" rgba="1 .2 .06 1" />
+    </body>
+  </worldbody>
+</mujoco>

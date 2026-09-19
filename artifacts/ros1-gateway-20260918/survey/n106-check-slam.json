@@ -1,0 +1,166 @@
+{
+  "host": "host",
+  "collected_at": "2026-09-18T06:14:03.414355+00:00",
+  "data": {
+    "/LIDAR/POINTS": {
+      "messages": 76,
+      "hz": 10.003054742193346,
+      "stamp_age_s": 0.11906862258911133,
+      "stamp_age_range_s": [
+        0.11735153198242188,
+        0.12258672714233398
+      ],
+      "backwards": 0,
+      "max_clock_jump_s": 0.00492025670359908,
+      "fresh": true,
+      "frame_id": "lidar_link",
+      "child_frame_id": null,
+      "position_m": null,
+      "orientation_xyzw": null,
+      "fields": [
+        "x",
+        "y",
+        "z",
+        "intensity",
+        "ring",
+        "timestamp"
+      ],
+      "point_stamp_samples": [
+        1789712053.7500925,
+        1789712053.7815394,
+        1789712053.8500118
+      ],
+      "dds_header_offset_s": 0.11382031440734863,
+      "publishers": [
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "sensor_msgs/msg/PointCloud2",
+          "gid": "010fa2e5270f0c060000000000000503",
+          "reliability": "2"
+        },
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "sensor_msgs/msg/PointCloud2",
+          "gid": "010fa2e5bc0d57930000000000000503",
+          "reliability": "2"
+        }
+      ]
+    },
+    "/LIDAR/POINTS_MERGED": {
+      "messages": 12,
+      "hz": 2.9731753755026826,
+      "stamp_age_s": 0.1328110694885254,
+      "stamp_age_range_s": [
+        0.1328110694885254,
+        0.13986921310424805
+      ],
+      "backwards": 0,
+      "max_clock_jump_s": 0.0060004630375942725,
+      "fresh": false,
+      "frame_id": "lidar_link",
+      "child_frame_id": null,
+      "position_m": null,
+      "orientation_xyzw": null,
+      "fields": [
+        "x",
+        "y",
+        "z",
+        "intensity"
+      ],
+      "point_stamp_samples": null,
+      "dds_header_offset_s": -13.83942437171936,
+      "publishers": [
+        {
+          "node": "dual_airy_merger",
+          "type": "sensor_msgs/msg/PointCloud2",
+          "gid": "010f1f12f00a6d120000000000001403",
+          "reliability": "2"
+        }
+      ]
+    },
+    "/IMU": {
+      "messages": 1605,
+      "hz": 200.4371388293572,
+      "stamp_age_s": 0.010561227798461914,
+      "stamp_age_range_s": [
+        0.009428739547729492,
+        0.028052806854248047
+      ],
+      "backwards": 0,
+      "max_clock_jump_s": 0.009151768977631036,
+      "fresh": true,
+      "frame_id": "",
+      "child_frame_id": null,
+      "position_m": null,
+      "orientation_xyzw": null,
+      "fields": null,
+      "point_stamp_samples": null,
+      "dds_header_offset_s": 0.009512662887573242,
+      "publishers": [
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "sensor_msgs/msg/Imu",
+          "gid": "010fa2e5fa0cbe3a0100000000000103",
+          "reliability": "2"
+        }
+      ]
+    },
+    "/ODOM": {
+      "messages": 80,
+      "hz": 10.001667096862251,
+      "stamp_age_s": 0.0247652530670166,
+      "stamp_age_range_s": [
+        0.023665904998779297,
+        0.029364585876464844
+      ],
+      "backwards": 0,
+      "max_clock_jump_s": 0.0038373128413127233,
+      "fresh": true,
+      "frame_id": "map",
+      "child_frame_id": "",
+      "position_m": [
+        604.3107443211305,
+        2004.7688169256473,
+        131.92521358320798
+      ],
+      "orientation_xyzw": [
+        -0.017601929133521352,
+        0.006981447831990365,
+        0.09095908001211625,
+        0.995674584008398
+      ],
+      "fields": null,
+      "point_stamp_samples": null,
+      "dds_header_offset_s": 0.02109503746032715,
+      "publishers": [
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "nav_msgs/msg/Odometry",
+          "gid": "010fa2e5b50a58930100000000000203",
+          "reliability": "1"
+        }
+      ]
+    },
+    "/LIO_ODOM": {
+      "messages": 0,
+      "hz": null,
+      "stamp_age_s": null,
+      "fresh": false,
+      "publishers": [
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "nav_msgs/msg/Odometry",
+          "gid": "010f038e3327401f0100000000000103",
+          "reliability": "1"
+        }
+      ]
+    },
+    "/SLAM_ODOM": {
+      "messages": 0,
+      "hz": null,
+      "stamp_age_s": null,
+      "fresh": false,
+      "publishers": []
+    }
+  }
+}

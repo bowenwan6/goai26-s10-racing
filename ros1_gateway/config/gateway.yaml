@@ -1,0 +1,20 @@
+# s10_ros1_gateway runtime settings (102 AGX). Topic mapping lives in
+# topics.yaml / topics_keep_ros2_names.yaml.
+ros1_node_name: s10_ros1_gateway
+ros2_node_name: s10_ros1_gateway
+# ROS 1 std_msgs/String with a JSON health report; "" disables it.
+status_topic: /s10_ros1_gateway/status
+# JSON health report file (relative paths are relative to this file); "" disables.
+status_file: ../run/status.json
+status_period_s: 1.0
+
+# TCP input for topics with source: tap (the 106 lidar tap connects here).
+tap:
+  enabled: true
+  # Bind only on the robot-internal interface, never on Wi-Fi.
+  listen_address: 10.21.33.102
+  listen_port: 47631
+  allowed_peers: [10.21.33.106]
+  max_payload_bytes: 67108864
+  # The tap sends a heartbeat every second; a silent connection is dropped.
+  idle_timeout_s: 5.0

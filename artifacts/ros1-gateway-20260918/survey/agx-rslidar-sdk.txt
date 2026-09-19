@@ -1,0 +1,296 @@
+### git
+v1.5.19
+78d2abb7f0c21f789a606d584475c631d5118dc3
+ M .clang-format
+ M .gitignore
+ M .gitmodules
+ M CHANGELOG.md
+ M CMakeLists.txt
+ M LICENSE
+ M README.md
+ M README_CN.md
+ M config/config.yaml
+ M create_debian.sh
+4eeadace465023db65a63fc8ef680dfaaca5812c
+### ls
+CHANGELOG.md
+CMakeLists.txt
+config
+create_debian.sh
+doc
+img
+launch
+LICENSE
+node
+package.xml
+README_CN.md
+README.md
+rviz
+src
+manager
+msg
+rs_driver
+source
+utility
+### CMakeLists COMPILE_METHOD / POINT_TYPE
+8:set(POINT_TYPE XYZI)
+10:option(ENABLE_TRANSFORM "Enable transform functions" OFF)
+11:if(${ENABLE_TRANSFORM})
+12:  add_definitions("-DENABLE_TRANSFORM")
+15:endif(${ENABLE_TRANSFORM})
+48:option(ENABLE_IMU_DATA_PARSE           "Enable imu data parse" OFF)
+49:if(${ENABLE_IMU_DATA_PARSE})
+55:  add_definitions("-DENABLE_IMU_DATA_PARSE")
+57:endif(${ENABLE_IMU_DATA_PARSE})
+77:if(${POINT_TYPE} STREQUAL "XYZI")
+78:  add_definitions(-DPOINT_TYPE_XYZI)
+79:elseif(${POINT_TYPE} STREQUAL "XYZIRT")
+80:  add_definitions(-DPOINT_TYPE_XYZIRT)
+81:elseif(${POINT_TYPE} STREQUAL "XYZIF")
+82:  add_definitions(-DPOINT_TYPE_XYZIF)
+83:elseif(${POINT_TYPE} STREQUAL "XYZIRTF")
+84:  add_definitions(-DPOINT_TYPE_XYZIRTF)
+88:message("-- POINT_TYPE is ${POINT_TYPE}")
+104:  add_definitions(-DROS_FOUND)
+112:  find_package(catkin REQUIRED COMPONENTS
+117:  catkin_package(CATKIN_DEPENDS 
+137:  add_definitions(-DROS2_FOUND)
+141:  find_package(ament_cmake REQUIRED)
+191:  ament_target_dependencies(rslidar_sdk_node 
+206:  ament_package()
+### CMakeCache
+CMAKE_BUILD_TYPE:STRING=
+ENABLE_CRC32_CHECK:BOOL=OFF
+ENABLE_DIFOP_PARSE:BOOL=ON
+ENABLE_EPOLL_RECEIVE:BOOL=OFF
+ENABLE_IMU_DATA_PARSE:BOOL=ON
+ENABLE_MODIFY_RECVBUF:BOOL=ON
+ENABLE_PCL_POINTCLOUD:BOOL=OFF
+ENABLE_SOURCE_PACKET_LEGACY:BOOL=OFF
+ENABLE_STAMP_WITH_LOCAL:BOOL=OFF
+ENABLE_TRANSFORM:BOOL=ON
+ENABLE_WAIT_IF_QUEUE_EMPTY:BOOL=OFF
+### package.xml
+<?xml version="1.0"?>
+<package format="3">
+  <name>rslidar_sdk</name>
+  <version>1.5.19</version>
+  <description>The rslidar_sdk package</description>
+  <maintainer email="amon.yang@robosense.cn">robosense</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+
+  <depend>libpcap</depend>
+  <depend condition="$ROS_VERSION == 1">pcl_ros</depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
+  <depend condition="$ROS_VERSION == 1">roscpp</depend>
+  <depend condition="$ROS_VERSION == 1">roslib</depend>
+  <depend condition="$ROS_VERSION == 2">rslidar_msg</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>yaml-cpp</depend>
+
+  <export>
+     <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+  </export>
+</package>
+ls: cannot access '/home/golai/goai_embodied_future_material/src/rslidar_sdk/package_ros*.xml': No such file or directory
+/home/golai/goai_embodied_future_material/src/rslidar_sdk/package.xml
+### point type header
+ros_msg
+rs_msg
+### ros1 adapter present?
+source_driver.hpp
+source.hpp
+source_packet_ros.hpp
+source_pointcloud_ros.hpp
+37:#ifdef ROS_FOUND
+262:#endif  // ROS_FOUND
+264:#ifdef ROS2_FOUND
+### to ROS msg conversion
+48:inline sensor_msgs::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, const std::string& frame_id, bool send_by_rows)
+75:  offset = addPointField(ros_msg, "x", 1, sensor_msgs::PointField::FLOAT32, offset);
+76:  offset = addPointField(ros_msg, "y", 1, sensor_msgs::PointField::FLOAT32, offset);
+77:  offset = addPointField(ros_msg, "z", 1, sensor_msgs::PointField::FLOAT32, offset);
+78:  offset = addPointField(ros_msg, "intensity", 1, sensor_msgs::PointField::FLOAT32, offset);
+80:  offset = addPointField(ros_msg, "ring", 1, sensor_msgs::PointField::UINT16, offset);
+81:  offset = addPointField(ros_msg, "timestamp", 1, sensor_msgs::PointField::FLOAT64, offset);
+85:  offset = addPointField(ros_msg, "feature", 1, sensor_msgs::PointField::UINT8, offset);
+92:  ros_msg.point_step = offset;
+93:  ros_msg.row_step = ros_msg.width * ros_msg.point_step;
+95:  ros_msg.data.resize(ros_msg.point_step * ros_msg.width * ros_msg.height);
+103:  sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring_(ros_msg, "ring");
+104:  sensor_msgs::PointCloud2Iterator<double> iter_timestamp_(ros_msg, "timestamp");
+130:        *iter_ring_ = point.ring;
+131:        *iter_timestamp_ = point.timestamp;
+133:        ++iter_ring_;
+134:        ++iter_timestamp_;
+162:      *iter_ring_ = point.ring;
+163:      *iter_timestamp_ = point.timestamp;
+165:      ++iter_ring_;
+166:      ++iter_timestamp_;
+177:  ros_msg.header.stamp = ros_msg.header.stamp.fromSec(rs_msg.timestamp);
+183:sensor_msgs::Imu toRosMsg(const std::shared_ptr<ImuData>& data, const std::string& frame_id)
+187:  imu_msg.header.stamp = imu_msg.header.stamp.fromSec(data->timestamp);
+216:  std::string frame_id_;
+230:  yamlRead<std::string>(config["ros"], 
+233:  std::string ros_send_topic;
+234:  yamlRead<std::string>(config["ros"], 
+242:  std::string ros_send_imu_data_topic;
+243:  yamlRead<std::string>(config["ros"], 
+277:inline sensor_msgs::msg::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, const std::string& frame_id, bool send_by_rows)
+304:  offset = addPointField(ros_msg, "x", 1, sensor_msgs::msg::PointField::FLOAT32, offset);
+305:  offset = addPointField(ros_msg, "y", 1, sensor_msgs::msg::PointField::FLOAT32, offset);
+306:  offset = addPointField(ros_msg, "z", 1, sensor_msgs::msg::PointField::FLOAT32, offset);
+307:  offset = addPointField(ros_msg, "intensity", 1, sensor_msgs::msg::PointField::FLOAT32, offset);
+310:  offset = addPointField(ros_msg, "ring", 1, sensor_msgs::msg::PointField::UINT16, offset);
+311:  offset = addPointField(ros_msg, "timestamp", 1, sensor_msgs::msg::PointField::FLOAT64, offset);
+315:  offset = addPointField(ros_msg, "feature", 1, sensor_msgs::msg::PointField::UINT8, offset);
+322:  ros_msg.point_step = offset;
+323:  ros_msg.row_step = ros_msg.width * ros_msg.point_step;
+325:  ros_msg.data.resize(ros_msg.point_step * ros_msg.width * ros_msg.height);
+332:  sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring_(ros_msg, "ring");
+333:  sensor_msgs::PointCloud2Iterator<double> iter_timestamp_(ros_msg, "timestamp");
+359:      *iter_ring_ = point.ring;
+360:      *iter_timestamp_ = point.timestamp;
+362:      ++iter_ring_;
+363:      ++iter_timestamp_;
+391:      *iter_ring_ = point.ring;
+392:      *iter_timestamp_ = point.timestamp;
+394:      ++iter_ring_;
+395:      ++iter_timestamp_;
+405:  ros_msg.header.stamp.sec = (uint32_t)floor(rs_msg.timestamp);
+406:  ros_msg.header.stamp.nanosec = (uint32_t)round((rs_msg.timestamp - ros_msg.header.stamp.sec) * 1e9);
+412:sensor_msgs::msg::Imu toRosMsg(const std::shared_ptr<ImuData>& data, const std::string& frame_id)
+416:  imu_msg.header.stamp = rclcpp::Time(static_cast<uint64_t>(data->timestamp * 1e9));
+446:  std::string frame_id_;
+460:  yamlRead<std::string>(config["ros"], 
+463:  std::string ros_send_topic;
+464:  yamlRead<std::string>(config["ros"], 
+471:  std::stringstream node_name;
+### airy_dual.yaml
+common:
+  msg_source: 1
+  send_packet_ros: false
+  send_point_cloud_ros: true
+
+lidar:
+  - driver:
+      lidar_type: RSAIRY
+      host_address: 10.21.33.102
+      group_address: 224.10.10.201
+      socket_recv_buf: 16777216
+      msop_port: 6691
+      difop_port: 7781
+      imu_port: 6681
+      user_layer_bytes: 0
+      tail_layer_bytes: 0
+      min_distance: 0.2
+      max_distance: 60
+      use_lidar_clock: true
+      dense_points: true
+      ts_first_point: true
+      start_angle: 0
+      end_angle: 360
+      pcap_repeat: true
+      pcap_rate: 1.0
+      pcap_path: lidar.pcap
+      x: 0.22341
+      y: 0.0
+      z: -0.0001
+      roll: 0.0
+      pitch: -1.5707
+      yaw: -3.14159
+    ros:
+      ros_frame_id: lidar_link
+      ros_recv_packet_topic: /rslidar_front/packets
+      ros_send_packet_topic: /rslidar_front/packets
+      ros_send_imu_data_topic: /rslidar_front/imu
+      ros_send_point_cloud_topic: /rslidar_front/points
+      ros_queue_length: 10
+
+  - driver:
+      lidar_type: RSAIRY
+      host_address: 10.21.33.102
+      group_address: 224.10.10.202
+      socket_recv_buf: 16777216
+      msop_port: 6692
+      difop_port: 7782
+      imu_port: 6682
+      user_layer_bytes: 0
+      tail_layer_bytes: 0
+      min_distance: 0.2
+      max_distance: 60
+      use_lidar_clock: true
+      dense_points: true
+      ts_first_point: true
+      start_angle: 0
+      end_angle: 360
+      pcap_repeat: true
+      pcap_rate: 1.0
+      pcap_path: lidar.pcap
+      x: -0.22341
+      y: 0.0
+      z: -0.0001
+      roll: 0.0
+      pitch: -1.5707
+      yaw: 0.0
+    ros:
+      ros_frame_id: lidar_link
+      ros_recv_packet_topic: /rslidar_rear/packets
+      ros_send_packet_topic: /rslidar_rear/packets
+      ros_send_imu_data_topic: /rslidar_rear/imu
+      ros_send_point_cloud_topic: /rslidar_rear/points
+      ros_queue_length: 10
+### unit files
+# /etc/systemd/system/rslidar-dual.service
+[Unit]
+Description=RoboSense dual RS-LiDAR-AIRY ROS 2 driver
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=golai
+Environment=HOME=/home/golai
+Environment=ROS_DOMAIN_ID=0
+Environment=RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+WorkingDirectory=/home/golai/goai_embodied_future_material
+Environment=FASTRTPS_DEFAULT_PROFILES_FILE=/home/golai/.ros/fastdds_ethernet.xml
+ExecStart=/bin/bash -lc 'source /opt/ros/jazzy/setup.bash && source /home/golai/goai_embodied_future_material/install/setup.bash && exec ros2 run rslidar_sdk rslidar_sdk_node --ros-args -p config_path:=/home/golai/goai_embodied_future_material/src/dual_airy_merger/config/airy_dual.yaml'
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=2
+KillMode=control-group
+TimeoutStopSec=15
+SendSIGKILL=yes
+
+[Install]
+WantedBy=multi-user.target
+
+# /etc/systemd/system/rslidar-merge.service
+[Unit]
+Description=Merge dual RoboSense Airy point clouds with CD1 extrinsics
+After=rslidar-dual.service
+Wants=rslidar-dual.service
+
+[Service]
+Type=simple
+User=golai
+Environment=HOME=/home/golai
+Environment=ROS_DOMAIN_ID=0
+Environment=RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+WorkingDirectory=/home/golai/goai_embodied_future_material
+Environment=FASTRTPS_DEFAULT_PROFILES_FILE=/home/golai/.ros/fastdds_ethernet.xml
+ExecStart=/bin/bash -lc 'source /opt/ros/jazzy/setup.bash && source /home/golai/goai_embodied_future_material/install/setup.bash && exec ros2 run dual_airy_merger dual_airy_merger_node'
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=2
+
+TimeoutStopSec=15
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target

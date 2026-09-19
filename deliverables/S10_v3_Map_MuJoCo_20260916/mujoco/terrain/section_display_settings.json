@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Start 中线 y=0.5 m",
+    "halfwidth_m": 0.06,
+    "points": 13388,
+    "z_display_window": [
+      -0.75,
+      0.1
+    ],
+    "outside_z_window": 526
+  },
+  {
+    "name": "Start 曲边附近 y=-0.85 m",
+    "halfwidth_m": 0.06,
+    "points": 1968,
+    "z_display_window": [
+      -0.75,
+      0.1
+    ],
+    "outside_z_window": 55
+  },
+  {
+    "name": "B 后路线中心",
+    "halfwidth_m": 0.06,
+    "points": 9706,
+    "z_display_window": [
+      4.25,
+      5.25
+    ],
+    "outside_z_window": 213
+  },
+  {
+    "name": "B 后侧边 cross=-0.95 m",
+    "halfwidth_m": 0.06,
+    "points": 5028,
+    "z_display_window": [
+      4.25,
+      5.25
+    ],
+    "outside_z_window": 91
+  }
+]

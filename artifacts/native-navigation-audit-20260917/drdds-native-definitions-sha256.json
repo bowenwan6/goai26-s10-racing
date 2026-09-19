@@ -1,0 +1,20 @@
+{
+  "ExecStatusValue.msg": "232e523941654d6e020a5c1e824565ee70f31a32c3302f3975c5e6fa94b4039b",
+  "Gait.msg": "677cf2d4f58507581f6dba5e6a7cbc2c9805f3a7a38102634a5cbf9e43b0f4ab",
+  "GaitValue.msg": "86330c1cd758a2b4b9ecf56eeeb1526a39598183a88a27546dbf43e647f3ccdb",
+  "InputStatusValue.msg": "6619f611091f8e488821c60d253cbd254f68290cf2e514fe2083177c54f9d491",
+  "LocationStatus.msg": "d7d99a26b950698ab5ca326bdf2d9a0bb280c7d02c1901cbc8a12e2094f2ffc6",
+  "LocationStatusValue.msg": "d51a0b6023be9d7406ddd24816f71b7d5107578d1d592c4e3ea5363c66f33b4b",
+  "LossStatusValue.msg": "5573cb5afb5d26c0544284fbeb8e9889c8e01efbf86c2f0c19f3788b0cf270a0",
+  "MetaType.msg": "07622e7cae92aa5f96803992420dada6c24e9403915a0f26fe6bedd4ef7ad814",
+  "MotionInfo.msg": "bf3606463f8396f4329cfa87489192b9e6840f8b2ba35dba948c8241453e28ab",
+  "MotionInfoValue.msg": "ae90fc60e41d7cc17ca40288fe9d0a976ccd2ef8027f5a32c14ed75c3faefe39",
+  "MotionStateValue.msg": "051bed7fcff317bdce20cfe052e5ed92a201540a4fe43a0f7cac3beae49ca663",
+  "MotionStatus.msg": "9782dd8669a634dac0d635045bbd755ba301a72fe6dbc07e326d9ad41a8665dd",
+  "MotionStatusValue.msg": "8ff1fc24b81249084072c35a27fa02f4bb5802c3d677dc21bb92ad686cd96968",
+  "NavCmd.msg": "773ae0181fb1a58eeeb6c84b9eebfb9b71f09b3465931705b293ee8351b70352",
+  "NavCmdValue.msg": "ff062f0a7357a6a86c18024e1d55b62b9d4c86a92c6fdea1672dd9d5be61c3ae",
+  "StdMsgInt32.msg": "55141bb0e456b0570031b17567c961775e0db9abbbe1bbaa7d2183c6cfa8828c",
+  "Steer.msg": "9dcbd176b4a607d4110aa36417e0ffb34590b976bde2b1a0566a2b0e88fd7308",
+  "SteerValue.msg": "9257e9f2613ea1dcbc9e6c1c2fa86f42ba540d7f462dcaa26eceee3876e06073"
+}

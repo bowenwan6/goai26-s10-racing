@@ -1,0 +1,73 @@
+{
+  "status": "THREE_REGION_GEOMETRY_CANDIDATE_NOT_FIELD_ACCEPTED",
+  "new_vertices": 4291,
+  "new_triangles": 6832,
+  "B_vertices": 904,
+  "B_triangles": 1680,
+  "collision_solids": 3814,
+  "coplanar_merges": 3018,
+  "new_positive_area_overlap_m2": 0.0,
+  "sample_geometry_exact_copy": true,
+  "B_geometry_sha256": "095fffcc2bd1d48bdaba4db2c1986cc5261b5c701134738942e293e5bb60b7c7",
+  "B_copied_geometry_sha256": "095fffcc2bd1d48bdaba4db2c1986cc5261b5c701134738942e293e5bb60b7c7",
+  "post_plane": [
+    0.00024781770937280616,
+    -0.006946167763988698,
+    4.777598989220198
+  ],
+  "post_length_along_exit_normal_m": 4.634975501253082,
+  "post_halfwidth_is_crop_m": 1.1527306539650446,
+  "post_centerline_end_map_xy": [
+    29.336193045031113,
+    25.661885202008538
+  ],
+  "post_centerline_length_m": 4.880740420166725,
+  "protected_entry_edge": [
+    [
+      12.485468888039671,
+      3.0626541189056105
+    ],
+    [
+      13.32269435281129,
+      0.9902177100766019
+    ]
+  ],
+  "protected_exit_edge": [
+    [
+      27.61609244143373,
+      21.341465727388627
+    ],
+    [
+      25.412133029278564,
+      22.0180119208857
+    ]
+  ],
+  "post_direction": [
+    0.2934537184250112,
+    0.9559732816049487
+  ],
+  "source_files_unchanged": true,
+  "source_files_verified": 237,
+  "field_accuracy": false,
+  "robot_used": false,
+  "policy_run": false,
+  "all_scope_originals_preserved": true,
+  "post_side_raised_is_unmodeled_evidence": true,
+  "continuous_transition_strips": {
+    "west_to_middle_x": [
+      2,
+      3
+    ],
+    "middle_to_east_x": [
+      8,
+      9
+    ],
+    "south_to_north_y": [
+      1.4,
+      2.15
+    ],
+    "B_entry_distance_m": 0.8
+  },
+  "engine_check_required": true,
+  "elapsed_s": 5.696458541991888
+}

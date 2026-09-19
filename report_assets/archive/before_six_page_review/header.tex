@@ -1,0 +1,30 @@
+\usepackage{xeCJK}
+\setCJKmainfont{Songti SC}
+\setCJKsansfont{Heiti SC}
+\setCJKmonofont{Heiti SC}
+\usepackage{titlesec,needspace,seqsplit,fancyhdr,fvextra,etoolbox}
+\definecolor{ReportNavy}{HTML}{193E54}
+\definecolor{ReportGray}{HTML}{5C7180}
+\definecolor{ReportRule}{HTML}{D2DDE4}
+\AtBeginDocument{\hypersetup{linkcolor=ReportNavy,urlcolor=ReportNavy,bookmarksopen=true,bookmarksdepth=2,pdftitle={Lynx S10 地形感知导航与强化学习控制},pdfauthor={GOAI LAI / 狗來}}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}GOAI LAI / Lynx S10}
+\fancyhead[R]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}TECHNICAL RESEARCH REPORT}
+\fancyfoot[L]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}2026-09-02}
+\fancyfoot[R]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}\setlength{\headheight}{15pt}
+\setlength{\parindent}{0pt}\setlength{\parskip}{4pt plus 1pt minus 1pt}
+\setlength{\emergencystretch}{2em}\raggedbottom
+\widowpenalty=10000\clubpenalty=10000\displaywidowpenalty=10000
+\titleformat{\section}{\sffamily\fontsize{13}{17}\selectfont\bfseries\color{ReportNavy}}{}{0pt}{}
+\titleformat{\subsection}{\sffamily\fontsize{10}{14}\selectfont\bfseries\color{ReportNavy}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{10pt}{5pt}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+\pretocmd{\subsection}{\Needspace{4\baselineskip}}{}{}
+\renewcommand{\arraystretch}{1.10}\setlength{\tabcolsep}{4pt}
+\setlength{\LTpre}{3pt}\setlength{\LTpost}{5pt}
+\AtBeginEnvironment{longtable}{\fontsize{8.6}{11.7}\selectfont}
+\AtEndEnvironment{longtable}{\normalsize}
+\DefineVerbatimEnvironment{ReportCode}{Verbatim}{fontsize=\fontsize{8}{10}\selectfont,breaklines=true,breakanywhere=true,frame=single,rulecolor=\color{ReportRule},framesep=4pt,baselinestretch=1.02}
+\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+\setlength{\abovedisplayshortskip}{3pt}\setlength{\belowdisplayshortskip}{3pt}

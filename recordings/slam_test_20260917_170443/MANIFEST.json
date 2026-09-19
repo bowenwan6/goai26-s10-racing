@@ -1,0 +1,98 @@
+{
+  "created_at": "2026-09-17T09:20:42.905040+00:00",
+  "source_sha256_verified": true,
+  "files": {
+    "README_先读我.md": {
+      "bytes": 4744,
+      "sha256": "3a6aa119d24a4d3500ead1462b433d8c6b3b7855fdacb671f3a92b54abd2761f"
+    },
+    "evidence/audit_bag.py": {
+      "bytes": 8173,
+      "sha256": "89036396c18869e16924266287da44e02ed660ebb3f428e075880ef949a7ec77"
+    },
+    "evidence/audit_stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence/audit_stdout_prefix.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence/bag_audit.json": {
+      "bytes": 10415,
+      "sha256": "e970a339251c99ca7e2ab52097ccdb665223822904a7f474bf2efb1df463e111"
+    },
+    "evidence/collect_evidence.py": {
+      "bytes": 2124,
+      "sha256": "c48818707c3bb34a4d1397766d135aa37d97384bb24d41c714730d78ae97b17d"
+    },
+    "evidence/configuration_snapshot_after_recording/manifest.json": {
+      "bytes": 1333,
+      "sha256": "dccb57cf4e48de7bc6e4a8452601bb5cd555d485cd3471eafb38ee7e654052e4"
+    },
+    "evidence/configuration_snapshot_after_recording/opt__robot__fastdds.xml": {
+      "bytes": 2772,
+      "sha256": "df6b4b95bb2d75dddf88d436036dd926c9efb3304ac1fce41dce6d4be54c363e"
+    },
+    "evidence/configuration_snapshot_after_recording/opt__robot__share__slam__conf__params.yaml": {
+      "bytes": 4439,
+      "sha256": "fa18cfd5d706a6ac40f90c9e2f4e4b37a580d9684819cb153ad0509ffbe20cab"
+    },
+    "evidence/configuration_snapshot_after_recording/var__opt__robot__conf__robot_hardware_info.toml": {
+      "bytes": 502,
+      "sha256": "ca4eb6801ce6343c3c78a27b7b97a4dfb58e1a2f733e685a5fdd71ad855a73fd"
+    },
+    "evidence/configuration_snapshot_after_recording/var__opt__robot__conf__rslidar__config.yaml": {
+      "bytes": 4811,
+      "sha256": "93b05d28ebd2a6c1921b363e89e6758ef811764cba923ac5bb615b65523c754d"
+    },
+    "evidence/configuration_snapshot_after_recording/var__opt__robot__conf__slam__params.yaml": {
+      "bytes": 1637,
+      "sha256": "5988432757df29ed8ae6a3a515c9e9d80716f50631c421153966ca8d544b1459"
+    },
+    "evidence/configuration_snapshot_after_recording/var__opt__robot__conf__yesense_node__yesense.yaml": {
+      "bytes": 518,
+      "sha256": "a9e5b1c96abfd22382c771b925961bfcb1df68e7be2e79c8f81b62bac9f611f0"
+    },
+    "evidence/package_delivery.py": {
+      "bytes": 7877,
+      "sha256": "4729e95482d8566b5c2bcf20a380596e9f9c15d2eb874f905f05d5bf4ff4c01d"
+    },
+    "raw_bag/metadata.yaml": {
+      "bytes": 4228,
+      "sha256": "b3da674aa9f2059f519c7c03c8fe767d86f45b2472cd00569d87c57a4ed4e0d2"
+    },
+    "raw_bag/slam_test_20260917_170443_0.mcap": {
+      "bytes": 537814298,
+      "sha256": "7427d3daf82ed78be2cd22e0d11e916737ca0dbc951b27cb46ab06263c948c96"
+    },
+    "raw_bag/slam_test_20260917_170443_1.mcap": {
+      "bytes": 537324724,
+      "sha256": "a3650fabc8d734d9e8268fce6d5599bc99f13a103c1504161571e35d71f2a35b"
+    },
+    "raw_bag/slam_test_20260917_170443_2.mcap": {
+      "bytes": 537990461,
+      "sha256": "8ce617bb48fb3028316acf3d06563c348f774fddcc01f48f5df290ff58c0dbdf"
+    },
+    "raw_bag/slam_test_20260917_170443_3.mcap": {
+      "bytes": 538093814,
+      "sha256": "3903eea2a83deacd98e001e448f0c5540d72c188c574eb9af3fd85a883eb2b8e"
+    },
+    "raw_bag/slam_test_20260917_170443_4.mcap": {
+      "bytes": 538216002,
+      "sha256": "bb2321b3585e3f9c8ee3ef0c3ac53430b6ba63c6da6e4943f3104a87131b7863"
+    },
+    "raw_bag/slam_test_20260917_170443_5.mcap": {
+      "bytes": 537236559,
+      "sha256": "3893a0306f6c1a61fff1ca2c50798223645c73618911e8562a15fcc88312b704"
+    },
+    "raw_bag/slam_test_20260917_170443_6.mcap": {
+      "bytes": 536916501,
+      "sha256": "b95ba5e62187d1fbede73e5c4d2763b5742e167dd6add8f2085e28c244166bb9"
+    },
+    "raw_bag/slam_test_20260917_170443_7.mcap": {
+      "bytes": 504241026,
+      "sha256": "1977af9fa5e270a469a5142cd3c732adcc458bd32fe86b0ba6c82f5a01324119"
+    }
+  }
+}

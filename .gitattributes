@@ -2,3 +2,43 @@
 *.sh text eol=lf
 *.py text eol=lf
 policy/gate16/front_tuck_command_profiles.json text eol=lf
+
+# Preserve byte-for-byte handoff manifests and deployed backup evidence.
+deliverables/S10_v3_Map_MuJoCo_20260916/** -text
+academic_assets/** -text
+backups/s10-native-nav/** -text
+artifacts/native-control-handoff-20260917/** -text
+artifacts/native-navigation-audit-20260917/** -text
+artifacts/native-start-b-implementation-20260917/** -text
+artifacts/ros1-gateway-20260918/** -text
+
+# Field deliverables: keep large point clouds and shareable assets out of Git packs.
+deliverables/**/*.pcd filter=lfs diff=lfs merge=lfs -text
+deliverables/*.zip filter=lfs diff=lfs merge=lfs -text
+deliverables/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
+waypoint-photos-20260914/**/*.heic filter=lfs diff=lfs merge=lfs -text
+waypoint-photos-20260914/**/*.HEIC filter=lfs diff=lfs merge=lfs -text
+waypoint-photos-20260914/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+waypoint-photos-20260914/**/*.JPG filter=lfs diff=lfs merge=lfs -text
+
+# Binary scene data and report media use the same LFS handoff.
+GOAI_ENTERPRISE_POSTER_PRO_ZH.pdf filter=lfs diff=lfs merge=lfs -text
+GOAI_ENTERPRISE_POSTER_ZH.pdf filter=lfs diff=lfs merge=lfs -text
+GOAI_ENTERPRISE_POSTER_ZH_page1.png filter=lfs diff=lfs merge=lfs -text
+GOAI_ENTERPRISE_POSTER_ZH_page2.png filter=lfs diff=lfs merge=lfs -text
+PROJECT_REPORT_SOURCES.zip filter=lfs diff=lfs merge=lfs -text
+PROJECT_TECHNICAL_ZH.pdf filter=lfs diff=lfs merge=lfs -text
+academic_assets/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+academic_assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+deliverables/**/*.STL filter=lfs diff=lfs merge=lfs -text
+deliverables/**/*.npz filter=lfs diff=lfs merge=lfs -text
+deliverables/**/*.png filter=lfs diff=lfs merge=lfs -text
+evidence/**/*.png filter=lfs diff=lfs merge=lfs -text
+poster_assets/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+poster_assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+posterly_rebuild/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+posterly_rebuild/**/*.png filter=lfs diff=lfs merge=lfs -text
+report_assets/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+report_assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+report_assets/**/*.zip filter=lfs diff=lfs merge=lfs -text
+tools/s10_mapping_web/qa/native-nav-evidence/*.png filter=lfs diff=lfs merge=lfs -text

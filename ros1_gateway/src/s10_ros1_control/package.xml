@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>s10_ros1_control</name>
+  <version>1.0.0</version>
+  <description>
+    ROS 1 motion interface for the S10: /cmd_vel (geometry_msgs/Twist) and
+    /web_cmd (std_msgs/String: stand, lie down, stop, continue) mapped onto the
+    robot's native ROS 2 /NAV_CMD, /MOTION_STATE and /GAIT with feedback from
+    /MOTION_INFO. Dry run unless explicitly enabled.
+  </description>
+  <maintainer email="89072276+bowenwan6@users.noreply.github.com">GOAI S10 team</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>drdds</depend>
+  <depend>yaml-cpp</depend>
+  <build_depend>ros1_bridge</build_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

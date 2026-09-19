@@ -19,6 +19,10 @@ import yaml
 class Waypoint:
     index: int
     position: np.ndarray  # (3,) world frame
+    #: Optional per-waypoint scoring radius and height tolerance (route_v2 ``radius_xy`` /
+    #: ``tol_z``). ``None`` keeps the course-wide values, which is every legacy course.
+    radius: float | None = None
+    height_tolerance: float | None = None
 
     @property
     def xy(self) -> np.ndarray:
@@ -53,12 +57,18 @@ class Course:
         waypoints: list[Waypoint],
         advance_radius: float = 0.18,
         score_radius: float = 0.18,
+        height_tolerance: float | None = None,
     ) -> None:
         if not waypoints:
             raise ValueError("Course requires at least one waypoint")
         self.waypoints = waypoints
         self.advance_radius = float(advance_radius)
         self.score_radius = float(score_radius)
+        if height_tolerance is not None and (
+            not math.isfinite(height_tolerance) or height_tolerance <= 0
+        ):
+            raise ValueError("height_tolerance must be finite and positive")
+        self.height_tolerance = height_tolerance
         self._cursor = 0
 
     @classmethod
@@ -69,6 +79,8 @@ class Course:
             Waypoint(
                 index=int(entry.get("index", i)),
                 position=np.asarray(entry["position"], float),
+                radius=_optional_float(entry.get("radius_xy")),
+                height_tolerance=_optional_float(entry.get("tol_z")),
             )
             for i, entry in enumerate(entries)
         ]
@@ -97,8 +109,22 @@ class Course:
         """
         if self.finished:
             return False
-        distance = float(np.linalg.norm(self.waypoints[self._cursor].xy - position_xy))
-        if distance <= self.score_radius:
+        position = np.asarray(position_xy, dtype=float)
+        if position.shape not in ((2,), (3,)) or not np.isfinite(position).all():
+            return False
+        target = self.waypoints[self._cursor]
+        tolerance = (
+            target.height_tolerance
+            if target.height_tolerance is not None
+            else self.height_tolerance
+        )
+        if tolerance is not None and (
+            position.shape != (3,) or abs(position[2] - target.position[2]) > tolerance
+        ):
+            return False
+        radius = target.radius if target.radius is not None else self.score_radius
+        distance = float(np.linalg.norm(target.xy - position[:2]))
+        if distance <= radius:
             self._cursor += 1
             return True
         return False
@@ -147,6 +173,15 @@ class Course:
 
     def reset(self) -> None:
         self._cursor = 0
+
+
+def _optional_float(value) -> float | None:
+    if value is None:
+        return None
+    result = float(value)
+    if not math.isfinite(result) or result <= 0:
+        raise ValueError("per-waypoint radius_xy/tol_z must be finite and positive")
+    return result
 
 
 def _segment_circle_exit(

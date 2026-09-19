@@ -1,0 +1,45 @@
+\contentsline {section}{摘要}{1}{section*.1}%
+\contentsline {section}{1. 任务定义与系统范围}{3}{section*.2}%
+\contentsline {section}{2. 系统架构与运行实现}{3}{section*.3}%
+\contentsline {subsection}{2.1 控制结构}{3}{subsection*.4}%
+\contentsline {subsection}{2.2 实现模块}{3}{subsection*.6}%
+\contentsline {subsection}{2.3 ROS 与执行器接口}{5}{subsection*.7}%
+\contentsline {section}{3. 感知与状态表示}{5}{section*.8}%
+\contentsline {subsection}{3.1 合成 LiDAR}{5}{subsection*.9}%
+\contentsline {subsection}{3.2 航向对齐高度图}{6}{subsection*.10}%
+\contentsline {subsection}{3.3 地形状态与特权信息}{6}{subsection*.11}%
+\contentsline {section}{4. 导航与地形条件速度控制}{6}{section*.12}%
+\contentsline {subsection}{4.1 顺序跟踪与前视控制}{6}{subsection*.13}%
+\contentsline {subsection}{4.2 候选航向局部规划}{7}{subsection*.14}%
+\contentsline {subsection}{4.3 速度调度与场地先验}{7}{subsection*.15}%
+\contentsline {subsection}{4.4 停滞检测与恢复}{7}{subsection*.16}%
+\contentsline {section}{5. 运动策略与部署接口约定}{8}{section*.17}%
+\contentsline {subsection}{5.1 模型分工与网络结构}{8}{subsection*.18}%
+\contentsline {subsection}{5.2 174D 观测向量}{8}{subsection*.19}%
+\contentsline {subsection}{5.3 基础策略与门控残差}{8}{subsection*.20}%
+\contentsline {subsection}{5.4 动作解码与 PD 控制}{9}{subsection*.21}%
+\contentsline {section}{6. 强化学习训练与模型选择}{9}{section*.22}%
+\contentsline {subsection}{6.1 最终权重来源与训练阶段}{9}{subsection*.23}%
+\contentsline {subsection}{6.2 训练环境、重置分布与特权信号}{10}{subsection*.24}%
+\contentsline {subsection}{6.3 PPO 优化目标与实现}{10}{subsection*.25}%
+\contentsline {subsection}{6.4 速度导向奖励函数}{11}{subsection*.26}%
+\contentsline {subsection}{6.5 课程训练、行为克隆与失败状态聚合}{12}{subsection*.27}%
+\contentsline {subsection}{6.6 模型选择与确定性评测}{12}{subsection*.28}%
+\contentsline {subsection}{6.7 ONNX 导出与模型身份}{13}{subsection*.29}%
+\contentsline {section}{7. 规则策略路由与控制器交接}{13}{section*.30}%
+\contentsline {subsection}{7.1 状态机与入口条件}{13}{subsection*.31}%
+\contentsline {subsection}{7.2 四轮净空与受控退出}{14}{subsection*.32}%
+\contentsline {section}{8. 时序、保护机制与失败语义}{14}{section*.33}%
+\contentsline {subsection}{8.1 时间与更新频率}{14}{subsection*.34}%
+\contentsline {subsection}{8.2 实际保护条件}{15}{subsection*.35}%
+\contentsline {section}{9. 实验协议与结果}{15}{section*.36}%
+\contentsline {subsection}{9.1 连续系统自测}{15}{subsection*.37}%
+\contentsline {subsection}{9.2 局部策略结果与适用范围}{16}{subsection*.38}%
+\contentsline {subsection}{9.3 负面证据与当前评测缺口}{16}{subsection*.39}%
+\contentsline {subsection}{9.4 代码验证与回放}{16}{subsection*.40}%
+\contentsline {section}{10. 部署与可复现性}{17}{section*.41}%
+\contentsline {subsection}{10.1 运行环境}{17}{subsection*.42}%
+\contentsline {subsection}{10.2 训练复现条件}{17}{subsection*.43}%
+\contentsline {subsection}{10.3 模型与依赖归属}{17}{subsection*.44}%
+\contentsline {section}{11. 技术局限与后续研究}{17}{section*.45}%
+\contentsline {section}{12. 源码与证据索引}{18}{section*.46}%

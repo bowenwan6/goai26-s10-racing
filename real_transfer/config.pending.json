@@ -1,0 +1,18 @@
+{
+  "mode": "shadow_only",
+  "map_id": "1209_01_F-20260912-175844",
+  "verified": {
+    "odom_frame_and_origin": false,
+    "cloud_extrinsics": false,
+    "cloud_deskew_and_self_filter": false,
+    "scan_frame_and_no_return": false,
+    "time_sync": false,
+    "real_route": false
+  },
+  "frames": {"map": "map", "odom_child": null, "base": null, "cloud": null, "scan": null},
+  "odom_child_from_base": null,
+  "base_from_cloud": null,
+  "route": [],
+  "topics": {"pose": "/ODOM", "cloud": "/LIDAR/POINTS_MERGED", "scan": null},
+  "notes": "Placeholders are intentional. Do not copy simulation waypoints or guess extrinsics. This profile cannot publish motion even after verification."
+}
