@@ -207,6 +207,27 @@ def test_drop_ahead_slows_the_climb():
     assert climbing and all(tr[6][0] <= 0.1 + 1e-9 for tr in climbing)
 
 
+def test_stepping_off_a_ledge_never_pivots_on_it():
+    # A 0.19 m ledge at x = 5, the route turning 67 deg right 0.6 m past it: at s 5.4 the carrot
+    # is 52 deg off, where the pursuit alone would pivot with the rear wheels on the edge.
+    path = RoutePath(make_route([[0, 0, 0.19], [5.6, 0, 0], [6.2, -1.4, 0]]))
+    ledge = Maneuver(
+        id="M00",
+        s0=4.2,
+        s1=5.7,
+        s_first=5.0,
+        s_last=5.0,
+        policy="walk_descend",
+        kinds=["edge_down"],
+        max_edge_down=0.19,
+    )
+    runner = runner_on(path, [ledge])
+    trace = drive(runner, path, surface=lambda x, y: np.where(x < 5.0, 0.19, 0.0), steps=300)
+    straddling = [tr for tr in trace if tr[4] == Mode.DESCEND and tr[7] < 5.0 + 0.6]
+    assert straddling and all(tr[6][0] > 0.0 for tr in straddling)
+    assert trace[-1][4] == Mode.DONE
+
+
 # ---------------------------------------------------------------------------- recovery
 def test_box_on_the_route_is_detoured_on_the_map():
     path = RoutePath(straight())
@@ -270,8 +291,22 @@ def test_stalled_follower_is_planned_round():
     path = RoutePath(straight())
     runner = runner_on(path)
     trace = drive(runner, path, status=lambda t, x, y: ("HOLD_TERRAIN", ""), steps=300)
+    # Backs off first (nothing behind on the map), then plans the way on.
+    assert transitions(runner)[:2] == ["BACKUP", "DETOUR"]
+    assert any(tr[4] == Mode.BACKUP and tr[6][0] < 0 for tr in trace)
     assert any("no progress" in e["why"] for e in runner.log if e["to"] == "DETOUR")
-    assert trace[-1][1] > 2.0
+    # The follower here never drives again: each cycle (8 s, back 0.3 m, plan 1 m on) gains ground.
+    assert trace[-1][1] > 1.0
+
+
+def test_stall_with_a_drop_behind_does_not_back_off():
+    # The map ends 0.3 m behind the robot's tail: no backing off, plan at once.
+    surface = flat_map(holes=[(-10.0, -0.7, -10.0, 10.0)])
+    path = RoutePath(straight())
+    runner = runner_on(path, surface=surface)
+    drive(runner, path, status=lambda t, x, y: ("HOLD_TERRAIN", ""), steps=120)
+    assert "BACKUP" not in transitions(runner)
+    assert "DETOUR" in transitions(runner)
 
 
 def test_closed_passage_waits_then_goes_on_when_it_clears():

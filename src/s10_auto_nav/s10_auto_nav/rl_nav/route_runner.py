@@ -32,7 +32,8 @@ Nominal (the first version)::
               asked, and when the grid shows a drop more than drop_depth below the route ahead.
               Back to WALK past the manoeuvre -- new: not while still sliding faster than
               settle_v, since the SDK's hand-back holds the joints rigid for 0.25 s.
-    DESCEND   A ledge to step off (nothing rises): the walking actor at walking speed.
+    DESCEND   A ledge to step off (nothing rises): the walking actor at walking speed. New: no
+              pivot in place until the body is clear of the ledge.
     RECOVER   The stairs actor ran past a waypoint it did not score: go back for it walking
               (once it has stopped sliding).
 
@@ -44,7 +45,9 @@ Recovery (on a measured deviation only)::
                   (``map_check``); what was seen is blocked in the plan and remembered,
                 * the robot is off_route or more off the route, or the straight way back to
                   the carrot crosses a hazard of the map,
-                * the route has not advanced for stall_time s.
+                * the route has not advanced for stall_time s -- after backing off first
+                  (BACKUP, where the map is clear behind: a hip caught on a rock does not come
+                  free by pushing on).
               Back to WALK on the route past the detour's goal.
     WAIT      No way round (a person in a narrow passage): stopped, re-planned every
               replan_every s, on as soon as the corridor clears; HOLD after wait_timeout.
@@ -111,6 +114,7 @@ class Mode(Enum):
     CLIMB = "CLIMB"
     DESCEND = "DESCEND"
     RECOVER = "RECOVER"
+    BACKUP = "BACKUP"
     DETOUR = "DETOUR"
     WAIT = "WAIT"
     HOLD = "HOLD"
@@ -172,6 +176,15 @@ class RunnerParams:
     #: until it is slower, or settle_timeout has passed.
     settle_v: float = 0.4
     settle_timeout: float = 3.0
+    #: Stepping off a ledge, the walking actor never pivots before its body is this far past the
+    #: last edge (the rear wheels on the edge, a knee catches); it rolls on at ledge_roll_v instead.
+    ledge_clear: float = 0.6
+    ledge_roll_v: float = 0.3
+    #: Stalled (driving, no progress: a hip or a knee caught on a rock): back off before planning
+    #: again, where the map is clear behind (Nav2's back-up recovery). The walking actor reverses
+    #: on flat ground at about this speed.
+    backup_v: float = 0.2
+    backup_time: float = 1.5
 
     @classmethod
     def from_profile(cls, profile) -> RunnerParams:
@@ -233,6 +246,7 @@ class RouteRunner:
         self.next_plan_t = -math.inf
         self.climb_best = (-math.inf, 0.0)
         self.settle_since = None
+        self.backup_until, self.backup_why, self.backup_kind = -math.inf, "", "rejoin"
 
     # ------------------------------------------------------------------ helpers
     def _set(self, mode, t, s, why=""):
@@ -373,7 +387,7 @@ class RouteRunner:
 
         while (
             self.k < len(self.zones)
-            and self.mode in (*WALKING, Mode.DETOUR, Mode.WAIT)
+            and self.mode in (*WALKING, Mode.BACKUP, Mode.DETOUR, Mode.WAIT)
             and s > self.zones[self.k].s1
         ):
             self.k += 1  # passed without needing it (spawned inside, or detoured round it)
@@ -398,7 +412,11 @@ class RouteRunner:
             elif inp.t - self.best_s_t > p.stall_time:
                 self.detour = None
                 self.best_s_t = inp.t
-                self._plan(inp, s, f"no progress for {p.stall_time:.0f} s")
+                self._backup(inp, s, f"no progress for {p.stall_time:.0f} s", "rejoin")
+        if self.mode == Mode.BACKUP:
+            if inp.t < self.backup_until:
+                return NavOutput((-p.backup_v, 0.0, 0.0), "official", self.mode, "backing off")
+            self._plan(inp, s, self.backup_why, self.backup_kind)
         if self.mode == Mode.DETOUR:
             out = self._detour(inp, s)
             if out is not None:
@@ -441,9 +459,12 @@ class RouteRunner:
                 self._set(Mode.WALK, inp.t, s, "past the ledge")
                 self.k += 1
             else:
-                return NavOutput(
-                    self._pursue(s, inp, p.walk_floor, 0.3), "official", self.mode, "descend"
-                )
+                vx, vy, wz = self._pursue(s, inp, p.walk_floor, 0.3)
+                if vx == 0.0 and s < zone.s_last + p.ledge_clear:
+                    # Straddling the ledge: a pivot here catches a knee on the edge (it did, and
+                    # sat there). Keep rolling off it while turning.
+                    vx = p.ledge_roll_v
+                return NavOutput((vx, vy, wz), "official", self.mode, "descend")
         if self.mode == Mode.CLIMB and s > self.s_gate + p.recover_margin:
             self._set(Mode.RECOVER, inp.t, s, "passed an unscored waypoint")
             self.recover_gate = self.s_gate
@@ -621,12 +642,26 @@ class RouteRunner:
             if dt["replans"] >= p.max_replans:
                 self._set(Mode.HOLD, inp.t, s, f"detour made no progress ({dt['why']})")
                 return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
-            self._plan(inp, s, "detour stalled", dt["kind"])
+            self._backup(inp, s, "detour stalled", dt["kind"])
+            if self.mode == Mode.BACKUP:
+                return NavOutput((-p.backup_v, 0.0, 0.0), "official", self.mode, "backing off")
             if self.mode != Mode.DETOUR:
                 return self._wait(inp, s)
             dt = self.detour
         cmd = dt["line"].pursue((inp.x, inp.y, inp.yaw), p.detour_v)
         return NavOutput(cmd, "official", self.mode, "detour", {"why": dt["why"]})
+
+    def _backup(self, inp, s, why, kind):
+        """Back off backup_time s, then plan (BACKUP); plan at once where the map is not clear
+        behind."""
+        c, sn = math.cos(inp.yaw), math.sin(inp.yaw)
+        reach = self.p.backup_v * self.p.backup_time + 0.45  # plus the body's rear half
+        behind = (inp.x - reach * c, inp.y - reach * sn)
+        if self.planner is None or not self.planner.line_clear((inp.x, inp.y), behind):
+            self._plan(inp, s, why, kind)
+            return
+        self.backup_until, self.backup_why, self.backup_kind = inp.t + self.p.backup_time, why, kind
+        self._set(Mode.BACKUP, inp.t, s, f"{why}: backing off")
 
     def _wait(self, inp, s):
         p = self.p
