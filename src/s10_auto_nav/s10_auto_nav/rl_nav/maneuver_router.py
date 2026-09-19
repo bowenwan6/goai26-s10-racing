@@ -357,14 +357,16 @@ class ManeuverRouter:
     def _last_bend_before(self, m):
         """Arc length from which ALIGN may start: past the last bend (over align_bend) of the route
         before the manoeuvre's entry. ALIGN creeps straight at the edge; before a corner that would
-        cut it -- onto the part of the edge the route was drawn to avoid."""
+        cut it -- onto the part of the edge the route was drawn to avoid. Never later than the far
+        end of the entry band: a bend right at the edge (turn on the boulder top, then step off) is
+        ALIGN's own turn on the spot."""
         entry = self._tangent(m.s_first + 0.3)
         s_from = m.s_first - self.p.approach_dist
         for sv in np.arange(m.s_first, max(0.0, m.s_first - self.p.approach_dist), -0.1):
             if abs(wrap(self._tangent(sv) - entry)) > self.p.align_bend:
                 s_from = sv + 0.3
                 break
-        return s_from
+        return min(s_from, m.s_first - self.p.align_band[1] - 0.1)
 
     def _make_tracker(self, m):
         want = "down" if m.policy == "walk_descend" else "up"
