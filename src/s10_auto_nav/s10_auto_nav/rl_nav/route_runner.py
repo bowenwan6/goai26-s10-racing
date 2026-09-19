@@ -573,11 +573,12 @@ class RouteRunner:
                 self._set(Mode.CLIMB, inp.t, s, why)
                 self.climb_best = (s, inp.t)
             return None
-        # Strafe the offset back only while roughly facing along the route: the body's lateral
-        # axis is the route's normal then. Facing back (re-aligning after RECOVER) it points the
-        # other way, and the strafe walked the robot off the B landing.
+        # Strafe the offset back along the body's lateral axis, projected onto the route's normal
+        # (cos err), and only while facing forward along the route. Facing back (re-aligning after
+        # RECOVER) the unprojected strafe pointed the other way and walked the robot off the
+        # B landing.
         c = math.cos(err)
-        vy = float(np.clip(-self.d * c, -p.align_strafe, p.align_strafe)) if c > 0.85 else 0.0
+        vy = float(np.clip(-self.d * c, -p.align_strafe, p.align_strafe)) if c > 0.0 else 0.0
         return NavOutput(
             (0.0, vy, float(np.clip(1.5 * err, -p.align_w, p.align_w))),
             "official",
