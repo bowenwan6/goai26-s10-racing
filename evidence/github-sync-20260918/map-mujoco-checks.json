@@ -1,0 +1,86 @@
+{
+  "engine": "3.13.0",
+  "numpy": "2.5.3",
+  "manifest_files_checked": 117,
+  "cloud": {
+    "points": 3346032,
+    "fields": [
+      "x",
+      "y",
+      "z",
+      "intensity"
+    ],
+    "all_finite": true,
+    "min_xyz": [
+      -88.86382293701172,
+      -61.457000732421875,
+      -2.8170347213745117
+    ],
+    "max_xyz": [
+      116.69892883300781,
+      78.79949188232422,
+      28.40192222595215
+    ]
+  },
+  "scenes": [
+    {
+      "path": "mujoco/terrain/scene_contact_v1.xml",
+      "nq": 0,
+      "nv": 0,
+      "nu": 0,
+      "ngeom": 3851,
+      "nmesh": 3851,
+      "xml_files": 3,
+      "loaded": true
+    },
+    {
+      "path": "mujoco/robot_scene/scene.xml",
+      "nq": 23,
+      "nv": 22,
+      "nu": 16,
+      "ngeom": 3895,
+      "nmesh": 3868,
+      "xml_files": 3,
+      "loaded": true
+    }
+  ],
+  "probes": {
+    "engine": "3.13.0",
+    "tests": [
+      {
+        "dt": 0.001,
+        "collision": true,
+        "passed": true,
+        "contacts": 36,
+        "height_error_m": 0.00010787349294572035,
+        "deepest_contact_m": -0.007803329302076008,
+        "warnings": 0
+      },
+      {
+        "dt": 0.002,
+        "collision": true,
+        "passed": true,
+        "contacts": 36,
+        "height_error_m": 0.00010787349396340629,
+        "deepest_contact_m": -0.008941233254602297,
+        "warnings": 0
+      },
+      {
+        "dt": 0.001,
+        "collision": false,
+        "passed": true,
+        "contacts": 0,
+        "height_error_m": 4.610130022845127,
+        "deepest_contact_m": 0.0,
+        "warnings": 0
+      }
+    ],
+    "all_passed": true,
+    "field_accuracy": false,
+    "policy_run": false
+  },
+  "passed": true,
+  "coordinate_transform": "identity / v3 map metres Z-up",
+  "field_accuracy_validated": false,
+  "robot_policy_test": false
+}

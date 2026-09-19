@@ -1,0 +1,62 @@
+{
+  "pages": 8,
+  "expected_pages": 8,
+  "page_count_valid": true,
+  "bookmarks": 19,
+  "source_text_fragments_checked": 216,
+  "missing_text_fragments": [],
+  "missing_glyph_markers": 0,
+  "out_of_page_text": [],
+  "blank_pages": [],
+  "latex_errors_or_overflow": [],
+  "page_summary": [
+    {
+      "page": 1,
+      "characters": 1144,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 2,
+      "characters": 1675,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 3,
+      "characters": 893,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 4,
+      "characters": 882,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 5,
+      "characters": 882,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 6,
+      "characters": 623,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 7,
+      "characters": 893,
+      "width": 595.3,
+      "height": 841.9
+    },
+    {
+      "page": 8,
+      "characters": 1212,
+      "width": 595.3,
+      "height": 841.9
+    }
+  ]
+}

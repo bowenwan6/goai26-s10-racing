@@ -1,0 +1,18 @@
+[2026-09-17 16:24:42.279.596] [INFO  ] [POLICY_LOADER] ✓ DestroyPolicy 函数找到 
+[2026-09-17 16:24:42.655.957] [INFO  ] [POLICY_LOADER] ✓ 策略实例创建成功 
+[2026-09-17 16:24:42.655.975] [INFO  ] [POLICY_LOADER] ========== 策略库加载完成 ========== 
+[2026-09-17 21:04:32.413.315] [INFO  ] [POLICY_LOADER] 使用默认路径: /opt/robot/share/motion_master/run_policy/lib/arm/CD1/libCD1RunPolicy.so 
+[2026-09-17 21:04:32.413.327] [INFO  ] [POLICY_LOADER] 型号=CD1, 查找方式=默认路径 
+[2026-09-17 21:04:32.413.346] [INFO  ] [POLICY_LOADER] ========== 加载策略库 ========== 
+[2026-09-17 21:04:32.413.351] [INFO  ] [POLICY_LOADER] 策略名称: CD1_policy 
+[2026-09-17 21:04:32.413.353] [INFO  ] [POLICY_LOADER] 库路径: /opt/robot/share/motion_master/run_policy/lib/arm/CD1/libCD1RunPolicy.so 
+[2026-09-17 21:04:32.416.121] [INFO  ] [POLICY_LOADER] ✓ dlopen 成功 
+[2026-09-17 21:04:32.416.154] [INFO  ] [POLICY_LOADER] 策略版本: CD1_Policy_v1.0.3 (ABI=1, Build=2026-08-12) 
+[2026-09-17 21:04:32.416.160] [INFO  ] [POLICY_LOADER] ✓ ABI 版本一致: 1 
+[2026-09-17 21:04:32.416.165] [INFO  ] [POLICY_LOADER] ✓ 型号契约一致: CD1 
+[2026-09-17 21:04:32.416.169] [INFO  ] [POLICY_LOADER] ✓ CreatePolicy 函数找到 
+[2026-09-17 21:04:32.416.174] [INFO  ] [POLICY_LOADER] ✓ DestroyPolicy 函数找到 
+[2026-09-17 21:04:32.799.408] [INFO  ] [POLICY_LOADER] ✓ 策略实例创建成功 
+[2026-09-17 21:04:32.799.427] [INFO  ] [POLICY_LOADER] ========== 策略库加载完成 ========== 
+POLICY_LIBRARY_VISIBLE False
+

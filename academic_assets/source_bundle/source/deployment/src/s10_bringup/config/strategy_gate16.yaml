@@ -1,0 +1,118 @@
+# Gate16 v1.5 confidence-fallback strategy configuration. This file is opt-in at launch.
+#
+# This file is only read when the race is launched with strategy_router:=true. The default
+# scored run does not start this node at all, so nothing here can change it.
+#
+# The segment-to-policy mapping lives here and only here. The temptation is to write
+# `if waypoint == 16` in the follower, in the router and in the runner, and the moment that
+# test exists in three files two of them are wrong and the third is the one in the run.
+#
+# The router is still opt-in at launch. When it is selected, this configuration enables the
+# frozen-checkpoint v1.5 actor for segment 15->16; mock and scripted remain test-only.
+
+strategy_router:
+  ros__parameters:
+    control_rate: 50.0
+
+    nav_cmd_topic: /strategy/nav_cmd_vel
+    cmd_vel_topic: /cmd_vel
+
+    climb_enabled: true
+    measurement_only: false
+    # 216b77a v1.5 confidence fallback around the unchanged 174D base+residual pair.
+    climb_policy: gate16
+    climb_segment: [15, 16]
+    # Gate16 remains the dedicated high-step jump. The 57D model1800 actor owns only
+    # non-Gate16 ascent segments, from the preceding strict waypoint through the upper
+    # waypoint. Consecutive 5->6->7 stays under one continuous policy history; ownership
+    # returns to the official actor immediately after the last configured target scores.
+    # Fail closed. The 57D observation and 16D action contracts match the training runner,
+    # but continuous WP17->WP19 multi-seed validation is not repeatable and summit landings
+    # can still exceed the fall limit. Do not arm it until the focused 3/3 gate passes.
+    stairs57_enabled: false
+    stairs57_segments: [5, 6, 6, 7, 17, 18, 18, 19, 22, 23, 25, 26, 27, 28]
+    stairs57_command_forward: 0.35
+    stairs57_entry_speed_min: 0.25
+    stairs57_entry_speed_max: 0.45
+    scripted_trajectory: ""
+    # succeed | fail | never_finish | go_silent | raise | lie
+    mock_scenario: succeed
+    mock_duration: 2.0
+
+    # Gate 16's leading edge, measured off the MJCF rather than assumed from the waypoint:
+    # the lip sits at x = 12.6459 with a 0.3769 m rise from a floor at z = 0.102. The
+    # waypoint is not on the lip, and approaching as though it were starts the align phase
+    # in the wrong place. Leave as NaN for any segment whose geometry has not been measured.
+    climb_obstacle_x: 12.6459
+    climb_edge_center: [12.64593, 32.49969]
+    climb_normal: [1.0, 0.0]
+    climb_tangent: [0.0, 1.0]
+    # Must match nav.yaml: the router runs its own cursor over the same course file, and
+    # two cursors advancing on different rules disagree about which segment is current.
+    advance_radius: 0.18
+    score_radius: 0.18
+
+    approach_enter: 3.0
+    approach_speed_scale: 0.5
+    # Begin the holonomic lane/yaw correction far enough out to remove the WP15 diagonal
+    # before the 0.90 m ownership staging band.
+    # WP15 exits with roughly -35 deg yaw and 0.4 m cross-track error. Begin correction at
+    # the full 3.0 m approach boundary so both errors converge before the 0.90 m staging
+    # point; the measured 2.2 m start reached yaw tolerance only after overshooting d=0.60.
+    align_enter: 3.0
+    align_timeout: 40.0
+    climb_timeout: 20.0
+    climb_progress_window: 12.0
+    max_retries: 0
+    # One delayed ROS/Docker scheduling interval must not cancel a climb. This retains the
+    # router's reviewed 0.5 s stale-observation stop threshold (and 3.0 s abort threshold).
+    sensor_timeout: 0.5
+    # b824 canonical moving handoff. These are engineering guardrails around the measured
+    # nominal point, not a claim that the full formal45 bounding box is continuously safe.
+    ready_distance_min: 0.60
+    ready_distance_max: 0.65
+    # The frozen handoff contract is an instantaneous state window. At 0.25 m/s the 5 cm
+    # distance band lasts only 0.20 s, so adding an unrelated dwell consumes the window.
+    ready_dwell: 0.0
+    min_entry_speed: 0.23
+    max_entry_speed: 0.27
+    target_entry_speed: 0.25
+    # The official actor owns the final runway. This value is its moving-entry command;
+    # measured speed remains independently gated at 0.23--0.27 m/s.
+    # This does not bypass the follower's measured terrain and waypoint speed schedule.
+    gate16_prewarm_forward: 0.25
+    # Reserve 0.25 m after staging for the official actor to establish moving entry.
+    # Gate16 shadow-evaluates but does not own until the full entry envelope is met.
+    gate16_staging_lead: 0.25
+    # v1.5 selects one contract at the far staging point and holds it for the attempt.
+    # The adaptive path remains available for explicit experiments, but its seed-8 focused
+    # run timed out while straddling the lip. Competition defaults every attempt to the
+    # stable frontal fallback until the fast path passes multi-seed validation.
+    gate16_fast_adapter_enabled: false
+    gate16_fallback_enabled: true
+    gate16_fallback_ready_distance_min: 0.62
+    gate16_fallback_ready_distance_max: 0.70
+    gate16_fallback_ready_dwell: 0.10
+    gate16_fallback_min_entry_speed: 0.08
+    gate16_fallback_max_entry_speed: 0.20
+    gate16_fallback_target_entry_speed: 0.18
+    gate16_fallback_max_lateral_error: 0.25
+    gate16_fallback_max_heading_error_deg: 6.0
+    gate16_fallback_max_yaw_rate: 0.10
+    max_entry_yaw_rate: 0.05
+    align_yaw_rate: 0.70
+    max_lateral_error: 0.08
+    # The user-provided 5 deg value is a hard ceiling. Keep the nominal adaptive-v3 entry
+    # near zero; the broad-angle matrix is arrival-error tolerance, not a target.
+    max_heading_error_deg: 2.5
+    gate16_staging_tolerance: 0.10
+    climb_exit_forward: 0.50
+    climb_exit_duration: 0.80
+    verify_clearance: 0.02
+    # Entry into VERIFY already requires all four wheels over with sane contacts/attitude.
+    # Stopping the policy unloads individual wheels briefly, so retain that candidate
+    # through contact chatter while requiring a fresh 0.10 s confirmation before handoff.
+    verify_hold: 0.10
+    verify_timeout: 5.0
+    verify_unready_dwell: 0.30
+    verify_deck_z: 0.4787248

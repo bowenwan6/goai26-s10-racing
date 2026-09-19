@@ -1,0 +1,25 @@
+services:
+  x_nav:
+    image: registry.cn-hangzhou.aliyuncs.com/embodiedai/nav:3.2.1
+    container_name: nav
+    network_mode: "host"
+    privileged: true
+    tty: true
+    stdin_open: true
+    environment:
+      - ROS_MASTER_URI=http://localhost:11311
+      - ROS_HOSTNAME=localhost
+      - TZ=Asia/Shanghai
+    volumes:
+      # 导航地图与配置文件
+      - /opt/data/nav_map:/nav_map
+      - /dev:/dev
+      # 配置文件目录
+      - /opt/data/config:/opt/data/config
+      # 源码挂载（开发调试用，覆盖镜像内已编译源码）
+      #- /home/msi/BWT/digitaltwins-x-nav:/catkin_ws/src/x_nav  
+
+    devices:
+      - "/dev:/dev"
+    # 使用镜像默认 ENTRYPOINT + CMD，自动启动 robot_web_controller.py
+    restart: unless-stopped

@@ -1,0 +1,16 @@
+{
+  "iterations": 80,
+  "timesteps": 30720,
+  "consecutive_passes": 0,
+  "best_iteration": 0,
+  "best_eval_success": 0.9629629629629629,
+  "best_eval_fall": 0.0,
+  "best_eval_drop_free": 0.5555555555555556,
+  "best_eval_front_to_rear_steps": 214.53846153846155,
+  "best_eval_mean_success_steps": 299.7307692307692,
+  "best_eval_std_success_steps": 128.2454250772886,
+  "best_eval_fastest_success_steps": 150.0,
+  "best_eval_steps": 320.1111111111111,
+  "early_stop_reason": null,
+  "output": "/home/bella/goai/goai26-s10-racing/training/runs/gate16_front_tuck_phase_v1_20260817T203000/rear_push"
+}

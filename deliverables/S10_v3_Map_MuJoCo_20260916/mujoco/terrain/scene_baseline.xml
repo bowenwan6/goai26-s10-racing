@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="Start + preserved B + bounded post-B, assumed geometry">
+  <compiler angle="radian" />
+  <option timestep=".001" integrator="implicitfast" gravity="0 0 -9.81" />
+  <include file="collision/new_surfaces.xml" />
+  <include file="collision/B_preserved.xml" />
+  <asset>
+    <mesh name="Start_sample_plane" file="visual/Start_sample_plane.obj" inertia="shell" />
+    <mesh name="Start_raised_band" file="visual/Start_raised_band.obj" inertia="shell" />
+    <mesh name="Start_remaining" file="visual/Start_remaining.obj" inertia="shell" />
+    <mesh name="Post_B_platform" file="visual/Post_B_platform.obj" inertia="shell" />
+    <mesh name="B_visual" file="visual/B_preserved.obj" inertia="shell" />
+  </asset>
+  <worldbody>
+    <geom name="Start_sample_plane" type="mesh" mesh="Start_sample_plane" group="2" contype="0" conaffinity="0" rgba="0.66 0.72 0.76 1" />
+    <geom name="Start_raised_band" type="mesh" mesh="Start_raised_band" group="2" contype="0" conaffinity="0" rgba="0.73 0.5 0.27 1" />
+    <geom name="Start_remaining" type="mesh" mesh="Start_remaining" group="2" contype="0" conaffinity="0" rgba="0.62 0.73 0.77 1" />
+    <geom name="Post_B_platform" type="mesh" mesh="Post_B_platform" group="2" contype="0" conaffinity="0" rgba="0.63 0.75 0.67 1" />
+    <geom name="B_visual" type="mesh" mesh="B_visual" group="2" contype="0" conaffinity="0" rgba=".88 .64 .34 1" />
+  </worldbody>
+  <visual>
+    <global offwidth="1600" offheight="1000" />
+    <headlight ambient=".6 .6 .6" diffuse=".6 .6 .6" />
+  </visual>
+  <statistic center="14 11 2" extent="36" />
+</mujoco>

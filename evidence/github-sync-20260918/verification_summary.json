@@ -1,0 +1,194 @@
+{
+  "date": "2026-09-18",
+  "repository": "bowenwan6/goai26-s10-racing",
+  "branch": "codex/field-assistant",
+  "robot_contacted": false,
+  "app_unittest": {
+    "tests": 151,
+    "passed": true
+  },
+  "native_app_relocated_unittest": {
+    "tests": 12,
+    "passed": true
+  },
+  "native_transfer_and_navigation": {
+    "tests": 221,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "navigation_baseline": {
+    "tests": 359,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 55
+  },
+  "navigation_baseline_deselected": 1,
+  "navigation_baseline_excluded_files": [
+    "src/s10_auto_nav/test/test_gate16_policy.py",
+    "src/s10_auto_nav/test/test_stairs_stable_policy.py",
+    "src/s10_auto_nav/test/test_runtime_contract.py",
+    "src/s10_perception/test/test_viewer_node.py"
+  ],
+  "navigation_baseline_deselected_case": "src/s10_auto_nav/test/test_segment_recorder.py::test_ordered_evidence_accepts_exactly_018_and_only_one_gate_per_tick",
+  "exclusion_reason": "This offline check does not run the unavailable ROS 2/SDK/model-dependent cases.",
+  "field_guidance_js": {
+    "tests": 30,
+    "passed": true
+  },
+  "imu_ui_js": {
+    "checks": 6,
+    "zero_reference_checks_passed": true,
+    "passed": true
+  },
+  "native_ui_browser": {
+    "passed": true,
+    "robot_io": false,
+    "checks": [
+      "login-return",
+      "blocked-no-bypass",
+      "48px-targets",
+      "390/320/1280-no-overflow",
+      "observe",
+      "single-submit",
+      "reload-no-replay",
+      "offline-stop",
+      "route-modes",
+      "explicit-heartbeat",
+      "no-external-assets",
+      "no-js-errors"
+    ]
+  },
+  "remote_access_offline_tests": {
+    "passed": true
+  },
+  "map_mujoco": {
+    "engine": "3.13.0",
+    "numpy": "2.5.3",
+    "manifest_files_checked": 117,
+    "cloud": {
+      "points": 3346032,
+      "fields": [
+        "x",
+        "y",
+        "z",
+        "intensity"
+      ],
+      "all_finite": true,
+      "min_xyz": [
+        -88.86382293701172,
+        -61.457000732421875,
+        -2.8170347213745117
+      ],
+      "max_xyz": [
+        116.69892883300781,
+        78.79949188232422,
+        28.40192222595215
+      ]
+    },
+    "scenes": [
+      {
+        "path": "mujoco/terrain/scene_contact_v1.xml",
+        "nq": 0,
+        "nv": 0,
+        "nu": 0,
+        "ngeom": 3851,
+        "nmesh": 3851,
+        "xml_files": 3,
+        "loaded": true
+      },
+      {
+        "path": "mujoco/robot_scene/scene.xml",
+        "nq": 23,
+        "nv": 22,
+        "nu": 16,
+        "ngeom": 3895,
+        "nmesh": 3868,
+        "xml_files": 3,
+        "loaded": true
+      }
+    ],
+    "probes": {
+      "engine": "3.13.0",
+      "tests": [
+        {
+          "dt": 0.001,
+          "collision": true,
+          "passed": true,
+          "contacts": 36,
+          "height_error_m": 0.00010787349294572035,
+          "deepest_contact_m": -0.007803329302076008,
+          "warnings": 0
+        },
+        {
+          "dt": 0.002,
+          "collision": true,
+          "passed": true,
+          "contacts": 36,
+          "height_error_m": 0.00010787349396340629,
+          "deepest_contact_m": -0.008941233254602297,
+          "warnings": 0
+        },
+        {
+          "dt": 0.001,
+          "collision": false,
+          "passed": true,
+          "contacts": 0,
+          "height_error_m": 4.610130022845127,
+          "deepest_contact_m": 0.0,
+          "warnings": 0
+        }
+      ],
+      "all_passed": true,
+      "field_accuracy": false,
+      "policy_run": false
+    },
+    "passed": true,
+    "coordinate_transform": "identity / v3 map metres Z-up",
+    "field_accuracy_validated": false,
+    "robot_policy_test": false
+  },
+  "credential_token_or_private_key_pattern_findings": [],
+  "source_data_deleted": false,
+  "git_lfs_patterns": [
+    "deliverables/**/*.pcd",
+    "deliverables/*.zip",
+    "deliverables/**/*.mp4",
+    "waypoint-photos-20260914/**/*.heic",
+    "waypoint-photos-20260914/**/*.HEIC",
+    "waypoint-photos-20260914/**/*.jpg",
+    "waypoint-photos-20260914/**/*.JPG",
+    "GOAI_ENTERPRISE_POSTER_PRO_ZH.pdf",
+    "GOAI_ENTERPRISE_POSTER_ZH.pdf",
+    "GOAI_ENTERPRISE_POSTER_ZH_page1.png",
+    "GOAI_ENTERPRISE_POSTER_ZH_page2.png",
+    "PROJECT_REPORT_SOURCES.zip",
+    "PROJECT_TECHNICAL_ZH.pdf",
+    "academic_assets/**/*.pdf",
+    "academic_assets/**/*.png",
+    "deliverables/**/*.STL",
+    "deliverables/**/*.npz",
+    "deliverables/**/*.png",
+    "evidence/**/*.png",
+    "poster_assets/**/*.pdf",
+    "poster_assets/**/*.png",
+    "posterly_rebuild/**/*.pdf",
+    "posterly_rebuild/**/*.png",
+    "report_assets/**/*.pdf",
+    "report_assets/**/*.png",
+    "report_assets/**/*.zip",
+    "tools/s10_mapping_web/qa/native-nav-evidence/*.png"
+  ],
+  "key_files": [
+    {
+      "path": "deliverables/S10_v3_Map_MuJoCo_20260916.zip",
+      "bytes": 97932862,
+      "sha256": "a4641b0af02a14b1b025ccecb6f9f39b4b1e9720849d40b834e9650348435ccc"
+    },
+    {
+      "path": "deliverables/S10_v3_Map_MuJoCo_20260916/maps/v3/full_cloud.pcd",
+      "bytes": 53536704,
+      "sha256": "87a80cf2a88c4d8ab782772ff5b437e6df1c74c277364ae000ef90028dde81ea"
+    }
+  ]
+}

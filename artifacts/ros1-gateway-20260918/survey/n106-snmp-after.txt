@@ -1,0 +1,5 @@
+Ip: Forwarding DefaultTTL InReceives InHdrErrors InAddrErrors ForwDatagrams InUnknownProtos InDiscards InDelivers OutRequests OutDiscards OutNoRoutes ReasmTimeout ReasmReqds ReasmOKs ReasmFails FragOKs FragFails FragCreates
+Ip: 1 64 5886411 0 0 0 0 0 3353866 882783 0 44961 81 2467706 53850 140921 313 0 684
+Udp: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti
+Udp: 3720269 26 2135 876242 2135 0 0 0
+  eth0: 6627298341 5543451    0    0    0     0          0         0 132003812  542886    0    0    0     0       0          0

@@ -17,7 +17,35 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 
 ---
 
+## 从这里开始（2026-09-19）
+
+| 想做什么 | 看这里 |
+|---|---|
+| 一页看懂我们有哪些 policy 和 app | [docs/POLICIES_AND_APPS_ZH.md](docs/POLICIES_AND_APPS_ZH.md) |
+| 仓库目录、分支规则、大文件 | [docs/REPO_GUIDE_ZH.md](docs/REPO_GUIDE_ZH.md) |
+| 新狗 + 新 SLAM（x_nav）接入计划 | [docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md](docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md) |
+| ROS 1 网关、106 点云 tap、ROS 1 运控 SDK | [ros1_gateway/README_ZH.md](ros1_gateway/README_ZH.md) |
+| 手机采集助手 `/teach`（建图、标 WP、示教路径） | [tools/s10_mapping_web/TEACH_GUIDE_ZH.md](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) |
+| 9 月导航（`rl_nav`：J3100 步行 + 1150 台阶） | [docs/RL_ROUTE_ROBUST_PLAN_ZH.md](docs/RL_ROUTE_ROBUST_PLAN_ZH.md) · [docs/ROUTE_V2_PLANNER_ZH.md](docs/ROUTE_V2_PLANNER_ZH.md) |
+| 原生步态导航 | [native_transfer/README_ZH.md](native_transfer/README_ZH.md) · [docs/NATIVE_START_B_ACCEPTANCE.md](docs/NATIVE_START_B_ACCEPTANCE.md) |
+| HIM 模型实机接入 | [docs/S10_HIM_DEPLOYMENT.md](docs/S10_HIM_DEPLOYMENT.md) |
+| 已上传文件的索引 | [docs/GITHUB_FILE_INDEX_ZH.md](docs/GITHUB_FILE_INDEX_ZH.md) |
+| RL 训练、MuJoCo 全程仿真 | 私有仓库 `bowenwan6/s10-rl-sprint` |
+
+**当前状态：**
+- 实机跑过的 policy 只有官方 57D、speedturn2000、HIM 1500。
+- 9 月导航方案（J3100 + 1150）在 MuJoCo 里跑完 30/30 WP，用时 713 s；还没上真机。
+- 新狗 + x_nav：ROS 1 网关、运控 SDK、`/teach` 已部署到 AGX，等现场实测。
+
+> 以下是 9 月 18 日之前的说明，保留原文。与上文冲突时以上文为准。
+
 ## 真机与录制研究
+
+### 2026-09-18 现场文件交付
+
+- [GitHub 文件索引](docs/GITHUB_FILE_INDEX_ZH.md)：app、v3 点云、MuJoCo 场景、真机适配、现场照片和报告的入口及上传范围。
+- [地图与 MuJoCo 包](deliverables/S10_v3_Map_MuJoCo_20260916/README.md)包含 v3 全场点云；精细碰撞场景覆盖 Start＋B＋B 后短平台。
+- 点云、二进制网格/数据、图片/PDF、视频、分享 ZIP 和原始/预览照片使用 Git LFS；克隆后执行 `git lfs pull` 获取文件内容。
 
 ### 当前真机：48 号（2026-09-11）
 
@@ -53,7 +81,9 @@ architecture, policy contracts, safety design and evidence record are in
 
 ### Version status
 
-`main` is the **Ver1.0 competition release**. It combines the reviewed Gate 16 v1.5
+The **Ver1.0 competition release** is commit `1e390f5` (tag `v1.0-sim-release`; the submitted
+build is `3660b81`, tag `sim-contest-submission`). `main` has since moved on to the September
+real-robot work described at the top of this file. Ver1.0 combines the reviewed Gate 16 v1.5
 stable-fallback controller with measured per-leg speed scheduling, while preserving strict
 ordered-gate and safety checks. The experimental continuous-stairs policy is shipped only for
 contract traceability and remains disabled in the competition configuration.

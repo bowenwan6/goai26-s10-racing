@@ -1,0 +1,159 @@
+{
+  "formal_cases": 45,
+  "successes": 38,
+  "falls": 2,
+  "timeouts": 5,
+  "drop_free_successes": 20,
+  "successes_with_front_support_loss": 18,
+  "success_rate": 0.8444444444444444,
+  "mean_success_seconds": 6.133684210526316,
+  "std_success_seconds_population": 3.0979895187317443,
+  "mean_penalized_seconds": 7.824,
+  "mean_front_to_rear_seconds": 4.165263157894737,
+  "formal_entry_center_y": [
+    32.49969
+  ],
+  "formal_cmd_yaw": [
+    0.0
+  ],
+  "official_waypoint_events": [
+    [
+      0,
+      0.001
+    ],
+    [
+      1,
+      13.203
+    ],
+    [
+      2,
+      20.927
+    ],
+    [
+      3,
+      27.253
+    ],
+    [
+      4,
+      33.517
+    ],
+    [
+      5,
+      42.554
+    ],
+    [
+      6,
+      50.798
+    ],
+    [
+      7,
+      63.121
+    ],
+    [
+      8,
+      72.278
+    ],
+    [
+      9,
+      77.912
+    ],
+    [
+      10,
+      89.608
+    ],
+    [
+      11,
+      97.573
+    ],
+    [
+      12,
+      106.268
+    ],
+    [
+      13,
+      117.928
+    ],
+    [
+      14,
+      127.034
+    ],
+    [
+      15,
+      134.724
+    ],
+    [
+      16,
+      152.871
+    ],
+    [
+      17,
+      155.488
+    ],
+    [
+      18,
+      172.326
+    ],
+    [
+      19,
+      185.104
+    ],
+    [
+      20,
+      191.713
+    ],
+    [
+      21,
+      212.73
+    ],
+    [
+      22,
+      219.341
+    ],
+    [
+      23,
+      232.201
+    ],
+    [
+      24,
+      263.805
+    ],
+    [
+      25,
+      274.812
+    ],
+    [
+      26,
+      292.477
+    ],
+    [
+      27,
+      305.699
+    ],
+    [
+      28,
+      345.309
+    ],
+    [
+      29,
+      353.676
+    ],
+    [
+      30,
+      356.928
+    ],
+    [
+      31,
+      371.001
+    ],
+    [
+      32,
+      392.258
+    ]
+  ],
+  "official_final_sim_time": 392.258,
+  "official_elapsed_seconds": 392.257,
+  "recorder_wall_time_seconds": 674.01,
+  "actual_owner_at_stop": "official",
+  "router_mode_at_stop": "navigate",
+  "method": "Recomputed from archived JSON rows and raw timer events; no new simulation or training."
+}

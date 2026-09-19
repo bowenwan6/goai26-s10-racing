@@ -1,0 +1,553 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\PassOptionsToPackage{space}{xeCJK}
+%
+\documentclass[
+  11pt,
+  a4paper,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{setspace}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+    \setmainfont[]{Times New Roman}
+    \setsansfont[]{Arial}
+    \setmonofont[]{Menlo}
+  \ifXeTeX
+    \usepackage{xeCJK}
+    \setCJKmainfont[]{Songti SC}
+          \fi
+  \ifLuaTeX
+    \usepackage[]{luatexja-fontspec}
+    \setmainjfont[]{Songti SC}
+  \fi
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[top=17mm,bottom=17mm,left=18mm,right=18mm]{geometry}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{xeCJK}
+\setCJKmainfont{Songti SC}
+\setCJKsansfont{Heiti SC}
+\setCJKmonofont{Heiti SC}
+\usepackage{titlesec,needspace,seqsplit,fancyhdr,fvextra,etoolbox}
+\renewcommand{\figurename}{图}
+\definecolor{ReportNavy}{HTML}{193E54}
+\definecolor{ReportGray}{HTML}{5C7180}
+\definecolor{ReportRule}{HTML}{D2DDE4}
+\AtBeginDocument{\hypersetup{linkcolor=ReportNavy,urlcolor=ReportNavy,bookmarksopen=true,bookmarksdepth=2,pdftitle={Lynx S10 轮足机器人比赛系统与合作需求},pdfauthor={GOAI LAI / 狗來}}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}GOAI LAI / Lynx S10}
+\fancyhead[R]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}INDUSTRY TECHNICAL BRIEF}
+\fancyfoot[L]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}2026-09-03}
+\fancyfoot[R]{\sffamily\fontsize{8}{10}\selectfont\color{ReportGray}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}\setlength{\headheight}{15pt}
+\setlength{\parindent}{0pt}\setlength{\parskip}{4pt plus 1pt minus 1pt}
+\setlength{\emergencystretch}{2em}\raggedbottom
+\widowpenalty=10000\clubpenalty=10000\displaywidowpenalty=10000
+\titleformat{\section}{\sffamily\fontsize{13}{17}\selectfont\bfseries\color{ReportNavy}}{}{0pt}{}
+\titleformat{\subsection}{\sffamily\fontsize{11}{15}\selectfont\bfseries\color{ReportNavy}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{10pt}{5pt}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+\pretocmd{\subsection}{\Needspace{4\baselineskip}}{}{}
+\renewcommand{\arraystretch}{1.10}\setlength{\tabcolsep}{4pt}
+\setlength{\LTpre}{3pt}\setlength{\LTpost}{5pt}
+\AtBeginEnvironment{longtable}{\fontsize{9.3}{12.7}\selectfont}
+\AtEndEnvironment{longtable}{\normalsize}
+\DefineVerbatimEnvironment{ReportCode}{Verbatim}{fontsize=\fontsize{8}{10}\selectfont,breaklines=true,breakanywhere=true,frame=single,rulecolor=\color{ReportRule},framesep=4pt,baselinestretch=1.02}
+\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+\setlength{\abovedisplayshortskip}{3pt}\setlength{\belowdisplayshortskip}{3pt}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={Maroon},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\setstretch{1.10}
+{\sffamily\bfseries\color{ReportNavy}\fontsize{19}{25}\selectfont Lynx S10 轮足机器人比赛系统与合作需求\par}\vspace{3pt}
+
+\textbf{GOAI LAI／狗來 · 企业技术交流稿 · 2026-09-03}
+
+\textbf{摘要。} 本文介绍团队为 GOAI 2026 Track 4 Challenge 2
+构建的轮足机器人比赛系统，以及从仿真转向实地比赛时需要解决的问题。系统采用感知约束导航、规则策略路由和学习型运动控制：普通路段使用基础运动策略，高台阶由高度图条件残差策略处理。归档仿真运行完成全部
+33 个航点，用时 392.257 s；高台阶局部评测成功 38/45 次，其中 20
+次在完成过程中保持前轮几何支撑。当前工作集中于实机迁移和赛前可靠性建设；团队希望获得强化学习、导航与轮足机器人方面的技术指导，GPU
+与测试硬件，以及可用于评估和集成的开源或闭源模型。
+
+\section{1.
+比赛任务与总体方案}\label{ux6bd4ux8d5bux4efbux52a1ux4e0eux603bux4f53ux65b9ux6848}
+
+\subsection{1.1
+比赛任务与赛道结构}\label{ux6bd4ux8d5bux4efbux52a1ux4e0eux8d5bux9053ux7ed3ux6784}
+
+本项目面向 GOAI 2026 Track 4 Challenge 2 的轮足机器人赛道任务。S10 具有
+12 个腿部关节和 4 个驱动轮；机器人必须从 WP0 出发，按照编号顺序进入 WP1
+至 WP32 的判定区域。比赛配置以水平距离判断到点，判定半径为 0.20
+m，并拒绝跳过或乱序航点。系统使用 0.18 m
+的内部推进阈值，使导航在评分边界内保留 0.02 m 控制余量。
+
+配置给出的路线水平长度为 224.21 m，累计爬升为 6.70
+m。累计爬升是沿路线各上升段的总和，并非终点相对起点的高度。航点序列显示：WP0--WP6
+从地面进入低层路线；WP7--WP12 位于约 1.165 m 的高架环线；WP13--WP15
+回到低层；WP15→WP16 跨越实测高差约 0.377 m 的高台阶；WP17--WP20 再升至
+2.36 m；WP21--WP27 经下降与分级爬升到 2.70 m；WP28--WP32 位于 3.75 m
+的上层终段。赛道因此同时考查长距离航点跟踪、坡道／楼梯通过、高台阶瞬态协调、窄平台姿态稳定和多次上下平台后的连续运行。
+
+\begin{figure}
+\centering
+\includegraphics[width=0.72\textwidth,height=\textheight]{poster_assets/img/course_height_overview.png}
+\caption{赛道全览。由比赛场景 STL
+网格生成；颜色为表面高度，白线为有序航点路线。路线最高航点为 3.75
+m；色条上限 6.37 m 包含非航点结构。}
+\end{figure}
+
+当前成绩来自固定赛道的 MuJoCo
+闭环自测；定位使用仿真真值，航点和困难路段几何来自同一比赛场景配置。该设置能够验证控制系统集成，但不等同于真实传感、定位和接触条件下的实地成绩。
+
+\subsection{1.2
+总体系统架构}\label{ux603bux4f53ux7cfbux7edfux67b6ux6784}
+
+比赛系统采用``\textbf{普通路段保持稳定，困难地形调用专用能力，所有策略交接由规则约束}''的分层方案。导航层生成机身速度命令；规则
+router
+根据路线阶段、地形、姿态和观测有效性决定当前控制源；运动控制层将速度、机器人状态和局部地形转换为
+12 个关节位置目标与 4 个轮速目标。
+
+{\small\sffamily\bfseries\color{ReportGray}表 1. 比赛控制层职责\par}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2400}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7600}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+层次
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+比赛中的职责
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+感知与导航 & 跟踪有序航点，利用障碍净空和地形信息调整方向与速度 \\
+规则 router &
+判定专用策略的进入、完成、退出与失败恢复，并显式管理控制权 \\
+运动控制 & 普通路段执行基础策略；WP15→WP16
+高台阶段执行高度图条件残差策略 \\
+执行与保护 & 只接受当前 owner 的 16D
+动作，检查维度与有限值并执行限幅、保持或停止 \\
+\end{longtable}
+
+学习策略负责高维运动协调；确定性逻辑负责任务阶段、有效性检查和安全边界。当前比赛配置仅在
+WP15→WP16
+高台阶段启用专用残差策略，其余已配置但未通过准入验证的楼梯策略保持禁用。
+
+\subsection{1.3
+地形感知与导航}\label{ux5730ux5f62ux611fux77e5ux4e0eux5bfcux822a}
+
+导航使用 8×64 合成 LiDAR 和 13×9 局部高度图。LiDAR 提供 360°
+方位覆盖，用于走廊净空和局部绕障；高度图分辨率为 0.15 m，覆盖机器人前方
+1.2 m、后方 0.6 m及左右各 0.6
+m，用于识别坡道、台阶和落差。路径跟踪结合前视目标、航向误差和横向误差；局部规划在目标方向附近搜索可行走廊，并根据地形限制速度。
+
+系统具备速度变化率限制、停滞检测和恢复逻辑。请求前进但速度持续过低，或航点距离长时间没有改善时，导航执行有限倒退和转向。困难路段配置进一步约束速度及对齐方式。完整控制栈按
+50 Hz 配置运行。
+
+仿真高度图直接查询场景几何，而实地比赛需要由真实 LiDAR、IMU
+和状态估计生成同等语义的局部地形表示。这个差异是现场部署的主要风险之一，也是我们希望获得企业支持的重点。
+
+\subsection{1.4 Router
+状态机与完整在线控制流}\label{router-ux72b6ux6001ux673aux4e0eux5b8cux6574ux5728ux7ebfux63a7ux5236ux6d41}
+
+当前 router
+是确定性的规则状态机，而非学习模型。其核心约束是：\textbf{任一控制周期只有一个源能够写入最终执行边界}。导航、专用策略和
+router 自身的停止／恢复命令分别作为显式 source 返回；上游导航命令先进入
+router，最终速度命令只由 router 发布。关节层另外维护``请求
+owner''和``执行器确认的实际
+owner''，避免交接请求尚未生效时把新策略动作当作已执行动作。
+
+每个 20 ms 控制周期执行以下闭环：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{同步状态。}
+  读取里程计、IMU、关节／轮状态、LiDAR、高度图、当前航点段及消息时间戳；过期或无效观测触发保持、恢复或终止，而不会沿用不受控的旧命令。
+\item
+  \textbf{生成导航候选。} 航点 follower
+  计算前视目标、航向和横向误差，局部规划器根据净空与地形修正速度。该命令只是
+  router 的输入，不直接到达执行端。
+\item
+  \textbf{更新 router。} 默认状态为
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont NAVIGATE}。接近已配置困难段后依次进入
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont APPROACH} 和
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont ALIGN}；入口距离、实际速度、横向误差、航向、yaw
+  rate、倾角及持续时间全部满足门限后进入
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont CLIMB\_READY}，只执行一次策略
+  reset/start，再进入
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont CLIMB}。
+\item
+  \textbf{仲裁并执行。} router
+  在本周期选择导航、专用策略或自身安全命令。关节仲裁器只转发当前 owner
+  的 16D 有限动作，不缓存被拒绝的命令；SDK
+  执行门在实际关节写入位置再次保证单一
+  owner。两类策略可以预计算，但只有被授权的动作进入执行历史。
+\item
+  \textbf{独立确认与交还。} 专用策略报告成功后进入
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont VERIFY\_CLEAR}；系统以四轮越沿、目标高度、接触、姿态和持续时间独立核验。通过后进入
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont HANDOFF}，撤销残差、短时保持实测姿态、重置基础策略历史，并在实际
+  owner 已恢复后返回
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont NAVIGATE}。
+\item
+  \textbf{故障处理。} 可恢复异常进入有界
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont RECOVER}；重试耗尽、跌倒、长期观测失效或超时进入终止并主动输出零命令的
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont ABORT}。全部航点完成后进入
+  \mbox{\ttfamily\fontsize{8.3}{10.5}\selectfont DONE}。迟滞与去抖用于避免状态在阈值附近反复切换。
+\end{enumerate}
+
+日志逐周期记录航点段、router mode、source、请求／实际
+owner、策略状态、传感时间戳和转换原因，可将失败定位到感知、入口、越障、物理确认或控制权交接阶段。
+
+\clearpage
+
+\section{2.
+高台阶残差策略与安全交接}\label{ux9ad8ux53f0ux9636ux6b8bux5deeux7b56ux7565ux4e0eux5b89ux5168ux4ea4ux63a5}
+
+\subsection{2.1
+策略输入与残差控制}\label{ux7b56ux7565ux8f93ux5165ux4e0eux6b8bux5deeux63a7ux5236}
+
+普通运动策略使用 57D 本体观测；高台阶策略增加 117D 高度图，形成 174D
+输入：机身角速度、投影重力、速度命令、关节位置与速度、上一动作及局部高度。该策略不接收绝对航点，路线决策由上层导航完成。
+
+高台阶控制冻结基础策略 \(\pi_b\)，只学习动作修正
+\(\mu_\theta\)。最终动作写为：
+
+\[
+a_t=\operatorname{clip}\{\pi_b(o_t)+m_t s\odot\operatorname{clip}[\mu_\theta(o_t),-4,4],-a_{\max},a_{\max}\},
+\]
+
+其中 \(m_t\)
+是由路由授权、高度条件和执行状态共同决定的门控。腿部与轮部修正采用不同
+scale，最终动作再经过逐通道限幅。腿部使用比例--微分（PD）位置控制，轮部使用速度控制；训练和部署的策略周期均为
+20 ms。
+
+残差方法保留基础策略的主要行为，只在高台阶段加入有限修正，适合在时间受限的比赛开发中复用已有运动能力。但冻结基础策略并不自动保证稳定，必须控制修正幅度、进入状态和退出条件。
+
+\subsection{2.2
+策略进入、完成确认与退出}\label{ux7b56ux7565ux8fdbux5165ux5b8cux6210ux786eux8ba4ux4e0eux9000ux51fa}
+
+{\small\sffamily\bfseries\color{ReportGray}表 2. 专用策略交接条件\par}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8200}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+阶段
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+比赛系统执行的检查
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+进入 & 距台沿 0.62--0.70 m；实际前速 0.08--0.20 m/s；横向误差、航向、yaw
+rate 和倾角在允许范围内，并持续 0.10 s \\
+完成确认 &
+四轮越沿并达到目标高度；至少三轮接触；倾角≤24°；速度和持续时间满足要求 \\
+控制权恢复 & 撤销残差授权；保持实测姿态 0.25
+s；重置基础策略历史；确认基础策略接管后恢复导航 \\
+\end{longtable}
+
+接近阶段可预先计算专用策略，但未执行的动作不会写入动作历史。接管时从实测关节状态重建历史输入；退出时将``请求交还''与``确认实际控制权''分开。观测过期、动作无效、倾角过大或越障超时会触发停止、恢复或终止。
+
+系统将``策略完成越障''与``机器人能够安全继续比赛''分开判定。局部训练主要检查四轮几何越沿，完整部署还检查接触、姿态、持续性和控制权恢复。这一设计对现场比赛尤其重要，因为错误交接可能在通过障碍后立即引发下一段失败。
+
+\clearpage
+
+\section{3.
+强化学习训练方法}\label{ux5f3aux5316ux5b66ux4e60ux8badux7ec3ux65b9ux6cd5}
+
+\subsection{3.1 训练设置}\label{ux8badux7ec3ux8bbeux7f6e}
+
+最终残差来自速度优化阶段第 120 次迭代，以前期残差为初始策略，并冻结基础
+actor。训练使用固定高台阶，高差约 0.377 m；入口距离为 0.55--0.65
+m，前向命令与初始速度为 0.18--0.40 m/s，yaw 约为 ±8°，横向扰动为 ±0.02
+m。每个 episode 最长 17
+s。该阶段随机化入口状态，未随机化地形高度或动力学。
+
+残差 actor 从对角高斯策略采样动作，部署时使用均值。训练采用
+\href{https://arxiv.org/abs/1707.06347}{PPO}，并增加对初始 residual
+的参考策略约束：
+
+\[
+\mathcal L=-\mathcal L_{\mathrm{PPO}}+0.5\mathcal L_V
++\frac{\alpha}{16}\mathbb E\|\mu_\theta(o)-\mu_{\mathrm{ref}}(o)\|_2^2,
+\]
+
+其中 \(\alpha=2\)。Critic 重新初始化，前 40 次迭代仅更新
+critic；之后联合优化策略、价值函数与参考动作约束。每次迭代采集 12×32=384
+个 transitions，使用 1 个 epoch 和 4 个 minibatches 更新；actor／critic
+学习率分别为 \(2\times10^{-8}\) 和
+\(10^{-5}\)，\(\gamma=0.99,\lambda=0.95\)。
+
+\subsection{3.2
+奖励与模型选择}\label{ux5956ux52b1ux4e0eux6a21ux578bux9009ux62e9}
+
+奖励鼓励机身前进、前后轮越沿和快速完成，同时惩罚 residual
+幅值、动作变化、跌倒及动作发散：
+
+\[
+\begin{aligned}
+r_t^{\mathrm{dense}}={}&35\Delta x+20\Delta F+70\Delta R+35\Delta C+6\Delta N-0.05\\
+&-0.0005\operatorname{mean}(\bar\delta_t^2)
+-0.0005\operatorname{mean}[(\bar\delta_t-\bar\delta_{t-1})^2].
+\end{aligned}
+\]
+
+成功时再按剩余时间提供奖励。局部成功要求四轮越过台沿并达到目标高度。候选在固定入口矩阵上比较成功、跌倒、完成时间和前轮支撑保持，最终发布表现最稳定的候选。
+
+训练、评测和部署入口并不完全相同：训练速度为 0.18--0.40 m/s，局部评测为
+0.10--0.30 m/s，部署给专用网络的前向条件不超过 0.15
+m/s；部署距离也部分超出训练区间。这些差异要求实地测试重点记录策略接管瞬间的速度、姿态和地形观测，确认真实入口仍在策略可处理范围内。
+
+\clearpage
+
+\section{4.
+已完成验证与当前能力}\label{ux5df2ux5b8cux6210ux9a8cux8bc1ux4e0eux5f53ux524dux80fdux529b}
+
+\subsection{4.1
+比赛系统结果}\label{ux6bd4ux8d5bux7cfbux7edfux7ed3ux679c}
+
+连续路线测试从起点航点 WP0 的初态执行完整控制栈；局部高台阶统计从 45
+个固定入口状态重新计算。两者使用不同协议，分别衡量完整系统与局部策略。
+
+{\small\sffamily\bfseries\color{ReportGray}表 3. 已完成的比赛系统验证\par}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2300}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4200}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+评测
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+结果
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+说明
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+连续比赛路线 & \textbf{33/33 航点，392.257 s}；无跌倒、超时或 abort &
+固定版本、Mac ARM64、seed 8 的一次成功仿真运行 \\
+高台阶完成 & \textbf{38/45（84.44\%）}；2 次跌倒、5 次超时 &
+参与模型选择的固定入口矩阵 \\
+完成且保持前轮支撑 & \textbf{20/45（44.44\%）} &
+几何支撑判据，不代表接触力测量 \\
+成功完成时间 & \textbf{6.134±3.098 s} & 38
+个成功样本；均值±总体标准差 \\
+\end{longtable}
+
+整圈日志记录了高台阶前的控制权接管、四轮确认和基础策略恢复。该结果表明固定系统在记录配置下完成了一次连续闭环比赛任务。45-case
+矩阵参与过模型选择，因此不能视为独立测试集；整圈结果也不是对实地完赛率的估计。
+
+38 次局部成功中，有 18
+次在完成过程中不满足前轮几何支撑保持条件。这说明``最终完成越障''和``过程始终满足支撑判据''是不同指标。实地测试需要进一步观察轮胎接触、滑移、冲击和姿态，而不能只记录是否到达平台。
+
+\subsection{4.2
+面向下一次比赛的技术准备}\label{ux9762ux5411ux4e0bux4e00ux6b21ux6bd4ux8d5bux7684ux6280ux672fux51c6ux5907}
+
+团队的后续开发记录显示，团队已建立 Isaac Lab
+多地形训练链，并获得能处理部分平地、坡道和湿滑场景的通用策略；连续楼梯专用策略在其规则矩阵中表现较好。但通用策略在楼梯、路缘和窄平台上仍较弱，使用特权信息的
+Teacher（教师策略）也尚未在同一模型检查点中同时保持前后运动、横移、转向和复杂地形能力。
+
+因此，近期比赛准备以``\textbf{稳定基础策略＋困难地形专用策略＋确定性切换}''为主。学习型
+router、分层大小模型和单一通用模型属于后续候选架构；在真实数据、算力和实机验证条件尚未完善前，它们不替代当前比赛控制链。补充研究结果来自团队技术交流材料，与前述归档比赛成绩分开引用。
+
+\clearpage
+
+\section{5. 企业支持需求}\label{ux4f01ux4e1aux652fux6301ux9700ux6c42}
+
+我们希望合作企业围绕知识、硬件和模型三条主线提供支持。合作目标是形成可直接用于赛前开发的接口、设备、模型和评审机制，而不止于一次技术咨询。
+
+{\small\sffamily\bfseries\color{ReportGray}表 4. 企业支持需求\par}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2200}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7800}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+支持类别
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+具体需求与预期产物
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+技术知识与指导 & 强化学习：奖励、课程学习、域随机化（domain
+randomization）、训练稳定性与仿真到实机（sim-to-real）；导航：近场地形建图、状态估计、规划和恢复；轮足机器人：动力学、执行器、接触、系统辨识与安全测试。希望通过定期技术评审形成明确的诊断结论和改进项。 \\
+GPU 与硬件设施 & 用于并行仿真、策略训练和批量回放的 GPU 算力；S10
+或相近轮足平台、机器人端计算单元、LiDAR／IMU、可调楼梯和台阶、安全牵引、急停、同步日志设备，以及电池和易损备件。 \\
+开源或闭源模型 & 可评估的预训练运动策略、地形感知模型、导航模型、router
+或视觉语言／语言模型；配套的权重或
+API、输入输出定义、推理延迟、部署要求和使用许可。闭源模型需要提供稳定接口及本地或低延迟部署方案。 \\
+\end{longtable}
+
+若资源有限，支持优先级为：\textbf{实机与测试条件、轮足系统技术评审、训练
+GPU、可部署模型}。对应的阶段性交付物应包括真实传感器数据与接口说明、动力学及执行器参数、可重复的测试流程，以及候选模型在本任务输入和时延约束下的评估结果。
+
+\clearpage
+
+\section{6.
+当前困难与实地比赛风险}\label{ux5f53ux524dux56f0ux96beux4e0eux5b9eux5730ux6bd4ux8d5bux98ceux9669}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{数据集（DS）不完整。} 现有证据主要来自固定仿真赛道、45
+  个高台阶入口和一次完整路线运行，缺少与真实机器人时间同步的
+  LiDAR、IMU、关节、轮速、电流／力矩和控制命令数据；真实失败样本、不同地形几何与摩擦条件、传感器异常和连续运行数据也不足。数据不足会同时限制感知调试、仿真到实机迁移、router
+  训练和模型比较。
+\item
+  \textbf{训练与验证算力受限。} 并行仿真、domain
+  randomization、超参数筛选和多模型回放均需要持续 GPU
+  资源。算力不足使训练周期变长，也限制了在固定版本上进行足够数量的赛前回归测试。
+\item
+  \textbf{赛前集成时间有限。}
+  感知、导航、策略路由、运动控制和实机接口必须在同一系统中完成联调。任何接口或硬件变更都可能触发重新标定、回放和安全验证，因此需要冻结版本、明确测试优先级，并缩短``发现问题---复现---修复---复测''的闭环。
+\item
+  \textbf{仿真到实机存在系统差异。}
+  当前训练未覆盖地形高度和动力学随机化；质量、质心、摩擦、执行器响应、通信延迟和轮胎接触的误差可能使仿真策略在实机上失效。必须通过系统辨识和低风险动作测试给出参数范围，再据此修正仿真与保护阈值。
+\item
+  \textbf{真实感知与状态估计尚未闭环验证。}
+  仿真高度图直接查询几何，实机需要完成
+  {\ttfamily\fontsize{8.3}{10.5}\selectfont\seqsplit{LiDAR＋IMU／里程计 → 局部高程与有效性 → 13×9 控制网格}}。遮挡、空洞、自身点云、运动畸变、时间不同步和定位漂移都会改变策略输入，并可能造成错误接管。
+\item
+  \textbf{连续运行可靠性与恢复能力不足。}
+  比赛系统还需要在电池电压变化、计算负载、通信丢包、传感器停更、温升和轻微碰撞下保持可控。除单段成功外，还必须验证策略交接、急停、人工接管、失败回退和重新起步，避免局部故障终止整场比赛。
+\end{enumerate}
+
+赛前最关键的三项结果是：\textbf{一套覆盖成功与失败的同步实机数据集、一份仿真与实机参数及延迟对照表、一套连续路线测试与故障处置流程。}
+这三项结果直接缓解数据、时间和实机不确定性，也是企业支持能够产生最大影响的环节。
+
+\clearpage
+
+\section{7.
+候选技术路线与改进计划}\label{ux5019ux9009ux6280ux672fux8defux7ebfux4e0eux6539ux8fdbux8ba1ux5212}
+
+\subsection{7.1
+四种候选架构}\label{ux56dbux79cdux5019ux9009ux67b6ux6784}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{大模型决策、小模型执行。}
+  大模型在低频决策层理解路线、地形和任务状态，输出目标航点、速度约束或技能选择；轻量运动策略在
+  50 Hz
+  控制周期内执行连续动作。该分层方式允许大模型利用语义和长时序信息，同时由确定性安全层限制其输出。近期先以日志回放和仿真评估决策正确率、时延及异常输出，不让大模型直接产生关节命令。
+\item
+  \textbf{增强 router。} 当前系统使用规则
+  router。下一步可将规则扩展为``安全规则＋轻量学习型
+  router''：小型分类器或高层策略根据高度图、姿态、速度、航点阶段和策略置信度选择基础策略、专用策略或恢复模式。规则继续负责硬性进入、退出和急停边界。该方向改动范围最小，最适合赛前优先验证。
+\item
+  \textbf{手动操作与人工接管。}
+  若比赛规则允许，手动模式可用于部署早期的数据采集、危险地形对齐和异常恢复；即使正式比赛要求自主运行，遥控接管仍可作为测试安全机制。人工操作日志还可用于行为克隆、router
+  标注和失败状态分析，但手动操作不应掩盖自主系统的重复性问题。
+\item
+  \textbf{单一模型处理全部地形。}
+  通用模型直接从本体状态和地形观测生成全地形动作，可减少策略切换和接口数量。其前提是更完整的数据覆盖、足够算力、跨地形课程训练和严格回归测试。当前通用策略在楼梯、路缘和窄平台上的能力仍不足，因此该方向适合作为中长期目标。
+\end{enumerate}
+
+\subsection{7.2 实施顺序}\label{ux5b9eux65bdux987aux5e8f}
+
+\textbf{比赛近期路线：} 保留基础策略、专用残差策略和规则
+router；首先完成真实感知、执行器接口、系统辨识和连续路线测试。手动控制用于安全接管与数据采集。
+
+\textbf{并行改进路线：} 在不改变底层动作接口的前提下训练轻量
+router，并用现有规则输出和人工操作记录建立初始监督数据；候选 router
+必须在仿真回放和实机低速测试中通过安全边界检查后才能获得控制权。
+
+\textbf{中长期路线：}
+在数据集、算力和实机平台稳定后，比较分层大小模型与单一通用模型。比较标准集中于比赛相关指标：完整路线完成率、困难地形成功率、控制时延、异常恢复和连续运行稳定性。只有新架构在这些指标上稳定优于当前系统，才替换比赛主链。
+
+这一路线把当前可执行的比赛方案与探索性模型开发分开：近期工作直接提高实地完赛可靠性，新增数据和算力则逐步支撑学习型
+router、大模型决策层和通用策略。
+
+\textbf{参考文献。} Schulman et al., \emph{Proximal Policy Optimization
+Algorithms},
+2017，\href{https://arxiv.org/abs/1707.06347}{arXiv:1707.06347}；Johannink
+et al., \emph{Residual Reinforcement Learning for Robot Control},
+2018，\href{https://arxiv.org/abs/1812.03201}{arXiv:1812.03201}。项目源码、模型信息、原始评测记录、文件哈希和复现材料另附。
+
+\end{document}
