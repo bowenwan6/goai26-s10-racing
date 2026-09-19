@@ -16,6 +16,8 @@ done
 if [ -f "$RUN/status.json" ]; then
   python3 - "$RUN/status.json" <<'PY' || rc=1
 import json, sys, time
+import os
+OPTIONAL = set(filter(None, os.environ.get('S10_OPTIONAL_TOPICS', '/ODOM').split(',')))
 s = json.load(open(sys.argv[1]))
 age = (time.time_ns() - s['wall_ns']) / 1e9
 print(f"status age {age:.1f}s, uptime {s['uptime_s']:.0f}s, master {s['ros_master_uri']}")
@@ -26,8 +28,14 @@ for r in s['routes']:
           f"published {r['published']:8}  errors {r['convert_errors']}  backwards {r['stamp_backwards']}  "
           f"stamp-localclock {lag['last'] if lag['last'] is not None else float('nan'):+.3f}s  "
           f"subs {r['ros1_subscribers']}  frame '{r['last_frame_id']}'")
-    if r['published'] == 0 or (r['last_rx_age_s'] or 99) > 2 or r['convert_errors'] or r['stamp_backwards']:
+    optional = r['ros2_topic'] in OPTIONAL
+    if r['convert_errors'] or r['stamp_backwards']:
         bad = True
+    elif r['published'] == 0 or (r['last_rx_age_s'] or 99) > 2:
+        if optional:
+            print(f"    note: {r['ros2_topic']} has no data (optional: 106 official localization is off; x_nav uses its own SLAM)")
+        else:
+            bad = True
 t = s['tap']
 if t.get('enabled'):
     print(f"  tap: {t['state']} peer {t['peer'] or '-'} frames {t['frames']} "
