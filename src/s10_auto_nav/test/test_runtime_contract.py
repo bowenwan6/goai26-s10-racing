@@ -16,9 +16,31 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from patch_upstream import validate_gate16_manifest  # noqa: E402
 from runtime_fingerprint import (  # noqa: E402
     CONTRACT_FILES,
+    HIM_CONTRACT_FILES,
     check_fingerprint,
     write_fingerprint,
 )
+
+
+def test_him_build_cannot_run_through_the_default_gate16_launcher(tmp_path):
+    for relative in CONTRACT_FILES + HIM_CONTRACT_FILES:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("source")
+    sdk = tmp_path / "upstream/goai_embodied_future_material/src/S10_sdk_deploy/state_machine/quadruped_wheel/rl_control_state.hpp"
+    sdk.parent.mkdir(parents=True)
+    sdk.write_text("BlendHimHandover")
+    install = tmp_path / "install"
+    binary = install / "s10_sdk_deploy/lib/s10_sdk_deploy/rl_deploy"
+    binary.parent.mkdir(parents=True)
+    binary.write_bytes(b"HIM executable")
+    write_fingerprint(install, tmp_path)
+    with pytest.raises(RuntimeError, match="controller is not gate16"):
+        check_fingerprint(install, tmp_path)
+    check_fingerprint(install, tmp_path, controller="him")
+    (tmp_path / HIM_CONTRACT_FILES[0]).write_text("changed HIM source")
+    with pytest.raises(RuntimeError, match="does not match this checkout"):
+        check_fingerprint(install, tmp_path, controller="him")
 
 
 def test_gate16_deployment_contract_rejects_the_old_adaptive_manifest():

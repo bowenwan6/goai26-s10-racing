@@ -25,6 +25,12 @@ CONTRACT_FILES = (
     "src/s10_bringup/config/strategy_gate16.yaml",
     "src/s10_bringup/config/nav.yaml",
 )
+HIM_CONTRACT_FILES = (
+    "integration/s10_policy_runner.hpp",
+    "integration/rl_control_state.hpp",
+    "integration/standup_state.hpp",
+    "scripts/patch_him_upstream.py",
+)
 
 
 def _sha256(path: Path) -> str:
@@ -35,11 +41,12 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def source_fingerprint(root: Path = ROOT) -> dict[str, str]:
-    missing = [name for name in CONTRACT_FILES if not (root / name).is_file()]
+def source_fingerprint(root: Path = ROOT, controller: str = "gate16") -> dict[str, str]:
+    files = CONTRACT_FILES + (HIM_CONTRACT_FILES if controller == "him" else ())
+    missing = [name for name in files if not (root / name).is_file()]
     if missing:
         raise RuntimeError(f"runtime contract files missing: {', '.join(missing)}")
-    return {name: _sha256(root / name) for name in CONTRACT_FILES}
+    return {name: _sha256(root / name) for name in files}
 
 
 def fingerprint_path(install_base: Path) -> Path:
@@ -49,10 +56,13 @@ def fingerprint_path(install_base: Path) -> Path:
 def write_fingerprint(install_base: Path, root: Path = ROOT) -> Path:
     binary = install_base / "s10_sdk_deploy/lib/s10_sdk_deploy/rl_deploy"
     if not binary.is_file():
-        raise RuntimeError(f"built Gate16 executable missing: {binary}")
+        raise RuntimeError(f"built SDK executable missing: {binary}")
+    sdk_controller = root / "upstream/goai_embodied_future_material/src/S10_sdk_deploy/state_machine/quadruped_wheel/rl_control_state.hpp"
+    controller = "him" if sdk_controller.is_file() and "BlendHimHandover" in sdk_controller.read_text() else "gate16"
     payload = {
         "schema": 1,
-        "sources": source_fingerprint(root),
+        "controller": controller,
+        "sources": source_fingerprint(root, controller),
         "rl_deploy_sha256": _sha256(binary),
     }
     output = fingerprint_path(install_base)
@@ -60,7 +70,7 @@ def write_fingerprint(install_base: Path, root: Path = ROOT) -> Path:
     return output
 
 
-def check_fingerprint(install_base: Path, root: Path = ROOT) -> None:
+def check_fingerprint(install_base: Path, root: Path = ROOT, controller: str = "gate16") -> None:
     path = fingerprint_path(install_base)
     if not path.is_file():
         raise RuntimeError(
@@ -69,7 +79,9 @@ def check_fingerprint(install_base: Path, root: Path = ROOT) -> None:
     recorded = json.loads(path.read_text())
     if recorded.get("schema") != 1:
         raise RuntimeError("unsupported runtime fingerprint schema")
-    current = source_fingerprint(root)
+    if recorded.get("controller", "gate16") != controller:
+        raise RuntimeError(f"built SDK controller is not {controller}; select its patcher and rebuild")
+    current = source_fingerprint(root, controller)
     if recorded.get("sources") != current:
         changed = sorted(
             name
@@ -88,13 +100,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("write", "check"))
     parser.add_argument("--install-base", required=True, type=Path)
+    parser.add_argument("--controller", choices=("gate16", "him"), default="gate16")
     args = parser.parse_args()
     try:
         if args.mode == "write":
             path = write_fingerprint(args.install_base)
             print(f"wrote runtime fingerprint: {path}")
         else:
-            check_fingerprint(args.install_base)
+            check_fingerprint(args.install_base, controller=args.controller)
             print("ok: build and source runtime contracts match")
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as error:
         raise SystemExit(f"error: {error}") from error

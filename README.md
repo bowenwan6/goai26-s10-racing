@@ -518,3 +518,10 @@ the perception, navigation, experiment harnesses, and integration layer in this 
 ours.
 
 Licensed under [BSD-3-Clause](LICENSE), matching upstream.
+
+## HIM ONNX / S10 实机接入
+
+HIM 1500 遥控器入口：`scripts/start_s10_him1500_handset.cmd`。
+HIM 仿真使用 `scripts/patch_him_upstream.py` 和 `scripts/run_him.sh`；
+默认比赛入口保持现有导航与 Gate16 控制。
+接口、构建、起身接管与验证结果见 [S10 HIM 接入说明](docs/S10_HIM_DEPLOYMENT.md)。
