@@ -1,0 +1,33 @@
+### clock
+NTP=yes
+NTPSynchronized=yes
+TimeUSec=Fri 2026-09-18 14:15:13 CST
+active
+inactive
+       Server: 5.79.108.34 (1.pool.ntp.org)
+Poll interval: 4min 16s (min: 32s; max 34min 8s)
+         Leap: normal
+      Version: 4
+      Stratum: 3
+    Reference: 7F000001
+    Precision: 1us (-26)
+Root distance: 3.844ms (max: 5s)
+       Offset: -10.008ms
+        Delay: 195.375ms
+       Jitter: 13.478ms
+ Packet count: 4
+### snmp before
+Ip: Forwarding DefaultTTL InReceives InHdrErrors InAddrErrors ForwDatagrams InUnknownProtos InDiscards InDelivers OutRequests OutDiscards OutNoRoutes ReasmTimeout ReasmReqds ReasmOKs ReasmFails FragOKs FragFails FragCreates OutTransmits
+Ip: 1 64 3248742 0 0 188 0 0 3246562 374605 0 0 0 686 339 0 56692 0 2463473 2781574
+Udp: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti MemErrors
+Udp: 3261264 6036 0 366915 0 0 0 268 0
+  end0: 3024703783 3159992    0    0    0     0          0         0 20894582295 2662669    0    0    0     0       0          0
+usage: ros2 [-h] [--use-python-default-buffering]
+            Call `ros2 <command> -h` for more detailed usage. ...
+ros2: error: unrecognized arguments: --qos-reliability best_effort
+### snmp after
+Ip: Forwarding DefaultTTL InReceives InHdrErrors InAddrErrors ForwDatagrams InUnknownProtos InDiscards InDelivers OutRequests OutDiscards OutNoRoutes ReasmTimeout ReasmReqds ReasmOKs ReasmFails FragOKs FragFails FragCreates OutTransmits
+Ip: 1 64 3254900 0 0 188 0 0 3252719 375038 0 0 0 686 339 0 56798 0 2468104 2786532
+Udp: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti MemErrors
+Udp: 3267476 6036 0 367340 0 0 0 268 0
+  end0: 3030555713 3166020    0    0    0     0          0         0 20901505177 2667468    0    0    0     0       0          0

@@ -1,0 +1,83 @@
+### /opt/drdds
+ls: cannot access '/opt/drdds': No such file or directory
+cat: /opt/drdds/topic_scope.conf: No such file or directory
+### grep scope files
+### ./rslidar pid=3516
+-- udp sockets:
+bash: line 6: /proc/3516/environ: Permission denied
+
+-- shm fds:
+0
+### ./hsLidar pid=3879
+bash: line 6: /proc/3879/environ: Permission denied
+-- udp sockets:
+
+-- shm fds:
+0
+### ./yesense_node pid=3322
+-- udp sockets:
+bash: line 6: /proc/3322/environ: Permission denied
+
+-- shm fds:
+0
+### all udp sockets on 10.21.33.106 with owner
+10.21.33.106:43419 
+10.21.33.106:53 
+10.21.33.106:55995 
+10.21.33.106:7400 
+10.21.33.106:7400 
+10.21.33.106:7416 
+10.21.33.106:7417 
+10.21.33.106:7446 
+10.21.33.106:7447 
+10.21.33.106:52729 accumulate_clou 3025
+10.21.33.106:7002 accumulate_clou 3025
+10.21.33.106:7400 accumulate_clou 3025
+10.21.33.106:7438 accumulate_clou 3025
+10.21.33.106:7439 accumulate_clou 3025
+10.21.33.106:45811 astar_node 2990
+10.21.33.106:7400 astar_node 2990
+10.21.33.106:7436 astar_node 2990
+10.21.33.106:7437 astar_node 2990
+10.21.33.106:57182 bbs_reloc_ddsno 2740
+10.21.33.106:7400 bbs_reloc_ddsno 2740
+10.21.33.106:7432 bbs_reloc_ddsno 2740
+10.21.33.106:7433 bbs_reloc_ddsno 2740
+10.21.33.106:33449 dr_nodectl 1185
+10.21.33.106:7400 dr_nodectl 1185
+10.21.33.106:7458 dr_nodectl 1185
+10.21.33.106:7459 dr_nodectl 1185
+10.21.33.106:48678 dr_system_monit 1927
+10.21.33.106:7400 dr_system_monit 1927
+10.21.33.106:7412 dr_system_monit 1927
+10.21.33.106:7413 dr_system_monit 1927
+10.21.33.106:59224 localization_dd 2741
+10.21.33.106:7400 localization_dd 2741
+10.21.33.106:7426 localization_dd 2741
+10.21.33.106:7427 localization_dd 2741
+10.21.33.106:53315 map_server 2464
+10.21.33.106:7400 map_server 2464
+10.21.33.106:7422 map_server 2464
+10.21.33.106:7423 map_server 2464
+10.21.33.106:48864 pcl_remove 3134
+10.21.33.106:7400 pcl_remove 3134
+10.21.33.106:7442 pcl_remove 3134
+10.21.33.106:7443 pcl_remove 3134
+10.21.33.106:45877 python3 1222
+10.21.33.106:7000 python3 1222
+10.21.33.106:7400 python3 1222
+10.21.33.106:7418 python3 1222
+10.21.33.106:7419 python3 1222
+10.21.33.106:34910 traversability_ 2802
+### drsec
+total 212
+drwxr-xr-x 1 root root  4096 Aug 22 21:06 .
+drwxr-xr-x 1 root root  4096 Mar 14  2026 ..
+drwxr-xr-x 1 root root  4096 Mar 14  2026 docker
+lrwxrwxrwx 1 root root    24 Aug 22 21:06 drsec-maintenance-password -> sec_maintenance_password
+-rwxr-xr-x 1 root root  3153 Aug 22 21:06 orin_ta_update.sh
+-rwxr-xr-x 1 root root  1437 Aug 22 21:06 platform.sh
+-rwxr-xr-x 1 root root  1314 Aug 22 21:06 run.sh
+-rwxr-xr-x 1 root root  5472 Aug 22 21:06 safe_sec_init.sh
+-rwxr-xr-x 1 root root  5524 Aug 22 21:06 sec_cert_dir_recovery.sh
+### env files used by run scripts

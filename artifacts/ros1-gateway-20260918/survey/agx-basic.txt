@@ -1,0 +1,257 @@
+### date
+2026-09-18T14:08:59+08:00
+ 14:08:59 up 2 min,  2 users,  load average: 1.84, 0.77, 0.29
+### hostname
+localhost.localdomain
+### uname
+Linux localhost.localdomain 6.8.12-1021-tegra #1 SMP PREEMPT Thu Aug  6 21:56:04 PDT 2026 aarch64 aarch64 aarch64 GNU/Linux
+### os-release
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.4 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+### id
+uid=2003(golai) gid=2003(golai) groups=2003(golai),20(dialout),44(video),46(plugdev),993(render)
+### /opt/ros
+jazzy
+### docker
+bash: line 8: docker: command not found
+bash: line 8: docker: command not found
+### podman
+### sensor services
+● rslidar-dual.service - RoboSense dual RS-LiDAR-AIRY ROS 2 driver
+     Loaded: loaded (/etc/systemd/system/rslidar-dual.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-18 14:00:45 CST; 8min ago
+   Main PID: 2395 (ros2)
+      Tasks: 24 (limit: 74812)
+     Memory: 80.0M (peak: 82.0M)
+        CPU: 17.576s
+     CGroup: /system.slice/rslidar-dual.service
+             ├─2395 /usr/bin/python3 /opt/ros/jazzy/bin/ros2 run rslidar_sdk rslidar_sdk_node --ros-args -p config_path:=/home/golai/goai_embodied_future_material/src/dual_airy_merger/config/airy_dual.yaml
+             └─2798 /home/golai/goai_embodied_future_material/install/rslidar_sdk/lib/rslidar_sdk/rslidar_sdk_node --ros-args -p config_path:=/home/golai/goai_embodied_future_material/src/dual_airy_merger/config/airy_dual.yaml
+
+● rslidar-merge.service - Merge dual RoboSense Airy point clouds with CD1 extrinsics
+     Loaded: loaded (/etc/systemd/system/rslidar-merge.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-18 14:00:45 CST; 8min ago
+   Main PID: 2396 (ros2)
+      Tasks: 16 (limit: 74812)
+     Memory: 53.5M (peak: 55.8M)
+        CPU: 8.924s
+     CGroup: /system.slice/rslidar-merge.service
+             ├─2396 /usr/bin/python3 /opt/ros/jazzy/bin/ros2 run dual_airy_merger dual_airy_merger_node
+             └─2800 /home/golai/goai_embodied_future_material/install/dual_airy_merger/lib/dual_airy_merger/dual_airy_merger_node
+
+● s10-realsense.service - S10 RealSense depth camera
+     Loaded: loaded (/etc/systemd/system/s10-realsense.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-18 14:00:45 CST; 8min ago
+   Main PID: 2398 (ros2)
+      Tasks: 19 (limit: 74812)
+     Memory: 136.3M (peak: 138.3M)
+        CPU: 3.157s
+     CGroup: /system.slice/s10-realsense.service
+             ├─2398 /usr/bin/python3 /opt/ros/jazzy/bin/ros2 run realsense2_camera realsense2_camera_node
+             └─2799 /opt/ros/jazzy/lib/realsense2_camera/realsense2_camera_node
+### user services
+  UNIT                    LOAD   ACTIVE SUB     DESCRIPTION
+  dbus.service            loaded active running D-Bus User Message Bus
+  filter-chain.service    loaded active running PipeWire filter chain daemon
+  pipewire-pulse.service  loaded active running PipeWire PulseAudio
+  pipewire.service        loaded active running PipeWire Multimedia Service
+  s10-him-handset.service loaded active running S10 HIM physical handset (independent of PC)
+  s10-mapping-web.service loaded active running S10 48 phone mapping web on AGX
+  s10-tailscale.service   loaded active running S10 private maintenance network (unprivileged userspace Tailscale)
+  wireplumber.service     loaded active running Multimedia Service Session Manager
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+8 loaded units listed. Pass --all to see loaded but inactive units, too.
+To show all installed unit files use 'systemctl list-unit-files'.
+### find rslidar_sdk/rs_driver
+/home/golai/provisioning/before-lowercase-rename/build/rslidar_sdk
+/home/golai/provisioning/before-lowercase-rename/build/rslidar_sdk/src/rs_driver
+/home/golai/provisioning/before-lowercase-rename/install/rslidar_sdk
+/home/golai/provisioning/before-lowercase-rename/install/rslidar_sdk/lib/rslidar_sdk
+/home/golai/provisioning/before-lowercase-rename/install/rslidar_sdk/share/rslidar_sdk
+/home/golai/provisioning/before-lowercase-rename/log/build_2026-09-10_21-20-57/rslidar_sdk
+/home/golai/goai_embodied_future_material/src/rslidar_sdk
+/home/golai/goai_embodied_future_material/src/rslidar_sdk/src/rs_driver
+/home/golai/goai_embodied_future_material/build/rslidar_sdk
+/home/golai/goai_embodied_future_material/build/rslidar_sdk/src/rs_driver
+/home/golai/goai_embodied_future_material/install/rslidar_sdk
+/home/golai/goai_embodied_future_material/install/rslidar_sdk/lib/rslidar_sdk
+/home/golai/goai_embodied_future_material/install/rslidar_sdk/share/rslidar_sdk
+/home/golai/goai_embodied_future_material/log/build_2026-09-10_21-46-57/rslidar_sdk
+### ws candidates
+/home/golai/goai_embodied_future_material/install
+/home/golai/s10_control_ws/install
+/home/golai/s10-him-current/install
+/home/golai/s10-sdk-isolated-j50b2mzi/install
+/home/golai/s10-sdk-isolated-kpk9jzss/install
+/home/golai/s10-sdk-isolated-l07kue1l/install
+/home/golai/s10-sdk-isolated-mac850-20260916/install
+/home/golai/s10-sdk-isolated-ndjc1vgb/install
+/home/golai/s10-sdk-isolated-phase59-overlay-20260917/install
+/home/golai/s10-sdk-isolated-ptzjbjrx/install
+/home/golai/s10-sdk-isolated-vbyhquwi/install
+/home/golai/s10-sdk-isolated-xly21vwi/install
+Desktop
+goai_embodied_future_material
+goai-mac-offline-run18-20260916
+goai_native_start_b_20260917
+goai-perception850-20260916
+goai-phase59-overlay-20260917
+goai-phase59-shadow-20260917-1140
+goai-phase-overlay-shadow-20260917-1224
+provisioning
+s10_control_ws
+s10-field-before-foxtxp8n
+s10-field-fix-20260914.UCSZTd
+s10-field-release.xhT8cx
+s10-guidance-20260914.wWUZJg
+s10-him-current
+s10-him-update-7b6h25
+s10-him-update-wSdcMy
+s10-imu-20260915.Yx1bLG
+s10_mapping_web
+s10-sdk-isolated-j50b2mzi
+s10-sdk-isolated-kpk9jzss
+s10-sdk-isolated-l07kue1l
+s10-sdk-isolated-mac850-20260916
+s10-sdk-isolated-ndjc1vgb
+s10-sdk-isolated-phase59-overlay-20260917
+s10-sdk-isolated-ptzjbjrx
+s10-sdk-isolated-vbyhquwi
+s10-sdk-isolated-xly21vwi
+s10-tailscale-setup-20260913
+s10-zero-20260915.vIOfYD
+### bashrc ROS lines
+110:# sources /etc/bash.bashrc).
+120:export ROS_DOMAIN_ID=0
+121:export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+122:export FASTRTPS_DEFAULT_PROFILES_FILE=/home/golai/.ros/fastdds_ethernet.xml
+123:[ ! -f /opt/ros/jazzy/setup.bash ] || source /opt/ros/jazzy/setup.bash
+124:[ ! -f /home/golai/goai_embodied_future_material/install/setup.bash ] || source /home/golai/goai_embodied_future_material/install/setup.bash
+### fastdds profile
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <transport_descriptors>
+    <transport_descriptor>
+      <transport_id>ethernet_udp</transport_id>
+      <type>UDPv4</type>
+      <interfaceWhiteList>
+        <address>10.21.33.102</address>
+      </interfaceWhiteList>
+    </transport_descriptor>
+  </transport_descriptors>
+
+  <participant profile_name="ethernet_only" is_default_profile="true">
+    <rtps>
+      <userTransports>
+        <transport_id>ethernet_udp</transport_id>
+      </userTransports>
+      <useBuiltinTransports>false</useBuiltinTransports>
+      <builtin>
+        <initialPeersList>
+          <locator>
+            <udpv4>
+              <address>10.21.33.103</address>
+            </udpv4>
+          </locator>
+        </initialPeersList>
+      </builtin>
+    </rtps>
+  </participant>
+</profiles>
+### ip
+lo               UNKNOWN        127.0.0.1/8 
+wlP1p1s0         UP             10.18.2.147/22 
+end0             UP             10.21.33.102/24 
+l4tbr0           DOWN           192.168.55.1/24 
+default via 10.18.0.1 dev wlP1p1s0 proto dhcp src 10.18.2.147 metric 600 
+default via 192.168.55.100 dev l4tbr0 metric 32766 linkdown 
+10.18.0.0/22 dev wlP1p1s0 proto kernel scope link src 10.18.2.147 metric 600 
+10.21.33.0/24 dev end0 proto kernel scope link src 10.21.33.102 metric 100 
+10.21.41.0/24 via 10.21.33.103 dev end0 proto static metric 100 
+192.168.55.0/24 dev l4tbr0 proto kernel scope link src 192.168.55.1 linkdown 
+224.10.10.0/24 dev end0 proto static scope link metric 100 
+default via 10.18.0.1 dev wlP1p1s0 proto dhcp src 10.18.2.147 metric 600 
+default via 192.168.55.100 dev l4tbr0 metric 32766 linkdown 
+10.18.0.0/22 dev wlP1p1s0 proto kernel scope link src 10.18.2.147 metric 600 
+10.21.33.0/24 dev end0 proto kernel scope link src 10.21.33.102 metric 100 
+10.21.41.0/24 via 10.21.33.103 dev end0 proto static metric 100 
+192.168.55.0/24 dev l4tbr0 proto kernel scope link src 192.168.55.1 linkdown 
+224.10.10.0/24 dev end0 proto static scope link metric 100 
+### df
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/mmcblk0p1   54G   14G   38G  28% /
+/dev/mmcblk0p1   54G   14G   38G  28% /
+### mem/cpu
+8
+               total        used        free      shared  buff/cache   available
+Mem:           62878        1861       60408          21        1208       61017
+Swap:           2047           0        2047
+1.84 0.77 0.29 1/704 4321
+### listening
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*          
+udp   UNCONN 0      0         127.0.0.53:53         0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:67         0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:38533      0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:39286      0.0.0.0:*          
+udp   UNCONN 0      0      224.10.10.201:6681       0.0.0.0:*          
+udp   UNCONN 0      0      224.10.10.202:6682       0.0.0.0:*          
+udp   UNCONN 0      0      224.10.10.201:6691       0.0.0.0:*          
+udp   UNCONN 0      0      224.10.10.202:6692       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7000       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7001       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:7002       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7003       0.0.0.0:*          
+udp   UNCONN 0      0        239.255.0.1:7400       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7400       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:7400       0.0.0.0:*          
+udp   UNCONN 0      0        239.255.0.1:7400       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7400       0.0.0.0:*          
+udp   UNCONN 0      0        239.255.0.1:7400       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7400       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7410       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7411       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7412       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7413       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:7414       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:7415       0.0.0.0:*          
+udp   UNCONN 960    0       10.21.33.102:7416       0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:7417       0.0.0.0:*          
+udp   UNCONN 0      0      224.10.10.201:7781       0.0.0.0:*          
+udp   UNCONN 0      0      224.10.10.202:7782       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:46121      0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:48821      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:52334      0.0.0.0:*          
+udp   UNCONN 0      0       10.21.33.102:54782      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:59264      0.0.0.0:*          
+udp   UNCONN 0      0                  *:5353             *:*          
+udp   UNCONN 0      0                  *:48515            *:*          
+udp   UNCONN 0      0                  *:58437            *:*          
+### sysctl net
+net.core.rmem_max = 16777216
+net.core.rmem_default = 16777216
+net.core.wmem_max = 212992
+net.ipv4.ipfrag_high_thresh = 4194304
+net.ipv4.ipfrag_time = 30
+### tegra
+# R39 (release), REVISION: 2.1, GCID: 46758480, BOARD: generic, EABI: aarch64, DATE: Fri Aug  7 05:54:22 AM UTC 2026
+# KERNEL_VARIANT: oot
+TARGET_USERSPACE_LIB_DIR=nvidia
+TARGET_USERSPACE_LIB_DIR_PATH=usr/lib/aarch64-linux-gnu/nvidia
+NVIDIA Jetson AGX Orin Developer Kit 

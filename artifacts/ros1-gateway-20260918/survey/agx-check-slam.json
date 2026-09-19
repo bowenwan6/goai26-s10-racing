@@ -1,0 +1,129 @@
+{
+  "host": "localhost.localdomain",
+  "collected_at": "2026-09-18T06:14:27.865260+00:00",
+  "data": {
+    "/LIDAR/POINTS": {
+      "messages": 0,
+      "hz": null,
+      "stamp_age_s": null,
+      "fresh": false,
+      "publishers": []
+    },
+    "/LIDAR/POINTS_MERGED": {
+      "messages": 101,
+      "hz": 10.044480818143365,
+      "stamp_age_s": -13.82522964477539,
+      "stamp_age_range_s": [
+        -13.830936670303345,
+        -13.780940294265747
+      ],
+      "backwards": 0,
+      "max_clock_jump_s": 0.044967955051163244,
+      "fresh": false,
+      "frame_id": "lidar_link",
+      "child_frame_id": null,
+      "position_m": null,
+      "orientation_xyzw": null,
+      "fields": [
+        "x",
+        "y",
+        "z",
+        "intensity"
+      ],
+      "point_stamp_samples": null,
+      "dds_header_offset_s": -13.837769031524658,
+      "publishers": [
+        {
+          "node": "dual_airy_merger",
+          "type": "sensor_msgs/msg/PointCloud2",
+          "gid": "010f1f12f00a6d120000000000001403",
+          "reliability": "2"
+        }
+      ]
+    },
+    "/IMU": {
+      "messages": 2003,
+      "hz": 200.2520785568094,
+      "stamp_age_s": -13.943897724151611,
+      "stamp_age_range_s": [
+        -13.945297479629517,
+        -13.931297540664673
+      ],
+      "backwards": 0,
+      "max_clock_jump_s": 0.010223419977648973,
+      "fresh": false,
+      "frame_id": "",
+      "child_frame_id": null,
+      "position_m": null,
+      "orientation_xyzw": null,
+      "fields": null,
+      "point_stamp_samples": null,
+      "dds_header_offset_s": 0.009364128112792969,
+      "publishers": [
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "sensor_msgs/msg/Imu",
+          "gid": "010fa2e5fa0cbe3a0100000000000103",
+          "reliability": "2"
+        }
+      ]
+    },
+    "/ODOM": {
+      "messages": 100,
+      "hz": 9.999243718816658,
+      "stamp_age_s": -13.928434133529663,
+      "stamp_age_range_s": [
+        -13.932717561721802,
+        -13.927660465240479
+      ],
+      "backwards": 0,
+      "max_clock_jump_s": 0.004007511191048252,
+      "fresh": false,
+      "frame_id": "map",
+      "child_frame_id": "",
+      "position_m": [
+        643.6904890862239,
+        2189.169873950106,
+        137.09076597790758
+      ],
+      "orientation_xyzw": [
+        -0.01913762016710153,
+        0.008423425331838354,
+        0.09901520092180444,
+        0.9948662158232291
+      ],
+      "fields": null,
+      "point_stamp_samples": null,
+      "dds_header_offset_s": 0.024715185165405273,
+      "publishers": [
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "nav_msgs/msg/Odometry",
+          "gid": "010fa2e5b50a58930100000000000203",
+          "reliability": "1"
+        }
+      ]
+    },
+    "/LIO_ODOM": {
+      "messages": 0,
+      "hz": null,
+      "stamp_age_s": null,
+      "fresh": false,
+      "publishers": [
+        {
+          "node": "_CREATED_BY_BARE_DDS_APP_",
+          "type": "nav_msgs/msg/Odometry",
+          "gid": "010f038e3327401f0100000000000103",
+          "reliability": "1"
+        }
+      ]
+    },
+    "/SLAM_ODOM": {
+      "messages": 0,
+      "hz": null,
+      "stamp_age_s": null,
+      "fresh": false,
+      "publishers": []
+    }
+  }
+}

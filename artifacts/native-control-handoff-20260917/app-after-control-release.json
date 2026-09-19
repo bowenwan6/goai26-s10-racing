@@ -1,0 +1,906 @@
+{
+  "active_id": null,
+  "blockers": {
+    "b": [
+      "先运行一次实机检查；参考读数有效期 60 秒，启动时仍会重新核对。",
+      "确认 v3 地图与全局定位",
+      "核对定位坐标与机身参考点",
+      "核对点云坐标与机身过滤",
+      "验收障碍物与地形输入",
+      "现场复核路线与切换模式的位置",
+      "验收原厂指令超时停车",
+      "原厂 policy 调用与实际速度响应尚未完成实机验收。",
+      "机身高度、坐标变换或定位状态定义尚未校准。",
+      "尚未确认全局定位；把机器人放到 Start 后，在实时位置页核对。"
+    ],
+    "flat": [
+      "先运行一次实机检查；参考读数有效期 60 秒，启动时仍会重新核对。"
+    ],
+    "observe": [],
+    "stairs": [
+      "先运行一次实机检查；参考读数有效期 60 秒，启动时仍会重新核对。"
+    ],
+    "start": [
+      "先运行一次实机检查；参考读数有效期 60 秒，启动时仍会重新核对。",
+      "确认 v3 地图与全局定位",
+      "核对定位坐标与机身参考点",
+      "核对点云坐标与机身过滤",
+      "验收障碍物与地形输入",
+      "现场复核路线与切换模式的位置",
+      "验收原厂指令超时停车",
+      "原厂 policy 调用与实际速度响应尚未完成实机验收。",
+      "机身高度、坐标变换或定位状态定义尚未校准。",
+      "尚未确认全局定位；把机器人放到 Start 后，在实时位置页核对。"
+    ],
+    "start_b": [
+      "先运行一次实机检查；参考读数有效期 60 秒，启动时仍会重新核对。",
+      "确认 v3 地图与全局定位",
+      "核对定位坐标与机身参考点",
+      "核对点云坐标与机身过滤",
+      "验收障碍物与地形输入",
+      "现场复核路线与切换模式的位置",
+      "验收原厂指令超时停车",
+      "原厂 policy 调用与实际速度响应尚未完成实机验收。",
+      "机身高度、坐标变换或定位状态定义尚未校准。",
+      "尚未确认全局定位；把机器人放到 Start 后，在实时位置页核对。"
+    ]
+  },
+  "current": {
+    "created": 1789659222.120237,
+    "ended": 1789659242.5932994,
+    "id": "c26b4ec494ab4a9db48a4b141c9fd5da",
+    "key": "d30ab83d130a43c183708e8d504a6795",
+    "kind": "observe",
+    "label": "实机检查（不运动）",
+    "message": "实机检查已完成；这不是导航通过结论。读数在下方显示。",
+    "snapshot": {
+      "accepted_gaits": [],
+      "actual_output": {
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "expected_gait": null,
+        "publish": false,
+        "reason": "explicit arm required",
+        "request_gait": null,
+        "state": "disarmed"
+      },
+      "admission_missing": [
+        "unverified_map_and_global_status",
+        "unverified_odom_reference",
+        "unverified_cloud_frame_deskew_self_filter",
+        "unverified_perception_projection",
+        "unverified_route_and_staging_points",
+        "unverified_operator_on_site",
+        "unverified_native_command_timeout_and_stop",
+        "unknown_location_status_semantics",
+        "unknown_body_z_offset",
+        "invalid_odom_child_from_base",
+        "invalid_base_from_cloud",
+        "official_policy_call_not_yet_accepted"
+      ],
+      "app_event": null,
+      "elapsed": 15.08425024799908,
+      "gait": 0,
+      "gait_subscribers": 2,
+      "hes": 0,
+      "input_faults": {},
+      "location_code": 3,
+      "map_context": {
+        "active": "active",
+        "global_mode": false,
+        "localization_log": "[2026-09-17 23:34:01.375.513] [INFO  ] [monitor] 上报状态=3(定位丢失), 可用=1, 运行状态=局部，累计距离103.4m/时间8968.0s ",
+        "localization_log_age": 0.3894922733306885,
+        "map_id": "0914_fr_v3-20260914-142008",
+        "session_id": "975155295050497a85ac86e9b09196f4",
+        "wall_time": 1789659241.389618
+      },
+      "measured_velocity": [
+        0.0,
+        0.0,
+        0.001848699408583343
+      ],
+      "motion_state": 0,
+      "native_publishers_created": false,
+      "nav_cmd_publishers": 0,
+      "nav_cmd_subscribers": 1,
+      "observer": true,
+      "position": [
+        0.5159946641653772,
+        0.18451126812625326,
+        0.14932383463996768
+      ],
+      "probe_gait": "flat",
+      "reason": "explicit arm required",
+      "sensors": {
+        "odom": {
+          "child": "",
+          "frame": "map",
+          "raw_xyz": [
+            0.5159946641653772,
+            0.18451126812625326,
+            0.14932383463996768
+          ]
+        }
+      },
+      "state": "disarmed",
+      "stream_ages": {
+        "context": 0.5013576669989561,
+        "hes": 0.05953364699962549,
+        "location": 0.15715792999981204,
+        "motion": 0.00895588799903635,
+        "pose": 0.015286784999261727
+      },
+      "target": 0,
+      "velocity_probe": false,
+      "velocity_response_verified": false,
+      "wall_time": 1789659241.8938456
+    },
+    "state": "completed"
+  },
+  "field_busy": false,
+  "field_error": null,
+  "history": [
+    {
+      "created": 1789659222.120237,
+      "ended": 1789659242.5932994,
+      "id": "c26b4ec494ab4a9db48a4b141c9fd5da",
+      "key": "d30ab83d130a43c183708e8d504a6795",
+      "kind": "observe",
+      "label": "实机检查（不运动）",
+      "message": "实机检查已完成；这不是导航通过结论。读数在下方显示。",
+      "snapshot": {
+        "accepted_gaits": [],
+        "actual_output": {
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "expected_gait": null,
+          "publish": false,
+          "reason": "explicit arm required",
+          "request_gait": null,
+          "state": "disarmed"
+        },
+        "admission_missing": [
+          "unverified_map_and_global_status",
+          "unverified_odom_reference",
+          "unverified_cloud_frame_deskew_self_filter",
+          "unverified_perception_projection",
+          "unverified_route_and_staging_points",
+          "unverified_operator_on_site",
+          "unverified_native_command_timeout_and_stop",
+          "unknown_location_status_semantics",
+          "unknown_body_z_offset",
+          "invalid_odom_child_from_base",
+          "invalid_base_from_cloud",
+          "official_policy_call_not_yet_accepted"
+        ],
+        "app_event": null,
+        "elapsed": 15.08425024799908,
+        "gait": 0,
+        "gait_subscribers": 2,
+        "hes": 0,
+        "input_faults": {},
+        "location_code": 3,
+        "map_context": {
+          "active": "active",
+          "global_mode": false,
+          "localization_log": "[2026-09-17 23:34:01.375.513] [INFO  ] [monitor] 上报状态=3(定位丢失), 可用=1, 运行状态=局部，累计距离103.4m/时间8968.0s ",
+          "localization_log_age": 0.3894922733306885,
+          "map_id": "0914_fr_v3-20260914-142008",
+          "session_id": "975155295050497a85ac86e9b09196f4",
+          "wall_time": 1789659241.389618
+        },
+        "measured_velocity": [
+          0.0,
+          0.0,
+          0.001848699408583343
+        ],
+        "motion_state": 0,
+        "native_publishers_created": false,
+        "nav_cmd_publishers": 0,
+        "nav_cmd_subscribers": 1,
+        "observer": true,
+        "position": [
+          0.5159946641653772,
+          0.18451126812625326,
+          0.14932383463996768
+        ],
+        "probe_gait": "flat",
+        "reason": "explicit arm required",
+        "sensors": {
+          "odom": {
+            "child": "",
+            "frame": "map",
+            "raw_xyz": [
+              0.5159946641653772,
+              0.18451126812625326,
+              0.14932383463996768
+            ]
+          }
+        },
+        "state": "disarmed",
+        "stream_ages": {
+          "context": 0.5013576669989561,
+          "hes": 0.05953364699962549,
+          "location": 0.15715792999981204,
+          "motion": 0.00895588799903635,
+          "pose": 0.015286784999261727
+        },
+        "target": 0,
+        "velocity_probe": false,
+        "velocity_response_verified": false,
+        "wall_time": 1789659241.8938456
+      },
+      "state": "completed"
+    },
+    {
+      "created": 1789657804.7062643,
+      "ended": 1789657812.8056858,
+      "id": "d2dc9ba58b234b898fb560bffc1b3fc0",
+      "key": "c9bca487d89841688233fb3d521c1ddf",
+      "kind": "observe",
+      "label": "实机检查（不运动）",
+      "message": "本次测试已结束；软件回执不等于实机停稳，请以遥控器和现场观察为准。",
+      "snapshot": {
+        "accepted_gaits": [],
+        "actual_output": {
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "expected_gait": null,
+          "publish": false,
+          "reason": "explicit arm required",
+          "request_gait": null,
+          "state": "disarmed"
+        },
+        "admission_missing": [
+          "unverified_map_and_global_status",
+          "unverified_odom_reference",
+          "unverified_cloud_frame_deskew_self_filter",
+          "unverified_perception_projection",
+          "unverified_route_and_staging_points",
+          "unverified_operator_on_site",
+          "unverified_native_command_timeout_and_stop",
+          "unknown_location_status_semantics",
+          "unknown_body_z_offset",
+          "invalid_odom_child_from_base",
+          "invalid_base_from_cloud",
+          "official_policy_call_not_yet_accepted"
+        ],
+        "app_event": null,
+        "elapsed": 2.680634583000028,
+        "gait": 0,
+        "gait_subscribers": 2,
+        "hes": 0,
+        "input_faults": {},
+        "location_code": 3,
+        "map_context": {
+          "active": "active",
+          "global_mode": false,
+          "localization_log": "[2026-09-17 23:10:10.975.966] [INFO  ] [monitor] 上报状态=3(定位丢失), 可用=1, 运行状态=局部，累计距离88.8m/时间7537.6s ",
+          "localization_log_age": 0.9943382740020752,
+          "map_id": "0914_fr_v3-20260914-142008",
+          "session_id": "975155295050497a85ac86e9b09196f4",
+          "wall_time": 1789657810.9944909
+        },
+        "measured_velocity": [
+          0.0,
+          0.0,
+          0.001848699408583343
+        ],
+        "motion_state": 0,
+        "native_publishers_created": false,
+        "nav_cmd_publishers": 2,
+        "nav_cmd_subscribers": 1,
+        "observer": true,
+        "position": [
+          0.4681611642254704,
+          0.15436756888855493,
+          0.1302304357199437
+        ],
+        "probe_gait": "flat",
+        "reason": "explicit arm required",
+        "sensors": {
+          "odom": {
+            "child": "",
+            "frame": "map",
+            "raw_xyz": [
+              0.4681611642254704,
+              0.15436756888855493,
+              0.1302304357199437
+            ]
+          }
+        },
+        "state": "disarmed",
+        "stream_ages": {
+          "context": 0.9145191219995468,
+          "hes": 0.02925386700007948,
+          "location": 0.0560379019998436,
+          "motion": 0.011581206000300881,
+          "pose": 0.03297640799974033
+        },
+        "target": 0,
+        "velocity_probe": false,
+        "velocity_response_verified": false,
+        "wall_time": 1789657811.91145
+      },
+      "state": "cancelled"
+    },
+    {
+      "created": 1789657653.517214,
+      "ended": 1789657674.1761677,
+      "id": "17773751123e40dfb9269631b16098e5",
+      "key": "29bb4bf959fc42c59cc2a6e34342d631",
+      "kind": "observe",
+      "label": "实机检查（不运动）",
+      "message": "实机检查已完成；这不是导航通过结论。读数在下方显示。",
+      "snapshot": {
+        "accepted_gaits": [],
+        "actual_output": {
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "expected_gait": null,
+          "publish": false,
+          "reason": "explicit arm required",
+          "request_gait": null,
+          "state": "disarmed"
+        },
+        "admission_missing": [
+          "unverified_map_and_global_status",
+          "unverified_odom_reference",
+          "unverified_cloud_frame_deskew_self_filter",
+          "unverified_perception_projection",
+          "unverified_route_and_staging_points",
+          "unverified_operator_on_site",
+          "unverified_native_command_timeout_and_stop",
+          "unknown_location_status_semantics",
+          "unknown_body_z_offset",
+          "invalid_odom_child_from_base",
+          "invalid_base_from_cloud",
+          "official_policy_call_not_yet_accepted"
+        ],
+        "app_event": null,
+        "elapsed": 15.08230985099999,
+        "gait": 0,
+        "gait_subscribers": 2,
+        "hes": 0,
+        "input_faults": {},
+        "location_code": 3,
+        "map_context": {
+          "active": "active",
+          "global_mode": false,
+          "localization_log": "[2026-09-17 23:07:53.075.886] [INFO  ] [monitor] 上报状态=3(定位丢失), 可用=1, 运行状态=局部，累计距离87.3m/时间7399.7s ",
+          "localization_log_age": 0.11731886863708496,
+          "map_id": "0914_fr_v3-20260914-142008",
+          "session_id": "975155295050497a85ac86e9b09196f4",
+          "wall_time": 1789657673.1174603
+        },
+        "measured_velocity": [
+          0.0,
+          0.0,
+          0.001848699408583343
+        ],
+        "motion_state": 0,
+        "native_publishers_created": false,
+        "nav_cmd_publishers": 2,
+        "nav_cmd_subscribers": 1,
+        "observer": true,
+        "position": [
+          0.46988948641628464,
+          0.15477576273533225,
+          0.130316359000749
+        ],
+        "probe_gait": "flat",
+        "reason": "explicit arm required",
+        "sensors": {
+          "odom": {
+            "child": "",
+            "frame": "map",
+            "raw_xyz": [
+              0.46988948641628464,
+              0.15477576273533225,
+              0.130316359000749
+            ]
+          }
+        },
+        "state": "disarmed",
+        "stream_ages": {
+          "context": 0.4339308360003997,
+          "hes": 0.09802513399972668,
+          "location": 0.2340874179999446,
+          "motion": 0.005394669999986945,
+          "pose": 0.07711233099962556
+        },
+        "target": 0,
+        "velocity_probe": false,
+        "velocity_response_verified": false,
+        "wall_time": 1789657673.5556705
+      },
+      "state": "completed"
+    }
+  ],
+  "map_id": "0914_fr_v3-20260914-142008",
+  "online": true,
+  "policy_accepted": false,
+  "routes": [
+    {
+      "end": [
+        12.891745794,
+        2.056971555,
+        -0.3486563870191688
+      ],
+      "id": "start",
+      "label": "Start 平地段",
+      "modes": [
+        "flat"
+      ],
+      "points": [
+        {
+          "b_station": null,
+          "index": 0,
+          "kind": "flat",
+          "position": [
+            0.0,
+            0.5,
+            -0.42930552770514474
+          ]
+        },
+        {
+          "b_station": null,
+          "index": 1,
+          "kind": "flat",
+          "position": [
+            4.0,
+            0.5,
+            -0.35352293427957093
+          ]
+        },
+        {
+          "b_station": null,
+          "index": 2,
+          "kind": "flat",
+          "position": [
+            8.0,
+            0.5,
+            -0.4201891359733825
+          ]
+        },
+        {
+          "b_station": null,
+          "index": 3,
+          "kind": "flat",
+          "position": [
+            10.5,
+            1.4,
+            -0.3786498725896159
+          ]
+        },
+        {
+          "b_station": 0.0,
+          "index": 4,
+          "kind": "flat",
+          "position": [
+            12.891745794,
+            2.056971555,
+            -0.3486563870191688
+          ],
+          "staging_candidate": false
+        }
+      ],
+      "start": [
+        0.0,
+        0.5,
+        -0.42930552770514474
+      ]
+    },
+    {
+      "end": [
+        26.516563974,
+        21.678986371,
+        4.633584389404064
+      ],
+      "id": "b",
+      "label": "Area B 楼梯段",
+      "modes": [
+        "flat",
+        "stairs",
+        "flat",
+        "stairs",
+        "flat",
+        "stairs",
+        "flat"
+      ],
+      "points": [
+        {
+          "b_station": 0.0,
+          "index": 0,
+          "kind": "flat",
+          "position": [
+            12.891745794,
+            2.056971555,
+            -0.3486563870191688
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 6.580499999676943,
+          "index": 1,
+          "kind": "stairs",
+          "position": [
+            18.993174443,
+            4.521834368,
+            1.266100462666273
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 7.762500000000001,
+          "index": 2,
+          "kind": "stairs",
+          "position": [
+            19.958555782870548,
+            5.2038628640274425,
+            1.3294098986600837
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 9.512500000000001,
+          "index": 3,
+          "kind": "flat",
+          "position": [
+            21.387842876196874,
+            6.21363432572102,
+            1.4231421431261475
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 9.853465243918427,
+          "index": 4,
+          "kind": "stairs",
+          "position": [
+            21.666321289,
+            6.410375453,
+            1.4414046788960864
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 12.79081557712568,
+          "index": 5,
+          "kind": "stairs",
+          "position": [
+            23.676936311,
+            8.551742823,
+            2.221133350439552
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 14.470129229293526,
+          "index": 6,
+          "kind": "stairs",
+          "position": [
+            22.895283819,
+            10.038051581,
+            2.385344486054577
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 15.1875,
+          "index": 7,
+          "kind": "stairs",
+          "position": [
+            23.067788638219135,
+            10.734372563026373,
+            2.485271302476643
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 15.762500000000003,
+          "index": 8,
+          "kind": "flat",
+          "position": [
+            23.20605782216333,
+            11.292500355535767,
+            2.5653664524171726
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 17.607042070263617,
+          "index": 9,
+          "kind": "stairs",
+          "position": [
+            23.649611434,
+            13.082918084,
+            2.822303624050874
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 20.770395438623755,
+          "index": 10,
+          "kind": "stairs",
+          "position": [
+            25.114925774,
+            15.886426318,
+            3.767960096929844
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 23.948708773541366,
+          "index": 11,
+          "kind": "stairs",
+          "position": [
+            25.697540493,
+            19.01088399,
+            4.566065523303708
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 24.437500000000004,
+          "index": 12,
+          "kind": "stairs",
+          "position": [
+            25.84097809593781,
+            19.47815534277737,
+            4.577890268907692
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 26.73968884834076,
+          "index": 13,
+          "kind": "flat",
+          "position": [
+            26.516563974,
+            21.678986371,
+            4.633584389404064
+          ],
+          "staging_candidate": false
+        }
+      ],
+      "start": [
+        12.891745794,
+        2.056971555,
+        -0.3486563870191688
+      ]
+    },
+    {
+      "end": [
+        26.516563974,
+        21.678986371,
+        4.633584389404064
+      ],
+      "id": "start_b",
+      "label": "Start → Area B",
+      "modes": [
+        "flat",
+        "stairs",
+        "flat",
+        "stairs",
+        "flat",
+        "stairs",
+        "flat"
+      ],
+      "points": [
+        {
+          "b_station": null,
+          "index": 0,
+          "kind": "flat",
+          "position": [
+            0.0,
+            0.5,
+            -0.42930552770514474
+          ]
+        },
+        {
+          "b_station": null,
+          "index": 1,
+          "kind": "flat",
+          "position": [
+            4.0,
+            0.5,
+            -0.35352293427957093
+          ]
+        },
+        {
+          "b_station": null,
+          "index": 2,
+          "kind": "flat",
+          "position": [
+            8.0,
+            0.5,
+            -0.4201891359733825
+          ]
+        },
+        {
+          "b_station": null,
+          "index": 3,
+          "kind": "flat",
+          "position": [
+            10.5,
+            1.4,
+            -0.3786498725896159
+          ]
+        },
+        {
+          "b_station": 0.0,
+          "index": 4,
+          "kind": "flat",
+          "position": [
+            12.891745794,
+            2.056971555,
+            -0.3486563870191688
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 6.580499999676943,
+          "index": 5,
+          "kind": "stairs",
+          "position": [
+            18.993174443,
+            4.521834368,
+            1.266100462666273
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 7.762500000000001,
+          "index": 6,
+          "kind": "stairs",
+          "position": [
+            19.958555782870548,
+            5.2038628640274425,
+            1.3294098986600837
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 9.512500000000001,
+          "index": 7,
+          "kind": "flat",
+          "position": [
+            21.387842876196874,
+            6.21363432572102,
+            1.4231421431261475
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 9.853465243918427,
+          "index": 8,
+          "kind": "stairs",
+          "position": [
+            21.666321289,
+            6.410375453,
+            1.4414046788960864
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 12.79081557712568,
+          "index": 9,
+          "kind": "stairs",
+          "position": [
+            23.676936311,
+            8.551742823,
+            2.221133350439552
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 14.470129229293526,
+          "index": 10,
+          "kind": "stairs",
+          "position": [
+            22.895283819,
+            10.038051581,
+            2.385344486054577
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 15.1875,
+          "index": 11,
+          "kind": "stairs",
+          "position": [
+            23.067788638219135,
+            10.734372563026373,
+            2.485271302476643
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 15.762500000000003,
+          "index": 12,
+          "kind": "flat",
+          "position": [
+            23.20605782216333,
+            11.292500355535767,
+            2.5653664524171726
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 17.607042070263617,
+          "index": 13,
+          "kind": "stairs",
+          "position": [
+            23.649611434,
+            13.082918084,
+            2.822303624050874
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 20.770395438623755,
+          "index": 14,
+          "kind": "stairs",
+          "position": [
+            25.114925774,
+            15.886426318,
+            3.767960096929844
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 23.948708773541366,
+          "index": 15,
+          "kind": "stairs",
+          "position": [
+            25.697540493,
+            19.01088399,
+            4.566065523303708
+          ],
+          "staging_candidate": false
+        },
+        {
+          "b_station": 24.437500000000004,
+          "index": 16,
+          "kind": "stairs",
+          "position": [
+            25.84097809593781,
+            19.47815534277737,
+            4.577890268907692
+          ],
+          "staging_candidate": true
+        },
+        {
+          "b_station": 26.73968884834076,
+          "index": 17,
+          "kind": "flat",
+          "position": [
+            26.516563974,
+            21.678986371,
+            4.633584389404064
+          ],
+          "staging_candidate": false
+        }
+      ],
+      "start": [
+        0.0,
+        0.5,
+        -0.42930552770514474
+      ]
+    }
+  ],
+  "server_time": 1789659418.3144896
+}

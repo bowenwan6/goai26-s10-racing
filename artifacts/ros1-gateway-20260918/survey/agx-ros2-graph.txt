@@ -1,0 +1,530 @@
+### env
+FASTRTPS_DEFAULT_PROFILES_FILE=/home/golai/.ros/fastdds_ethernet.xml
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
+ROS_DISTRO=jazzy
+ROS_DOMAIN_ID=0
+ROS_PYTHON_VERSION=3
+ROS_VERSION=2
+### topic list -t
+/ACCUMULATED_POINTS_MAP [sensor_msgs/msg/PointCloud2]
+/ALIGNED_POINTS [sensor_msgs/msg/PointCloud2]
+/AUDIO/COMMAND [std_msgs/msg/Float64MultiArray]
+/AUDIO/CONFIG [std_msgs/msg/Float64MultiArray]
+/AUDIO/CONFIG_STATUS [drdds/msg/StdMsgInt32]
+/AUDIO/RECORD_CMD [std_msgs/msg/Float64MultiArray]
+/AUDIO/RECORD_STATUS [drdds/msg/StdStatus]
+/AUDIO/STATUS [drdds/msg/StdStatus]
+/AUDIO_WAKEUP/STATUS [drdds/msg/StdMsgInt32]
+/BATTERY_CHARGE_ENABLE [drdds/msg/StdMsgInt32]
+/BATTERY_CHARGE_TYPE [std_msgs/msg/UInt16]
+/BATTERY_DATA [drdds/msg/BatteryData]
+/CHARGE_CMD [drdds/msg/Steer]
+/CHARGE_STATUS [drdds/msg/StdStatus]
+/CLOUD_REGISTERED_BODY [sensor_msgs/msg/PointCloud2]
+/DEPTH_IMAGE [sensor_msgs/msg/Image]
+/DEPTH_POINTS [sensor_msgs/msg/PointCloud2]
+/EXCEPTION_NOTIFICATION [drdds/msg/Exception]
+/FIBOCOM/net_rtk/gngga [fibocom_msgs/msg/FibocomRtkgngga]
+/FIBOCOM/net_rtk/heading [fibocom_msgs/msg/FibocomRtkheading]
+/FULL_CLOUD_MAP [sensor_msgs/msg/PointCloud2]
+/GAIT [drdds/msg/Gait]
+/GAMEPAD_KEY [std_msgs/msg/String]
+/GLOBAL_PLANNER_STATUS [drdds/msg/PlannerStatus]
+/GPS [drdds/msg/NavSat]
+/GPS_CFGSYS [drdds/msg/StdMsgInt32]
+/GPS_SYN_UTC [std_msgs/msg/String]
+/GPS_SYS_MODE [drdds/msg/StdMsgInt32]
+/GRIDS_ID [drdds/msg/GridsID]
+/GRID_MAP [nav_msgs/msg/OccupancyGrid]
+/HANDLE_STEER [drdds/msg/Steer]
+/HEIGHT_MAP_STATUS [drdds/msg/StdStatus]
+/HES_STATUS [drdds/msg/StdMsgInt32]
+/IMU [sensor_msgs/msg/Imu]
+/IMU_103 [sensor_msgs/msg/Imu]
+/IMU_DATA [drdds/msg/ImuData]
+/IMU_DATA_10HZ [drdds/msg/ImuData]
+/IMU_STATUS [drdds/msg/StdMsgInt32]
+/JOINTS_CMD [drdds/msg/JointsDataCmd]
+/JOINTS_DATA [drdds/msg/JointsData]
+/JOINTS_DATA_10HZ [drdds/msg/JointsData]
+/JOINTS_MARK_ZERO [std_msgs/msg/UInt64]
+/LED/STATUS [drdds/msg/LedStatusLight]
+/LIDAR/POINTS [sensor_msgs/msg/PointCloud2]
+/LIDAR/POINTS_MERGED [sensor_msgs/msg/PointCloud2]
+/LIDAR/POINTS_dummy [sensor_msgs/msg/PointCloud2]
+/LIDAR/POWER/STATE [drdds/msg/StdMsgInt32]
+/LIDAR/STATUS [drdds/msg/AiryLidarStatus]
+/LIO_ALIGNED_POINTS [sensor_msgs/msg/PointCloud2]
+/LIO_ODOM [nav_msgs/msg/Odometry]
+/LIO_ODOM_HIGH_FREQUENCY [nav_msgs/msg/Odometry]
+/LOCATION_STATUS [drdds/msg/LocationStatus]
+/LOCATION_STATUS/MATCHING_ERROR [std_msgs/msg/Float64MultiArray]
+/LOC_BODY_POINTS [sensor_msgs/msg/PointCloud2]
+/MOTION_INFO [drdds/msg/MotionInfo]
+/MOTION_STATE [drdds/msg/MotionState]
+/MOTION_STATUS [drdds/msg/MotionStatus]
+/NAV_CMD [drdds/msg/NavCmd]
+/NAV_POINTS [sensor_msgs/msg/PointCloud2]
+/NAV_STATUS [drdds/msg/StdMsgInt32]
+/NODECTL_CMD_103 [drdds/msg/NodeCtlCmd]
+/NODECTL_CMD_106 [drdds/msg/NodeCtlCmd]
+/ODOM [nav_msgs/msg/Odometry]
+/OOA_STATUS [drdds/msg/StdStatus]
+/PASSABLE_AREA_ENABLE [std_msgs/msg/Int32]
+/PLANNER_STATUS [drdds/msg/PlannerStatus]
+/REAL_STEER [drdds/msg/Steer]
+/REGIS_ALIGNED_POINTS [sensor_msgs/msg/PointCloud2]
+/RELOC_STATUS [drdds/msg/StdMsgInt32]
+/RLSM_RUNNING [drdds/msg/StdMsgFloat32]
+/SEG_CLOUD [sensor_msgs/msg/PointCloud2]
+/STEER [drdds/msg/Steer]
+/TERRAIN_CLASSIFIER_STATUS [drdds/msg/StdStatus]
+/TRACK_PATH [nav_msgs/msg/Path]
+/UWB_ENABLE [drdds/msg/StdMsgInt32]
+/UWB_ODOM_LOST [drdds/msg/StdMsgInt32]
+/UWB_ONLINE [drdds/msg/StdMsgInt32]
+/accumulate_cloud/obstacle_points [sensor_msgs/msg/PointCloud2]
+/accumulate_cloud/status_code [std_msgs/msg/Int32]
+/charge/left_rc [sensor_msgs/msg/PointCloud2]
+/charge/left_rc_pose [geometry_msgs/msg/PoseStamped]
+/charge/right_rc [sensor_msgs/msg/PointCloud2]
+/charge/right_rc_pose [geometry_msgs/msg/PoseStamped]
+/cloud_depth [sensor_msgs/msg/PointCloud2]
+/cloud_local [sensor_msgs/msg/PointCloud2]
+/cloud_local_g [sensor_msgs/msg/PointCloud2]
+/cloud_nav [sensor_msgs/msg/PointCloud2]
+/cloud_now [sensor_msgs/msg/PointCloud2]
+/cloud_now_g [sensor_msgs/msg/PointCloud2]
+/cloud_obs [sensor_msgs/msg/PointCloud2]
+/cloud_pile_cluster [sensor_msgs/msg/PointCloud2]
+/cloud_reflective [sensor_msgs/msg/PointCloud2]
+/cloud_removed [sensor_msgs/msg/PointCloud2]
+/cpu_core_suppress_cmd [drdds/msg/CpuCoreSuppressCmd]
+/cpu_status [drdds/msg/CPUStatus]
+/dem_start [drdds/msg/HeartBeat]
+/elevation_map_raw [grid_map_msgs/msg/GridMap]
+/fault_aggregator [drdds/msg/FaultEventArray]
+/fault_event [drdds/msg/FaultEvent]
+/fibo_fusion_pose_ [nav_msgs/msg/Odometry]
+/fibo_fusion_state [fibocom_msgs/msg/FiboFusionState]
+/file_system_status [drdds/msg/FileSystemStatus]
+/filesystem_status [drdds/msg/FileSystemStatus]
+/heartbeat [drdds/msg/HeartBeat]
+/height_map [sensor_msgs/msg/PointCloud2]
+/initialpose [geometry_msgs/msg/PoseWithCovarianceStamped]
+/local_goal [geometry_msgs/msg/PoseStamped]
+/local_map [nav_msgs/msg/OccupancyGrid]
+/memory_status [drdds/msg/MemoryStatus]
+/network_status [drdds/msg/NetworkStatus]
+/obstacle_cloud [sensor_msgs/msg/PointCloud2]
+/parameter_events [rcl_interfaces/msg/ParameterEvent]
+/path_Astar [nav_msgs/msg/Path]
+/planner_mode [drdds/msg/StdMsgInt32]
+/pose_in_apriltag_corrected [geometry_msgs/msg/PoseStamped]
+/process_status [drdds/msg/ProcessStatus]
+/reloc_success [drdds/msg/StdMsgInt32]
+/rosout [rcl_interfaces/msg/Log]
+/rslidar_front/imu [sensor_msgs/msg/Imu]
+/rslidar_front/points [sensor_msgs/msg/PointCloud2]
+/rslidar_rear/imu [sensor_msgs/msg/Imu]
+/rslidar_rear/points [sensor_msgs/msg/PointCloud2]
+/s10_sdk_test/GAMEPAD_KEY [std_msgs/msg/String]
+/s10_sdk_test/STEER [drdds/msg/Steer]
+/slope_mode [std_msgs/msg/Int32]
+/tag_status [drdds/msg/StdMsgInt32]
+/terrain_obstacle_points [sensor_msgs/msg/PointCloud2]
+/tf [tf2_msgs/msg/TFMessage]
+/time_sync_status [drdds/msg/TimeSyncStatus]
+/tof/filter_pointcloud [sensor_msgs/msg/PointCloud2]
+/tof_pointcloud [sensor_msgs/msg/PointCloud2]
+/traversability_estimator_log [std_msgs/msg/String]
+/traversability_status_code [std_msgs/msg/Int32]
+/usb_camera_1/image_raw [sensor_msgs/msg/Image]
+/usb_camera_1/image_raw/compressed [sensor_msgs/msg/Image]
+/usb_camera_3/image_raw [sensor_msgs/msg/Image]
+/usb_camera_3/image_raw/compressed [sensor_msgs/msg/Image]
+/vis_global_points [visualization_msgs/msg/MarkerArray]
+/vis_global_points_pruned [visualization_msgs/msg/MarkerArray]
+### info -v /LIDAR/POINTS
+Type: sensor_msgs/msg/PointCloud2
+
+Publisher count: 0
+
+Subscription count: 6
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.03.8e.33.27.40.1f.01.00.00.00.00.00.08.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.03.8e.6d.21.8e.31.01.00.00.00.00.00.05.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.03.8e.d4.1d.24.5b.01.00.00.00.00.00.01.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.03.8e.e2.1d.d8.6c.01.00.00.00.00.00.01.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.b4.0a.03.0e.01.00.00.00.00.00.01.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.b5.0a.58.93.01.00.00.00.00.00.09.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+### info -v /IMU
+Type: sensor_msgs/msg/Imu
+
+Publisher count: 1
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/Imu
+Topic type hash: INVALID
+Endpoint type: PUBLISHER
+GID: 01.0f.a2.e5.fa.0c.be.3a.01.00.00.00.00.00.01.03
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 2
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: sensor_msgs/msg/Imu
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.b5.0a.58.93.01.00.00.00.00.00.0a.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: s10_field_evidence
+Node namespace: /
+Topic type: sensor_msgs/msg/Imu
+Topic type hash: RIHS01_7d9a00ff131080897a5ec7e26e315954b8eae3353c3f995c55faf71574000b5b
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.c6.04.21.13.00.00.00.00.00.00.07.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+### info -v /ODOM
+Type: nav_msgs/msg/Odometry
+
+Publisher count: 1
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: nav_msgs/msg/Odometry
+Topic type hash: INVALID
+Endpoint type: PUBLISHER
+GID: 01.0f.a2.e5.b5.0a.58.93.01.00.00.00.00.00.02.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 6
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: nav_msgs/msg/Odometry
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.03.8e.b6.1d.f7.1a.01.00.00.00.00.00.73.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: nav_msgs/msg/Odometry
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.3e.0c.37.f4.01.00.00.00.00.00.02.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: _CREATED_BY_BARE_DDS_APP_
+Node namespace: _CREATED_BY_BARE_DDS_APP_
+Topic type: nav_msgs/msg/Odometry
+Topic type hash: INVALID
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.ae.0b.c0.82.01.00.00.00.00.00.09.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: s10_field_evidence
+Node namespace: /
+Topic type: nav_msgs/msg/Odometry
+Topic type hash: RIHS01_3cc97dc7fb7502f8714462c526d369e35b603cfc34d946e3f2eda2766dfec6e0
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.c6.04.21.13.00.00.00.00.00.00.06.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: accumulate_cloud
+Node namespace: /
+Topic type: nav_msgs/msg/Odometry
+Topic type hash: RIHS01_3cc97dc7fb7502f8714462c526d369e35b603cfc34d946e3f2eda2766dfec6e0
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.d1.0b.23.86.00.00.00.00.00.00.17.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: traversability_estimation_node
+Node namespace: /
+Topic type: nav_msgs/msg/Odometry
+Topic type hash: RIHS01_3cc97dc7fb7502f8714462c526d369e35b603cfc34d946e3f2eda2766dfec6e0
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.f2.0a.69.41.00.00.00.00.00.00.1c.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+### info -v /LIDAR/POINTS_MERGED
+Type: sensor_msgs/msg/PointCloud2
+
+Publisher count: 1
+
+Node name: dual_airy_merger
+Node namespace: /
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: RIHS01_9198cabf7da3796ae6fe19c4cb3bdd3525492988c70522628af5daa124bae2b5
+Endpoint type: PUBLISHER
+GID: 01.0f.1f.12.f0.0a.6d.12.00.00.00.00.00.00.14.03
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 1
+
+Node name: s10_field_evidence
+Node namespace: /
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: RIHS01_9198cabf7da3796ae6fe19c4cb3bdd3525492988c70522628af5daa124bae2b5
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.a2.e5.c6.04.21.13.00.00.00.00.00.00.08.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+### info -v /rslidar_front/points
+Type: sensor_msgs/msg/PointCloud2
+
+Publisher count: 1
+
+Node name: rslidar_points_destination_0
+Node namespace: /
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: RIHS01_9198cabf7da3796ae6fe19c4cb3bdd3525492988c70522628af5daa124bae2b5
+Endpoint type: PUBLISHER
+GID: 01.0f.1f.12.ee.0a.21.3d.00.00.00.00.00.00.25.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 1
+
+Node name: dual_airy_merger
+Node namespace: /
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: RIHS01_9198cabf7da3796ae6fe19c4cb3bdd3525492988c70522628af5daa124bae2b5
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.1f.12.f0.0a.6d.12.00.00.00.00.00.00.15.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+### info -v /rslidar_rear/points
+Type: sensor_msgs/msg/PointCloud2
+
+Publisher count: 1
+
+Node name: rslidar_points_destination_1
+Node namespace: /
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: RIHS01_9198cabf7da3796ae6fe19c4cb3bdd3525492988c70522628af5daa124bae2b5
+Endpoint type: PUBLISHER
+GID: 01.0f.1f.12.ee.0a.21.3d.00.00.00.00.00.00.38.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 1
+
+Node name: dual_airy_merger
+Node namespace: /
+Topic type: sensor_msgs/msg/PointCloud2
+Topic type hash: RIHS01_9198cabf7da3796ae6fe19c4cb3bdd3525492988c70522628af5daa124bae2b5
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.1f.12.f0.0a.6d.12.00.00.00.00.00.00.16.04
+QoS profile:
+  Reliability: BEST_EFFORT
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+### node list
+/accumulate_cloud
+/camera/camera
+/dual_airy_merger
+/param_handle
+/rslidar_points_destination_0
+/rslidar_points_destination_1
+/s10_field_evidence
+/s10_sdk_trial_supervisor
+/traversability_estimation_node
