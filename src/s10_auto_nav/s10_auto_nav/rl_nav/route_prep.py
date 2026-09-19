@@ -688,3 +688,162 @@ def _replan(c, terrain, field, need, corridor, centre_cap, ds, w_deficit=4.0, si
             out = sm
             break
     return _resample(out, ds)
+
+
+# ---------------------------------------------------------------------------------------------
+# The first version's route preparation (s10-rl-sprint route_terrain.sanitize_route, ported
+# unchanged): the route the full-course simulation ran end to end. The default for this course;
+# centre_route above is the alternative for a map without hand-validated segments.
+
+
+def _hazard(terrain, xy, z_ref, drop=0.45):
+    """Void (not in the map) or a level change of more than ``drop`` from the reference height."""
+    z = terrain.ground_at(xy[..., 0], xy[..., 1])
+    return (~terrain.known_at(xy[..., 0], xy[..., 1])) | (np.abs(z - z_ref) > drop)
+
+
+def _nearest_clear(terrain, p, radius=0.4, search=1.2, step=0.05):
+    """Nearest point to ``p`` whose disc of ``radius`` holds no hazard (None within ``search``)."""
+    ang = np.linspace(0, 2 * np.pi, 16, endpoint=False)
+    disc = np.vstack(
+        [[0.0, 0.0]]
+        + [np.column_stack([rr * np.cos(ang), rr * np.sin(ang)]) for rr in (radius / 2, radius)]
+    )
+    best, best_d = None, np.inf
+    for dx in np.arange(-search, search + 1e-9, step):
+        for dy in np.arange(-search, search + 1e-9, step):
+            dd = math.hypot(dx, dy)
+            if dd > search or dd >= best_d:
+                continue
+            q = p[:2] + np.array([dx, dy])
+            if not terrain.known_at(q[0], q[1]):
+                continue
+            if not _hazard(terrain, q + disc, float(terrain.ground_at(q[0], q[1]))).any():
+                best, best_d = q, dd
+    return best
+
+
+def sanitize_route(
+    route_dict, terrain, half_width=0.4, narrow=0.0, search=1.5, smooth=1.2, skip=()
+):
+    """Keep the robot's whole width on the structure it is driving on.
+
+    1. Waypoints closer than ``half_width`` to a void or a drop of more than 0.45 m move to the
+       nearest point with that clearance (reported: they are photo-matched drafts, and the map's
+       stair edges are not exact either).
+    2. At every centreline point, the lateral offsets whose +-``half_width`` cross-section has no
+       hazard form intervals. On a narrow structure (clear interval under ``narrow`` m) the path
+       goes down its middle; elsewhere the taught offset 0 stays unless it is not clear, in which
+       case the nearest clear offset is taken.
+    3. The offset profile is smoothed over ``smooth`` m, pinned to the waypoints, and a smoothed
+       point that is no longer clear falls back to its own target. Centrelines are then resampled
+       at 0.2 m. Segments in ``skip`` (hand-validated) are left as they are.
+    """
+    r = copy.deepcopy(route_dict)
+    report = {"segments": [], "waypoints": []}
+    for wp in r["waypoints"]:
+        p = np.asarray(wp["position"][:2], float)
+        z = float(terrain.ground_at(*p))
+        ang = np.linspace(0, 2 * np.pi, 16, endpoint=False)
+        disc = p + np.vstack(
+            [[0.0, 0.0]]
+            + [
+                np.column_stack([rr * np.cos(ang), rr * np.sin(ang)])
+                for rr in (half_width / 2, half_width)
+            ]
+        )
+        if terrain.known_at(*p) and not _hazard(terrain, disc, z).any():
+            continue
+        q = _nearest_clear(terrain, p, half_width)
+        if q is None:
+            report["waypoints"].append(
+                {"id": wp["id"], "shift_m": None, "note": "no clear point within 1.2 m"}
+            )
+            continue
+        report["waypoints"].append(
+            {
+                "id": wp["id"],
+                "shift_m": round(float(np.linalg.norm(q - p)), 3),
+                "from": [round(v, 3) for v in p],
+                "to": [round(v, 3) for v in q],
+            }
+        )
+        wp["position"] = [float(q[0]), float(q[1]), float(terrain.ground_at(*q))]
+
+    offs = np.arange(-search, search + 1e-9, 0.05)
+    lat = np.linspace(-half_width, half_width, 9)
+    for k, seg in enumerate(r["segments"]):
+        if seg["id"] in skip:
+            continue
+        c = np.asarray(seg["centerline"], float)
+        c[0, :2] = r["waypoints"][k]["position"][:2]
+        c[-1, :2] = r["waypoints"][k + 1]["position"][:2]
+        tang = np.gradient(c[:, :2], axis=0)
+        tang /= np.maximum(np.linalg.norm(tang, axis=1, keepdims=True), 1e-9)
+        normal = np.column_stack([-tang[:, 1], tang[:, 0]])
+        target = np.zeros(len(c))
+        clear_at = []
+        changed = np.zeros(len(c), bool)
+        unfixable = 0
+        for i, (p, n) in enumerate(zip(c[:, :2], normal, strict=True)):
+            q = p + offs[:, None] * n
+            zc = terrain.ground_at(q[:, 0], q[:, 1])
+            xs = q[:, None, :] + lat[None, :, None] * n
+            clear = ~_hazard(terrain, xs, zc[:, None]).any(axis=1) & terrain.known_at(
+                q[:, 0], q[:, 1]
+            )
+            clear_at.append(clear)
+            if i in (0, len(c) - 1):
+                continue
+            if not clear.any():
+                unfixable += 1
+                continue
+            idx = np.flatnonzero(clear)
+            j0 = idx[np.argmin(np.abs(offs[idx]))]
+            lo = hi = j0
+            while lo - 1 >= 0 and clear[lo - 1]:
+                lo -= 1
+            while hi + 1 < len(offs) and clear[hi + 1]:
+                hi += 1
+            width = offs[hi] - offs[lo]
+            if narrow > 0 and width < narrow:
+                target[i] = 0.5 * (offs[lo] + offs[hi])
+            elif not clear[len(offs) // 2]:
+                target[i] = offs[j0] + (0.1 if offs[j0] > 0 else -0.1)
+            changed[i] = abs(target[i]) > 1e-9
+        if (
+            not changed.any()
+            and unfixable == 0
+            and np.allclose(c[0, :2], seg["centerline"][0][:2])
+            and np.allclose(c[-1, :2], seg["centerline"][-1][:2])
+        ):
+            continue
+        s = np.r_[0.0, np.cumsum(np.linalg.norm(np.diff(c[:, :2], axis=0), axis=1))]
+        prof = target.copy()
+        if changed.any():
+            w = np.exp(-0.5 * ((s[:, None] - s[None, :]) / (smooth / 2)) ** 2)
+            prof = (w @ target) / w.sum(axis=1)
+            prof[0] = prof[-1] = 0.0
+            ramp = np.clip(np.minimum(s, s[-1] - s) / 0.8, 0.0, 1.0)
+            prof *= ramp
+            for i in range(1, len(c) - 1):
+                j = int(np.argmin(np.abs(offs - prof[i])))
+                if not clear_at[i][j]:
+                    prof[i] = target[i]
+        c[:, :2] += prof[:, None] * normal
+        length = float(np.sum(np.linalg.norm(np.diff(c[:, :2], axis=0), axis=1)))
+        n_pts = max(2, math.ceil(length / 0.2) + 1)
+        seg_len = np.r_[0.0, np.cumsum(np.linalg.norm(np.diff(c[:, :2], axis=0), axis=1))]
+        u = np.linspace(0.0, length, n_pts)
+        c = np.column_stack([np.interp(u, seg_len, c[:, kk]) for kk in range(3)])
+        c[:, 2] = terrain.ground_at(c[:, 0], c[:, 1])
+        seg["centerline"] = c.tolist()
+        report["segments"].append(
+            {
+                "id": seg["id"],
+                "points_moved": int(changed.sum()),
+                "max_shift_m": round(float(np.abs(prof).max()), 2),
+                "unfixable_points": unfixable,
+            }
+        )
+    return r, report

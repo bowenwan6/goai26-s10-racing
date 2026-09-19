@@ -82,6 +82,27 @@ class MapSurface:
         return np.where(inside, grid[iyc, ixc], np.nan), inside & self.known[iyc, ixc]
 
 
+def unexplained(points_yaw, pose, surface: MapSurface, reach=2.5, band=(-0.25, 0.75), rise=0.2):
+    """Map-frame xy of the returns within ``reach`` that the map does not explain: in the
+    body-height band, on mapped ground, more than ``rise`` above the highest mapped surface within
+    the slack.
+    ``points_yaw``: N x 3 in the robot's yaw frame relative to the base (x forward, y left, z up);
+    ``pose``: (x, y, z, yaw) of the base in the map frame."""
+    if points_yaw is None or len(points_yaw) == 0:
+        return np.zeros((0, 2))
+    p = np.asarray(points_yaw, float)
+    x, y, z, yaw = pose
+    keep = (p[:, 2] >= band[0]) & (p[:, 2] <= band[1]) & (np.hypot(p[:, 0], p[:, 1]) <= reach)
+    p = p[keep]
+    if len(p) == 0:
+        return np.zeros((0, 2))
+    c, s = math.cos(yaw), math.sin(yaw)
+    wx, wy, wz = x + c * p[:, 0] - s * p[:, 1], y + s * p[:, 0] + c * p[:, 1], z + p[:, 2]
+    surf, known = surface.at(wx, wy, highest_nearby=True)
+    new = known & (wz - surf > rise)
+    return np.column_stack([wx[new], wy[new]])
+
+
 def unexpected_ahead(
     points_yaw,
     pose,
@@ -97,23 +118,14 @@ def unexpected_ahead(
     """Distance (m) to the nearest return in the route's corridor ahead that the map does not
     explain, or None. ``points_yaw``: N x 3 in the robot's yaw frame relative to the base (x
     forward, y left, z up); ``pose``: (x, y, z, yaw) of the base in the map frame."""
-    if points_yaw is None or len(points_yaw) == 0:
+    new = unexplained(points_yaw, pose, surface, reach + 0.5, band, rise)
+    if len(new) == 0:
         return None
-    p = np.asarray(points_yaw, float)
-    x, y, z, yaw = pose
-    keep = (p[:, 2] >= band[0]) & (p[:, 2] <= band[1]) & (np.hypot(p[:, 0], p[:, 1]) <= reach + 0.5)
-    p = p[keep]
-    if len(p) == 0:
-        return None
-    c, s = math.cos(yaw), math.sin(yaw)
-    wx, wy, wz = x + c * p[:, 0] - s * p[:, 1], y + s * p[:, 0] + c * p[:, 1], z + p[:, 2]
     lo, hi = s_from + 0.2, min(path.length, s_from + reach)
     if hi <= lo:
         return None
-    s_pt, dist = path.project_many(np.column_stack([wx, wy]), lo, hi)
+    s_pt, dist = path.project_many(new, lo, hi)
     corridor = (dist <= half_width) & (s_pt > lo + 1e-3) & (s_pt < hi - 1e-3)
-    surf, known = surface.at(wx, wy, highest_nearby=True)
-    new = corridor & known & (wz - surf > rise)
-    if int(new.sum()) < min_points:
+    if int(corridor.sum()) < min_points:
         return None
-    return float(np.hypot(p[new, 0], p[new, 1]).min())
+    return float(np.hypot(new[corridor, 0] - pose[0], new[corridor, 1] - pose[1]).min())

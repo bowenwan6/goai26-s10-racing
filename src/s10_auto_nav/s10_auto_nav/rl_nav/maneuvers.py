@@ -163,10 +163,16 @@ def annotate(
     post=0.7,
     step=0.025,
     cliff=0.3,
+    split_hairpins=False,
 ) -> list[Maneuver]:
     """``profile`` (capability.PolicyProfile) sets what the walking actor takes: edge_up, slope_deg
     and cross_deg are its limits; the warnings use the stairs actor's. ``edge_down`` is not a limit
-    (the walking actor steps off 0.25 m) but the height from which a ledge is taken square-on."""
+    (the walking actor steps off 0.25 m) but the height from which a ledge is taken square-on.
+
+    With the defaults this is the first version's climb-zone annotation (route_terrain.climb_zones)
+    zone for zone. ``split_hairpins`` also splits a manoeuvre at a sharp turn on a landing, for the
+    walking actor to turn there -- the first version kept the stairs actor through them, and handing
+    over mid-way costs a SafeHold on the real SDK."""
     if profile is not None:
         edge_up, slope_deg, cross_deg = (
             profile.walk.max_step_up,
@@ -235,7 +241,7 @@ def annotate(
     w = max(1, round(0.5 / step))
     out = []
     for g in merged:
-        pieces = _split_hairpins(g, s, heading, w)
+        pieces = _split_hairpins(g, s, heading, w) if split_hairpins else [(g["s0"], g["s1"])]
         for n_piece, (p0, p1) in enumerate(pieces):
             # The first piece starts ``pre`` before its first mark; a later one starts past the
             # turn.
