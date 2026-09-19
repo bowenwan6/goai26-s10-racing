@@ -175,11 +175,18 @@ def main() -> int:
     parser.add_argument('--depth', type=int, default=2, help='DDS reader history depth')
     parser.add_argument('--queue', type=int, default=2, help='scans buffered while sending (oldest dropped)')
     parser.add_argument('--duration', type=float, default=0, help='stop after N seconds (0 = run until stopped)')
+    parser.add_argument('--cpus', default='0-3',
+                        help='CPU cores to run on (vendor drivers use 4-7); "" keeps the default')
     args = parser.parse_args()
     host, _, port = args.gateway.rpartition(':')
     args.gateway_host, args.gateway_port = host, int(port)
     if not 1 <= args.depth <= 10 or not 1 <= args.queue <= 10:
         parser.error('--depth and --queue must be within 1..10')
+    if args.cpus:
+        # Set affinity here instead of with taskset: on 106 /usr/bin/taskset has file
+        # capabilities, so glibc strips LD_LIBRARY_PATH and rclpy cannot load.
+        lo, _, hi = args.cpus.partition('-')
+        os.sched_setaffinity(0, set(range(int(lo), int(hi or lo) + 1)))
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())
     Tap(args).run()
