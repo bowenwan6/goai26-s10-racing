@@ -7,6 +7,7 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
+import pytest
 from route_v2_helpers import make_route, polyline
 from test_rl_edge_tracker import synthetic_grid
 
@@ -257,6 +258,42 @@ def test_stuck_at_a_ledge_backs_off_and_tries_again():
     kinds = transitions(runner)
     assert kinds[kinds.index("DESCEND") :][:3] == ["DESCEND", "BACKUP", "DESCEND"]
     assert trace[-1][4] == Mode.DONE
+
+
+def test_stalled_stairs_actor_is_not_asked_to_turn_hard():
+    path = RoutePath(make_route([[0, 0, 0], [4, 0, 0], [9, 0, 0.15]]))
+    runner = runner_on(path, [climb(s1=8.5, last=8.0)])
+    runner.mode, runner.k = Mode.CLIMB, 0
+    grid, valid = synthetic_grid(lambda x, y: np.where(x >= 5.0, 0.15, 0.0), pose=(5.2, 0.0, 0.6))
+
+    def wz_after(v_forward, ticks=15):
+        out = None
+        for k in range(ticks):
+            f = FakeFollower((0.0, 0.0, 0.0), "BLOCKED", "", 5.2, 0.0, 2, "WP03")
+            nav = NavInput(
+                k * 0.1,
+                5.2,
+                0.0,
+                0.42,
+                0.6,
+                0.0,
+                0.0,
+                0.0,
+                v_forward,
+                grid,
+                valid,
+                f,
+                9.0,
+                "stairs_stable",
+                None,
+            )
+            out = runner.step(nav)
+        return out.command[2]
+
+    # 34 deg left of the route: the law asks for the full right turn when it climbs ...
+    assert wz_after(0.3) == pytest.approx(-0.35)
+    # ... and at most 0.1 rad/s while it is stalled against the riser.
+    assert abs(wz_after(0.0)) <= 0.1 + 1e-9
 
 
 # ---------------------------------------------------------------------------- recovery
