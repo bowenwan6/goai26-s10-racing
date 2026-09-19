@@ -262,6 +262,8 @@ class ManeuverRouter:
             -math.inf,
         )
         self.track: list = []  # (t, x, y) while climbing, for the slide check
+        self.exit_heading = None
+        self.drop_hist: list = []
         self.slide_since, self.square_until = None, None
         self.verify_since = None
         self.pending_gate = None
@@ -419,6 +421,14 @@ class ManeuverRouter:
         if vx > 0.25:
             vx = max(vx, self.p.walk_floor)
         return (min(vx, self.p.walk_v), vy, wz)
+
+    def _drop_seen(self, inp, s, window=2.0):
+        """A drop ahead now or in most of the last ``window`` s: the height grid flickers at a
+        drop's edge, and a guard that resets on every clear frame never escalates."""
+        now = self._drop_ahead(inp, s)
+        self.drop_hist = [(t, d) for t, d in self.drop_hist if inp.t - t <= window] + [(inp.t, now)]
+        seen = sum(1 for _, d in self.drop_hist if d)
+        return now or seen >= 0.5 * len(self.drop_hist)
 
     def _drop_ahead(self, inp, s):
         """A drop or a hole in the body's path 0.45-1.05 m ahead. A hole is a column of the grid
@@ -621,7 +631,7 @@ class ManeuverRouter:
                     self._set(
                         Mode.REJOIN, inp.t, s, f"something {obstacle:.1f} m ahead on the route"
                     )
-                elif self._drop_ahead(inp, s_here):
+                elif self._drop_seen(inp, s_here):
                     self.drop_since = self.drop_since if self.drop_since is not None else inp.t
                     if inp.t - self.drop_since > p.drop_hold:
                         self.astar_path = None
@@ -780,6 +790,7 @@ class ManeuverRouter:
                     self.climb_best_t = inp.t
                     self.retries, self.backoff_until, self.retry_bias = 0, None, 0.0
                     self.track, self.slide_since, self.square_until = [], None, None
+                    self.exit_heading = None
                     source = "measured" if measured else "no edge in this manoeuvre"
                     self._set(
                         Mode.CLIMB,
@@ -939,6 +950,13 @@ class ManeuverRouter:
                     aim += p.centre_bias
                 if s_prog < self.retry_until_s:
                     aim += self.retry_bias
+                if s_prog >= m.s_last:
+                    # Past the last edge the route may turn at once (onto a platform, towards the
+                    # next waypoint). The stairs actor, half on the riser, topples if asked to turn
+                    # hard: it goes straight off and the walking actor turns after the hand-back.
+                    if self.exit_heading is None:
+                        self.exit_heading = inp.yaw
+                    aim = self.exit_heading
                 err = wrap(aim - inp.yaw)
                 near_gate = self.pending_gate is None and 0.0 <= s_gate - s_here < p.climb_gate_slow
                 tight = any(m_ is not None and m_ < p.centre_trigger for m_ in (left, right))
