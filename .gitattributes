@@ -7,6 +7,10 @@ policy/gate16/front_tuck_command_profiles.json text eol=lf
 deliverables/S10_v3_Map_MuJoCo_20260916/** -text
 academic_assets/** -text
 backups/s10-native-nav/** -text
+artifacts/native-control-handoff-20260917/** -text
+artifacts/native-navigation-audit-20260917/** -text
+artifacts/native-start-b-implementation-20260917/** -text
+artifacts/ros1-gateway-20260918/** -text
 
 # Field deliverables: keep large point clouds and shareable assets out of Git packs.
 deliverables/**/*.pcd filter=lfs diff=lfs merge=lfs -text

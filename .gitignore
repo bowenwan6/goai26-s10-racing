@@ -38,6 +38,10 @@ results/
 !/artifacts/s10-recording-review-20260909/
 !/artifacts/s10-ledge-match-20260909/
 !/artifacts/s10-ledge-batch-20260910/
+!/artifacts/native-control-handoff-20260917/
+!/artifacts/native-navigation-audit-20260917/
+!/artifacts/native-start-b-implementation-20260917/
+!/artifacts/ros1-gateway-20260918/
 /tmp/
 /.playwright-cli/
 

@@ -1,0 +1,495 @@
+tasks:
+  - name: "当前路径"
+    command: "pwd"
+  - name: "当前目录"
+    command: "ls -l"
+  - name: "查看输入数据帧率"
+    command: "rostopic hz /livox/lidar /livox/imu"
+
+
+uwb_node:
+    port: "/dev/ttyUSB0"
+    baud_rate: 115200
+    frame_id: "uwb_tag"
+    # ── 话题 ──
+    topic_uwb_out: /robot/uwb   #
+    topic_cmd_vel: /cmd_vel
+    topic_buttons: /uwb/buttons
+    topic_imu: /uwb/imu
+    topic_web_cmd: /web_cmd
+    # ── 遥控速度 ──
+    remote_forward_speed: 0.8
+    remote_backward_speed: 0.6
+    remote_angular_speed: 0.8
+    # ── 滤波与初始化 ──
+    filter_cmd: "setfilter 1 30"
+    follow_speed_scale_init: 1.0
+
+
+  ######################## UNITREE GO2 EDU #####################
+robot:
+  sub_cmd_vel_topic: /cmd_vel
+  networkInterface: enp87s0
+go2:
+  sub_cmd_vel_topic: /cmd_vel
+  networkInterface: enp87s0
+  ##############################################################
+
+  ################### MID-360 配置 ############################
+bd_list: 1000000000
+cmdline_str: 1000000000
+cmdline_arg: 1000000000
+xfer_format: 0
+multi_topic: 0
+data_src: 0
+publish_freq: 10.0
+output_data_type: 0
+rviz_enable: false
+rosbag_enable: false
+frame_id: lidar_link
+enable_lidar_bag: true
+enable_imu_bag: true
+user_config_path: /nav_map/MID360_config.json
+  ###########################################################
+
+
+
+x_nav:
+  password: "123"    #开发者页面的登录密码
+  nav_path: "/nav"
+  nav_map_path: "/nav_map"
+  nav_image_path: "/nav_image"
+  web_dist_path: "/catkin_ws/src/x_nav_control/scripts/dist"
+  nav_log_path: "/log"  
+  sensor_lidar: NULL
+  robot_model: NULL
+  planner_run: false
+  slam_run: false
+
+  auto_check_flags:
+    - true
+    - true
+    - false
+    - false    
+  auto_run_commands_flags:
+    - true
+    - true
+    - true
+    - true
+    - true
+  commands_config:
+    web_node:
+      - python3
+      - -m
+      - http.server
+      - "8000"
+    foxglove_node:
+      - roslaunch
+      - --screen
+      - foxglove_bridge
+      - foxglove_bridge.launch
+      - port:=8765
+      - send_buffer_limit:=100000000
+    w_nav_node:
+      - /nav/w_nav
+    log_node:
+      - python3
+      - /catkin_ws/src/x_nav_control/scripts/nav_log.py      
+    uwb_node:
+      - /nav/jluwb_node
+
+  #########################################################
+  pid:
+    Ki_linear_x: 0.01
+    Ki_linear_y: 0.01
+    Ki_angular_z: 0.01
+    Kd_linear_x: 0.00
+    Kd_linear_y: 0.00
+    Kd_angular_z: 0.00
+    input_current_vel: /mapping/current_velocity
+    input_targe_vel: /cmd_vel_raw
+    output_vel: /cmd_vel
+  ################# ######################################
+
+  slam:
+    feature_extract_enable: false     # 一般均为 false
+    point_filter_num: 20                      # 降采样倍数
+    max_iteration: 3
+    filter_size_surf: 0.25                    # 降采样voxel大小
+    filter_size_map: 0.25                   # 地图降采样voxel大小
+    cube_side_length: 1000            # 局部地图大小
+    runtime_pos_log_enable: false   # 调试输出
+
+    common:
+    #RS LiDar
+      lid_topic: "/LIDAR/POINTS"
+      imu_topic: "/IMU"
+        # gnss_topic: "/fix"
+      time_sync_en: false           # ONLY turn on when external time synchronization is really not possible
+
+    preprocess:
+      lidar_type: 7                  # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR, 3 for ouster LiDAR, 4 RS, 5 Mid360
+      scan_line: 192
+      scan_rate: 10                  # only need to be set for velodyne, unit: Hz,
+      blind: 0.1
+
+    # 地面分割
+    ground_segmentation:
+      enable: true                            # 是否启用地面点云分割
+      ground_distance: 3.75                    # 候选地面点XY范围 (m)
+      clip_hight: 0.3                          # 地面以上裁剪高度 (m)
+      ground_distancethreshold: 0.2            # RANSAC平面拟合距离阈值 (m)
+      base_link_hight: 0.27                     # base_link原点距真实地面高度 (m)
+      min_distance_f: 0.05                     # 前方虚拟地面点范围 (m)
+      min_distance_b: 0.2                      # 后方虚拟地面点范围 (m)
+      min_distance_l: 0.2                     # 左方虚拟地面点范围 (m)
+      min_distance_r: 0.25                     # 右方虚拟地面点范围 (m)
+      extra_ground_filter_num: 2               # 降采样间隔 (1/N个点用于分割)
+
+    mapping:
+      acc_cov: 0.1
+      gyr_cov: 0.1
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 360
+      det_range: 100.0
+      extrinsic_est_en: false         # true: enable the online estimation of IMU-LiDAR extrinsic,
+      extrinsic_T: [-0.011, -0.02329, 0.04412]
+      extrinsic_R: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    localization:
+      auto_localization_enable: false   # 使用 GPS输入进行自动重定位
+      initframe_FitnessScore: 0.15
+      search_radius: 20.0
+      localmap_leafsize: 0.1
+      icp_correspondence_dist: 20.0
+      icp_max_iters: 100
+      safe_speed: 15.0
+
+    # 输入坐标转换（可选）
+    input_transform:
+      enable: true    # 是否启用输入坐标转换
+      gravity_align_enable: true    # 是否使用重力校准
+        # IMU 原始坐标系到 base_link 的外参
+      imu_to_baselink_T: [0, 0.0, 0.0]
+      imu_to_baselink_R: [1.00000, 00.00000, 0.00000, 0.00000, 1.00000, 0.00000,
+        0.00000, 0.00000, 1.00000]
+
+        # Lidar 原始坐标系到 base_link 的外参
+      lidar_to_baselink_T: [0.01, 0.0, 0.0]
+      lidar_to_baselink_R: [1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000,
+        0.00000, 0.00000, 1.00000]
+
+    publish:
+      path_en: true
+      scan_publish_en: true          # false: close all the point cloud output
+      dense_publish_en: true         # false: low down the points number in a global-frame point clouds scan.
+      scan_bodyframe_pub_en: true    # true: output the point cloud scans in IMU-body-frame
+
+    pcd_save:
+      pcd_save_en: false
+      interval: -1                   # how many LiDAR frames saved in each pcd file; 
+                                    # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.
+
+    # voxel filter paprams
+    odometrySurfLeafSize: 0.3                     # default: 0.4 - outdoor, 0.2 - indoor
+    mappingCornerLeafSize: 0.15                    # default: 0.2 - outdoor, 0.1 - indoor
+    mappingSurfLeafSize: 0.3                      # default: 0.4 - outdoor, 0.2 - indoor
+
+    # robot motion constraint (in case you are using a 2D robot)
+    z_tollerance: 1000                            # meters
+    rotation_tollerance: 1000                     # radians
+
+    # CPU Params
+    numberOfCores: 8                              # number of cores for mapping optimization
+    mappingProcessInterval: 0.15                  # seconds, regulate mapping frequency
+
+    # Surrounding map
+    surroundingkeyframeAddingDistThreshold: 1.0   # meters, regulate keyframe adding threshold
+    surroundingkeyframeAddingAngleThreshold: 0.2  # radians, regulate keyframe adding threshold
+    surroundingKeyframeDensity: 1.0               # meters, downsample surrounding keyframe poses   
+    surroundingKeyframeSearchRadius: 50.0         # meters, within n meters scan-to-map optimization (when loop closure disabled)
+
+    # Loop closure
+    loopClosureEnableFlag: true                   # use loopclousre or not 
+    loopClosureFrequency: 0.2                    # Hz, regulate loop closure constraint add frequency
+    surroundingKeyframeSize: 20                   # submap size (when loop closure enabled)
+    historyKeyframeSearchRadius: 10             # meters, key frame that is within n meters from current pose will be considerd for loop closure
+    historyKeyframeSearchTimeDiff: 30.0           # seconds, key frame that is n seconds older will be considered for loop closure
+    historyKeyframeSearchNum: 20                  # number of hostory key frames will be fused into a submap for loop closure
+    historyKeyframeFitnessScore: 0.3              # icp threshold, the smaller the better alignment
+
+    # GPS Settings
+    useImuHeadingInitialization: true           # if using GPS data, set to "true"
+    useGpsElevation: true                      # if GPS elevation is bad, set to "false"
+    gpsCovThreshold: 0.001                        # m^2, threshold for using GPS data
+    gpsCovThreshold_Z: 0.1                        # m^2, threshold for Z(elevation) GPS covariance
+    poseCovThreshold: 25.0 #25.0                      # m^2, threshold for using GPS data  位姿协方差阈值 from isam2
+    gnss_calib_min_match: 50                     #   最少匹配点对数
+    gnss_calib_max_time_diff: 0.5                #   最大时间匹配容差
+
+    # gpsCovThreshold: 0.1                        # m^2, threshold for using GPS data
+    # poseCovThreshold: 0.25 #25.0                      # m^2, threshold for using GPS data  位姿协方差阈值 from isam2
+
+
+    # Visualization
+    globalMapVisualizationSearchRadius: 1000.0    # meters, global map visualization radius
+    globalMapVisualizationPoseDensity: 1         # meters, global map visualization keyframe density
+    globalMapVisualizationLeafSize: 0.5             # meters, global map visualization cloud density
+
+    # visual iktree_map  
+    visulize_IkdtreeMap: true
+
+    # visual iktree_map  
+    recontructKdTree: true
+
+    # Export settings
+    savePCD: true                         # https://github.com/TixiaoShan/LIO-SAM/issues/3
+    savePCDDirectory: "/"        # in your home folder, starts and ends with "/". Warning: the code deletes "LOAM" folder then recreates it. See "mapOptimization" for implementation
+
+  planner:
+    topic_local_path_out: /x_nav/local_path
+    topic_goal_path_out: /x_nav/goal_path
+    topic_vel_out: /cmd_vel
+
+    nx_: 150
+    ny_: 150
+    n_middle: 75
+    d_resolution: 20
+    topic_base_link_pose_in: /base_link/odom
+    topic_lidar_noground_in: /x_nav/current_pointcloud_noground
+    topic_extern_navpath: /topological_path
+
+
+    ########################全局规划
+    vox_min_points_num: 2                     #不建议修改                      
+    vox_max_points_num: 8                     #不建议修改 
+    vox_resolution: 0.2                       #不建议修改 
+    up_ground_num: 2                          #不建议修改     
+    min_arround_ground_num: 2                 #不建议修改  
+    nav_keypoint_near_max_num: 20             #不建议修改  
+    vox_nav_keypoints_downsize_leaf: 0.2      #对全局规划特征点保留 0.4m 范围
+    global_plan_max_dz: 0.2                  #vox分辨率过小，这个也需要减小
+    global_plan_max_angle: 45                 #全局规划的特征点要求：高度变化超过30°取消
+    kdtree_search_k: 5.0                      #全局规划连接4.0倍范围内的点
+    
+    nav_keypoints_interpolate_distance: 0.1   #全局路径规划的结果插值
+    global_influence_radius: 0.32              #静态障碍物影响半径 影响全局规划
+    remove_historical_point_obs_radius: 0.3   #将历史轨迹点 半径0.2m 内的obs去处  
+    global_plan_obs_frame: 4                  #使用1帧的obs 影响golbal plan
+    replan_min_distance: 5                    #偏离距离达到后 重新global plan  
+
+    global_plan_obs_distance: 0.18     #将当前帧的Obs范围的0.25导航关键点禁用
+    global_plan_min_distance: 0.2       #如果小于0.3m直接直线规划
+    static_obs_vox_min_num: 25          #若建图过程中，在同一个位置检测到障碍10次则认为 是障碍物  影响全局规划 
+    static_obs_vox_min_height: 0.2     #静态障碍物最小的离地高度
+
+    
+    historical_keypoint_connect_min_distance: 0.3
+
+  ##################局部路径规划
+
+    max_v_y: 0.3
+    skip_track_point: 4
+    auto_skip: true               ##触发避障失败后 1秒内 尽可能跟踪最前面的导航点、 1s内没有触发避障失败 则跟踪 skip_track_point
+    local_plane_min_distance: 0.6
+
+    track_yaw: 1.2                  #45度 则先跟踪角度  #全向底盘没有必要
+    track_distance: 0.3             #跟踪局部路径中的 距离为0.3的点
+    reach_min_distance: 0.2        #这个距离内 则认为到达
+    reach_same_direction_min_yaw: 3.14  #67  度发现下认为同方向  
+    reach_same_direction_min_distance: 1  #同方向下， 目标点在身后 且距离小于1.5则认为到达
+    reach_same_direction_min_distance_x: 0.1 #同方向下， 前方距离小于0.2 则认为到达
+
+    cosmap_min_obs_point: 5                  #只要有一个点就认为是占据
+    influence_radius_x: 0.36                  #被占据点前后 0.35m 设置设置为 obs   base link坐标系
+    influence_radius_y: 0.2                  #被占据点左右 0.35m 设置设置为 obs   base link坐标系
+    target_velocity: 0.6                      #跟踪速度
+    avoid_velocity: 0.4
+
+    avoid_base_link_low: -0.3                     #取lidar link下-0.3m点 做obs
+    avoid_base_link_hight: 0.5                    #取lidar link上0.6m点 做obs
+
+
+    replan_local_plan_fail_num: 3             #局部路径规划连续2次失败 重新全局路径规划 
+    
+    
+
+    track_local_waypoint_num: 30            #对前面第12个点进行局部路径规划       #全局路径为0.2m间隔
+    avoid_local_waypoint_num: 30            #触发避障 则对前面第15个点进行局部路径规划
+    check_waypoint_num: 8                  #检测前面15个点是否为obs
+
+    avoid_after_point_num: 4              #障碍物前的4个点不跟踪
+    avoid_front_point_num: 4              #障碍物后的4个点不跟踪
+
+
+    #pso参数
+    n_particles: 80
+    n_inherited: 1
+    pointNum: 1
+    max_speed: 50
+    initposmode: 0
+    pso_max_iter: 15
+    obs_factor: 0.5
+    w_inertial: 3.0 
+    w_social: 3.0
+    w_cognitive: 2.0
+
+    
+
+  #################速度跟踪
+    kp_x: 1
+    kp_y: 1
+    kp_yaw: 0.6
+
+
+
+  #####################3可视化
+    globalground_VisualizationLeafSize: 0.6
+
+    b_line: 3                         #3次b样条
+
+
+  ###################对齐终点###################
+    align_yaw: 0.4
+    align_vel: 0.3          ##对齐终点的速度为0.2
+    align_distance: 0.5    ##终点的距离小于50cm则开始对齐
+    
+    reach_distance: 0.2   ##终点的距离小于15cm则到达
+    reach_yaw: 0.2          ##对齐终点的角度小于0.2rad则认为到达
+    align_num: 3            ##连续3次在到达范围内，则认为到达
+    
+    enable_local_planner: true
+    
+
+    local_planner_method: -1
+  w_nav:
+    topic_rtk: /fix
+    topic_base_link_pose_in: /base_link/odom
+    topic_obs_primary: /x_nav/obs_filter
+    topic_camera_cloud: /camera_cloudpoint
+    #topic_obs_primary:  /x_nav/current_pointcloud_noground
+    topic_lidar_noground_in: /x_nav/current_pointcloud_noground
+    topic_goal_path_out: /x_nav/goal_path
+    topic_local_path_out: /x_nav/local_path
+    topic_vel_out: /cmd_vel
+    topic_w_nav_cmd: /w_nav/cmd
+    topic_local_goal: /w_nav/goal
+    topic_uwb: /robot/uwb
+    topic_debug_costmap: /w_nav/debug/local_costmap
+    topic_planner_cmd: /planner/cmd
+
+
+    #局部避障
+    #碰撞补偿
+    obs_buffer_size: 4
+    add_obs_distance_threshold: 0.25
+    compensate_blind_time: 0
+    compensate_blind_region_f: 0.0
+    compensate_blind_region_b: 2.0
+    compensate_blind_region_l: 2.0
+    compensate_blind_region_r: 2.0
+    #碰撞膨胀
+    influence_radius_x: 0.3    # 车身半长 (m)
+    influence_radius_y: 0.3 # 车身半宽 (m)
+
+    safety_radius: 1.2          #  最远代价
+    deceleration_radius: 0.6    #和障碍物距离小于多少则进行减速
+
+
+    #局部选点
+    goal_obs_min_dis: 0.4        #和障碍物最短的距离
+    goal_min_dist: 0.6         # 局部规划选点最短距离
+    goal_max_angle_deg: 80.0     #局部选点可大于60度，距离大于0.5米
+    goal_max_angle_deg_dis: 0.5
+    add_gloabl_point_num: 3
+    avoid_after_point_num: 4             #障碍物hou的4个点不跟踪
+    avoid_front_point_num: 4              #障碍物qian的4个点不跟踪
+
+    #局部规划地图
+    map_size: 8.0               # 局部地图边长 (m)
+    map_resolution: 0.04        # 栅格分辨率 (m/格)
+    lethal_cost: 240
+    cosmap_min_obs_point: 1    # 每格最少点云命中数 — 对应原 costmap_min_hits
+    
+    #重规划管理
+    obs_fail_sleep_time: 5
+    local_path_min_length: 0.5
+    min_replan_interval: 0.5
+    replan_local_plan_fail_num: 3
+
+    local_goal_num: 0
+    reach_min_distance: 0.2     # 到达目标判定距离 (m) — 对应原 goal_tolerance
+    reach_same_direction_min_yaw: 3.14  #67  度发现下认为同方向  
+    reach_same_direction_min_distance: 1  #同方向下， 目标点在身后 且距离小于1.5则认为到达
+
+    reach_same_direction_min_distance_x: 0.1 #同方向下， 前方距离小于0.2 则认为到达
+    local_goal_timeout: 2.0     # 局部目标超时 (s)
+    
+
+    #停障
+    stop_for_obstacle_enable: false       # 是否启用停障功能
+    stop_for_obstacle_distance: 0.6     # 停障检测距离 (m), 此距离内 costmap 超阈值则停车
+    stop_for_obstacle_cost: 150           # costmap 代价阈值 (0-255), >=此值视为障碍
+
+
+
+    #局部跟踪参数
+    track_distance: 0.5         # 基础前视距离 (m) — 对应原 lookahead_dist
+    speed_lookahead_min: 0.4
+    speed_lookahead_min_deg: 1.0
+    speed_lookahead_max: 1.8
+    speed_lookahead_gain: 0.8
+
+    reference_speed: 1.5
+    target_velocity: 0.6        # 正常行驶速度 — 对应原 nominal_speed
+    avoid_velocity: 0.5       # 障碍物减速速度 — 对应原 obstacle_speed
+    uwb_obstacle_speed: 0.55
+    uwb_track_distance: 1.5
+    max_v_x: 1.5                # 最大前进速度
+    max_v_y: 0.001                # 最大侧移速度
+    max_v_yaw: 0.9              # 最大角速度
+    min_v_x: 0.3                # 最大前进速度
+    min_v_y: 0.05              # 最大侧移速度
+    min_v_yaw: 0.001              # 最大角速度
+    akm_v_yaw_k: 1.0
+    yaw_deceleration_ratio: 1.0
+
+    k_yaw: 0.6
+    max_acc_xy: 3.0              # 最大线加速度
+    max_dec_xy: 3.0                 # 最大线减速度
+    max_acc_theta: 2.5             # 最大角加速度
+    angular_slowdown_start: 0.5     # 角速度减速起始点 (rad/s) — 当角速度超过该值时开始减速
+    angular_stop_threshold: 0.8     #  当角速度超过该值时认为停止线速度
+
+    #局部代价
+    astar_cost_weight: 3.0        #整体代价权重 障碍
+    path_length_weight: 1.0       #路径长度权重，增大后更倾向于较短的路径
+    heuristic_weight: 1.5         #启发式代价权重
+    lateral_cost_weight: 6.5      #横向代价权重
+    backward_cost_weight: 6.0     #倒车代价权重
+
+    #路径平滑 ──
+    smooth_max_iter: 150             #最大迭代次数
+    smooth_clearance: 0.6              #路径点与障碍物的最小距离要求 
+    smooth_w_obs: 2.0                  #障碍物代价权重
+    smooth_w_smo: 2.0                     #平滑代价权重
+    smooth_w_cur: 0.0                    #曲率代价权重
+    smooth_w_path: 0.1                  #路径长度代价权重
+    smooth_mem_size: 64               #L-BFGS 近似Hessian矩阵的内存大小
+    downsample_step: 4                     #路径点下采样步长
+
+  #rtk
+    rtk_align_distance: 8.0
+    
+    #对齐
+    track_mode: 1    
+    start_mode: 1
+    align_mode: 0
+    test_mode: true
+    align_yaw: 0.8
+    align_vel: 0.4 ##对齐终点的速度为0.2
+    align_distance: 0.5 ##终点的距离小于50cm则开始对齐
+    reach_distance: 0.2 ##终点的距离小于15cm则到达
+    reach_yaw: 0.2 ##对齐终点的角度小于0.2rad则认为到达
+    align_num: 3 ##连续3次在到达范围内，则认为到达

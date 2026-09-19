@@ -1,0 +1,1667 @@
+{
+  "audit_date": "2026-09-17",
+  "method": "SSH read-only commands; ROS discovery/subscriptions only; historical robot logs",
+  "ros_live_106": {
+    "time": 1789651301.9862535,
+    "topics": {
+      "/GAIT": {
+        "types": [
+          "drdds/msg/Gait"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Gait",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              40,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Gait",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Gait",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              11,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/GAMEPAD_KEY": {
+        "types": [
+          "std_msgs/msg/String"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "std_msgs/msg/String",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              62,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": []
+      },
+      "/GLOBAL_PLANNER_STATUS": {
+        "types": [
+          "drdds/msg/PlannerStatus"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/PlannerStatus",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              153,
+              10,
+              7,
+              206,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/PlannerStatus",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              113,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/HANDLE_STEER": {
+        "types": [
+          "drdds/msg/Steer"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              46,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              179,
+              33,
+              236,
+              13,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/HES_STATUS": {
+        "types": [
+          "drdds/msg/StdMsgInt32"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/StdMsgInt32",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              16,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/StdMsgInt32",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              95,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/LOCATION_STATUS": {
+        "types": [
+          "drdds/msg/LocationStatus"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/LocationStatus",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              185,
+              9,
+              49,
+              93,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/LocationStatus",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              114,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/LOCATION_STATUS/MATCHING_ERROR": {
+        "types": [
+          "std_msgs/msg/Float64MultiArray"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "std_msgs/msg/Float64MultiArray",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              185,
+              9,
+              49,
+              93,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              7,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "std_msgs/msg/Float64MultiArray",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              120,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/MOTION_INFO": {
+        "types": [
+          "drdds/msg/MotionInfo"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              28,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              23,
+              30,
+              250,
+              72,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              90,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              17,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              140,
+              11,
+              87,
+              182,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              35,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              185,
+              9,
+              49,
+              93,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              20,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "s10_field_evidence",
+            "namespace": "/",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              190,
+              4,
+              118,
+              195,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              10,
+              4
+            ],
+            "qos_reliability": "2"
+          },
+          {
+            "node": "traversability_estimation_node",
+            "namespace": "/",
+            "type": "drdds/msg/MotionInfo",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              228,
+              9,
+              139,
+              10,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              30,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/MOTION_STATE": {
+        "types": [
+          "drdds/msg/MotionState"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionState",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              39,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionState",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/MotionState",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              10,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/NAV_CMD": {
+        "types": [
+          "drdds/msg/NavCmd"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/NavCmd",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              179,
+              33,
+              236,
+              13,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              3
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/NavCmd",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              140,
+              11,
+              87,
+              182,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/NavCmd",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              101,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/NAV_STATUS": {
+        "types": [
+          "drdds/msg/StdMsgInt32"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/StdMsgInt32",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              79,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": []
+      },
+      "/ODOM": {
+        "types": [
+          "nav_msgs/msg/Odometry"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              185,
+              9,
+              49,
+              93,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              115,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              139,
+              11,
+              242,
+              193,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              140,
+              11,
+              87,
+              182,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              31,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              153,
+              10,
+              7,
+              206,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              9,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "accumulate_cloud",
+            "namespace": "/",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              172,
+              10,
+              55,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              23,
+              4
+            ],
+            "qos_reliability": "2"
+          },
+          {
+            "node": "s10_field_evidence",
+            "namespace": "/",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              190,
+              4,
+              118,
+              195,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              4
+            ],
+            "qos_reliability": "2"
+          },
+          {
+            "node": "traversability_estimation_node",
+            "namespace": "/",
+            "type": "nav_msgs/msg/Odometry",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              228,
+              9,
+              139,
+              10,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              28,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/PLANNER_STATUS": {
+        "types": [
+          "drdds/msg/PlannerStatus"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/PlannerStatus",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              140,
+              11,
+              87,
+              182,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/PlannerStatus",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              112,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/REAL_STEER": {
+        "types": [
+          "drdds/msg/Steer"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              23,
+              30,
+              250,
+              72,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              13,
+              3
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              45,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              5,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              9,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/STEER": {
+        "types": [
+          "drdds/msg/Steer"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              233,
+              29,
+              174,
+              167,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              44,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              4
+            ],
+            "qos_reliability": "1"
+          },
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "drdds/msg/Steer",
+            "gid": [
+              1,
+              15,
+              3,
+              142,
+              236,
+              32,
+              59,
+              195,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              8,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      },
+      "/local_goal": {
+        "types": [
+          "geometry_msgs/msg/PoseStamped"
+        ],
+        "publishers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "geometry_msgs/msg/PoseStamped",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              153,
+              10,
+              7,
+              206,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              3
+            ],
+            "qos_reliability": "1"
+          }
+        ],
+        "subscribers": [
+          {
+            "node": "_CREATED_BY_BARE_DDS_APP_",
+            "namespace": "_CREATED_BY_BARE_DDS_APP_",
+            "type": "geometry_msgs/msg/PoseStamped",
+            "gid": [
+              1,
+              15,
+              162,
+              229,
+              140,
+              11,
+              87,
+              182,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              32,
+              4
+            ],
+            "qos_reliability": "1"
+          }
+        ]
+      }
+    },
+    "samples": {
+      "/MOTION_INFO": {
+        "header": {
+          "frame_id": 0,
+          "stamp": {
+            "sec": 1789651305,
+            "nanosec": 992468074
+          }
+        },
+        "data": {
+          "vel_x": 0.0,
+          "vel_y": 0.0,
+          "vel_yaw": 0.001848699408583343,
+          "height": 0.07074114680290222,
+          "motion_state": {
+            "state": 0
+          },
+          "gait_state": {
+            "gait": 0
+          },
+          "payload": 0.0,
+          "remain_mile": 12.066600799560547
+        }
+      },
+      "/HES_STATUS": {
+        "value": 0
+      },
+      "/ODOM": {
+        "header": {
+          "stamp": {
+            "sec": 1789651305,
+            "nanosec": 949988842
+          },
+          "frame_id": "map"
+        },
+        "child_frame_id": "",
+        "pose": {
+          "pose": {
+            "position": {
+              "x": 0.32201736323771407,
+              "y": 0.026996359680995747,
+              "z": 0.12047091136901289
+            },
+            "orientation": {
+              "x": 0.0011507775758045518,
+              "y": 0.014121587654362154,
+              "z": 0.5497112490826204,
+              "w": 0.8352345772925792
+            }
+          },
+          "covariance": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "twist": {
+          "twist": {
+            "linear": {
+              "x": 0.023278458496518186,
+              "y": -0.02408594111663482,
+              "z": 0.0038035671422174087
+            },
+            "angular": {
+              "x": 0.0005424217080982737,
+              "y": 4.153868516580642e-05,
+              "z": 0.005116476528569989
+            }
+          },
+          "covariance": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "/LOCATION_STATUS": {
+        "meta": {
+          "frame_id": 0,
+          "stamp": {
+            "sec": 0,
+            "nanosec": 0
+          }
+        },
+        "data": {
+          "total_status": 3,
+          "exec_val": {
+            "overtime": 0,
+            "numeric_error": 0,
+            "timestamp_error": 0
+          },
+          "loss_val": {
+            "odom_error": 0,
+            "leg_odom_error": 0,
+            "matching_error": 1,
+            "pub_error": 0
+          },
+          "input_val": {
+            "lidar": 1,
+            "imu": 1,
+            "leg_odom": 0,
+            "rtk": 0,
+            "tag": 0,
+            "reflective_strip": 0
+          }
+        }
+      }
+    },
+    "errors": {}
+  },
+  "localization_log_106": [],
+  "ros_interfaces_106": {
+    "topics": {
+      "/GAIT": [
+        "drdds/msg/Gait"
+      ],
+      "/GPS_SYS_MODE": [
+        "drdds/msg/StdMsgInt32"
+      ],
+      "/NAV_CMD": [
+        "drdds/msg/NavCmd"
+      ],
+      "/NAV_POINTS": [
+        "sensor_msgs/msg/PointCloud2"
+      ],
+      "/NAV_STATUS": [
+        "drdds/msg/StdMsgInt32"
+      ],
+      "/cloud_nav": [
+        "sensor_msgs/msg/PointCloud2"
+      ],
+      "/goal": [
+        "geometry_msgs/msg/PoseStamped"
+      ],
+      "/goal_baselink": [
+        "geometry_msgs/msg/PoseStamped"
+      ],
+      "/line_nav_obstacle_roi_forward": [
+        "visualization_msgs/msg/MarkerArray"
+      ],
+      "/line_nav_obstacle_roi_lateral": [
+        "visualization_msgs/msg/MarkerArray"
+      ],
+      "/line_nav_obstacle_roi_rotate": [
+        "visualization_msgs/msg/MarkerArray"
+      ],
+      "/line_nav_track": [
+        "nav_msgs/msg/Path"
+      ],
+      "/local_goal": [
+        "geometry_msgs/msg/PoseStamped"
+      ],
+      "/local_goal_baselink": [
+        "geometry_msgs/msg/PoseStamped"
+      ],
+      "/planner_mode": [
+        "drdds/msg/StdMsgInt32"
+      ],
+      "/slope_mode": [
+        "std_msgs/msg/Int32"
+      ],
+      "/target_goal": [
+        "geometry_msgs/msg/PoseStamped"
+      ]
+    },
+    "services": {
+      "/BBS_RELOCALIZE_CANCEL": [
+        "drdds/srv/BbsRelocalizeCancel"
+      ],
+      "/CANCEL_NAV_GLOBAL": [
+        "drdds/srv/StdSrvInt32"
+      ],
+      "/CANCEL_NAV_PLANNER": [
+        "drdds/srv/StdSrvInt32"
+      ],
+      "/CHARGE_GAIT": [
+        "drdds/srv/StdSrvInt32"
+      ],
+      "/GOAL_GLOBAL": [
+        "drdds/srv/PoseStampedToInt32"
+      ],
+      "/GOAL_PLANNER": [
+        "drdds/srv/PoseStampedToInt32"
+      ],
+      "/MOTION_SDK_MODE": [
+        "drdds/srv/StdSrvInt32"
+      ],
+      "/NAV_GAIT": [
+        "drdds/srv/StdSrvInt32"
+      ],
+      "/NAV_REACH_GOAL": [
+        "drdds/srv/StdSrvInt32"
+      ],
+      "/s10_nav_interface_readonly/get_type_description": [
+        "type_description_interfaces/srv/GetTypeDescription"
+      ]
+    },
+    "schemas": {
+      "drdds/msg/NavCmd": {
+        "header": "drdds/MetaType",
+        "data": "drdds/NavCmdValue"
+      },
+      "drdds/msg/Gait": {
+        "header": "drdds/MetaType",
+        "data": "drdds/GaitValue"
+      },
+      "drdds/msg/MotionInfo": {
+        "header": "drdds/MetaType",
+        "data": "drdds/MotionInfoValue"
+      },
+      "drdds/srv/BbsRelocalizeCancel": {
+        "request": {
+          "caller_id": "int32"
+        },
+        "response": {
+          "success": "boolean"
+        }
+      },
+      "drdds/srv/StdSrvInt32": {
+        "request": {
+          "command": "int32"
+        },
+        "response": {
+          "result": "int32"
+        }
+      },
+      "drdds/srv/PoseStampedToInt32": {
+        "request": {
+          "pose": "geometry_msgs/PoseStamped"
+        },
+        "response": {
+          "result": "boolean"
+        }
+      },
+      "type_description_interfaces/srv/GetTypeDescription": {
+        "request": {
+          "type_name": "string",
+          "type_hash": "string",
+          "include_type_sources": "boolean"
+        },
+        "response": {
+          "successful": "boolean",
+          "failure_reason": "string",
+          "type_description": "type_description_interfaces/TypeDescription",
+          "type_sources": "sequence<type_description_interfaces/TypeSource>",
+          "extra_information": "sequence<type_description_interfaces/KeyValue>"
+        }
+      }
+    }
+  },
+  "historical_gaits_103": {
+    "0x1001": {
+      "count": 257,
+      "first": "[2026-08-27 10:05:25.232.271] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0x1001 [基础-平地] ",
+      "last": "[2026-09-17 21:05:17.272.205] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0x1001 [基础-平地] "
+    },
+    "0xf004": {
+      "count": 2,
+      "first": "[2026-08-28 15:13:23.908.955] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.30ms, vel=[0.04,-0.03,-0.04], safeMode=0x0 [正常], gait=0xf004 ",
+      "last": "[2026-09-12 18:07:11.526.528] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.34ms, vel=[0.00,0.00,0.00], safeMode=0x0 [正常], gait=0xf004 "
+    },
+    "0x3002": {
+      "count": 16,
+      "first": "[2026-08-28 15:29:55.321.650] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0x3002 [导航-平地] ",
+      "last": "[2026-09-14 12:07:57.124.769] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.30ms, vel=[0.01,-0.02,-0.03], safeMode=0x0 [正常], gait=0x3002 "
+    },
+    "0x1003": {
+      "count": 111,
+      "first": "[2026-08-28 15:52:51.751.220] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0x1003 [基础-楼梯] ",
+      "last": "[2026-09-16 13:31:40.367.202] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.30ms, vel=[0.01,-0.02,-0.03], safeMode=0x0 [正常], gait=0x1003 "
+    },
+    "0xf001": {
+      "count": 6,
+      "first": "[2026-09-06 15:33:03.914.086] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0xf001 [6轴可控站立] ",
+      "last": "[2026-09-15 14:56:04.373.578] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.58ms, vel=[0.00,-0.02,-0.03], safeMode=0x0 [正常], gait=0xf001 "
+    },
+    "0xf002": {
+      "count": 33,
+      "first": "[2026-09-06 15:33:07.613.418] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0xf002 [踏步移动] ",
+      "last": "[2026-09-16 18:36:45.609.584] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.32ms, vel=[0.00,-0.02,-0.03], safeMode=0x0 [正常], gait=0xf002 "
+    },
+    "0x1002": {
+      "count": 45,
+      "first": "[2026-09-07 18:04:05.570.325] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0x1002 [基础-高台] ",
+      "last": "[2026-09-15 14:58:18.256.585] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.35ms, vel=[0.00,0.00,0.00], safeMode=0x0 [正常], gait=0x1002 "
+    },
+    "0xf003": {
+      "count": 2,
+      "first": "[2026-09-16 20:12:01.666.616] [INFO  ] [Target_Gait] [dds_interface] target_gait: 0xf003 [摔倒起立] ",
+      "last": "[2026-09-16 20:12:01.667.786] [INFO  ] [CONTROL_INFO] [RLControl] perf: policyCost=0.35ms, vel=[0.00,0.00,0.00], safeMode=0x0 [正常], gait=0xf003 "
+    }
+  },
+  "robot_server_encryption_log_103": [
+    "[2026-09-17 11:17:53.400.970] [INFO  ] [MAIN] 明文 TCP/UDP 端口已屏蔽（ENABLE_PLAIN_TCP_UDP 未定义），仅启用 TLS/DTLS ",
+    "[2026-09-17 12:02:03.715.911] [INFO  ] [MAIN] 明文 TCP/UDP 端口已屏蔽（ENABLE_PLAIN_TCP_UDP 未定义），仅启用 TLS/DTLS ",
+    "[2026-09-17 21:04:27.835.092] [INFO  ] [MAIN] 明文 TCP/UDP 端口已屏蔽（ENABLE_PLAIN_TCP_UDP 未定义），仅启用 TLS/DTLS ",
+    "[2026-09-17 21:04:27.853.992] [INFO  ] [TcpTlsServer] tls tcp server init success, port: 30003, mode: encrypted ",
+    "[2026-09-17 21:04:27.860.743] [INFO  ] [UdpTlsServer] tls udp server init success, port: 30004, mode: encrypted-listener "
+  ]
+}
