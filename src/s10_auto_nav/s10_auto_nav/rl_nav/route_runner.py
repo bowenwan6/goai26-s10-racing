@@ -573,7 +573,11 @@ class RouteRunner:
                 self._set(Mode.CLIMB, inp.t, s, why)
                 self.climb_best = (s, inp.t)
             return None
-        vy = float(np.clip(-1.0 * self.d, -p.align_strafe, p.align_strafe))
+        # Strafe the offset back only while roughly facing along the route: the body's lateral
+        # axis is the route's normal then. Facing back (re-aligning after RECOVER) it points the
+        # other way, and the strafe walked the robot off the B landing.
+        c = math.cos(err)
+        vy = float(np.clip(-self.d * c, -p.align_strafe, p.align_strafe)) if c > 0.85 else 0.0
         return NavOutput(
             (0.0, vy, float(np.clip(1.5 * err, -p.align_w, p.align_w))),
             "official",
@@ -813,8 +817,12 @@ class RouteRunner:
             if self.mode != Mode.DETOUR:
                 return self._wait(inp, s)
             dt = self.detour
-        cmd = dt["line"].pursue((inp.x, inp.y, inp.yaw), p.detour_v)
-        return NavOutput(cmd, "official", self.mode, "detour", {"why": dt["why"]})
+        vx, vy, wz = dt["line"].pursue((inp.x, inp.y, inp.yaw), p.detour_v)
+        if vx > 0.25:
+            # The first version's floor for the walking actor: slower, it stalls on a slope
+            # (WP24-25: at 0.41 m/s up a 10 deg rise, three times, then HOLD).
+            vx = max(vx, p.walk_floor)
+        return NavOutput((vx, vy, wz), "official", self.mode, "detour", {"why": dt["why"]})
 
     def _backup(self, inp, s, why, kind):
         """Back off backup_time s, then plan (BACKUP); plan at once where the map is not clear
