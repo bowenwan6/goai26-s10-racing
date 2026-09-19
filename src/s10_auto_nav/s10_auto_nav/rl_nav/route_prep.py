@@ -702,10 +702,16 @@ def _hazard(terrain, xy, z_ref, drop=0.45):
     return (~terrain.known_at(xy[..., 0], xy[..., 1])) | (np.abs(z - z_ref) > drop)
 
 
-def _disc(radius, spacing=0.05):
-    """Sample points of a disc, no two more than ``spacing`` apart. (The first version sampled two
-    rings of 16 and missed a 0.1 m wide, 0.6 m tall post 0.23 m from WP29, which the robot's hip
-    then caught on five runs of sixteen.)"""
+def _disc(radius, spacing=None):
+    """Sample points of a disc: the first version's two rings of 16 (``spacing`` None), or rings
+    and points no more than ``spacing`` apart. The two rings miss a 0.1 m wide, 0.6 m tall post
+    0.23 m from WP29, which the robot's hip then caught on five runs of sixteen."""
+    if spacing is None:
+        ang = np.linspace(0, 2 * np.pi, 16, endpoint=False)
+        rings = [
+            np.column_stack([rr * np.cos(ang), rr * np.sin(ang)]) for rr in (radius / 2, radius)
+        ]
+        return np.vstack([np.zeros((1, 2)), *rings])
     pts = [np.zeros((1, 2))]
     for rr in np.arange(spacing, radius + 1e-9, spacing):
         n = max(16, math.ceil(2 * np.pi * rr / spacing))
@@ -714,9 +720,9 @@ def _disc(radius, spacing=0.05):
     return np.vstack(pts)
 
 
-def _nearest_clear(terrain, p, radius=0.4, search=1.2, step=0.05):
+def _nearest_clear(terrain, p, radius=0.4, search=1.2, step=0.05, spacing=None):
     """Nearest point to ``p`` whose disc of ``radius`` holds no hazard (None within ``search``)."""
-    disc = _disc(radius)
+    disc = _disc(radius, spacing)
     best, best_d = None, np.inf
     for dx in np.arange(-search, search + 1e-9, step):
         for dy in np.arange(-search, search + 1e-9, step):
@@ -738,8 +744,8 @@ def sanitize_route(
 
     1. Waypoints closer than ``half_width`` to a void or a level change of more than 0.45 m move to
        the nearest point with that clearance (reported: they are photo-matched drafts, and the
-       map's stair edges are not exact either). Checked on a dense disc (``_disc``); the ends of
-       hand-validated centrelines (``skip``) stay put.
+       map's stair edges are not exact either). Also checked on a dense disc (``_disc``), for a
+       narrow obstacle between the first version's two sample rings.
     2. At every centreline point, the lateral offsets whose +-``half_width`` cross-section has no
        hazard form intervals. On a narrow structure (clear interval under ``narrow`` m) the path
        goes down its middle; elsewhere the taught offset 0 stays unless it is not clear, in which
@@ -750,18 +756,15 @@ def sanitize_route(
     """
     r = copy.deepcopy(route_dict)
     report = {"segments": [], "waypoints": []}
-    # A hand-validated centreline's ends stay where they are (they are part of what was validated).
-    pinned = {s["from"] for s in r["segments"] if s["id"] in skip}
-    pinned |= {s["to"] for s in r["segments"] if s["id"] in skip}
     for wp in r["waypoints"]:
-        if wp["id"] in pinned:
-            continue
         p = np.asarray(wp["position"][:2], float)
         z = float(terrain.ground_at(*p))
-        disc = p + _disc(half_width)
-        if terrain.known_at(*p) and not _hazard(terrain, disc, z).any():
+        clear = terrain.known_at(*p) and not _hazard(terrain, p + _disc(half_width), z).any()
+        if clear and not _hazard(terrain, p + _disc(half_width, 0.05), z).any():
             continue
-        q = _nearest_clear(terrain, p, half_width)
+        # The first version's move where its own check fails (unchanged); where only the dense
+        # check does (something narrow between its rings), the nearest point clear of it too.
+        q = _nearest_clear(terrain, p, half_width, spacing=0.05 if clear else None)
         if q is None:
             report["waypoints"].append(
                 {"id": wp["id"], "shift_m": None, "note": "no clear point within 1.2 m"}
