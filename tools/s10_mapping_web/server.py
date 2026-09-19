@@ -13,9 +13,13 @@ import threading
 import time
 from urllib.parse import urlsplit, parse_qs, quote
 from field_core import FieldError, ident
+import teach_core
 
 HERE = Path(__file__).resolve().parent
 CONFIG = Path.home()/'.config/s10-mapping-web/config.json'
+TEACH_URL = 'http://127.0.0.1:8091'  # teach_worker.py (ROS 1 side, loopback only)
+TEACH_ROOT = Path.home()/'teach'/'sessions'
+TEACH_ACTIONS = {'session_new', 'session_open', 'record_start', 'record_stop', 'mark', 'redo', 'trail_clear'}
 state = dict(online=False, active=False, streams={}, trail=[], error='正在连接定位板')
 guard, operation = threading.Lock(), threading.Lock()
 last_view = 0.0
@@ -67,6 +71,25 @@ def field_call(request):
 
 def native_call(request):
     return native_transport(request) if native_transport is not None else call('native_nav', request=request)
+
+
+def teach_call(path, body=None):
+    """Forward to the local teach worker; (status, json)."""
+    import urllib.error
+    import urllib.request
+    data = None if body is None else json.dumps(body).encode()
+    request = urllib.request.Request(TEACH_URL+path, data=data, method='GET' if data is None else 'POST',
+                                     headers={} if data is None else {'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return response.status, json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        try:
+            return exc.code, json.loads(exc.read())
+        except ValueError:
+            return exc.code, dict(detail='采集助手返回错误')
+    except (OSError, ValueError):
+        return 503, dict(detail='采集助手后台未启动：在 AGX 执行 bash ~/s10_mapping_web/teach-worker.sh start')
 
 
 def error_status(exc):
@@ -202,13 +225,17 @@ class Handler(BaseHTTPRequestHandler):
         global last_view, last_height_view
         if self.path == '/':
             return self.reply(200, (HERE/'index.html').read_bytes(), 'text/html; charset=utf-8')
-        if self.path in ('/localization', '/heightmap', '/field', '/imu-check', '/native-nav'):
+        if self.path in ('/localization', '/heightmap', '/field', '/imu-check', '/native-nav', '/teach'):
             page = HERE/({'/imu-check': 'imu_diag.html', '/native-nav': 'native_nav.html'}.get(self.path, self.path[1:]+'.html') if self.authenticated() else 'index.html')
             if not page.is_file():
                 return self.reply(404, dict(detail='当前地图的定位页面尚未准备'))
             return self.reply(200, page.read_bytes(), 'text/html; charset=utf-8')
         if not self.authenticated():
             return self.reply(401, dict(detail='请登录'))
+        if self.path == '/teach.js':
+            return self.reply(200, (HERE/'teach.js').read_bytes(), 'text/javascript; charset=utf-8')
+        if self.path.startswith('/phone/teach/'):
+            return self.teach_get()
         if self.path == '/native_nav.js':
             return self.reply(200, (HERE/'native_nav.js').read_bytes(), 'text/javascript; charset=utf-8')
         if self.path.startswith('/phone/native/'):
@@ -262,6 +289,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, dict(message='已登录'), cookie=f's10={login_cookie}; HttpOnly; SameSite=Strict; Path=/')
             if not self.authenticated() or not hmac.compare_digest(self.headers.get('X-CSRF-Token', ''), csrf):
                 return self.reply(403, dict(detail='请刷新页面重新登录'))
+            if self.path == '/phone/teach/submit':
+                if body.get('action') not in TEACH_ACTIONS:
+                    return self.reply(400, dict(detail='无效采集操作'))
+                code, result = teach_call('/action', body)
+                return self.reply(code, result)
             if self.path == '/phone/native/submit':
                 try:
                     if body.get('action') not in ('submit', 'cancel', 'heartbeat'):
@@ -307,6 +339,45 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         pass
+
+    def teach_get(self):
+        parsed = urlsplit(self.path)
+        try:
+            params = parse_qs(parsed.query, strict_parsing=bool(parsed.query))
+        except ValueError:
+            return self.reply(400, dict(detail='无效查询参数'))
+        if parsed.path == '/phone/teach/status' and not params:
+            code, result = teach_call('/status')
+            if code == 200:
+                result['csrf'] = csrf
+            return self.reply(code, result)
+        if parsed.path == '/phone/teach/sessions' and not params:
+            code, result = teach_call('/sessions')
+            return self.reply(code, result)
+        if parsed.path == '/phone/teach/file' and set(params) == {'session', 'name'} \
+                and all(len(v) == 1 for v in params.values()):
+            sid, name = params['session'][0], params['name'][0]
+            if not teach_core.SESSION_RE.match(sid) or not teach_core.FILE_RE.match(name):
+                return self.reply(400, dict(detail='文件名无效'))
+            path = (TEACH_ROOT/sid/name).resolve()
+            if path.parent != (TEACH_ROOT/sid).resolve() or not path.is_file():
+                return self.reply(404, dict(detail='文件不存在'))
+            if path.stat().st_size > 64_000_000:
+                return self.reply(413, dict(detail='文件太大，请用电脑 scp 拷贝'))
+            raw = path.read_bytes()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/octet-stream')
+            self.send_header('Content-Length', str(len(raw)))
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('X-Content-Type-Options', 'nosniff')
+            self.send_header('Content-Disposition', "attachment; filename*=UTF-8''"+quote(sid+'__'+name, safe=''))
+            self.end_headers()
+            try:
+                self.wfile.write(raw)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            return None
+        return self.reply(404, dict(detail='没有这个采集接口'))
 
     def native_get(self):
         try:
