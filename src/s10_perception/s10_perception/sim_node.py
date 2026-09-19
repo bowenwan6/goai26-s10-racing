@@ -36,7 +36,7 @@ from nav_msgs.msg import Odometry
 from rclpy.executors import ExternalShutdownException
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, String
+from std_msgs.msg import Empty, Float32MultiArray, MultiArrayDimension, String
 
 from s10_perception.heightmap import HeightmapConfig, HeightmapSampler
 from s10_perception.lidar import LidarConfig, RayCastLidar
@@ -49,6 +49,30 @@ _upstream = load_simulator_module()
 #: Publish perception at 50 Hz to match the policy rate. The base loop runs at 1 kHz and
 #: upstream publishes proprioception every 5 steps, so we decimate by 20.
 PERCEPTION_DECIMATION = 20
+
+
+def _check_him_actuators(model) -> bool:
+    """Training torque saturation must match the actual MuJoCo actuators in every slot."""
+    configured = False
+    for key in ("S10_POLICY_PATH", "S10_SECOND_POLICY_PATH", "S10_DOWN_POLICY_PATH",
+                "S10_SPEEDTURN_POLICY_PATH"):
+        path = os.environ.get(key)
+        if not path or not Path(path).with_suffix(".json").is_file():
+            continue  # The runner rejects HIM without a sidecar; legacy models need none.
+        cfg = json.loads(Path(path).with_suffix(".json").read_text())
+        if cfg.get("policy_type") != "s10_him":
+            continue
+        configured = True
+        limits = np.asarray(cfg["torque_limits"], dtype=float)
+        names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, int(j))
+                 for j in model.actuator_trnid[:, 0]]
+        if (names != cfg["dof_names"] or limits.shape != (16,)
+                or not np.isfinite(limits).all() or np.any(limits <= 0)
+                or not np.all(model.actuator_ctrllimited)
+                or not np.allclose(model.actuator_ctrlrange, np.column_stack((-limits, limits)))
+                or not np.allclose(model.actuator_gear[:, 0], 1)):
+            raise ValueError(f"{key}: HIM torque limits/order do not match MuJoCo actuators")
+    return configured
 
 
 class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
@@ -72,6 +96,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
         if xml_path is not None:
             kwargs["xml_path"] = xml_path
         super().__init__(**kwargs)
+        him_configured = _check_him_actuators(self.model)
         self.model_key = model_key or _upstream.MODEL_NAME
         self._actual_joint_owner = "unknown"
         self._active_policy = ""
@@ -83,6 +108,7 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             raise RuntimeError(f"Body '{_upstream.TRACK_BODY_NAME}' not found in the model")
 
         self._apply_segment_spawn()
+        self._reset_qpos = self.data.qpos.copy()
         self._open_segment_video()
 
         self.lidar = RayCastLidar(self.model, self.base_body_id, lidar_config)
@@ -98,6 +124,9 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             raise RuntimeError("S10 wheel bodies are missing from the MuJoCo model")
         self._wheel_geoms = [self._descendant_geoms(int(body)) for body in self.wheel_body_ids]
 
+        if him_configured:
+            self.reset_sub = self.create_subscription(Empty, "/sim/reset", self._reset_sim, 1)
+            self.reset_done_pub = self.create_publisher(Empty, "/sim/reset_done", 10)
         self.odom_pub = self.create_publisher(Odometry, "/ground_truth/odom", 50)
         self.clock_pub = self.create_publisher(Clock, "/clock", 10)
         self.scan_pub = self.create_publisher(LaserScan, "/scan", 10)
@@ -113,6 +142,25 @@ class PerceptionSimulationNode(_upstream.MuJoCoSimulationNode):
             f"[perception] lidar {self.lidar.cfg.n_elevation}x{self.lidar.cfg.n_azimuth} rays, "
             f"heightmap {self.heightmap.cfg.n_x}x{self.heightmap.cfg.n_y} cells"
         )
+
+    def _reset_sim(self, _msg: Empty) -> None:
+        mujoco.mj_resetData(self.model, self.data)
+        self.data.qpos[:] = self._reset_qpos
+        for command in (
+            self.kp_cmd,
+            self.kd_cmd,
+            self.pos_cmd,
+            self.vel_cmd,
+            self.tau_ff,
+            self.input_tq,
+        ):
+            command.fill(0.0)
+        self.last_base_linvel.fill(0.0)
+        mujoco.mj_forward(self.model, self.data)
+        # Publish reset feedback before notifying the policy worker to clear its history.
+        self._publish_robot_state(0)
+        self.reset_done_pub.publish(Empty())
+        self.get_logger().info("[sim] reset to the test start pose")
 
     def _apply_segment_spawn(self) -> None:
         """Move the start pose, for the segment harness only.
