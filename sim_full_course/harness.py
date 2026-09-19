@@ -45,9 +45,12 @@ class RunConfig:
     sensor_every: int = 1
     collision_mode: str = "block"  # "block": refuse moves into obstacles; "record": count only
     seed: int = 0
-    # Static obstacle cells within this distance of the taught centreline are treated as
-    # transients (the mapping robot drove through them) and removed; 0 keeps them.
-    clear_taught_path: float = 0.35
+    # Static obstacle cells within this distance of the taught centreline are removed: the
+    # mapping robot drove through them (people beside it), and the v3 surface is 0.1-0.3 m
+    # thick, which fattens hedges and poles. 0.45 = body half-width 0.25 + 0.2 map noise.
+    # Without it the ~1 m gap between a signpost and a hedge before WP03 reads as 0.63 m.
+    # 0 keeps them.
+    clear_taught_path: float = 0.45
     limits: RobotLimits = field(default_factory=RobotLimits)
     sensors: SensorConfig = field(default_factory=SensorConfig)
 
