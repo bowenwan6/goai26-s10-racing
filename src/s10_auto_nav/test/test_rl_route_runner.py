@@ -198,6 +198,25 @@ def test_align_holds_the_line_against_a_downhill_slide():
     assert "CLIMB" in transitions(runner)
 
 
+def test_align_facing_back_turns_before_it_strafes():
+    # Back on a flight after RECOVER, facing the way it came and right of the route: a strafe
+    # along the body's lateral axis would carry it further right.
+    path = RoutePath(make_route([[0, 0, 0], [4, 0, 0], [9, 0, 0.15]]))
+    runner = runner_on(path, [climb()])
+    trace = drive(
+        runner,
+        path,
+        surface=lambda x, y: np.where(x >= 5.0, 0.15, 0.0),
+        start=(4.3, -0.25, math.pi),
+        steps=300,
+    )
+    in_align = [tr for tr in trace if tr[4] == Mode.ALIGN]
+    assert len(in_align) > 10
+    assert max(abs(tr[8]) for tr in in_align) <= 0.26
+    assert abs(in_align[-1][8]) < 0.2
+    assert "CLIMB" in transitions(runner)
+
+
 def test_drop_ahead_slows_the_climb():
     path = RoutePath(make_route([[0, 0, 0], [4, 0, 0], [9, 0, 0.15]]))
     runner = runner_on(path, [climb(s1=8.5, last=7.5)])
@@ -307,6 +326,10 @@ def test_box_on_the_route_is_detoured_on_the_map():
     assert trace[-1][4] == Mode.DONE
     back = next(e for e in runner.log if e["why"] == "back on the route")
     assert back["s"] > 4.4
+    # Driving the detour at walking speed or turning slowly, never in between (the walking actor
+    # stalls on a slope below walk_floor).
+    driving = [tr[6][0] for tr in trace if tr[4] == Mode.DETOUR and tr[6][0] > 0.25]
+    assert driving and min(driving) >= runner.p.walk_floor
 
 
 def test_pushed_far_off_the_route_plans_back():
