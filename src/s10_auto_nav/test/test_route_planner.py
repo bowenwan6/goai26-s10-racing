@@ -121,7 +121,12 @@ def test_unknown_cells_are_not_free():
     assert res.status == "DETOUR"  # treated like an obstacle
     assert min_clearance(res, 1.5, 2.5, -0.3, 0.3) >= 0.3 - 1e-6
     route2, path2 = straight(corridor=0.25, allow_detour=False, gait="stairs")
-    assert plan(route2, path2, grid, pose=(0.6, 0.0, 0.0)).blocked
+    # Strict mode; by default no-detour stairs repeat the taught line through UNKNOWN (see
+    # test_no_detour_stairs_repeat_the_taught_line_through_unknown_but_not_obstacles).
+    from s10_auto_nav.route_planner import RoutePlannerConfig
+
+    strict = RoutePlanner(RoutePlannerConfig(stairs_trust_taught_path=False))
+    assert plan(route2, path2, grid, pose=(0.6, 0.0, 0.0), planner=strict).blocked
 
 
 def test_everything_unknown_is_blocked_not_invented():
@@ -322,3 +327,52 @@ def test_own_footprint_is_cleared_but_cells_ahead_are_not():
     g2 = b.build((0.0, 0.0), yaw=math.pi / 2)  # rotated body: (0, 0.4) now under it
     j = g2.index(np.array([[0.0, 0.4]]))[:2]
     assert g2.state[j[0][0], j[1][0]] == FREE
+
+
+def _disk_known_grid(radius=0.9):
+    grid = free_grid(fill=UNKNOWN)
+    c = grid.cell_centers()
+    grid.state[np.hypot(c[..., 0], c[..., 1]) <= radius] = FREE
+    return grid
+
+
+def test_sharp_bend_into_unknown_turns_in_place_first():
+    route, path = straight(allow_detour=False, gait="flat")
+    res = plan(route, path, _disk_known_grid(), pose=(0.0, 0.0, 0.8))  # facing 46 deg off
+    assert res.status == "ALIGN" and not res.blocked
+    assert res.speed_scale == 0.0
+    assert res.carrot[0] > 0.3 and abs(res.carrot[1]) < 0.1  # looking down the route
+
+
+def test_align_is_not_used_for_obstacles_or_small_turns():
+    route, path = straight(allow_detour=False, gait="flat")
+    grid = _disk_known_grid()
+    grid.fill_rect(0.6, 0.8, -0.4, 0.4, OBSTACLE)  # real obstacle on the route
+    assert plan(route, path, grid, pose=(0.0, 0.0, 0.8)).blocked
+    # Already facing the route: nothing to gain by turning, UNKNOWN ahead blocks.
+    assert plan(route, path, _disk_known_grid(), pose=(0.0, 0.0, 0.05)).blocked
+
+
+def test_no_detour_stairs_repeat_the_taught_line_through_unknown_but_not_obstacles():
+    route, path = straight(allow_detour=False, gait="stairs")
+    res = plan(route, path, _disk_known_grid(), pose=(0.0, 0.0, 0.0))
+    assert not res.blocked and res.status == "TRACK"
+    grid = _disk_known_grid()
+    grid.fill_rect(0.7, 0.9, -0.4, 0.4, OBSTACLE)  # inside the 0.4 m stairs commit
+    assert plan(route, path, grid, pose=(0.0, 0.0, 0.0)).blocked
+    # Opt-out keeps the strict behaviour.
+    from s10_auto_nav.route_planner import RoutePlannerConfig
+
+    strict = RoutePlanner(RoutePlannerConfig(stairs_trust_taught_path=False))
+    assert plan(route, path, _disk_known_grid(), pose=(0.0, 0.0, 0.0), planner=strict).blocked
+
+
+def test_taught_stairs_grid_uses_the_higher_step_limit():
+    h = np.zeros((13, 9))
+    h[10:, :] = 0.30  # a 0.30 m boulder step whose edge row is the cell at x = 0.9 m
+    m = np.ones((13, 9), bool)
+    for mode, expect in (("stairs", OBSTACLE), ("stairs_taught", FREE)):
+        b = LocalGridBuilder()
+        b.add(Observation(t=0.0, pose=(0.0, 0.0, 0.0, 0.0), height=h, mask=m))
+        g = b.build((0.0, 0.0), gait=mode, yaw=0.0)
+        assert g.lookup(np.array([[0.9, 0.0]]))[0] == expect
