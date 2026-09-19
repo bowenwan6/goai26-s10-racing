@@ -15,11 +15,13 @@ tick. Heights in ``height`` are relative to the base (robot yaw frame, 13 x 9 X-
 ``real_transfer.geometry.height_grid``); ``z`` is the base height; route z is ground and
 ``body_z_offset`` converts between them.
 
-Status values (command is zero for every status except RUNNING/DETOUR/ASTAR/GATE):
+Status values (command is zero for every status except RUNNING/DETOUR/ASTAR/GATE; ALIGN
+only turns in place):
 
 * ``RUNNING``   tracking the centreline (``plan.status == TRACK``)
 * ``DETOUR``    lateral-offset candidate chosen
 * ``ASTAR``     fallback grid path
+* ``ALIGN``     turning in place (zero forward) so the next frame sees down a sharp bend
 * ``GATE``      final straight approach to the current waypoint
 * ``BLOCKED``   no admissible local path (reason says why) -- stop, never reverse
 * ``OFF_CORRIDOR`` |d| beyond corridor_half_width + margin -- stop
@@ -57,7 +59,7 @@ from s10_auto_nav.route_v2 import (
     TerrainCrossCheck,
 )
 
-MOVING = {"RUNNING", "DETOUR", "ASTAR", "GATE"}
+MOVING = {"RUNNING", "DETOUR", "ASTAR", "GATE", "ALIGN"}
 
 
 def native_gains() -> PursuitGains:
@@ -309,7 +311,11 @@ class RouteFollowerCore:
         if terrain.hold:
             return self._stop("HOLD_TERRAIN", terrain.reason, **common)
 
-        grid = self.grid_builder.build((x, y), gait=gait, now=float(t), yaw=yaw)
+        grid_mode = gait
+        if (gait == "stairs" and not segment.allow_detour
+                and self.planner.config.stairs_trust_taught_path):
+            grid_mode = "stairs_taught"
+        grid = self.grid_builder.build((x, y), gait=grid_mode, now=float(t), yaw=yaw)
         self.last_grid = grid
         lookahead = cfg.lookahead if cfg.lookahead is not None else self.controller.lookahead_distance()
         plan = self.planner.plan(
