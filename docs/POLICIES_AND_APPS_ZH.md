@@ -14,7 +14,10 @@
 - **实机跑过的 policy 只有三个：** 官方 57D（AGX 版）、speedturn2000、HIM 1500。HIM 1500 没能上台阶。
 - **9 月导航方案**（`rl_nav`）：J3100 负责步行，1150 负责台阶。只在 MuJoCo 里跑通（30/30 WP，713 s），还没上真机。
 - **8 月仿真赛 Ver1.0**：官方 57D + Gate16 v1.5 + stairs_stable。33/33 WP，436.058 s（seed 6）。
-- **新狗 + 新 SLAM（x_nav）**：ROS 1 网关、运控 SDK、采集助手 `/teach` 已部署到 AGX，离线测试通过，还没在新狗上实测。
+- **新狗（050 号）+ 新 SLAM（x_nav），09-19 实测：**
+  - 点云 10 Hz、IMU 200 Hz，与 106 本机 ROS 2 数据逐条一致；连续 10 分钟稳定。
+  - x_nav 能建图，输出位姿 `/base_link/odom`（10 Hz）；`/teach` 已接上这三路数据。
+  - 还没做：运控 SDK 只空跑过，没有运动测试；手机经机器人 Wi-Fi 打开 `/teach` 未验证。
 
 ## 1. Policy
 
@@ -115,10 +118,11 @@
 | `/field` 现场助手 | 自检、切图、静止检查、限时录包、标点草稿、航点复测 | 106 field worker | ✅ 48 号；v3 现场未验收 | [FIELD_GUIDE_ZH.md](../tools/s10_mapping_web/FIELD_GUIDE_ZH.md) |
 | `/imu-check` | IMU 曲线、静止采样、复零 | 106 | ✅ 09-15 | [IMU_DIAGNOSTIC_GUIDE_ZH.md](../tools/s10_mapping_web/IMU_DIAGNOSTIC_GUIDE_ZH.md) |
 | `/native-nav` | 原生步态导航测试：只读检查、切步态、Start/B 任务、停止 | 106 native-nav 服务 | ✅ 已部署，**没实际走过** | [NATIVE_NAV_GUIDE_ZH.md](../tools/s10_mapping_web/NATIVE_NAV_GUIDE_ZH.md) |
-| **`/teach` 采集助手（新）** | 新 SLAM 用：建图采集（带回环）、标 WP01–30 和切换点、录示教路径。只记录，不控制机器人 | AGX ROS 1（不连 103 / 106） | ✅ 已部署 AGX；📝 新狗实测 | [TEACH_GUIDE_ZH.md](../tools/s10_mapping_web/TEACH_GUIDE_ZH.md) |
+| **`/teach` 采集助手（新）** | 新 SLAM 用：建图采集（带回环）、标 WP01–30 和切换点、录示教路径。只记录，不控制机器人 | AGX ROS 1（不连 103 / 106） | ✅ 新狗上运行，位姿 / 点云 / IMU 10 / 10 / 199 Hz；📝 手机经机器人 Wi-Fi 访问未验证 | [TEACH_GUIDE_ZH.md](../tools/s10_mapping_web/TEACH_GUIDE_ZH.md) |
 
 - **新狗和共用的狗上只能用 `/teach`。**
-  - 其余几个页面绑定 48 号的 106（主机密钥、machine-id），手机入口靠 103 的转发。
+  - 其余几个页面要通过 SSH 调 106 上的后台。这个后台只装在 48 号的 106 上，AGX 用的专用密钥 `backend_key` 也只加到了 48 号。
+  - **主机密钥拦不住：** 050 号的 103 / 106 与 48 号主机密钥相同（厂商镜像），106 的 IP 也相同。新狗上应该靠“没有这把密钥、没有这个后台”连不上，但**没有实测**。
   - `/field` 的“加载地图”会调用 `drmap map activate`，改变整机状态。
 
 ### 2.2 真机导航栈（ROS 2，`src/s10_auto_nav`）
@@ -136,15 +140,17 @@
 
 | 名称 | 用途 | 运行在 | 状态 |
 |---|---|---|---|
-| `s10_ros1_gateway` | ROS 2 → ROS 1 单向转发点云、`/IMU`、`/ODOM`，字节不变 | AGX | ✅ AGX 端到端测试零差异；📝 新狗实测 |
-| 106 点云 tap | 106 的点云只在本机发布；tap 只读订阅，经 TCP 转给 AGX | 106 用户目录 | 📝 只用合成数据测过 |
-| `scripts/robot_session.sh` | 一条命令部署 / 启动 / 撤掉 106 tap 和 AGX 网关 | Mac | 📝 新写，未实测 |
-| `s10_ros1_control` | ROS 1 `/cmd_vel`、`/web_cmd` → 原厂 `/NAV_CMD`、`/MOTION_STATE`、`/GAIT`；默认空跑 | AGX | 🧪 19 项模拟测试；📝 **从未做过运动测试** |
+| `s10_ros1_gateway` | ROS 2 → ROS 1 单向转发点云、`/IMU`、`/ODOM`，字节不变 | AGX | ✅ 新狗实测：60 s 内点云 592/592、IMU 11845/11845 与 106 本机 ROS 2 参考逐条一致；10 分钟 CPU 约 30%（单核）、内存 67 MiB 不增长 |
+| 106 点云 tap | 106 的点云只在本机发布；tap 只读订阅，经 TCP 转给 AGX | 106 用户目录 | ✅ 新狗实测：10 分钟 13621/13621、丢 0；106 上 CPU 8.4%，厂商雷达驱动负载不变 |
+| `scripts/robot_session.sh` | 一条命令部署 / 启动 / 撤掉 106 tap 和 AGX 网关 | Mac | ✅ 新狗实测 up → down → up；down 后 106 无残留，厂商服务正常 |
+| `scripts/agx_ptp/` | AGX 时钟改为 PTP 跟随 103（`s10-ptp4l` / `s10-phc2sys`），关闭互联网 NTP；带回滚脚本 | AGX | ✅ 偏差百纳秒级（原先机器人比 AGX 快 34 s） |
+| `s10_ros1_control` | ROS 1 `/cmd_vel`、`/web_cmd` → 原厂 `/NAV_CMD`、`/MOTION_STATE`、`/GAIT`；默认空跑 | AGX | 🧪 19 项模拟测试；新狗上只空跑过（能读到反馈，发现 2 个原厂 `/NAV_CMD` 发布者）；📝 **从未做过运动测试** |
 | MCAP → ROS 1 bag 转换 + 审计 | 离线转换，用 ROS 2 / ROS 1 官方解码器逐条比对 | Mac（Docker） | ✅ 合成数据；📝 真实录包待转 |
-| x_nav（厂商容器） | ROS 1 SLAM / 定位 | AGX Docker | 📝 镜像缺 `map_manager`，还不能建图 |
+| x_nav（厂商容器） | ROS 1 SLAM / 定位 | AGX Docker | ✅ 能建图（地图“111”，授权通过），输出 `/base_link/odom` 10 Hz；📝 `map_manager`、外参未解决 |
 | `/teach` 采集助手 | 见 2.1 | AGX | 见 2.1 |
 
-整体计划见 [NEW_SLAM_XNAV_INTEGRATION_ZH.md](NEW_SLAM_XNAV_INTEGRATION_ZH.md)。
+- **`/ODOM`：** 新狗上 106 的官方定位按决定不开，定位用 x_nav 自己的 SLAM。
+- 整体计划见 [NEW_SLAM_XNAV_INTEGRATION_ZH.md](NEW_SLAM_XNAV_INTEGRATION_ZH.md)；新狗验收记录见 [ros1_gateway/README_ZH.md](../ros1_gateway/README_ZH.md)。
 
 ### 2.4 仿真与评估
 
@@ -196,12 +202,13 @@
    - 真机感知话题：`/perception/heightmap`、`/scan`、点云目前只有 MuJoCo 的 `sim_node.py` 发布。
 2. **J3100 / 1150 没有任何实机记录。** 1150 在台阶上轮速超过 30 rad/s 诊断线。
 3. **x_nav 的问题：**
-   - 建图模块缺包；
+   - `map_manager` 仍缺（手册里导航点、虚拟障碍物的保存可能依赖它）；
    - 外参是默认值；
-   - 位姿话题未确认；
-   - AGX 时钟比机器人慢约 14 s；
    - 8000 / 9000 / 8765 端口对所有网卡开放，开发页用默认密码。
-4. **新狗实测：** ROS 1 网关、106 tap、`robot_session.sh`、`/teach` 都等现场验收；运控 SDK 从未做过运动测试。
+4. **新狗还没做的：**
+   - 运控 SDK 的运动测试。开始前要和其他使用者约定，暂停 2 个原厂 `/NAV_CMD` 发布者（103 handler、106 localPlanner）。
+   - 手机经机器人 Wi-Fi 打开 `/teach`；另一台机器经 Wi-Fi 订阅 ROS 1。
+   - 核实旧页面在新狗上确实连不上 106（主机密钥相同，见 2.1）。
 5. **说法不一致，待核实：**
    - 没有 Ver1.0 带 stairs_stable 跑全程的证据。
    - “stairs_stable”一名多用：Ver1.0 的 model_599、另一个模型 stable499、9 月 `rl_nav` 里装 1150 的槽名。

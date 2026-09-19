@@ -29,7 +29,7 @@ identity() {
 }
 
 tap_status() {
-  "${S106[@]}" "[ -x $TAP_DIR/run_tap_106.sh ] && bash $TAP_DIR/run_tap_106.sh status || echo 'tap not deployed'; pgrep -fa s10_lidar_tap.py | grep -v pgrep || true"
+  "${S106[@]}" "[ -f $TAP_DIR/run_tap_106.sh ] && bash $TAP_DIR/run_tap_106.sh status || echo 'tap not deployed'; pgrep -fa '^python3 -u $TAP_DIR/s10_lidar_tap.py' || true"
 }
 
 case "${1:-status}" in
@@ -50,10 +50,10 @@ case "${1:-status}" in
     ;;
   down)
     echo "== stop tap and remove $TAP_DIR on 106"
-    "${S106[@]}" "[ -x $TAP_DIR/run_tap_106.sh ] && bash $TAP_DIR/run_tap_106.sh stop || true; \
+    "${S106[@]}" "[ -f $TAP_DIR/run_tap_106.sh ] && bash $TAP_DIR/run_tap_106.sh stop || true; \
       pkill -INT -f '$TAP_DIR/s10_lidar_tap.py' 2>/dev/null || true; sleep 1; \
       rm -rf $TAP_DIR; \
-      if pgrep -f s10_lidar_tap.py >/dev/null; then echo 'WARNING: tap process still running'; else echo '106: no tap process'; fi; \
+      if pgrep -f '^python3 -u $TAP_DIR/s10_lidar_tap.py' >/dev/null; then echo 'WARNING: tap process still running'; else echo '106: no tap process'; fi; \
       [ -e $TAP_DIR ] && echo 'WARNING: $TAP_DIR still exists' || echo '106: $TAP_DIR removed'"
     if [ "$2" = "--agx" ]; then "${A[@]}" 'bash ~/ros1_gateway/scripts/stop_gateway.sh'; fi
     echo "106/103 restored (nothing of ours left on 106; nothing was ever changed on 103)"

@@ -1,0 +1,13 @@
+[Unit]
+Description=S10 AGX system clock from end0 PTP hardware clock
+After=s10-ptp4l.service
+Requires=s10-ptp4l.service
+
+[Service]
+# Same as 106: step once if more than 10 s off, then slew.
+ExecStart=/usr/sbin/phc2sys -s end0 -c CLOCK_REALTIME -w -z /var/run/s10-ptp4l -O 0 -S 10.0 -R 8 -N 3 -m -q
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
