@@ -186,3 +186,15 @@ def test_route_with_a_turn_is_followed_when_refused():
     assert any(tr[3] == Mode.FOLLOW_ROUTE for tr in trace)
     end = trace[-1]
     assert end[2] > 1.0  # turned the corner and went up the second leg
+
+
+def test_align_waits_until_past_the_last_bend_before_the_entry():
+    # A 90 deg corner at s = 4, the manoeuvre's first edge 1 m after it: ALIGN (which creeps
+    # straight at the edge) may not start before the corner, or it would cut it.
+    route = make_route([[0, 0, 0], [4, 0, 0], [4, 3, 0.15]])
+    path = RoutePath(route)
+    router = ManeuverRouter(path, [])
+    m = maneuver(prior_point=(4.0, 1.0), prior_yaw=math.pi / 2)
+    m.s_first, m.s0, m.s1, m.s_last = 5.0, 4.2, 5.7, 5.0
+    s_from = router._last_bend_before(m)
+    assert 4.0 <= s_from <= 4.6
