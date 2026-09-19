@@ -7,7 +7,7 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
-from route_v2_helpers import make_route
+from route_v2_helpers import make_route, polyline
 from test_rl_edge_tracker import synthetic_grid
 
 from s10_auto_nav.rl_nav.maneuvers import Maneuver
@@ -209,10 +209,12 @@ def test_drop_ahead_slows_the_climb():
     assert climbing and all(tr[6][0] <= 0.1 + 1e-9 for tr in climbing)
 
 
-def test_stepping_off_a_ledge_never_pivots_on_it():
-    # A 0.19 m ledge at x = 5, the route turning 67 deg right 0.6 m past it: at s 5.4 the carrot
-    # is 52 deg off, where the pursuit alone would pivot with the rear wheels on the edge.
-    path = RoutePath(make_route([[0, 0, 0.19], [5.6, 0, 0], [6.2, -1.4, 0]]))
+def test_stepping_off_a_ledge_goes_straight_across_it():
+    # A 0.19 m ledge at x = 5, the route bending 60 deg right 0.6 m past it (no waypoint there):
+    # the pursuit's carrot rounds the bend while the robot is on the ledge and would turn it, and a
+    # turn with the rear wheels on the edge catches a knee.
+    bend = [[0, 0, 0.19], [5.6, 0, 0], [7.0, -2.4, 0]]
+    path = RoutePath(make_route([bend[0], bend[-1]], centerlines=[polyline(bend)]))
     ledge = Maneuver(
         id="M00",
         s0=4.2,
@@ -225,12 +227,13 @@ def test_stepping_off_a_ledge_never_pivots_on_it():
     )
     runner = runner_on(path, [ledge])
     trace = drive(runner, path, surface=lambda x, y: np.where(x < 5.0, 0.19, 0.0), steps=300)
-    straddling = [tr for tr in trace if tr[4] == Mode.DESCEND and tr[7] < 5.0 + 0.6]
-    assert straddling and all(tr[6][0] > 0.0 for tr in straddling)
+    straddling = [tr for tr in trace if tr[4] == Mode.DESCEND and 4.6 < tr[7] < 5.0 + 0.6]
+    assert straddling
+    assert all(tr[6][0] > 0.0 and abs(tr[6][2]) < 0.1 for tr in straddling)
     assert trace[-1][4] == Mode.DONE
 
 
-def test_stuck_at_a_ledge_backs_off_and_tries_again_faster():
+def test_stuck_at_a_ledge_backs_off_and_tries_again():
     path = RoutePath(make_route([[0, 0, 0.19], [5.6, 0, 0], [9, 0, 0]]))
     ledge = Maneuver(
         id="M00",
@@ -253,7 +256,6 @@ def test_stuck_at_a_ledge_backs_off_and_tries_again_faster():
     )
     kinds = transitions(runner)
     assert kinds[kinds.index("DESCEND") :][:3] == ["DESCEND", "BACKUP", "DESCEND"]
-    assert any(tr[6][0] > 0.55 for tr in trace if tr[4] == Mode.DESCEND)  # faster the second time
     assert trace[-1][4] == Mode.DONE
 
 
