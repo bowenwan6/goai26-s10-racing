@@ -230,6 +230,33 @@ def test_stepping_off_a_ledge_never_pivots_on_it():
     assert trace[-1][4] == Mode.DONE
 
 
+def test_stuck_at_a_ledge_backs_off_and_tries_again_faster():
+    path = RoutePath(make_route([[0, 0, 0.19], [5.6, 0, 0], [9, 0, 0]]))
+    ledge = Maneuver(
+        id="M00",
+        s0=4.2,
+        s1=5.7,
+        s_first=5.0,
+        s_last=5.0,
+        policy="walk_descend",
+        kinds=["edge_down"],
+        max_edge_down=0.19,
+    )
+    runner = runner_on(path, [ledge])
+
+    def lip(t, mode, x, y, yaw):  # the first go jams a knee on the lip; the second clears it
+        first = runner.descend_tries == 0
+        return (min(x, 4.95), y, yaw) if mode == Mode.DESCEND and first else (x, y, yaw)
+
+    trace = drive(
+        runner, path, surface=lambda x, y: np.where(x < 5.0, 0.19, 0.0), steps=600, disturb=lip
+    )
+    kinds = transitions(runner)
+    assert kinds[kinds.index("DESCEND") :][:3] == ["DESCEND", "BACKUP", "DESCEND"]
+    assert any(tr[6][0] > 0.55 for tr in trace if tr[4] == Mode.DESCEND)  # faster the second time
+    assert trace[-1][4] == Mode.DONE
+
+
 # ---------------------------------------------------------------------------- recovery
 def test_box_on_the_route_is_detoured_on_the_map():
     path = RoutePath(straight())

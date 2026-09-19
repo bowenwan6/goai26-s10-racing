@@ -33,7 +33,8 @@ Nominal (the first version)::
               Back to WALK past the manoeuvre -- new: not while still sliding faster than
               settle_v, since the SDK's hand-back holds the joints rigid for 0.25 s.
     DESCEND   A ledge to step off (nothing rises): the walking actor at walking speed. New: no
-              pivot in place until the body is clear of the ledge.
+              pivot in place until the body is clear of the ledge; stuck at the lip (a knee
+              caught) for descend_stall s: back off and try again faster.
     RECOVER   The stairs actor ran past a waypoint it did not score: go back for it walking
               (once it has stopped sliding). New: the stairs actor first carries on to ground the
               walking actor takes (the map's slope/step check), and the way back is straight
@@ -192,6 +193,10 @@ class RunnerParams:
     #: actor takes (the first version drove straight back, and slid down WP11's crest doing so
     #: with 0.2 m of localisation bias); else walk back before the manoeuvre and climb it once more,
     #: turning harder for that waypoint; else HOLD.
+    #: Stepping off a ledge, no progress for descend_stall s (a knee caught on the lip, bouncing):
+    #: back off and try again at walk_v, for momentum; HOLD after descend_retries.
+    descend_stall: float = 6.0
+    descend_retries: int = 3
     recover_v: float = 0.35
     recover_timeout: float = 60.0
     reclimb_correction: float = math.radians(20.0)
@@ -257,6 +262,7 @@ class RouteRunner:
         self.climb_best = (-math.inf, 0.0)
         self.settle_since = None
         self.backup_until, self.backup_why, self.backup_kind = -math.inf, "", "rejoin"
+        self.descend_best, self.descend_tries = (-math.inf, 0.0), 0
         self.recover = None  # dict(t0, how, line, best, best_t) while RECOVER runs
         self.reclimbed: set = set()  # gates a manoeuvre was climbed again for
         self.reclimb_gate = None
@@ -429,7 +435,13 @@ class RouteRunner:
         if self.mode == Mode.BACKUP:
             if inp.t < self.backup_until:
                 return NavOutput((-p.backup_v, 0.0, 0.0), "official", self.mode, "backing off")
-            self._plan(inp, s, self.backup_why, self.backup_kind)
+            if self.backup_kind == "ledge":
+                self._set(
+                    Mode.DESCEND, inp.t, s, f"at the ledge again (try {self.descend_tries + 1})"
+                )
+                self.descend_best = (s, inp.t)
+            else:
+                self._plan(inp, s, self.backup_why, self.backup_kind)
         if self.mode == Mode.DETOUR:
             out = self._detour(inp, s)
             if out is not None:
@@ -474,7 +486,22 @@ class RouteRunner:
                 self._set(Mode.WALK, inp.t, s, "past the ledge")
                 self.k += 1
             else:
-                vx, vy, wz = self._pursue(s, inp, p.walk_floor, 0.3)
+                if s > self.descend_best[0] + 0.15:
+                    self.descend_best = (s, inp.t)
+                elif inp.t - self.descend_best[1] > p.descend_stall:
+                    if self.descend_tries >= p.descend_retries:
+                        self._set(Mode.HOLD, inp.t, s, "could not step off the ledge")
+                        return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
+                    self.descend_tries += 1
+                    self._backup(inp, s, "stuck at the ledge", "ledge")
+                    if self.mode == Mode.BACKUP:
+                        return NavOutput(
+                            (-p.backup_v, 0.0, 0.0), "official", self.mode, "backing off"
+                        )
+                    self._set(Mode.HOLD, inp.t, s, "stuck at the ledge, not clear behind")
+                    return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
+                v = p.walk_floor if self.descend_tries == 0 else p.walk_v
+                vx, vy, wz = self._pursue(s, inp, v, 0.3)
                 if vx == 0.0 and s < zone.s_last + p.ledge_clear:
                     # Straddling the ledge: a pivot here catches a knee on the edge (it did, and
                     # sat there). Keep rolling off it while turning.
@@ -528,6 +555,7 @@ class RouteRunner:
             why = f"heading error {math.degrees(err):.1f} deg, {self.d:+.2f} m off the route"
             if zone.policy == "walk_descend":
                 self._set(Mode.DESCEND, inp.t, s, why)
+                self.descend_best, self.descend_tries = (s, inp.t), 0
             else:
                 self._set(Mode.CLIMB, inp.t, s, why)
                 self.climb_best = (s, inp.t)
