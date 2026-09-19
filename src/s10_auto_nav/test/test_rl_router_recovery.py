@@ -256,3 +256,28 @@ def test_a_follower_that_claims_to_drive_but_stands_still_is_overruled():
         modes.append(out.mode)
     assert Mode.FOLLOW_ROUTE in modes
     assert x > 2.0
+
+
+def test_map_check_tolerates_localisation_error_near_mapped_relief():
+    # A 0.5 m rock on the map beside the corridor. Seen from a pose 0.2 m off, its side lands next
+    # to it on the map -- above the ground there -- and must not read as new; a new box still does.
+    path = RoutePath(straight_route())
+    n, res = 800, 0.05
+    ground = np.zeros((n, n))
+    ix0, iy0 = int((2.0 + 10.0) / res), int((0.35 + 10.0) / res)
+    ground[iy0 : iy0 + 8, ix0 : ix0 + 8] = 0.5  # rock at x 2.0-2.4, y 0.35-0.75
+    surface = MapSurface(ground, np.ones((n, n), bool), np.zeros((n, n)), (-10.0, -10.0), res)
+    rock = [(2.0, 2.4, 0.35 - 0.2, 0.75 - 0.2, 0.5)]  # as seen with a 0.2 m pose error
+    assert (
+        unexpected_ahead(
+            ground_points(1.0, 0.0, 0.0, extra=rock), (1.0, 0.0, 0.42, 0.0), path, 1.0, surface
+        )
+        is None
+    )
+    box = [(1.5, 1.9, -0.2, 0.2, 0.4)]
+    assert (
+        unexpected_ahead(
+            ground_points(1.0, 0.0, 0.0, extra=box), (1.0, 0.0, 0.42, 0.0), path, 1.0, surface
+        )
+        is not None
+    )
