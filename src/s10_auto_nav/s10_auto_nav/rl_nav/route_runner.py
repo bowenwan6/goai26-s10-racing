@@ -35,7 +35,10 @@ Nominal (the first version)::
     DESCEND   A ledge to step off (nothing rises): the walking actor at walking speed. New: no
               pivot in place until the body is clear of the ledge.
     RECOVER   The stairs actor ran past a waypoint it did not score: go back for it walking
-              (once it has stopped sliding).
+              (once it has stopped sliding). New: the stairs actor first carries on to ground the
+              walking actor takes (the map's slope/step check), and the way back is straight
+              only if the map says it is walkable -- else a map path to it, else a map path back
+              before the manoeuvre to climb it once more, else HOLD.
 
 Recovery (on a measured deviation only)::
 
@@ -185,6 +188,13 @@ class RunnerParams:
     #: on flat ground at about this speed.
     backup_v: float = 0.2
     backup_time: float = 1.5
+    #: A waypoint missed on the climb: back to it walking only on ground the map says the walking
+    #: actor takes (the first version drove straight back, and slid down WP11's crest doing so
+    #: with 0.2 m of localisation bias); else walk back before the manoeuvre and climb it once more,
+    #: turning harder for that waypoint; else HOLD.
+    recover_v: float = 0.35
+    recover_timeout: float = 60.0
+    reclimb_correction: float = math.radians(20.0)
 
     @classmethod
     def from_profile(cls, profile) -> RunnerParams:
@@ -247,6 +257,9 @@ class RouteRunner:
         self.climb_best = (-math.inf, 0.0)
         self.settle_since = None
         self.backup_until, self.backup_why, self.backup_kind = -math.inf, "", "rejoin"
+        self.recover = None  # dict(t0, how, line, best, best_t) while RECOVER runs
+        self.reclimbed: set = set()  # gates a manoeuvre was climbed again for
+        self.reclimb_gate = None
 
     # ------------------------------------------------------------------ helpers
     def _set(self, mode, t, s, why=""):
@@ -468,8 +481,16 @@ class RouteRunner:
                     vx = p.ledge_roll_v
                 return NavOutput((vx, vy, wz), "official", self.mode, "descend")
         if self.mode == Mode.CLIMB and s > self.s_gate + p.recover_margin:
-            self._set(Mode.RECOVER, inp.t, s, "passed an unscored waypoint")
+            self._set(Mode.RECOVER, inp.t, s, f"passed {f.target_id} unscored")
             self.recover_gate = self.s_gate
+            self.recover = {
+                "t0": inp.t,
+                "how": None,
+                "line": None,
+                "best": -math.inf,
+                "best_t": inp.t,
+                "target": f.target_id,
+            }
         if self.mode == Mode.RECOVER:
             out = self._recover(inp, s)
             if out is not None:
@@ -520,7 +541,9 @@ class RouteRunner:
             {"err_deg": round(math.degrees(err), 1), "d": round(self.d, 3)},
         )
 
-    def _climb(self, inp, s):
+    def _climb(self, inp, s, cap_at_gate=True):
+        """The first version's climb law. ``cap_at_gate``: never aim past the unscored waypoint
+        (off only while RECOVER carries on to walkable ground past one)."""
         p = self.p
         if s > self.climb_best[0] + 0.2:
             self.climb_best = (s, inp.t)
@@ -533,14 +556,20 @@ class RouteRunner:
             self.wait_kind = "obstacle"
             self._set(Mode.WAIT, inp.t, s, self.wait_why)
             return NavOutput((0.0, 0.0, 0.0), "stairs_stable", self.mode, "wait")
-        carrot = self.path.point_at(min(s + p.climb_carrot, self.path.length, self.s_gate))
+        cap = self.s_gate if cap_at_gate else self.path.length
+        carrot = self.path.point_at(min(s + p.climb_carrot, self.path.length, cap))
         tangent = self._tangent(s + 0.4)
         bearing = math.atan2(carrot[1] - inp.y, carrot[0] - inp.x)
-        aim = tangent + float(
-            np.clip(wrap(bearing - tangent), -p.climb_correction, p.climb_correction)
-        )
-        err = wrap(aim - inp.yaw)
         near_gate = 0.0 <= self.s_gate - s < p.climb_gate_slow
+        corr = p.climb_correction
+        if (
+            near_gate
+            and self.reclimb_gate is not None
+            and abs(self.s_gate - self.reclimb_gate) < 1e-6
+        ):
+            corr = p.reclimb_correction  # the second go at a waypoint missed on the first
+        aim = tangent + float(np.clip(wrap(bearing - tangent), -corr, corr))
+        err = wrap(aim - inp.yaw)
         v = p.climb_turn_v if (abs(err) > math.radians(8) or near_gate) else p.climb_v
         v = max(0.1, min(v, v - max(0.0, inp.v_forward - v)))
         drop = self._drop_ahead(inp, s)
@@ -564,24 +593,116 @@ class RouteRunner:
         return inp.t - self.settle_since < self.p.settle_timeout
 
     def _recover(self, inp, s):
-        if inp.owner == "stairs_stable" and self._sliding(inp):
+        p, rc = self.p, self.recover
+        zone = self._zone()
+        stairs = inp.owner == "stairs_stable"
+        if stairs and self._sliding(inp):
             return NavOutput((0.0, 0.0, 0.0), "stairs_stable", self.mode, "settling")
         if self.s_gate != self.recover_gate:
             self._set(Mode.WALK, inp.t, s, "waypoint scored")
+            self.recover = None
             self.best_s, self.best_s_t = s, inp.t
             return None
-        gate = self.path.point_at(self.s_gate)
-        err = wrap(math.atan2(gate[1] - inp.y, gate[0] - inp.x) - inp.yaw)
-        w = float(np.clip(1.5 * err, -0.5, 0.5))
-        if abs(err) > math.radians(25):
-            return NavOutput((0.0, 0.0, w), "official", self.mode, "turn to the waypoint")
-        dist = math.hypot(gate[0] - inp.x, gate[1] - inp.y)
+        if (
+            stairs
+            and self.planner is not None
+            and zone is not None
+            and s < zone.s1
+            and bool(self.planner.rough_at((inp.x, inp.y))[0])
+        ):
+            # Still on the climb (steps, a steep slope): the walking actor must not take over and
+            # turn here. The stairs actor carries on along the route to walkable ground.
+            return self._climb(inp, s, cap_at_gate=False)
+        if inp.t - rc["t0"] > p.recover_timeout:
+            self._set(Mode.HOLD, inp.t, s, f"could not get back to {rc['target']}")
+            return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
+        gate = np.asarray(self.path.point_at(self.s_gate))[:2]
+        if rc["how"] is None:
+            rc["how"] = self._recover_plan(inp, gate, zone)
+            if rc["how"] is None:
+                self._set(
+                    Mode.HOLD,
+                    inp.t,
+                    s,
+                    f"missed {rc['target']} and no walking way back to it on the map",
+                )
+                return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
+        if rc["how"] == "straight":
+            # The first version: turn to it, drive to it.
+            err = wrap(math.atan2(gate[1] - inp.y, gate[0] - inp.x) - inp.yaw)
+            w = float(np.clip(1.5 * err, -0.5, 0.5))
+            if abs(err) > math.radians(25):
+                return NavOutput((0.0, 0.0, w), "official", self.mode, "turn to the waypoint")
+            dist = math.hypot(gate[0] - inp.x, gate[1] - inp.y)
+            return NavOutput(
+                (float(np.clip(dist, 0.15, 0.45)), 0.0, w),
+                "official",
+                self.mode,
+                "back to the waypoint",
+            )
+        line = rc["line"]
+        here, _ = line.project(np.array([inp.x, inp.y]))
+        if rc["how"] == "reclimb" and line.length - here < 0.3:
+            # Back before the manoeuvre: climb it again (APPROACH, ALIGN, CLIMB), turning harder
+            # for the waypoint missed the first time.
+            self.reclimbed.add(round(self.s_gate, 3))
+            self.reclimb_gate = self.s_gate
+            self.recover = None
+            self._set(Mode.WALK, inp.t, s, f"back before {zone.id}: climbing it again")
+            self.best_s, self.best_s_t = s, inp.t
+            return None
+        if here > rc["best"] + 0.2:
+            rc["best"], rc["best_t"] = here, inp.t
+        elif inp.t - rc["best_t"] > p.detour_stall:
+            self._set(Mode.HOLD, inp.t, s, f"could not get back to {rc['target']}")
+            return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
         return NavOutput(
-            (float(np.clip(dist, 0.15, 0.45)), 0.0, w),
+            line.pursue((inp.x, inp.y, inp.yaw), p.recover_v),
             "official",
             self.mode,
-            "back to the waypoint",
+            f"{rc['how']} for {rc['target']}",
         )
+
+    def _recover_plan(self, inp, gate, zone):
+        """How to get back to a missed waypoint, decided once on walkable ground: straight (the
+        way there is walkable on the map, or there is no map), a map path to it, or a map path
+        back before the manoeuvre to climb it again (once per waypoint)."""
+        rc = self.recover
+        if self.planner is None or self._walkable_line((inp.x, inp.y), gate):
+            return "straight"
+        seen = self._seen_xy()
+        path = self.planner.plan(
+            (inp.x, inp.y),
+            self.path,
+            (self.s_gate - 0.1, self.s_gate + 0.1),
+            s_target=self.s_gate,
+            extra_xy=seen,
+        )
+        if path is not None:
+            rc["line"] = Polyline(path)
+            return "path"
+        if (
+            zone is not None
+            and zone.s0 - 0.5 <= self.s_gate <= zone.s1
+            and round(self.s_gate, 3) not in self.reclimbed
+        ):
+            path = self.planner.plan(
+                (inp.x, inp.y),
+                self.path,
+                (zone.s0 - 1.5, zone.s0 - 0.3),
+                s_target=zone.s0 - 0.3,
+                extra_xy=seen,
+            )
+            if path is not None:
+                rc["line"] = Polyline(path)
+                return "reclimb"
+        return None
+
+    def _walkable_line(self, a, b, step=0.1):
+        a, b = np.asarray(a, float)[:2], np.asarray(b, float)[:2]
+        n = max(2, math.ceil(float(np.hypot(*(b - a))) / step) + 1)
+        pts = a + np.linspace(0.0, 1.0, n)[:, None] * (b - a)
+        return self.planner.line_clear(a, b) and not bool(np.any(self.planner.rough_at(pts)))
 
     # ------------------------------------------------------------------ recovery pieces
     def _past_obstacle(self, s):

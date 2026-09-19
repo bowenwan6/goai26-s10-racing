@@ -82,6 +82,7 @@ def drive(
     """Kinematic robot + a follower that pursues the route and scores waypoints within 0.3 m."""
     x, y, yaw = start
     cursor = 1
+    owner = "official"  # the SDK's joint owner, reported back: the last one asked for
     trace = []
     for k in range(steps):
         t = k * dt
@@ -101,8 +102,9 @@ def drive(
         grid, valid = synthetic_grid(surface, pose=(x, y, yaw))
         pts = ground_points(x, y, yaw, boxes=boxes(t))
         out = runner.step(
-            NavInput(t, x, y, 0.42, yaw, 0.0, 0.0, 0.0, 0.4, grid, valid, f, s_gate, None, pts)
+            NavInput(t, x, y, 0.42, yaw, 0.0, 0.0, 0.0, 0.4, grid, valid, f, s_gate, owner, pts)
         )
+        owner = out.owner
         vx, vy, wz = out.command
         yaw += wz * dt
         x += (vx * math.cos(yaw) - vy * math.sin(yaw)) * dt
@@ -360,6 +362,69 @@ def test_without_a_map_a_needed_detour_holds_still():
     trace = drive(runner, path, steps=200, disturb=push)
     assert trace[-1][4] == Mode.HOLD
     assert trace[-1][6] == (0.0, 0.0, 0.0)
+
+
+def tent(x, y, half_span=None):
+    """A 0.6 m ridge across x = 5 with 24 deg flanks: the stairs actor climbs it, the walking
+    actor must not (over 15 deg). Across everything, or only |y| < half_span with flat ground
+    beside it."""
+    z = np.clip(0.6 - 0.45 * np.abs(np.asarray(x) - 5.0), 0.0, None)
+    return z if half_span is None else np.where(np.abs(np.asarray(y)) < half_span, z, 0.0)
+
+
+def tent_map(half_span=None, res=0.05):
+    n = int(40.0 / res)
+    origin = (-10.0, -20.0)
+    ax = origin[0] + (np.arange(n) + 0.5) * res
+    gx, gy = np.meshgrid(ax, origin[1] + (np.arange(n) + 0.5) * res)
+    return MapSurface(tent(gx, gy, half_span), np.ones((n, n), bool), np.zeros((n, n)), origin, res)
+
+
+def tent_run(half_span=None):
+    # WP02 is on the far flank (x 5.8): the walking actor cannot stand there, so a miss can only
+    # be made good by climbing the ridge again.
+    path = RoutePath(make_route([[0, 0, 0], [3, 0, 0], [5.8, 0, 0.24], [9, 0, 0]]))
+    ridge = Maneuver(
+        id="M00",
+        s0=3.0,
+        s1=6.9,
+        s_first=3.8,
+        s_last=6.3,
+        policy="stairs",
+        kinds=["slope_up"],
+        max_slope_deg=24.0,
+    )
+    runner = runner_on(path, [ridge], surface=tent_map(half_span))
+
+    def veer(t, mode, x, y, yaw):  # the first climb drifts left past WP02
+        first = all(e["to"] != "RECOVER" for e in runner.log)
+        drift = mode == Mode.CLIMB and first and 5.1 < x < 5.8
+        return (x, y + 0.008, yaw) if drift else (x, y, yaw)
+
+    trace = drive(
+        runner, path, surface=lambda x, y: tent(x, y, half_span), steps=2500, disturb=veer
+    )
+    return runner, trace
+
+
+def test_waypoint_missed_on_a_ridge_with_no_walking_way_back_holds():
+    runner, trace = tent_run()
+    assert "RECOVER" in transitions(runner)
+    assert trace[-1][4] == Mode.HOLD
+    assert "no walking way back" in runner.log[-1]["why"]
+    # The walking actor never drove on the flanks (|x - 5| < 1.33, off the top).
+    walked = [
+        tr
+        for tr in trace
+        if tr[5] == "official" and 0.3 < abs(tr[1] - 5.0) < 1.3 and any(tr[6]) and tr[0] > 15.0
+    ]
+    assert not walked
+
+
+def test_waypoint_missed_on_a_ridge_is_climbed_again():
+    runner, trace = tent_run(half_span=1.5)
+    assert any("climbing it again" in e["why"] for e in runner.log)
+    assert trace[-1][4] == Mode.DONE
 
 
 # ---------------------------------------------------------------------------- pieces
