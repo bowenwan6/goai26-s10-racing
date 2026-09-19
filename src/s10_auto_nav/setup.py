@@ -25,6 +25,7 @@ setup(
             "segment_recorder = s10_auto_nav.segment_recorder:main",
             "pitfail_recorder = s10_auto_nav.pitfail_recorder:main",
             "rl_nav = s10_auto_nav.rl_nav_node:main",
+            "rl_nav_prepare = s10_auto_nav.rl_nav.prepare:main",
         ],
     },
 )
