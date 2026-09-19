@@ -1,0 +1,439 @@
+### pid 2741 localization_dd
+-- udp sockets
+10.21.33.106:59224 10.21.33.106:7400 10.21.33.106:7426 10.21.33.106:7427 127.0.0.1:49538 127.0.0.1:59224 127.0.0.1:7400 127.0.0.1:7400 127.0.0.1:7424 127.0.0.1:7425 127.0.0.1:7426 127.0.0.1:7427 239.255.0.1:7400 239.255.0.1:7400 
+### drddslib conf
+/var/opt/robot/conf/drddslib/:
+total 20
+drwxr-xr-x  3 root root 4096 Aug 22 21:04 .
+drwxrwxrwx 14 root root 4096 Aug 22 17:27 ..
+-rw-r--r--  1 root root  601 Aug 19 18:00 dds_topic_scope.conf
+-rw-r--r--  1 root root 1638 Aug 19 18:00 drdds.env
+drwxr-xr-x  2 root root 4096 Aug 22 21:04 dr_qos
+
+/var/opt/robot/conf/drddslib/dr_qos:
+total 40
+drwxr-xr-x 2 root root  4096 Aug 22 21:04 .
+drwxr-xr-x 3 root root  4096 Aug 22 21:04 ..
+-rw-r--r-- 1 root root  2322 Aug 19 18:00 charge_manager.xml
+-rw-r--r-- 1 root root  2665 Aug 19 18:00 datawriter_datareader.xml
+-rw-r--r-- 1 root root  3383 Aug 19 18:00 drqos.xml
+-rw-r--r-- 1 root root 19228 Aug 19 18:00 participant.xml
+-rw-r--r-- 1 root root     0 Aug 19 18:00 topic.xml
+=== /var/opt/robot/conf/drddslib/dr_qos/drqos.xml
+<?xml version="1.0" encoding="utf-8"  ?>
+<dds xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+    <profiles>
+        <participant profile_name="participant_profile" is_default_profile="true">
+        </participant>
+
+        <data_writer profile_name="sensor_msgs::msg::dds_::PointCloud2_">
+            <qos>
+                <reliability>
+                    <kind>RELIABLE</kind>
+                </reliability>
+                <deadline>
+                    <period>
+                        <sec>0</sec>
+                        <nanosec>50000000</nanosec>
+                    </period>
+                </deadline>
+            </qos>
+        </data_writer>
+        <data_reader profile_name="sensor_msgs::msg::dds_::PointCloud2_">
+            <qos>
+                <reliability>
+                    <kind>RELIABLE</kind>
+                </reliability>
+                <deadline>
+                    <period>
+                        <sec>0</sec>
+                        <nanosec>50000000</nanosec>
+                    </period>
+                </deadline>
+            </qos>
+        </data_reader>
+        <data_writer profile_name="drdds::msg::dds_::ExeHealth_" />
+        <data_reader profile_name="drdds::msg::dds_::ExeHealth_" />
+        <data_writer profile_name="drdds::msg::dds_::Gait_" />
+        <data_reader profile_name="drdds::msg::dds_::Gait_" />
+        <data_writer profile_name="drdds::msg::dds_::ImuData_" />
+        <data_reader profile_name="drdds::msg::dds_::ImuData_" />
+        <data_writer profile_name="drdds::msg::dds_::MotionAction_" />
+        <data_reader profile_name="drdds::msg::dds_::MotionAction_" />
+        <data_writer profile_name="drdds::msg::dds_::MotionBase_" />
+        <data_reader profile_name="drdds::msg::dds_::MotionBase_" />
+        <data_writer profile_name="drdds::msg::dds_::MotionParamSet_" />
+        <data_reader profile_name="drdds::msg::dds_::MotionParamSet_" />
+        <data_writer profile_name="drdds::msg::dds_::MotionStatus_" />
+        <data_reader profile_name="drdds::msg::dds_::MotionStatus_" />
+        <data_writer profile_name="drdds::msg::dds_::MotionTo_" />
+        <data_reader profile_name="drdds::msg::dds_::MotionTo_" />
+        <data_writer profile_name="drdds::msg::dds_::NavCmd_" />
+        <data_reader profile_name="drdds::msg::dds_::NavCmd_" />
+        <data_writer profile_name="drdds::msg::dds_::MotionPose_" />
+        <data_reader profile_name="drdds::msg::dds_::MotionPose_" />
+        <data_writer profile_name="nav_msgs::msg::dds_::Odometry_" />
+        <data_reader profile_name="nav_msgs::msg::dds_::Odometry_" />
+        <data_writer profile_name="geometry_msgs::msg::dds_::PoseWithCovarianceStamped_" />
+        <data_reader profile_name="geometry_msgs::msg::dds_::PoseWithCovarianceStamped_" />
+        <data_writer profile_name="drdds::msg::dds_::CancelNavTask_" />
+        <data_reader profile_name="drdds::msg::dds_::CancelNavTask_" />
+        <data_writer profile_name="drdds::msg::dds_::PlannerStatus_" />
+        <data_reader profile_name="drdds::msg::dds_::PlannerStatus_" />
+        <data_writer profile_name="drdds::msg::dds_::AppStatus_" />
+        <data_reader profile_name="drdds::msg::dds_::AppStatus_" />
+        <data_writer profile_name="drdds::msg::dds_::JointsData_" />
+        <data_reader profile_name="drdds::msg::dds_::JointsData_" />
+    </profiles>
+</dds>
+
+=== /var/opt/robot/conf/drddslib/dr_qos/datawriter_datareader.xml
+<data_writer profile_name="sensor_msgs::msg::dds_::PointCloud2_">
+    <qos>
+        <reliability>
+            <kind>RELIABLE</kind>
+        </reliability>
+        <deadline>
+            <period>
+                <sec>0</sec>
+                <nanosec>50000000</nanosec>
+            </period>
+        </deadline>
+    </qos>
+</data_writer>
+<data_reader profile_name="sensor_msgs::msg::dds_::PointCloud2_">
+    <qos>
+        <reliability>
+            <kind>RELIABLE</kind>
+        </reliability>
+        <deadline>
+            <period>
+                <sec>0</sec>
+                <nanosec>50000000</nanosec>
+            </period>
+        </deadline>
+    </qos>
+</data_reader>
+<data_writer profile_name="drdds::msg::dds_::ExeHealth_" />
+<data_reader profile_name="drdds::msg::dds_::ExeHealth_" />
+<data_writer profile_name="drdds::msg::dds_::Gait_" />
+<data_reader profile_name="drdds::msg::dds_::Gait_" />
+<data_writer profile_name="drdds::msg::dds_::ImuData_" />
+<data_reader profile_name="drdds::msg::dds_::ImuData_" />
+<data_writer profile_name="drdds::msg::dds_::MotionAction_" />
+<data_reader profile_name="drdds::msg::dds_::MotionAction_" />
+<data_writer profile_name="drdds::msg::dds_::MotionBase_" />
+<data_reader profile_name="drdds::msg::dds_::MotionBase_" />
+<data_writer profile_name="drdds::msg::dds_::MotionParamSet_" />
+<data_reader profile_name="drdds::msg::dds_::MotionParamSet_" />
+<data_writer profile_name="drdds::msg::dds_::MotionStatus_" />
+<data_reader profile_name="drdds::msg::dds_::MotionStatus_" />
+<data_writer profile_name="drdds::msg::dds_::MotionTo_" />
+<data_reader profile_name="drdds::msg::dds_::MotionTo_" />
+<data_writer profile_name="drdds::msg::dds_::NavCmd_" />
+<data_reader profile_name="drdds::msg::dds_::NavCmd_" />
+<data_writer profile_name="drdds::msg::dds_::MotionPose_" />
+<data_reader profile_name="drdds::msg::dds_::MotionPose_" />
+<data_writer profile_name="nav_msgs::msg::dds_::Odometry_" />
+<data_reader profile_name="nav_msgs::msg::dds_::Odometry_" />
+<data_writer profile_name="geometry_msgs::msg::dds_::PoseWithCovarianceStamped_" />
+<data_reader profile_name="geometry_msgs::msg::dds_::PoseWithCovarianceStamped_" />
+<data_writer profile_name="drdds::msg::dds_::CancelNavTask_" />
+<data_reader profile_name="drdds::msg::dds_::CancelNavTask_" />
+<data_writer profile_name="drdds::msg::dds_::PlannerStatus_" />
+<data_reader profile_name="drdds::msg::dds_::PlannerStatus_" />
+<data_writer profile_name="drdds::msg::dds_::AppStatus_" />
+<data_reader profile_name="drdds::msg::dds_::AppStatus_" />
+<data_writer profile_name="drdds::msg::dds_::JointsData_" />
+<data_reader profile_name="drdds::msg::dds_::JointsData_" />
+=== /var/opt/robot/conf/drddslib/dr_qos/topic.xml
+
+=== /var/opt/robot/conf/drddslib/dr_qos/charge_manager.xml
+<?xml version="1.0" encoding="utf-8"  ?>
+<!-- This is an example of a QoS configuration file, where the value of the "profile_name" tag cannot be modified. -->
+<dds xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+    <profiles>
+        <participant profile_name="participant_profile" is_default_profile="true">
+            <domainId>123</domainId>
+            <rtps>
+            </rtps>
+        </participant>
+    <data_writer profile_name="DDSBatteryInfo" is_default_profile="true">
+        <qos>
+            <reliability>
+                <kind>RELIABLE</kind>
+            </reliability>
+            <liveliness>
+                <kind>AUTOMATIC</kind>
+                <lease_duration>
+                    <sec>0</sec>
+                    <nanosec>100000000</nanosec> <!-- 100 milliseconds -->
+                </lease_duration>
+                <announcement_period>
+                    <sec>0</sec>
+                    <nanosec>50000000</nanosec> <!-- 50 milliseconds -->
+                </announcement_period>
+            </liveliness>
+            <durability>
+                <kind>TRANSIENT_LOCAL</kind>
+            </durability>
+            <deadline>
+                <period>
+                    <sec>1</sec>
+                    <nanosec>0</nanosec>
+                </period>
+            </deadline>
+        </qos>
+    </data_writer>
+
+    <data_reader profile_name="DDSBatteryInfo" is_default_profile="true">
+        <qos>
+            <durability>
+                <kind>TRANSIENT_LOCAL</kind>
+            </durability>
+            <reliability>
+                <kind>RELIABLE</kind>
+            </reliability>
+            <liveliness>
+                <kind>AUTOMATIC</kind>
+                <lease_duration>
+                    <sec>0</sec>
+                    <nanosec>100000000</nanosec> <!-- 100 milliseconds -->
+                </lease_duration>
+                <announcement_period>
+                    <sec>0</sec>
+                    <nanosec>50000000</nanosec> <!-- 50 milliseconds -->
+                </announcement_period>
+            </liveliness>
+        </qos>
+    </data_reader>
+    <topic profile_name="DDSBatteryInfo" is_default_profile="true">
+    </topic>
+    </profiles>
+    <library_settings>
+        <intraprocess_delivery>FULL</intraprocess_delivery>
+    </library_settings>
+</dds>
+
+=== /var/opt/robot/conf/drddslib/dr_qos/participant.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<dds xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles" >
+    <profiles>
+        <transport_descriptors>
+            <!-- TCP sample transport descriptor -->
+            <transport_descriptor>
+                <transport_id>ExampleTransportId1</transport_id>
+                <type>TCPv4</type>
+                <sendBufferSize>8192</sendBufferSize>
+                <receiveBufferSize>8192</receiveBufferSize>
+                <maxMessageSize>16384</maxMessageSize>
+                <maxInitialPeersRange>100</maxInitialPeersRange>
+                <netmask_filter>AUTO</netmask_filter>
+                <interfaces>
+                    <allowlist>
+                        <interface name="wlp59s0" netmask_filter="ON"/>
+                    </allowlist>
+                    <blocklist>
+                        <interface name="127.0.0.1"/>
+                        <interface name="docker0"/>
+                    </blocklist>
+                </interfaces>
+                <interfaceWhiteList>
+                    <address>192.168.1.41</address>
+                    <interface>lo</interface>
+                </interfaceWhiteList>
+                <wan_addr>80.80.55.44</wan_addr>
+                <keep_alive_frequency_ms>5000</keep_alive_frequency_ms>
+                <keep_alive_timeout_ms>25000</keep_alive_timeout_ms>
+                <max_logical_port>200</max_logical_port>
+                <logical_port_range>20</logical_port_range>
+                <logical_port_increment>2</logical_port_increment>
+                <listening_ports>
+                    <port>5100</port>
+                    <port>5200</port>
+                </listening_ports>
+                <tls>
+                    <password>Password</password>
+                    <private_key_file>Key_file.pem</private_key_file>
+                    <rsa_private_key_file>RSA_file.pem</rsa_private_key_file>
+                    <cert_chain_file>Chain.pem</cert_chain_file>
+                    <tmp_dh_file>DH.pem</tmp_dh_file>
+                    <verify_file>verify.pem</verify_file>
+                    <verify_mode>
+                        <verify>VERIFY_PEER</verify>
+                    </verify_mode>
+                    <options>
+                        <option>NO_TLSV1</option>
+                        <option>NO_TLSV1_1</option>
+                    </options>
+                    <verify_paths>
+                        <verify_path>Path1</verify_path>
+                        <verify_path>Path2</verify_path>
+                        <verify_path>Path3</verify_path>
+                    </verify_paths>
+                    <verify_depth>55</verify_depth>
+                    <default_verify_path>true</default_verify_path>
+                    <handshake_role>SERVER</handshake_role>
+                    <server_name>my_server.com</server_name>
+                </tls>
+                <calculate_crc>false</calculate_crc>
+                <check_crc>false</check_crc>
+                <enable_tcp_nodelay>false</enable_tcp_nodelay>
+                <default_reception_threads>
+                    <scheduling_policy>-1</scheduling_policy>
+                    <priority>0</priority>
+                    <affinity>0</affinity>
+                    <stack_size>-1</stack_size>
+                </default_reception_threads>
+                <reception_threads>
+                    <reception_thread port="12345">
+                        <scheduling_policy>-1</scheduling_policy>
+                        <priority>0</priority>
+                        <affinity>0</affinity>
+                        <stack_size>-1</stack_size>
+                    </reception_thread>
+                </reception_threads>
+            </transport_descriptor>
+            <!-- UDP sample transport descriptor. Several options are common with TCP -->
+            <transport_descriptor>
+                <transport_id>ExampleTransportId2</transport_id>
+                <type>UDPv6</type>
+                <TTL>250</TTL>
+                <non_blocking_send>false</non_blocking_send>
+                <output_port>5101</output_port>
+                <default_reception_threads>
+                    <scheduling_policy>-1</scheduling_policy>
+                    <priority>0</priority>
+                    <affinity>0</affinity>
+                    <stack_size>-1</stack_size>
+                </default_reception_threads>
+                <reception_threads>
+                    <reception_thread port="12345">
+                        <scheduling_policy>-1</scheduling_policy>
+                        <priority>0</priority>
+                        <affinity>0</affinity>
+                        <stack_size>-1</stack_size>
+                    </reception_thread>
+                </reception_threads>
+            </transport_descriptor>
+            <!-- SHM sample transport descriptor -->
+            <transport_descriptor>
+                <transport_id>SHM_SAMPLE_DESCRIPTOR</transport_id>
+                <type>SHM</type> <!-- REQUIRED -->
+                <maxMessageSize>524288</maxMessageSize> <!-- OPTIONAL uint32 valid of all transports-->
+                <segment_size>1048576</segment_size> <!-- OPTIONAL uint32 SHM only-->
+                <port_queue_capacity>1024</port_queue_capacity> <!-- OPTIONAL uint32 SHM only-->
+                <healthy_check_timeout_ms>250</healthy_check_timeout_ms> <!-- OPTIONAL uint32 SHM only-->
+                <rtps_dump_file>test_file.dump</rtps_dump_file> <!-- OPTIONAL string SHM only-->
+                <default_reception_threads> <!-- OPTIONAL -->
+                    <scheduling_policy>-1</scheduling_policy>
+                    <priority>0</priority>
+                    <affinity>0</affinity>
+                    <stack_size>-1</stack_size>
+                </default_reception_threads>
+                <reception_threads> <!-- OPTIONAL -->
+                    <reception_thread port="12345">
+                        <scheduling_policy>-1</scheduling_policy>
+                        <prio
+=== /var/opt/robot/conf/drddslib/drdds.env
+# DrDDS runtime environment example.
+#
+# Load this file before starting an application:
+#   set -a
+#   . /path/to/drdds.env
+#   set +a
+#
+# The application ABI and source code do not need to change.
+
+# Topic scope file.
+# If this variable is unset, DrDDS reads /opt/drdds/topic_scope.conf.
+# The CPack package installs the example config under /var/opt/robot/conf/drddslib.
+export DRDDS_TOPIC_SCOPE_FILE=/var/opt/robot/conf/drddslib/dds_topic_scope.conf
+
+# DDS domain id.
+# If unset, the domain id passed by the application is used.
+# For compatibility, existing applications can keep domain 0.
+export DRDDS_DOMAIN_ID=0
+
+# DDS built-in discovery lease settings.
+# Larger lease time keeps peers alive longer after temporary network jitter.
+export DRDDS_DDS_LEASE_SEC=30
+export DRDDS_DDS_LEASE_ANNOUNCE_SEC=2
+
+# Initial discovery announcement tuning.
+export DRDDS_DDS_INITIAL_ANNOUNCEMENTS_COUNT=5
+export DRDDS_DDS_INITIAL_ANNOUNCEMENTS_PERIOD_NS=100000000
+
+# Fast DDS internal thread settings.
+# DRDDS_DDS_THREAD_POLICY:
+#   -1 disables explicit real-time scheduling.
+#   1 is SCHED_FIFO on Linux.
+export DRDDS_DDS_THREAD_POLICY=-1
+export DRDDS_DDS_THREAD_PRIORITY=55
+export DRDDS_DDS_THREAD_AFFINITY=0
+export DRDDS_DDS_THREAD_STACK_SIZE=-1
+
+# Communication trace. Disabled by default.
+# Logs are written to:
+#   /var/opt/robot/log/YYYY_MMDD/drdds_<topic>_<process_name>.log
+export DRDDS_TRACE_ENABLED=0
+export DRDDS_TRACE_TOPICS=/LIDAR/POINTS,/FOLLOW_ENABLE
+export DRDDS_TRACE_LOG_DIR=/var/opt/robot/log
+
+# High-rate topics are sampled after the first few records.
+# Set to 1 for short full-detail captures.
+export DRDDS_TRACE_EVERY_N=100
+
+=== /var/opt/robot/conf/drddslib/dds_topic_scope.conf
+# Topic scope configuration for DrDDS.
+#
+# Format:
+#   <topic_name>=local
+#   <topic_name>=multi
+#
+# local:
+#   Host-only topic. Uses SHM + loopback UDP. It is isolated from physical NICs.
+#
+# multi:
+#   Cross-host topic. Uses SHM + loopback UDP + configured physical NICs.
+#
+# If a topic is not listed here, DrDDS keeps the compatible default behavior:
+#   topic scope = multi
+#
+# Supported aliases:
+#   local aliases: localhost, host, shm
+#   multi aliases: multihost, remote, udp
+
+/LOCAL_IMU=local
+/LOCAL_CAMERA=local
+/LOCAL_DEBUG=local
+
+/REMOTE_GAIT=multi
+/ROBOT_STATUS=multi
+/FLEET_COMMAND=multi
+
+### rslidar conf dir
+total 16
+drwxr-xr-x  2 root root 4096 Aug 22 21:04 .
+drwxrwxrwx 14 root root 4096 Aug 22 17:27 ..
+-rw-rw-rw-  1 root root 4811 Aug 19 13:55 config.yaml
+### hslidar publish section
+97:      ros_send_point_cloud_topic: /lidar_points       # Topic used to send point cloud through ROS
+98-      ros_send_imu_topic: /lidar_imu                  # Topic used to send lidar imu message
+99-      ros_send_packet_loss_topic: /lidar_packets_loss # Topic used to monitor packets loss condition through ROS
+100-      # ros_recv_correction_topic: /lidar_corrections # Topic used to receive corrections file from rosbag
+101-      # ros_send_correction_topic: /lidar_corrections # Topic used to send correction through ROS
+102-      # ros_send_firetime_topic: /lidar_firetime
+103-      # ros_send_ptp_topic: /lidar_ptp                # Topic used to send PTP lock status, offset through ROS
+104-      send_packet_ros: false                          # true: Send packets through ROS 
+105-      send_point_cloud_ros: true                      # true: Send point cloud through ROS    
+--
+190:      ros_send_point_cloud_topic: /lidar_points       # Topic used to send point cloud through ROS
+191-      ros_send_imu_topic: /lidar_imu                  # Topic used to send lidar imu message
+192-      ros_send_packet_loss_topic: /lidar_packets_loss # Topic used to monitor packets loss condition through ROS
+193-      # ros_recv_correction_topic: /lidar_corrections # Topic used to receive corrections file from rosbag
+194-      # ros_send_correction_topic: /lidar_corrections # Topic used to send correction through ROS
+195-      # ros_send_firetime_topic: /lidar_firetime
+196-      # ros_send_ptp_topic: /lidar_ptp                # Topic used to send PTP lock status, offset through ROS
+197-      send_packet_ros: false                          # true: Send packets through ROS 
+198-      send_point_cloud_ros: true                      # true: Send point cloud through ROS    

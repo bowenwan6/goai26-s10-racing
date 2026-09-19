@@ -1,0 +1,76 @@
+{
+  "source_commit": "defbb719ac3822941479caccdee2f35ef0547cf4",
+  "source_files_changed": [],
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+  "versions": {
+    "numpy": "2.5.3",
+    "PyYAML": "6.0.3",
+    "pytest": "9.1.1",
+    "mujoco": "3.13.0",
+    "ruff": "0.16.7"
+  },
+  "excluded_test_files": {
+    "src/s10_auto_nav/test/test_gate16_policy.py": "Gate16 ONNX/manifest bundle absent",
+    "src/s10_auto_nav/test/test_stairs_stable_policy.py": "stairs ONNX/manifest bundle absent",
+    "src/s10_auto_nav/test/test_runtime_contract.py": "model manifest and built SDK absent",
+    "src/s10_perception/test/test_viewer_node.py": "upstream SDK model/module absent"
+  },
+  "full_course_dynamics_run": false,
+  "live_ros_run": false,
+  "robot_contacted": false,
+  "hardware_motion_interface_implemented": false,
+  "runs": {
+    "baseline": {
+      "exit_code": 1,
+      "elapsed_s": 4.364,
+      "command": [
+        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "src",
+        "--ignore=src/s10_auto_nav/test/test_gate16_policy.py",
+        "--ignore=src/s10_auto_nav/test/test_stairs_stable_policy.py",
+        "--ignore=src/s10_auto_nav/test/test_runtime_contract.py",
+        "--ignore=src/s10_perception/test/test_viewer_node.py",
+        "--junitxml=<home>/Documents/ChatGPT/GOAI/s10-real-readiness/real_transfer/results/run-01/baseline.xml"
+      ],
+      "tests": 360,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 55
+    },
+    "transfer": {
+      "exit_code": 0,
+      "elapsed_s": 2.588,
+      "command": [
+        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests_real",
+        "--junitxml=<home>/Documents/ChatGPT/GOAI/s10-real-readiness/real_transfer/results/run-01/transfer.xml"
+      ],
+      "tests": 123,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "exit_code": 0,
+      "elapsed_s": 0.041,
+      "command": [
+        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "real_transfer",
+        "tests_real",
+        "scripts/real_transfer_snapshot.py",
+        "scripts/real_transfer_verify.py"
+      ]
+    }
+  },
+  "offline_checks_passed": false
+}

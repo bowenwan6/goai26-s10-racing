@@ -1,0 +1,24 @@
+{
+ "walk": {
+  "max_step_up": 0.035,
+  "max_step_down": 0.25,
+  "max_slope_deg": 11.0,
+  "max_cross_deg": 5.0,
+  "min_speed": 0.5,
+  "max_entry_skew_deg": 30.0,
+  "lateral_error": 0.1,
+  "turns_on_stairs": false
+ },
+ "climb": {
+  "max_step_up": 0.18,
+  "max_step_down": 0.25,
+  "max_slope_deg": 20.0,
+  "max_cross_deg": 10.0,
+  "min_speed": 0.0,
+  "max_entry_skew_deg": 25.0,
+  "lateral_error": 0.2,
+  "turns_on_stairs": false
+ },
+ "body_half_width": 0.3,
+ "source": "MuJoCo synthetic tests 2026-09-19: J3100 walk, 1150 stairs"
+}

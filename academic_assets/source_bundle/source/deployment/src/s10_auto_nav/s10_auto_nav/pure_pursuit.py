@@ -1,0 +1,223 @@
+"""Pure-pursuit steering with heading-aware speed scheduling.
+
+The locomotion policy consumes a velocity command, so navigation reduces to producing
+``(forward, lateral, yaw_rate)`` from the robot pose and the course. Two behaviours matter
+for lap time:
+
+* **Speed is scheduled on heading error.** Commanding full forward speed while badly
+  misaligned wastes distance and risks tipping on the elevated sections, so forward speed
+  is scaled down as alignment degrades and the robot turns in place past a threshold.
+* **Lateral velocity is used, not ignored.** The S10 is a wheel-legged holonomic-ish
+  platform; small sideways corrections hold the racing line without scrubbing yaw.
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+
+import numpy as np
+
+
+@dataclass
+class PursuitGains:
+    """Tuning surface for the follower.
+
+    The defaults match the shipped policy's trained envelope, which is the ceiling the
+    upstream keyboard interface enforces. Exceeding it does not trade safety for lap
+    time, it simply stops working: the policy ignores commands it never saw in training.
+    See ``s10_bringup/config/nav.yaml``.
+    """
+
+    max_forward: float = 0.7
+    max_lateral: float = 0.4
+    max_yaw_rate: float = 0.7
+
+    #: Carrot distance along the course. Larger is smoother and faster but cuts corners
+    #: harder, which can miss a waypoint's 0.2 m scoring radius.
+    lookahead: float = 1.4
+    #: Lookahead grows with speed so fast sections steer gently.
+    lookahead_speed_gain: float = 0.5
+
+    #: Distance at which the approach brake begins. ``None`` means "use ``lookahead``",
+    #: which is what the brake used unconditionally before this knob existed, so leaving it
+    #: unset reproduces the raced behaviour exactly.
+    #:
+    #: Worth tuning, on evidence: the segment sweep stalled on three separate climbs --
+    #: 17->18 at 0.55 m short, 25->26 at 0.91 m, 27->28 at 0.84 m -- each with the command
+    #: cut to ``max_forward * distance / lookahead`` and each still asking to go forward. A
+    #: waypoint that sits on or just past an incline is approached at a speed chosen for
+    #: flat ground, and the robot runs out of push with its rear axle still on a riser.
+    brake_distance: float | None = None
+
+    yaw_gain: float = 1.8
+    lateral_gain: float = 0.9
+
+    #: Beyond this heading error the robot turns in place instead of driving forward.
+    #:
+    #: The old 75-degree threshold let a nominal 90-degree gate transition start
+    #: translating after only 15 degrees of rotation.  On the narrow WP26 deck that was
+    #: enough to walk the robot over the edge before it faced WP27.  Keep large course
+    #: turns in-place until they are genuinely aligned; the extra pivot time is cheaper
+    #: than losing the ordered tail of the run.
+    pivot_threshold: float = math.radians(30.0)
+    #: Heading error at which forward speed has decayed to its floor.
+    align_falloff: float = math.radians(60.0)
+    #: Fraction of max_forward retained when badly misaligned.
+    min_speed_fraction: float = 0.15
+
+    #: Slew limits, applied per control step, to keep commands smooth for the policy.
+    forward_slew: float = 3.0
+    yaw_slew: float = 6.0
+    #: Lateral was left unlimited and could snap from 0 to the full 0.4 m/s in one 20 ms
+    #: step. The policy never saw that: upstream's keyboard interface ramps its commands,
+    #: so a step input is outside the distribution it was trained on. It also matters most
+    #: where it hurts most -- a robot straddling a ledge that is told to move sideways
+    #: scrubs its wheels along the edge instead of rolling over it.
+    lateral_slew: float = 2.0
+
+
+@dataclass
+class Command:
+    forward: float = 0.0
+    lateral: float = 0.0
+    yaw_rate: float = 0.0
+
+    def as_tuple(self) -> tuple[float, float, float]:
+        return self.forward, self.lateral, self.yaw_rate
+
+
+def wrap_angle(angle: float) -> float:
+    """Wrap to (-pi, pi]."""
+    return math.atan2(math.sin(angle), math.cos(angle))
+
+
+class PurePursuitController:
+    """Stateless-in-principle controller; holds only the slew-rate memory."""
+
+    def __init__(self, gains: PursuitGains | None = None) -> None:
+        self.gains = gains or PursuitGains()
+        self._last = Command()
+
+    def reset(self) -> None:
+        self._last = Command()
+
+    @property
+    def last_command(self) -> Command:
+        """Most recently emitted command, for watchdogs and logging."""
+        return self._last
+
+    def lookahead_distance(self) -> float:
+        g = self.gains
+        return g.lookahead + g.lookahead_speed_gain * abs(self._last.forward)
+
+    def compute(
+        self,
+        position_xy: np.ndarray,
+        yaw: float,
+        target_xy: np.ndarray,
+        dt: float,
+    ) -> Command:
+        g = self.gains
+
+        delta = np.asarray(target_xy, float) - np.asarray(position_xy, float)
+        distance = float(np.linalg.norm(delta))
+        if distance < 1e-6:
+            return self._slew(Command(), dt)
+
+        heading_error = wrap_angle(math.atan2(delta[1], delta[0]) - yaw)
+        abs_error = abs(heading_error)
+
+        yaw_rate = float(np.clip(g.yaw_gain * heading_error, -g.max_yaw_rate, g.max_yaw_rate))
+
+        if abs_error > g.pivot_threshold:
+            # Too far off course to make progress; rotate on the spot.
+            return self._slew(Command(forward=0.0, lateral=0.0, yaw_rate=yaw_rate), dt)
+
+        # Cosine-shaped falloff: full speed when aligned, floored when near the pivot limit.
+        alignment = max(0.0, 1.0 - abs_error / g.align_falloff)
+        speed_scale = g.min_speed_fraction + (1.0 - g.min_speed_fraction) * alignment
+        forward = g.max_forward * speed_scale
+
+        # Cross-track offset in the body frame, corrected laterally rather than by yawing.
+        cross_track = -math.sin(yaw) * delta[0] + math.cos(yaw) * delta[1]
+        lateral = float(np.clip(g.lateral_gain * cross_track, -g.max_lateral, g.max_lateral))
+
+        # Brake into the final approach so the last waypoint is not overshot.
+        brake = g.lookahead if g.brake_distance is None else g.brake_distance
+        forward = min(forward, g.max_forward * min(1.0, distance / max(brake, 1e-6)))
+
+        return self._slew(Command(forward=forward, lateral=lateral, yaw_rate=yaw_rate), dt)
+
+    def compute_corner_preview(
+        self,
+        position_xy: np.ndarray,
+        yaw: float,
+        gate_xy: np.ndarray,
+        exit_xy: np.ndarray,
+        preview_fraction: float,
+        speed_limit: float,
+        dt: float,
+    ) -> Command:
+        """Keep translating through a gate while turning toward its verified exit.
+
+        Ordinary pursuit couples body heading and translation, so a sharp waypoint change
+        spends several seconds rotating in place.  A wheel-legged S10 can instead keep its
+        *world-frame* velocity pointed at the current scoring gate while its body yaws toward
+        the next body-clear corridor.  The gate remains the translational target and therefore
+        cannot be cut; only the attitude is previewed.
+
+        ``preview_fraction`` is deliberately supplied by the caller.  The follower owns the
+        course-specific admission checks (known waypoint, clear perception and stable attitude),
+        while this controller owns command limits and slew continuity.
+        """
+        g = self.gains
+        gate_delta = np.asarray(gate_xy, float) - np.asarray(position_xy, float)
+        gate_distance = float(np.linalg.norm(gate_delta))
+        if gate_distance < 1e-6:
+            return self._slew(Command(), dt)
+
+        path_yaw = math.atan2(gate_delta[1], gate_delta[0])
+        exit_delta = np.asarray(exit_xy, float) - np.asarray(gate_xy, float)
+        if float(np.linalg.norm(exit_delta)) < 1e-6:
+            exit_yaw = path_yaw
+        else:
+            exit_yaw = math.atan2(exit_delta[1], exit_delta[0])
+
+        fraction = float(np.clip(preview_fraction, 0.0, 1.0))
+        corner = wrap_angle(exit_yaw - path_yaw)
+        desired_yaw = path_yaw + fraction * corner
+        yaw_error = wrap_angle(desired_yaw - yaw)
+
+        # Brake against the current gate exactly as normal pursuit does.  The smaller
+        # competition preview ceiling is an additional bound, never a speed increase.
+        brake = g.lookahead if g.brake_distance is None else g.brake_distance
+        speed = min(
+            max(0.0, float(speed_limit)),
+            g.max_forward * min(1.0, gate_distance / max(brake, 1e-6)),
+        )
+        path_error = wrap_angle(path_yaw - yaw)
+        forward = float(np.clip(speed * math.cos(path_error), -speed_limit, speed_limit))
+        lateral = float(np.clip(speed * math.sin(path_error), -g.max_lateral, g.max_lateral))
+        yaw_rate = float(np.clip(g.yaw_gain * yaw_error, -g.max_yaw_rate, g.max_yaw_rate))
+        return self._slew(
+            Command(forward=forward, lateral=lateral, yaw_rate=yaw_rate),
+            dt,
+        )
+
+    def _slew(self, target: Command, dt: float) -> Command:
+        g = self.gains
+        forward = _rate_limit(self._last.forward, target.forward, g.forward_slew * dt)
+        lateral = _rate_limit(self._last.lateral, target.lateral, g.lateral_slew * dt)
+        yaw_rate = _rate_limit(self._last.yaw_rate, target.yaw_rate, g.yaw_slew * dt)
+        self._last = Command(forward=forward, lateral=lateral, yaw_rate=yaw_rate)
+        return self._last
+
+
+def _rate_limit(current: float, target: float, max_delta: float) -> float:
+    delta = target - current
+    if delta > max_delta:
+        return current + max_delta
+    if delta < -max_delta:
+        return current - max_delta
+    return target

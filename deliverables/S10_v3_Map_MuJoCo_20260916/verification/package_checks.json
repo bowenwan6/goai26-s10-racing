@@ -1,0 +1,9 @@
+{
+  "copied_files": 107,
+  "all_copies_byte_identical": true,
+  "mjcf_file_references": 73,
+  "all_mjcf_references_local_and_present": true,
+  "simulation_rerun": false,
+  "independent_mujoco_load_test": false,
+  "note": "Packaging and file dependency checks only; prior simulation evidence is retained separately."
+}

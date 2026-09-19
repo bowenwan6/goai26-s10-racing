@@ -1,0 +1,100 @@
+node:
+  input_lidar_topic: "/LIDAR/POINTS"                 # [输入] 雷达话题名，ros1（livox）为"/lidar_points"， drdds（速腾）为"/LIDAR/POINTS"
+  input_imu_topic: "/IMU"                    # [输入] imu话题名，ros1为"/imu/data"， drdds（速腾）为"/IMU_DATA"
+  output_odom_topic: "/SLAM_ODOM"                     # [输出] 里程计话题名
+  output_aligned_cloud_topic: "/SLAM_ALIGNED_POINTS"  # [输出] 里程计坐标系下的累积点云
+  output_voxel_cloud_topic: "/DEPTH_POINTS"          # [输出] 用于调试的点云输出
+  output_depth_image_topic: "/DEPTH_IMAGE"           # [输出] 深度图话题名
+  output_accumulated_map_cloud_topic: "/SLAM_ACCUMULATED_POINTS_MAP"
+  lidar_type: 1                                      # 雷达类型，0为livox雷达，1为速腾雷达
+  lidar_use_system_time: false                       # 雷达是否使用接收到时的系统时间作为时间戳
+  imu_use_system_time: false                         # imu是否使用接收到时的系统时间作为时间戳
+lio:
+  acc_cov: 0.5
+  gyr_cov: 0.5
+  b_acc_cov: 0.001
+  b_gyr_cov: 0.001
+  extrinsic_est_en: false      # true: enable the online estimation of IMU-LiDAR extrinsic
+  extrinsic_B_I: [1, 0, 0, 0.0, 0, 1, 0, 0, 0, 0, 1, 0.0, 0, 0, 0, 1]
+  extrinsic_B_L: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+  max_iteration: 3
+  enable_downsample: true
+  leaf_size: 0.15    # 降采样分辨率
+  leaf_size_body: 0.05 # 发布给外部的机体坐标系点云降采样分辨率
+  skip_num: 5       # 跳过点数
+  esti_plane_threshold: 0.1        # default=0.1
+  init_time: 0.1
+  lidar_cov: 0.001
+  deepest_level: 2
+  plane_level: 2
+  top_level: 1
+  save_full_pcd: false
+  full_map_save_path: "/var/opt/robot/data/maps/active/full_cloud.pcd"
+accumulated_points:
+  enable: false
+  level: 3   # 0: 0.64, 1: 0.32, 2: 0.16, 3: 0.08, 4: 0.04
+  area_min: [-5.0, -5.0, -1.0]
+  area_max: [5.0, 5.0, 1.0]
+  udp_output: 
+    enable: false
+    resolution: 0.1                                   # 点云发布分辨率
+    port: 30100                                      # UDP请求端口号
+voxel_map:
+  ray_casting: false
+  ray_casting_level: 3
+  ray_casting_range: 3.0
+  ray_dis_th: 0.02
+  depth_image: 
+    enable: false
+    level: 4
+    interpolation: true
+    output:
+      frequency: 20       # 输出帧率
+      max_depth: 3.0
+      normalize: true
+      horizontal_resolution: 4.0  # 角度
+      vertical_resolution: 4.0    # 角度
+      body_height: 0.4
+height_map:
+  enable: false  # 是否启用高度图
+  level: 4  # 底图分辨率等级
+  output:
+    - image_topic: "/HEIGHT_IMAGE"  # 高度图话题名
+      cloud_topic: "/HEIGHT_POINTS"  # 高度点云话题名
+      frequency: 20                   # 输出帧率
+      resolution: 0.04    # 输出分辨率
+      size_x: 100         # x方向总像素尺寸（机器人前后方向，图像的height）
+      size_y: 100         # y方向总像素尺寸（机器人前后方向，图像的width）
+      min_z: -1.0         # 截取的高度下界（相对于机器人中心）
+      max_z: 1.0          # 截取的高度上界（相对于机器人中心）
+      body_height: 0.4
+occ_grid_2d:
+  output_prefix: "occ_grid"  # 输出文件名前缀
+  min_height: -0.2          # 最小高度
+  max_height: 0.4           # 最大高度
+  resolution: 0.1           # 分辨率
+  min_range: 0.2            # 最小范围
+  max_range: 30.0           # 最大范围
+  angle_increment: 0.006     # 角度增量
+  max_level: 8              # 最大层级
+
+ght:
+  extrinsic: [-1.0, 0.0, 0.0, 0.16, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0] # ght -> base_link
+  vio_default_cov: [0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
+  viro_default_cov: [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+  rtk_default_cov: [0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001]
+
+pgo:
+  prior_noise_sigmas: [1e6, 1e4, 0.001, 0.01, 0.01, 0.01]
+  odom_noise_sigmas: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+  loop_noise_sigmas: [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+  prior_noise_default_sigmas: [0.000001, 0.000001, 0.000001, 0.0000001, 0.0000001, 0.0000001]
+  gps_noise_precision: [1.0, 1.0, 0.2]
+  enable_imu_gravity: true
+  imu_gravity_noise: [1e-1, 1e-1, 1e-1]
+  distance_threshold_factor: 0.03
+  segment_num: 15
+  matching_error_threshold: 0.16
+  inlier_fraction_threshold: 0.95
+  max_search_distance: 8.0
+  keyframe_time: 60.0

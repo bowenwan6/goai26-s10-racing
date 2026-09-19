@@ -1,0 +1,170 @@
+# ---------------------------------------------------------------------------
+# dr_nodectl 配置文件 — CD1 产品线
+# 运行时: robot_hardware_info.toml model="CD1" → 本文件
+#         /opt/robot/os_type "CD1_AOS" → 提取 "AOS" 作为顶层 key
+# ---------------------------------------------------------------------------
+
+process:
+  health_check_interval_ms: 1000
+  audit_interval_sec: 15
+  startup_delay_sec: 2
+  readiness_checks:
+    network_interfaces: ["lo", "eth0"]
+    ping_targets: ["10.21.33.103", "10.21.33.106"]
+    require_shm: true
+    require_time_sync: true
+    check_interval_sec: 1
+    multicast_route: "239.255.0.0/24"
+    multicast_interface: "eth0"
+    require_lo_multicast: true
+    global_timeout_sec: 60
+
+dds:
+  domain_id: 0
+  cmd_topic: "/NODECTL_CMD"
+  query_service: "/NODECTL_QUERY"
+
+# 103 主机
+AOS:
+  - name: dr_system_monitor.service
+    start_order: 1
+    autostart: true
+
+  - name: motion_master.service
+    start_order: 5
+    autostart: true
+
+  - name: battery_node.service
+    start_order: 10
+    autostart: true
+
+  - name: deviceCtrl_node.service
+    start_order: 20
+    autostart: true
+
+  - name: robot_server.service
+    start_order: 30
+    autostart: true
+    delay_before_start_sec: 10
+
+  - name: gnss_node.service
+    start_order: 40
+    autostart: true
+
+  - name: charge_manager.service
+    start_order: 60
+    autostart: true
+
+  - name: reflective_column.service
+    start_order: 61
+    autostart: true
+
+  - name: audio_node.service
+    start_order: 70
+    autostart: true
+
+  - name: mediamtx.service
+    start_order: 80
+    autostart: true
+
+  - name: usb_cam.service
+    start_order: 81
+    autostart: true
+
+  - name: height_map_nav.service
+    start_order: 90
+    autostart: true
+
+  - name: lio-perception.service
+    start_order: 100
+    autostart: true
+
+  - name: handler.service
+    start_order: 110
+    autostart: true
+
+  - name: rsdriver.service
+    start_order: 111
+    autostart: true
+
+  - name: hsLidar.service
+    start_order: 112
+    autostart: true
+
+  - name: rob_bag.service
+    start_order: 120
+    autostart: false
+
+# 106 主机
+NOS:
+  - name: dr_system_monitor.service
+    start_order: 1
+    autostart: true
+
+  - name: gnss_node.service
+    start_order: 40
+    autostart: true
+
+  - name: usb_cam_106.service
+    start_order: 200
+    autostart: false
+    delay_before_start_sec: 15
+
+  - name: localization.service
+    start_order: 210
+    autostart: true
+    delay_before_start_sec: 1
+
+  - name: traversability_estimation.service
+    start_order: 220
+    autostart: true
+    delay_before_start_sec: 1
+
+  - name: accumulate_cloud.service
+    start_order: 230
+    autostart: true
+    delay_before_start_sec: 1
+
+  - name: global_planner.service
+    start_order: 240
+    autostart: true
+    delay_before_start_sec: 1
+
+  - name: planner.service
+    start_order: 250
+    autostart: true
+    delay_before_start_sec: 3
+
+  - name: yesense.service
+    start_order: 260
+    autostart: true
+    delay_before_start_sec: 3
+
+  - name: rsdriver.service
+    start_order: 270
+    autostart: true
+    delay_before_start_sec: 3
+
+  - name: hsLidar.service
+    start_order: 270
+    autostart: true
+    delay_before_start_sec: 3
+
+# 104 主机
+GOS:
+  - name: dr_system_monitor
+    unit_name: dr_system_monitor.service
+    start_order: 1
+    autostart: true
+
+  - name: rsdriver
+    unit_name: rsdriver.service
+    start_order: 10
+    autostart: true
+    delay_before_start_sec: 3
+
+  - name: hsdriver
+    unit_name: hsLidar.service
+    start_order: 11
+    autostart: true
+    delay_before_start_sec: 3

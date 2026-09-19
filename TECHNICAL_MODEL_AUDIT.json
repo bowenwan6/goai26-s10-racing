@@ -1,0 +1,219 @@
+{
+  "actor_state_dict": {
+    "log_std": [
+      16
+    ],
+    "mlp.0.weight": [
+      512,
+      174
+    ],
+    "mlp.0.bias": [
+      512
+    ],
+    "mlp.2.weight": [
+      512,
+      512
+    ],
+    "mlp.2.bias": [
+      512
+    ],
+    "mlp.4.weight": [
+      256,
+      512
+    ],
+    "mlp.4.bias": [
+      256
+    ],
+    "mlp.6.weight": [
+      128,
+      256
+    ],
+    "mlp.6.bias": [
+      128
+    ],
+    "mlp.8.weight": [
+      16,
+      128
+    ],
+    "mlp.8.bias": [
+      16
+    ]
+  },
+  "critic_state_dict": {
+    "0.weight": [
+      256,
+      174
+    ],
+    "0.bias": [
+      256
+    ],
+    "2.weight": [
+      128,
+      256
+    ],
+    "2.bias": [
+      128
+    ],
+    "4.weight": [
+      64,
+      128
+    ],
+    "4.bias": [
+      64
+    ],
+    "6.weight": [
+      1,
+      64
+    ],
+    "6.bias": [
+      1
+    ]
+  },
+  "iteration": 120,
+  "observation_dim": 174,
+  "base_checkpoint": "/home/bella/goai/goai26-s10-racing/training/assets/s10_29cm_stable.pt",
+  "correction_scale": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    6.0,
+    6.0,
+    6.0,
+    6.0
+  ],
+  "correction_limit": 4.0,
+  "activation_mode": "heightmap",
+  "terrain_mode": "official_track",
+  "objective_mode": "speed",
+  "depth_range": [
+    0.3,
+    0.4
+  ],
+  "speed_range": [
+    0.18,
+    0.4
+  ],
+  "yaw_range_rad": 0.1396263,
+  "training_hard_yaw_degrees": null,
+  "training_hard_yaw_probability": 0.0,
+  "retention_reward": {
+    "retained_front_reward": 0.08,
+    "rear_follow_step_penalty": 0.03,
+    "balance_penalty_scale": 0.5,
+    "clearance_regression_scale": 25.0,
+    "front_drop_penalty": 12.0,
+    "rear_completed_bonus": 2.0
+  },
+  "speed_reward": {
+    "active_step_penalty": 0.05,
+    "success_time_bonus_per_remaining_step": 0.5,
+    "fall_penalty": 250.0
+  },
+  "initial_residual_checkpoint": "/home/bella/goai/goai26-s10-racing/training/runs/gate16_front_retention_20260817T121106/selected/best_checkpoint.pt",
+  "eval_success": 0.6666666666666666,
+  "eval_fall": 0.18518518518518517,
+  "eval_drop_free_success": 0.25925925925925924,
+  "eval_front_to_rear_steps": 227.66666666666666,
+  "eval_mean_success_steps": 309.3888888888889,
+  "eval_std_success_steps": 102.31874971484883,
+  "eval_fastest_success_steps": 136.0,
+  "checkpoint_sha256": "16e81160d099d345cb6766d06107a84f77ed02bb2ae9259e9f4076ece58eee74",
+  "deployed_onnx": {
+    "policy.onnx": {
+      "sha256": "5c1b388f951b282693b4497cd4fd2fd1b53fe1bcd989758c0af42f140a20fb16",
+      "initializers": {
+        "0.weight": [
+          512,
+          174
+        ],
+        "0.bias": [
+          512
+        ],
+        "2.weight": [
+          256,
+          512
+        ],
+        "2.bias": [
+          256
+        ],
+        "4.weight": [
+          128,
+          256
+        ],
+        "4.bias": [
+          128
+        ],
+        "6.weight": [
+          16,
+          128
+        ],
+        "6.bias": [
+          16
+        ]
+      },
+      "operators": {
+        "Gemm": 4,
+        "Elu": 3
+      }
+    },
+    "climb_residual.onnx": {
+      "sha256": "de61441facb21f0301787b26f168f8447fdc0d83c337eeea884537bbf2468889",
+      "initializers": {
+        "0.weight": [
+          512,
+          174
+        ],
+        "0.bias": [
+          512
+        ],
+        "2.weight": [
+          512,
+          512
+        ],
+        "2.bias": [
+          512
+        ],
+        "4.weight": [
+          256,
+          512
+        ],
+        "4.bias": [
+          256
+        ],
+        "6.weight": [
+          128,
+          256
+        ],
+        "6.bias": [
+          128
+        ],
+        "8.weight": [
+          16,
+          128
+        ],
+        "8.bias": [
+          16
+        ]
+      },
+      "operators": {
+        "Gemm": 5,
+        "Elu": 4
+      }
+    }
+  },
+  "audit_method": "Restricted checkpoint metadata reader with whitelisted tensor-shape reconstruction; ONNX protobuf structure parsed without executing model inference.",
+  "source_checkpoint": "<home>/Documents/Projects/goai26/gate16_front_tuck_release_20260817/checkpoint/speed_core_best_checkpoint.pt",
+  "deployment_git_revision": "3660b81e8244dfa238633c161673596fe91650f6",
+  "training_release_source_revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
+  "training_checkout_revision": "0832f7bcd93eec6e51976c7c7e07913e92479f8c",
+  "inference_reexecuted": false
+}

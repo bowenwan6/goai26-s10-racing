@@ -1,0 +1,30 @@
+id,gait,speed_limit,allow_detour,corridor_half_width,length_m,climb_m,max_step_m,max_grade,ground_fill_fraction,gait_reason
+WP01-WP02,flat,0.2,True,0.8,4.55,0.03,0.059,0.016,0.0,
+WP02-WP03,flat,0.2,True,0.8,6.43,-0.03,0.04,0.024,0.0,
+WP03-WP04,stairs,0.15,False,0.25,5.24,0.87,0.201,0.317,0.0,photo:curved_stairs; step 0.20>0.12; grade 0.32>0.15
+WP04-WP05,stairs,0.15,False,0.25,4.53,0.9,0.16,0.255,0.0,"photo:curved_stairs,stair_landing; step 0.16>0.12; grade 0.26>0.15"
+WP05-WP06,stairs,0.15,False,0.25,5.69,0.96,0.164,0.28,0.0,"photo:stair_landing,stairs; step 0.16>0.12; grade 0.28>0.15"
+WP06-WP07,stairs,0.15,False,0.25,6.5,0.78,0.137,0.224,0.0,"photo:stairs,stairs_railing; step 0.14>0.12; grade 0.22>0.15"
+WP07-WP08,stairs,0.15,False,0.25,5.95,1.47,0.186,0.307,0.0,"photo:stairs_railing,step_edge; step 0.19>0.12; grade 0.31>0.15"
+WP08-WP09,stairs,0.15,False,0.25,10.08,0.08,0.03,0.026,0.0,"photo:step_edge,low_steps"
+WP09-WP10,stairs,0.15,False,0.25,9.65,0.43,0.129,0.159,0.0,"photo:low_steps,low_steps; step 0.13>0.12; grade 0.16>0.15"
+WP10-WP11,stairs,0.15,False,0.25,17.55,0.18,0.149,0.119,0.0,"photo:low_steps,grass_to_pavement; step 0.15>0.12"
+WP11-WP12,stairs,0.15,False,0.25,1.38,-0.33,0.277,0.0,0.0,"photo:grass_to_pavement,rock_grass; step 0.28>0.12"
+WP12-WP13,stairs,0.15,False,0.25,5.13,-0.05,0.011,0.015,0.0,"photo:rock_grass,loose_cobbles"
+WP13-WP14,stairs,0.15,False,0.25,1.62,0.07,0.043,0.0,0.0,"photo:loose_cobbles,flat_boulder_top"
+WP14-WP15,stairs,0.15,False,0.25,1.94,-0.18,0.164,0.091,0.0,"photo:flat_boulder_top,rock_bed; step 0.16>0.12"
+WP15-WP16,stairs,0.15,False,0.25,8.74,0.39,0.186,0.148,0.0,"photo:rock_bed,rock_bed_entry; step 0.19>0.12"
+WP16-WP17,stairs,0.15,False,0.25,3.19,-0.07,0.027,0.033,0.0,photo:rock_bed_entry
+WP17-WP18,flat,0.2,True,0.8,11.41,-0.23,0.064,0.037,0.0,
+WP18-WP19,stairs,0.15,False,0.25,8.76,0.32,0.2,0.162,0.0,photo:stepped_platform; step 0.20>0.12; grade 0.16>0.15
+WP19-WP20,stairs,0.15,False,0.25,2.85,0.29,0.28,0.147,0.0,"photo:stepped_platform,low_platform_bumps; step 0.28>0.12"
+WP20-WP21,stairs,0.15,False,0.25,6.58,0.01,0.03,0.013,0.0,photo:low_platform_bumps
+WP21-WP22,flat,0.2,True,0.8,9.6,-0.11,0.072,0.055,0.0,
+WP22-WP23,flat,0.2,True,0.8,17.08,-0.05,0.094,0.059,0.0,
+WP23-WP24,flat,0.2,True,0.8,38.3,-0.26,0.117,0.067,0.0,
+WP24-WP25,flat,0.2,True,0.8,26.08,-0.3,0.081,0.061,0.0,
+WP25-WP26,stairs,0.15,False,0.25,12.77,0.36,0.087,0.115,0.0,photo:pavement_edge_mound
+WP26-WP27,stairs,0.15,False,0.25,2.37,-0.18,0.077,0.083,0.0,photo:gabion_top
+WP27-WP28,stairs,0.15,False,0.25,8.55,0.84,0.322,0.23,0.0,"photo:gabion_top,gabion_top; step 0.32>0.12; grade 0.23>0.15"
+WP28-WP29,stairs,0.15,False,0.25,4.18,-0.08,0.064,0.082,0.0,photo:gabion_top
+WP29-WP30,stairs,0.15,False,0.25,9.92,-1.05,0.117,0.226,0.0,grade 0.23>0.15

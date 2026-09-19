@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install pytest numpy pyyaml onnxruntime
+        run: pip install pytest numpy pyyaml onnxruntime scipy mujoco
       - name: Navigation and course validation
         run: pytest -q test
         working-directory: src/s10_auto_nav

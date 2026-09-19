@@ -1,0 +1,10 @@
+{
+  "robot_id": "s10-48-106",
+  "expected_machine_id_sha256": null,
+  "calibration": {
+    "verified": false,
+    "reference_frame": null,
+    "version": null,
+    "evidence": null
+  }
+}

@@ -1,0 +1,16 @@
+# /usr/lib/systemd/system/planner.service
+[Unit]
+Description=planner
+After=network.target
+
+[Service]
+User=user
+Group=user
+Type=simple
+# ExecStartPre=/bin/sleep 5
+ExecStart=/opt/robot/share/planner/scripts/local_planner.sh
+Restart=on-failure
+RestartPreventExitStatus=SIGTERM
+
+[Install]
+WantedBy=network.target

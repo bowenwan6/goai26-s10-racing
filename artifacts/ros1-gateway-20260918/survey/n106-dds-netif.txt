@@ -1,0 +1,145 @@
+### network_interface / dds keys in /var/opt/robot/conf
+/var/opt/robot/conf/drddslib/dds_topic_scope.conf:1:# Topic scope configuration for DrDDS.
+/var/opt/robot/conf/drddslib/dds_topic_scope.conf:14:#   topic scope = multi
+/var/opt/robot/conf/gnss_node/gnss.yaml:13:dds:
+/var/opt/robot/conf/gnss_node/gnss.yaml:15:  network_interface: "eth0/eth1"
+/var/opt/robot/conf/battery_node/battery.yaml:19:dds:
+/var/opt/robot/conf/rslidar/config.yaml:1:dds:
+/var/opt/robot/conf/rslidar/config.yaml:2:  domain: 0
+/var/opt/robot/conf/rslidar/config.yaml:3:  network_interface: ""
+/var/opt/robot/conf/usb_cam_multi_node/mediamtx.yml:131:# openssl s_client -connect jwt_jwks_domain:443 </dev/null 2>/dev/null | sed -n '/BEGIN/,/END/p' > server.crt
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CD1.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CD1.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CA9C.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CA9C.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CC3.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CC3.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1_PRO.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1_PRO.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CC1PRO.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CC1PRO.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1_STD.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1_STD.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CC1.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CC1.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CA9B.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CA9B.yaml:22:dds:
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1_STANDARD.yaml:12:    network_interfaces: ["lo", "eth0"]
+/var/opt/robot/conf/dr_nodectl/dr_nodectl_CR1_STANDARD.yaml:22:dds:
+/var/opt/robot/conf/hslidar/hsLidar.yaml:1:dds:
+### hsLidar.yaml dds section
+1:dds:
+2-  domain: 0
+3-  network_interface: ""
+4-
+5-# ==============================
+6-# 故障检测参数
+7-# ==============================
+### yesense conf dir
+yesense.yaml
+### loopback-only UDP sockets without owner (drsec-hidden participants)
+     24 127.0.0.1:7400
+      1 127.0.0.1:7410
+      1 127.0.0.1:7411
+      1 127.0.0.1:7412
+      1 127.0.0.1:7413
+      1 127.0.0.1:7414
+      1 127.0.0.1:7415
+      1 127.0.0.1:7416
+      1 127.0.0.1:7417
+      1 127.0.0.1:7418
+      1 127.0.0.1:7419
+      1 127.0.0.1:7420
+      1 127.0.0.1:7421
+      1 127.0.0.1:7422
+      1 127.0.0.1:7423
+      1 127.0.0.1:7424
+      1 127.0.0.1:7425
+      1 127.0.0.1:7426
+      1 127.0.0.1:7427
+      1 127.0.0.1:7430
+      1 127.0.0.1:7431
+      1 127.0.0.1:7432
+      1 127.0.0.1:7433
+      1 127.0.0.1:7434
+      1 127.0.0.1:7435
+      1 127.0.0.1:7436
+      1 127.0.0.1:7437
+      1 127.0.0.1:7438
+      1 127.0.0.1:7439
+      1 127.0.0.1:7440
+      1 127.0.0.1:7441
+      1 127.0.0.1:7442
+      1 127.0.0.1:7443
+      1 127.0.0.1:7444
+      1 127.0.0.1:7445
+      1 127.0.0.1:7446
+      1 127.0.0.1:7447
+      1 127.0.0.1:7448
+      1 127.0.0.1:7449
+      1 127.0.0.1:7450
+### 10.21.33.106 74xx sockets
+     11 10.21.33.106:7400
+      1 10.21.33.106:7412
+      1 10.21.33.106:7413
+      1 10.21.33.106:7416
+      1 10.21.33.106:7417
+      1 10.21.33.106:7418
+      1 10.21.33.106:7419
+      1 10.21.33.106:7422
+      1 10.21.33.106:7423
+      1 10.21.33.106:7426
+      1 10.21.33.106:7427
+      1 10.21.33.106:7432
+      1 10.21.33.106:7433
+      1 10.21.33.106:7436
+      1 10.21.33.106:7437
+      1 10.21.33.106:7438
+      1 10.21.33.106:7439
+      1 10.21.33.106:7442
+      1 10.21.33.106:7443
+      1 10.21.33.106:7446
+      1 10.21.33.106:7447
+      1 10.21.33.106:7458
+      1 10.21.33.106:7459
+### change_log lidar/dds
+12:[+] 全节点 drdds 优雅退出补齐：SIGTERM 处理 + DrDDSManager::Delete() 下线通知，修复 systemctl restart 后 DDS 僵尸端点残留导致对端心跳超时/数据丢失问题  
+13:[*] hsLidar 新增 SIGTERM 并修正退出顺序；battery/gnss/ctrlmcu/deviceCtrl 补齐 Delete；rtk/imu 新增信号处理与优雅退出路径；所有 Delete 后增加日志打印  
+21:[*] 开关雷达服务修改为话题并公用一个话题/LIDAR/POWER/STATE，修复雷达关闭后103已经不再检测雷达异常，但106仍在检测雷达异常；
+38:[*] gnss: 新增增量消费+溢出安全阀单元测试 22 项（跨 Feed 残句/128 卫星压力/逐字节/垃圾数据/安全阀触发/校验和失败/多 epoch 循环等）
+72:[*] gnss: 代码质量改进 7 项 — 删除死字段、DDS Channel 改 unique_ptr 管理、DeviceManager 解耦具体 ReadTask 类型、main() 拆分为 4 个辅助函数（317→~85 行）、移除未使用 include、DEBUG hex 日志截断至 32 字节
+86:[+] 新增 gnss_node 模块: 合并 GPS + RTK 驱动，支持 NMEA/六分协议,DDS 发布，含完整单元/集成测试
+94:[+] 电池模块: CSV 记录器文件轮转（30MB 自动切分+跨天轮转），文件名增加时间戳序列号
+151:[+] 目录按功能拆分: cmd/ core/ dds/ detect/ task/ protocol/ driver/ ...  
+155:[+] DdsSubscriber 封装充电使能订阅，移除全局 g_manager_ptr  
+201:[*] 支持106主机双目相机dds发布功能
+256:[*] [drdds_usb_cam]
+265:[+] [drdds_usb_cam]
+271:[+] [drdds_usb_cam]
+275:[+] [drdds_usb_cam]
+286:[+] [drdds_usb_cam]
+293:[+] [drdds_usb_cam]
+296:[+] [drdds_usb_cam]
+299:[+] [drdds_usb_cam]
+303:[+] [drdds_usb_cam]
+307:[+] 修改drdds_usb_cam启动环境变量
+310:[+] 使用node_driver统一管理drdds_usb_cam
+311:[+] [drdds_usb_cam]
+315:[+] 增加子库drdds_usb_cam
+364:[*] 修改cpu节点的dds初始化绑定网口
+365:[*] 适配dds v1.0.10改动
+397:[*]适配drddsv.1.0.7
+404:[+]雷达修改绑定的本地ip地址
+410:[+]开启激光雷达驱动仅所在主机发布dds数据
+414:[+]新增发出的dds点云数据包含tag字段信息
+416:[+]新增lidar数据过滤tag非0的点云数据
+420:[*]设置lidar在大核中运行
+423:[+]增加yesense IMU的dds驱动
+434:[+]新增gps_node程序 将gps数据输出为dds
+438:[*]新增本地网络环回使能开启
+444:[*]修改雷达点云dds发出时间戳为当前接收到的系统时间戳
+452:[+] 新增IMU数据输出dds
+453:[+] 修改DDS话题
+456:[+] 双雷达拼接dds输出初始版本
