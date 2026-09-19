@@ -9,7 +9,12 @@ point by point:
     obstacle point = inside the route's corridor ahead,
                      in the body-height band (-0.25 .. 0.75 m from the base, the scan's band),
                      on mapped ground,
-                     more than ``rise`` above the mapped surface (ground + mapped obstacles).
+                     more than ``rise`` above the highest mapped surface (ground + mapped
+                     obstacles) within ``slack`` of it.
+
+The ``slack`` (0.3 m) absorbs localisation error: with the pose 0.2 m off, a rock's side seen by
+the LiDAR lands beside the rock on the map -- above the ground there -- and must not read as new.
+A box on flat ground stands clear of it all the same.
 
 ``MapSurface`` is the robot's map raster (the same one route preparation used): ground heights,
 known mask and static obstacle heights on a regular grid. On the robot it is loaded from an ``.npz``
@@ -22,16 +27,25 @@ from __future__ import annotations
 import math
 
 import numpy as np
+from scipy import ndimage
 
 
 class MapSurface:
-    def __init__(self, ground, known, obstacle_height, origin, res):
+    def __init__(self, ground, known, obstacle_height, origin, res, slack=0.3):
         self.ground = np.asarray(ground, float)
         self.known = np.asarray(known, bool)
         obst = np.nan_to_num(np.asarray(obstacle_height, float))
         self.surface = np.where(obst > 0, self.ground + obst, self.ground)
         self.origin = (float(origin[0]), float(origin[1]))
         self.res = float(res)
+        # Highest known surface within ``slack`` of every cell (unknown cells do not raise it).
+        r = max(1, round(slack / self.res))
+        yy, xx = np.mgrid[-r : r + 1, -r : r + 1]
+        disk = (xx * xx + yy * yy) <= r * r
+        lowest = float(np.nanmin(self.surface)) - 1.0
+        self.surface_max = ndimage.grey_dilation(
+            np.where(self.known, self.surface, lowest), footprint=disk
+        )
 
     @classmethod
     def from_terrain(cls, terrain) -> MapSurface:
@@ -56,14 +70,16 @@ class MapSurface:
             res=self.res,
         )
 
-    def at(self, x, y):
-        """(surface z, known) at map points; outside the raster: unknown."""
+    def at(self, x, y, highest_nearby=False):
+        """(surface z, known) at map points; outside the raster: unknown. ``highest_nearby``: the
+        highest known surface within the slack instead of the cell's own."""
         ix = np.floor((np.asarray(x, float) - self.origin[0]) / self.res).astype(int)
         iy = np.floor((np.asarray(y, float) - self.origin[1]) / self.res).astype(int)
         ny, nx = self.ground.shape
         inside = (ix >= 0) & (ix < nx) & (iy >= 0) & (iy < ny)
         ixc, iyc = np.clip(ix, 0, nx - 1), np.clip(iy, 0, ny - 1)
-        return np.where(inside, self.surface[iyc, ixc], np.nan), inside & self.known[iyc, ixc]
+        grid = self.surface_max if highest_nearby else self.surface
+        return np.where(inside, grid[iyc, ixc], np.nan), inside & self.known[iyc, ixc]
 
 
 def unexpected_ahead(
@@ -96,7 +112,7 @@ def unexpected_ahead(
         return None
     s_pt, dist = path.project_many(np.column_stack([wx, wy]), lo, hi)
     corridor = (dist <= half_width) & (s_pt > lo + 1e-3) & (s_pt < hi - 1e-3)
-    surf, known = surface.at(wx, wy)
+    surf, known = surface.at(wx, wy, highest_nearby=True)
     new = corridor & known & (wz - surf > rise)
     if int(new.sum()) < min_points:
         return None
