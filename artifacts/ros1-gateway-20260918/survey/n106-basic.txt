@@ -1,0 +1,236 @@
+### date
+2026-09-18T14:13:37+08:00
+ 14:13:37 up 6 min,  1 user,  load average: 2.91, 2.23, 1.10
+### hostname/uname
+host
+Linux host 5.10.198 #21 SMP Fri Jul 17 10:04:16 CST 2026 aarch64 aarch64 aarch64 GNU/Linux
+### os-release
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+VERSION_ID="24.04"
+### id
+uid=1000(user) gid=1000(user) groups=1000(user),4(adm),27(sudo)
+### nproc/mem
+8
+               total        used        free      shared  buff/cache   available
+Mem:           15690        4091        9766        1371        3361       11598
+Swap:              0           0           0
+2.91 2.23 1.10 3/763 29972
+### status
+● rsdriver.service - rsdriver
+     Loaded: loaded (/usr/lib/systemd/system/rsdriver.service; disabled; preset: enabled)
+    Drop-In: /etc/systemd/system/rsdriver.service.d
+             └─48-time-ready.conf
+     Active: active (running) since Fri 2026-09-18 14:07:30 CST; 6min ago
+    Process: 3485 ExecStartPre=/usr/bin/python3 /usr/local/lib/s10/wait_s10_ptp.py --timeout 60 (code=exited, status=0/SUCCESS)
+   Main PID: 3515 (rsdriver_run.sh)
+      Tasks: 39 (limit: 18808)
+     Memory: 139.4M ()
+        CPU: 51.636s
+     CGroup: /system.slice/rsdriver.service
+             ├─3515 /bin/bash /opt/robot/share/robot_drivers/scripts/rsdriver_run.sh
+             └─3516 ./rslidar
+
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: roll: 0
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: pitch: -1.5707
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: yaw: 0
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: ------------------------------------------------------
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: Original receive buffer size: 212992 bytes
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: After setting: receive buffer size: 212992 bytes
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: Original receive buffer size: 212992 bytes
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: After setting: receive buffer size: 212992 bytes
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: Original receive buffer size: 212992 bytes
+Sep 18 14:07:30 host rsdriver_run.sh[3516]: After setting: receive buffer size: 212992 bytes
+
+● hsLidar.service - hsLidar
+     Loaded: loaded (/usr/lib/systemd/system/hsLidar.service; disabled; preset: enabled)
+    Drop-In: /etc/systemd/system/hsLidar.service.d
+             └─48-time-ready.conf
+     Active: active (running) since Fri 2026-09-18 14:07:35 CST; 6min ago
+    Process: 3765 ExecStartPre=/usr/bin/python3 /usr/local/lib/s10/wait_s10_ptp.py --timeout 60 (code=exited, status=0/SUCCESS)
+   Main PID: 3877 (hsdriver_run.sh)
+      Tasks: 43 (limit: 18808)
+     Memory: 324.4M ()
+        CPU: 14.298s
+     CGroup: /system.slice/hsLidar.service
+             ├─3877 /bin/bash /opt/robot/share/robot_drivers/scripts/hsdriver_run.sh
+             └─3879 ./hsLidar
+
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: -------- Hesai Lidar SDK V2.2.2 --------
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]OS current udp socket recv buff size is: 425984
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]SocketSource::Open succeed, sock:26
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]Using network interface eth0 (IP: 10.21.33.106) for multicast - matches 10.21.33网段
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]Receiving data from multicast ip address 224.10.10.201
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]Lidar::Recieve Udp Thread start to run
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]PtcClient::PtcClient() 10.21.33.201 9347
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]set thread 548513177952, tid 3945, policy 1 and priority 70
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: [2026-09-18 14:07:35][INFO]get thead 548513177952, tid 3945, policy 1 and priority 70
+Sep 18 14:07:35 host hsdriver_run.sh[3879]: -------- Hesai Lidar SDK V2.2.2 --------
+
+● yesense.service - yesense
+     Loaded: loaded (/usr/lib/systemd/system/yesense.service; disabled; preset: enabled)
+    Drop-In: /etc/systemd/system/yesense.service.d
+             └─48-time-ready.conf
+     Active: active (running) since Fri 2026-09-18 14:07:25 CST; 6min ago
+    Process: 3279 ExecStartPre=/usr/bin/python3 /usr/local/lib/s10/wait_s10_ptp.py --timeout 60 (code=exited, status=0/SUCCESS)
+   Main PID: 3321 (yesense_run.sh)
+      Tasks: 34 (limit: 18808)
+     Memory: 125.5M ()
+        CPU: 20.930s
+     CGroup: /system.slice/yesense.service
+             ├─3321 /bin/bash /opt/robot/share/robot_drivers/scripts/yesense_run.sh
+             └─3322 ./yesense_node
+
+Sep 18 14:07:24 host systemd[1]: Starting yesense.service - yesense...
+Sep 18 14:07:25 host python3[3279]: S10_PTP_READY master_offset_ns=150 system_offset_ns=326.0
+Sep 18 14:07:25 host systemd[1]: Started yesense.service - yesense.
+Sep 18 14:07:26 host yesense_run.sh[3322]: drsec: kernel protection unavailable; using userspace anti-debug compatibility mode
+Sep 18 14:07:26 host yesense_run.sh[3358]: OK: baud set to 460800
+
+● localization.service - localization
+     Loaded: loaded (/usr/lib/systemd/system/localization.service; disabled; preset: enabled)
+    Drop-In: /etc/systemd/system/localization.service.d
+             └─48-time-ready.conf
+     Active: active (running) since Fri 2026-09-18 14:07:11 CST; 6min ago
+   Main PID: 2304 (start_dds.sh)
+      Tasks: 88 (limit: 18808)
+     Memory: 2.3G ()
+        CPU: 1min 3.783s
+     CGroup: /system.slice/localization.service
+### cat rsdriver
+# /usr/lib/systemd/system/rsdriver.service
+[Unit]
+Description=rsdriver
+After=network.target
+
+[Service]
+User=user
+Group=user
+SupplementaryGroups=video audio tty dialout bluetooth
+Type=simple
+ExecStart=/opt/robot/share/robot_drivers/scripts/rsdriver_run.sh
+Restart=on-failure
+RestartPreventExitStatus=SIGTERM
+
+[Install]
+WantedBy=network.target
+
+# /etc/systemd/system/rsdriver.service.d/48-time-ready.conf
+# Install on 106 under /etc/systemd/system/<unit>.service.d/ for
+# yesense, rsdriver, hsLidar, localization, mapping. Uses existing vendor PTP.
+[Unit]
+Wants=ptp_manage.service
+After=ptp_manage.service
+
+[Service]
+ExecStartPre=+/usr/bin/python3 /usr/local/lib/s10/wait_s10_ptp.py --timeout 60
+TimeoutStartSec=90
+### cat hsLidar
+# /usr/lib/systemd/system/hsLidar.service
+[Unit]
+Description=hsLidar
+After=network.target
+
+[Service]
+User=user
+Group=user
+SupplementaryGroups=video audio tty dialout bluetooth
+Type=simple
+ExecStart=/opt/robot/share/robot_drivers/scripts/hsdriver_run.sh
+Restart=on-failure
+RestartPreventExitStatus=SIGTERM
+
+[Install]
+WantedBy=network.target
+
+# /etc/systemd/system/hsLidar.service.d/48-time-ready.conf
+# Install on 106 under /etc/systemd/system/<unit>.service.d/ for
+# yesense, rsdriver, hsLidar, localization, mapping. Uses existing vendor PTP.
+[Unit]
+Wants=ptp_manage.service
+After=ptp_manage.service
+
+[Service]
+ExecStartPre=+/usr/bin/python3 /usr/local/lib/s10/wait_s10_ptp.py --timeout 60
+TimeoutStartSec=90
+### cat yesense
+# /usr/lib/systemd/system/yesense.service
+[Unit]
+Description=yesense
+After=network.target
+
+[Service]
+User=user
+Group=user
+SupplementaryGroups=video audio tty dialout bluetooth
+Type=simple
+ExecStart=/opt/robot/share/robot_drivers/scripts/yesense_run.sh
+Restart=on-failure
+RestartPreventExitStatus=SIGTERM
+
+[Install]
+WantedBy=network.target
+
+# /etc/systemd/system/yesense.service.d/48-time-ready.conf
+# Install on 106 under /etc/systemd/system/<unit>.service.d/ for
+# yesense, rsdriver, hsLidar, localization, mapping. Uses existing vendor PTP.
+[Unit]
+Wants=ptp_manage.service
+After=ptp_manage.service
+
+[Service]
+ExecStartPre=+/usr/bin/python3 /usr/local/lib/s10/wait_s10_ptp.py --timeout 60
+TimeoutStartSec=90
+### cat localization
+# /usr/lib/systemd/system/localization.service
+[Unit]
+Description=localization
+After=network.target
+
+[Service]
+Type=simple
+Environment="LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib/aarch64-linux-gnu:/opt/robot/share/localization/lib"
+User=user
+Group=user
+ExecStart=/opt/robot/share/localization/scripts/start_dds.sh
+Restart=on-failure
+RestartPreventExitStatus=SIGTERM
+
+[Install]
+WantedBy=network.target
+
+# /etc/systemd/system/localization.service.d/48-time-ready.conf
+# Install on 106 under /etc/systemd/system/<unit>.service.d/ for
+# yesense, rsdriver, hsLidar, localization, mapping. Uses existing vendor PTP.
+[Unit]
+Wants=ptp_manage.service
+After=ptp_manage.service
+
+[Service]
+ExecStartPre=+/usr/bin/python3 /usr/local/lib/s10/wait_s10_ptp.py --timeout 60
+TimeoutStartSec=90
+### ps
+   1188 root      0.0  4556     392 xdg-dbus-proxy  xdg-dbus-proxy unix:path=/run/dbus/system_bus_socket /run/drsec-nm/system_bus_socket --filter --see=org.freedesktop.NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.Introspectable.Introspect@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.Introspectable.Introspect@/org/freedesktop/NetworkManager/* --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.ObjectManager.GetManagedObjects@/org/freedesktop --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.ObjectManager.GetManagedObjects@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.Properties.Get@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.Properties.GetAll@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.Properties.Get@/org/freedesktop/NetworkManager/* --call=org.freedesktop.NetworkManager=org.freedesktop.DBus.Properties.GetAll@/org/freedesktop/NetworkManager/* --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.GetDevices@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.GetDeviceByIpIface@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.GetPermissions@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.AddAndActivateConnection@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.AddAndActivateConnection2@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.ActivateConnection@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.DeactivateConnection@/org/freedesktop/NetworkManager --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.Device.Disconnect@/org/freedesktop/NetworkManager/Devices/* --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.Device.Wireless.GetAccessPoints@/org/freedesktop/NetworkManager/Devices/* --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.Device.Wireless.GetAllAccessPoints@/org/freedesktop/NetworkManager/Devices/* --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.Device.Wireless.RequestScan@/org/freedesktop/NetworkManager/Devices/* --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.Settings.ListConnections@/org/freedesktop/NetworkManager/Settings --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.Settings.GetConnectionByUuid@/org/freedesktop/NetworkManager/Settings --call=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.Settings.Connection.GetSettings@/org/freedesktop/NetworkManager/Settings/* --broadcast=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.*@/org/freedesktop/NetworkManager --broadcast=org.freedesktop.NetworkManager=org.freedesktop.NetworkManager.*@/org/freedesktop/NetworkManager/*
+   1696 root      0.0  3660     390 watchdog.sh     /bin/bash /lib/drsec_daemon/docker/watchdog.sh
+   2304 user      0.0  3296     385 start_dds.sh    /bin/bash /opt/robot/share/localization/scripts/start_dds.sh
+   2464 user      1.0 214124    384 map_server      /opt/robot/share/localization/scripts/../bin/map_server /var/opt/robot/data/maps/active/occ_grid.yaml
+   2740 user      3.1 271684    380 bbs_reloc_ddsno /opt/robot/share/localization/scripts/../bin/bbs_reloc_ddsnode /opt/robot/share/localization/scripts/../conf/bbs_reloc_params.yaml
+   2741 user     15.5 1787336   380 localization_dd /opt/robot/share/localization/scripts/../bin/localization_ddsnode
+   3321 user      0.0  3276     371 yesense_run.sh  /bin/bash /opt/robot/share/robot_drivers/scripts/yesense_run.sh
+   3322 user      5.5 155172    371 3               ./yesense_node
+   3515 user      0.0  3276     366 rsdriver_run.sh /bin/bash /opt/robot/share/robot_drivers/scripts/rsdriver_run.sh
+   3516 user     14.0 169120    366 3               ./rslidar
+   3879 user      3.8 358704    362 3               ./hsLidar
+### check script
+-rw-rw-r-- 1 user user 8359 Sep 11 15:42 /home/user/check_s10_slam.py
+ea46ffbf9b2d47b9e653b62d5cacd15a3cdcd0404dfdb2a017d706df142e4572  /home/user/check_s10_slam.py
+### ros
+jazzy
+### ip
+lo               UNKNOWN        127.0.0.1/8 
+eth0             UP             10.21.33.106/24 
+docker0          DOWN           172.17.0.1/16 
+### time sync
+inactive
+inactive
+NTPSynchronized=yes
+TimeUSec=Fri 2026-09-18 14:13:37 CST

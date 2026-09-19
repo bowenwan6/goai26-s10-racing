@@ -1,0 +1,8 @@
+.venv/
+.venv-ros1-mac/
+__pycache__/
+bundle/
+build/
+install/
+log/
+artifacts/raw/

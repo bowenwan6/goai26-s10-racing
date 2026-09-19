@@ -1,0 +1,28 @@
+# ROS 2 -> ROS 1 topic map, shared by the live gateway (102) and the offline
+# MCAP -> .bag converter. Edit ros1_topic freely; keep ros2_topic/type as the
+# robot publishes them. To keep the original ROS 2 names use
+# topics_keep_ros2_names.yaml instead.
+#
+# source:
+#   tap -> live data arrives from the 106 lidar tap over TCP. 106 publishes
+#          /LIDAR/POINTS on its own host only (vendor design), so DDS on 102
+#          cannot see it.
+#   dds -> live data is subscribed on 102 over the normal ROS 2 DDS network.
+# ros1_queue_size: roscpp publisher queue per subscriber connection. A slow
+#                  client drops the oldest messages instead of growing memory.
+topics:
+  - ros2_topic: /LIDAR/POINTS
+    ros1_topic: /lidar_points
+    type: sensor_msgs/PointCloud2
+    source: tap
+    ros1_queue_size: 4
+  - ros2_topic: /IMU
+    ros1_topic: /imu/data
+    type: sensor_msgs/Imu
+    source: dds
+    ros1_queue_size: 400
+  - ros2_topic: /ODOM
+    ros1_topic: /odom
+    type: nav_msgs/Odometry
+    source: dds
+    ros1_queue_size: 40
