@@ -1,0 +1,2 @@
+{"test": "isolated_real_follower_router_wire", "passed": true, "domain": 211, "robot_actuated": false, "gait_requests": [12290], "native_velocity_messages": 26}
+{"test": "isolated_real_follower_router_wire", "passed": true, "domain": 211, "robot_actuated": false, "gait_requests": [12291], "native_velocity_messages": 26}

@@ -1,0 +1,18 @@
+# Same data as topics.yaml, but the ROS 1 side keeps the robot's ROS 2 names.
+# Use this when the vendor program is already configured for /LIDAR/POINTS etc.
+topics:
+  - ros2_topic: /LIDAR/POINTS
+    ros1_topic: /LIDAR/POINTS
+    type: sensor_msgs/PointCloud2
+    source: tap
+    ros1_queue_size: 4
+  - ros2_topic: /IMU
+    ros1_topic: /IMU
+    type: sensor_msgs/Imu
+    source: dds
+    ros1_queue_size: 400
+  - ros2_topic: /ODOM
+    ros1_topic: /ODOM
+    type: nav_msgs/Odometry
+    source: dds
+    ros1_queue_size: 40
