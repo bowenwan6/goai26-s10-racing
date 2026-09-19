@@ -112,6 +112,9 @@ class RouterParams:
     climb_turn_v: float = 0.20
     climb_slow_v: float = 0.15
     climb_w: float = 0.35
+    #: How far the climbing heading may leave the route's direction to steer back onto it (the
+    #: first version's 12 deg).
+    climb_correction: float = math.radians(12.0)
     #: Heading control on the stairs actor. Damping the yaw rate (climb_kd) cut an overshoot on
     #: WP11's rock crest but weakened the corrections it needs against its left drift on the B
     #: flights, where it then slid along a riser and off an edge; off by default.
@@ -887,8 +890,18 @@ class ManeuverRouter:
                     min(s_here + 0.8, self.path.length, max(cap, s_here + 0.3))
                 )
                 bearing = math.atan2(carrot[1] - inp.y, carrot[0] - inp.x)
+                # The first version's law: the route's own direction, corrected towards the carrot
+                # by at most climb_correction. On a flight the steps push the motion up the fall
+                # line while the body turns; a pursuit free to turn further to correct the drift
+                # ends up side-on to the risers, or asks for a turn the stairs actor answers by
+                # toppling.
+                tangent = self._tangent(s_here + 0.4)
+                aim = tangent + float(
+                    np.clip(wrap(bearing - tangent), -p.climb_correction, p.climb_correction)
+                )
+                # Safety only: never more than max_skew_hard off the risers as measured.
                 aim = self.climb_normal + float(
-                    np.clip(wrap(bearing - self.climb_normal), -p.max_skew_hard, p.max_skew_hard)
+                    np.clip(wrap(aim - self.climb_normal), -p.max_skew_hard, p.max_skew_hard)
                 )
                 left, right = side_margins(inp.grid, inp.valid)
                 if left is not None and left < p.centre_trigger and (right is None or right > left):
