@@ -702,13 +702,21 @@ def _hazard(terrain, xy, z_ref, drop=0.45):
     return (~terrain.known_at(xy[..., 0], xy[..., 1])) | (np.abs(z - z_ref) > drop)
 
 
+def _disc(radius, spacing=0.05):
+    """Sample points of a disc, no two more than ``spacing`` apart. (The first version sampled two
+    rings of 16 and missed a 0.1 m wide, 0.6 m tall post 0.23 m from WP29, which the robot's hip
+    then caught on five runs of sixteen.)"""
+    pts = [np.zeros((1, 2))]
+    for rr in np.arange(spacing, radius + 1e-9, spacing):
+        n = max(16, math.ceil(2 * np.pi * rr / spacing))
+        ang = np.linspace(0, 2 * np.pi, n, endpoint=False)
+        pts.append(np.column_stack([rr * np.cos(ang), rr * np.sin(ang)]))
+    return np.vstack(pts)
+
+
 def _nearest_clear(terrain, p, radius=0.4, search=1.2, step=0.05):
     """Nearest point to ``p`` whose disc of ``radius`` holds no hazard (None within ``search``)."""
-    ang = np.linspace(0, 2 * np.pi, 16, endpoint=False)
-    disc = np.vstack(
-        [[0.0, 0.0]]
-        + [np.column_stack([rr * np.cos(ang), rr * np.sin(ang)]) for rr in (radius / 2, radius)]
-    )
+    disc = _disc(radius)
     best, best_d = None, np.inf
     for dx in np.arange(-search, search + 1e-9, step):
         for dy in np.arange(-search, search + 1e-9, step):
@@ -728,9 +736,10 @@ def sanitize_route(
 ):
     """Keep the robot's whole width on the structure it is driving on.
 
-    1. Waypoints closer than ``half_width`` to a void or a drop of more than 0.45 m move to the
-       nearest point with that clearance (reported: they are photo-matched drafts, and the map's
-       stair edges are not exact either).
+    1. Waypoints closer than ``half_width`` to a void or a level change of more than 0.45 m move to
+       the nearest point with that clearance (reported: they are photo-matched drafts, and the
+       map's stair edges are not exact either). Checked on a dense disc (``_disc``); the ends of
+       hand-validated centrelines (``skip``) stay put.
     2. At every centreline point, the lateral offsets whose +-``half_width`` cross-section has no
        hazard form intervals. On a narrow structure (clear interval under ``narrow`` m) the path
        goes down its middle; elsewhere the taught offset 0 stays unless it is not clear, in which
@@ -741,17 +750,15 @@ def sanitize_route(
     """
     r = copy.deepcopy(route_dict)
     report = {"segments": [], "waypoints": []}
+    # A hand-validated centreline's ends stay where they are (they are part of what was validated).
+    pinned = {s["from"] for s in r["segments"] if s["id"] in skip}
+    pinned |= {s["to"] for s in r["segments"] if s["id"] in skip}
     for wp in r["waypoints"]:
+        if wp["id"] in pinned:
+            continue
         p = np.asarray(wp["position"][:2], float)
         z = float(terrain.ground_at(*p))
-        ang = np.linspace(0, 2 * np.pi, 16, endpoint=False)
-        disc = p + np.vstack(
-            [[0.0, 0.0]]
-            + [
-                np.column_stack([rr * np.cos(ang), rr * np.sin(ang)])
-                for rr in (half_width / 2, half_width)
-            ]
-        )
+        disc = p + _disc(half_width)
         if terrain.known_at(*p) and not _hazard(terrain, disc, z).any():
             continue
         q = _nearest_clear(terrain, p, half_width)
