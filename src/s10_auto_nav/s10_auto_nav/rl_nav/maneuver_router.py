@@ -84,8 +84,11 @@ class Mode(Enum):
 class RouterParams:
     walk_v: float = 0.6
     walk_floor: float = 0.5
-    approach_v: float = 0.45
-    approach_dist: float = 3.0
+    #: Approach: from approach_dist before the first mark, the follower drives at up to approach_v.
+    #: The first version approached over 1.2 m; longer only costs time (ALIGN needs the edge
+    #: within ~1 m anyway), and under 0.5 m/s the walking actor stalls on bumps.
+    approach_v: float = 0.5
+    approach_dist: float = 1.6
     align_enter: float = 1.0
     #: Distance from the base to the measured edge at which the stairs actor may take over. The near
     #: end is the front wheels touching the riser (~0.42 m), which is a fine place to start climbing
@@ -140,6 +143,14 @@ class RouterParams:
     retry_bias: float = math.radians(12.0)
     retry_reach: float = 1.5
     climb_retries: int = 3
+    #: Sliding: pressed against a riser at an angle, the stairs actor can slide sideways along it
+    #: instead of climbing it (and off the end of the tread). Moving sideways faster than slide_v
+    #: while making less than slide_fwd forward, for slide_time s: stop pushing and square up to
+    #: the riser; if it will not turn, back off first. Counts as a retry.
+    slide_v: float = 0.08
+    slide_fwd: float = 0.05
+    slide_time: float = 1.0
+    square_time: float = 2.5
     centre_trigger: float = 0.25
     centre_bias: float = math.radians(5.0)
     centre_strafe: float = 0.15
@@ -240,6 +251,8 @@ class ManeuverRouter:
             0.0,
             -math.inf,
         )
+        self.track: list = []  # (t, x, y) while climbing, for the slide check
+        self.slide_since, self.square_until = None, None
         self.verify_since = None
         self.pending_gate = None
         self.missed: list[dict] = []
@@ -287,6 +300,56 @@ class ManeuverRouter:
         normal = self._tangent(m.s_first + 0.3)
         pr = self.path.project((inp.x, inp.y), s_hint=self.last_s, window=(2.0, 2.0))
         return m.s_first - pr.s, pr.d, wrap(inp.yaw - normal), normal, False
+
+    def _slide_check(self, inp, m, s):
+        """While climbing: sliding sideways along a riser (sideways motion, no forward motion,
+        over the last second) -> stop pushing and square up to the riser; if it will not turn,
+        back off first. Returns the command to use instead of climbing, or None."""
+        p = self.p
+        self.track = [q for q in self.track if inp.t - q[0] <= 1.0] + [(inp.t, inp.x, inp.y)]
+        if len(self.track) >= 3 and self.track[-1][0] - self.track[0][0] >= 0.6:
+            t0, x0, y0 = self.track[0]
+            dt_ = max(inp.t - t0, 1e-3)
+            dx, dy = inp.x - x0, inp.y - y0
+            v_fwd = (dx * math.cos(inp.yaw) + dy * math.sin(inp.yaw)) / dt_
+            v_lat = (-dx * math.sin(inp.yaw) + dy * math.cos(inp.yaw)) / dt_
+            sliding = abs(v_lat) > p.slide_v and v_fwd < p.slide_fwd
+            if not sliding:
+                self.slide_since = None
+            elif self.slide_since is None:
+                self.slide_since = inp.t
+        if (
+            self.slide_since is not None
+            and inp.t - self.slide_since >= p.slide_time
+            and self.square_until is None
+        ):
+            self.retries += 1
+            self.square_until = inp.t + p.square_time
+            self.slide_since = None
+            self.log.append(
+                {
+                    "t": round(inp.t, 2),
+                    "s": round(s, 2),
+                    "from": "CLIMB",
+                    "to": "CLIMB",
+                    "maneuver": m.id,
+                    "why": f"sliding along a riser: squaring up, retry {self.retries}",
+                }
+            )
+        if self.square_until is None:
+            return None
+        err = wrap(self.climb_normal - inp.yaw)
+        if abs(err) < math.radians(8.0):
+            self.square_until = None
+            self.climb_best_t = inp.t
+            return None
+        if inp.t < self.square_until:
+            wz = float(np.clip(2.0 * err, -p.climb_w, p.climb_w))
+            return NavOutput((0.0, 0.0, wz), "stairs_stable", self.mode, "squaring up")
+        # It will not turn while pressed on the riser: back off, then square up again.
+        self.square_until = None
+        self.backoff_until = inp.t + p.backoff_time
+        return NavOutput((-p.backoff_v, 0.0, 0.0), "stairs_stable", self.mode, "backing off")
 
     def _last_bend_before(self, m):
         """Arc length from which ALIGN may start: past the last bend (over align_bend) of the route
@@ -583,16 +646,22 @@ class ManeuverRouter:
                     return NavOutput(
                         (min(vx, p.approach_v), vy, wz), "official", self.mode, "approach"
                     )
-                # The follower refuses (risers in its horizon read as unknown): A* to the entry
-                # point; if nothing seen leads there, the route itself when the scan is clear.
-                cmd, why = self._astar_cmd(inp, s, goal_s=m.s_first - 0.6, v=p.approach_v)
-                if why == "A* found no way back":
-                    s_here = max(s, self.proj_s)
-                    if self._scan_blocks(inp, s_here) is None and not self._drop_ahead(inp, s_here):
-                        cmd, why = (
-                            self._pursue_route(inp, s_here, s_gate, p.approach_v),
-                            "pursuing the route",
-                        )
+                # The follower refuses (risers in its horizon read as unknown). On the route with
+                # nothing new in the way: the route itself, as in NAVIGATE. Otherwise A* to a point
+                # past the entry's last bend; if nothing seen leads there, the route when clear.
+                s_here = max(s, self.proj_s)
+                clear = self._scan_blocks(inp, s_here) is None and not self._drop_ahead(inp, s_here)
+                on_route = math.isfinite(f.d) and abs(f.d) < p.trust_offset
+                if on_route and clear:
+                    cmd = self._pursue_route(inp, s_here, s_gate, p.approach_v)
+                    return NavOutput(cmd, "official", self.mode, "route")
+                goal_s = max(m.s_first - 0.6, self.align_from_s + 0.4)
+                cmd, why = self._astar_cmd(inp, s, goal_s=goal_s, v=p.approach_v)
+                if why == "A* found no way back" and clear:
+                    cmd, why = (
+                        self._pursue_route(inp, s_here, s_gate, p.approach_v),
+                        "pursuing the route",
+                    )
                 return NavOutput(cmd, "official", self.mode, why)
 
         # --- ALIGN -------------------------------------------------------------------------------
@@ -682,6 +751,7 @@ class ManeuverRouter:
                     self.climb_start_s = self.climb_best_s = s
                     self.climb_best_t = inp.t
                     self.retries, self.backoff_until, self.retry_bias = 0, None, 0.0
+                    self.track, self.slide_since, self.square_until = [], None, None
                     source = "measured" if measured else "no edge in this manoeuvre"
                     self._set(
                         Mode.CLIMB,
@@ -780,6 +850,9 @@ class ManeuverRouter:
                     )
                 self.backoff_until = None
                 self.climb_best_t = inp.t
+            slide = self._slide_check(inp, m, s)
+            if slide is not None:
+                return slide
             if self.proj_s > s_gate + p.missed_gate_margin and self.pending_gate is None:
                 self.pending_gate = s_gate
                 gate_xy = np.asarray(self.path.point_at(s_gate))[:2]
