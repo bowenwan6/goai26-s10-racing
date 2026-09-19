@@ -99,9 +99,20 @@ class LocalGridConfig:
     scan_obstacle_range: float = 6.0
     #: Ignore scan end points inside the robot's own footprint (self returns).
     scan_self_filter: bool = True
+    #: Lateral extent (m) of the OBSTACLE mark around a bin's centre ray. Sub-rays spread
+    #: the end point over the whole 5 deg bin (0.12 m at 1.4 m, 0.35 m at 4 m), inflating a
+    #: signpost the taught path passes 0.35 m from into the path itself. Clear-space marking
+    #: still uses every sub-ray.
+    scan_endpoint_half_width: float = 0.06
     #: Height step between neighbouring 0.15 m cells that makes both cells an obstacle.
     max_step_flat: float = 0.12
     max_step_stairs: float = 0.22
+    #: Step limit on no-detour stairs segments that repeat the taught line ("stairs_taught"
+    #: grid mode). The mapping run drove steps and boulders up to ~0.3 m there (flat boulder
+    #: WP14, rock bed, gabion), which 0.22 turns into obstacles beside the body. Trade-off:
+    #: a NEW object lower than this on such a segment is not seen; people/objects taller
+    #: are. Prior-map change detection is the proper fix.
+    max_step_taught: float = 0.35
     #: On stairs segments the risers sit in the scan's body-height band; only height-map
     #: evidence is used there (and cells beyond the height grid remain UNKNOWN).
     ignore_scan_on_stairs: bool = True
@@ -114,7 +125,16 @@ class LocalGridConfig:
     #: clearing). The body occludes the ground beneath it and its own edges produce step
     #: artefacts; without this the very first footprint sample fails and every candidate
     #: is "blocked at 0.00 m" while the robot is plainly standing there.
+    #: An invalid height cell is authoritative UNKNOWN only up to this distance ahead of the
+    #: base; further out it falls back to the scan (SCAN_CLEAR/UNKNOWN), exactly like cells
+    #: beyond the 1.275 m height ROI. The far rows are the sparsest and most often invalid, so
+    #: otherwise they block harder than open ground beyond them. The planner re-checks every
+    #: tick, so a far cell is judged strictly again once it is within this distance.
+    height_authoritative_ahead: float = 0.9
     clear_own_footprint: bool = True
+    #: Extra ring cleared around the body: the ground right beside it is occluded by the body
+    #: too, and a 0.1 m step with a slight turn swings the footprint edge into it.
+    own_footprint_buffer: float = 0.15
 
 
 @dataclass
@@ -122,7 +142,9 @@ class RoutePlannerConfig:
     horizon: float = 3.5
     min_horizon: float = 0.3
     ds: float = 0.1
-    n_offsets: int = 9
+    #: 0.1 m spacing over a 0.8 m corridor; 0.2 m skipped the only gap past a signpost the
+    #: taught path passes at 0.39 m with a hedge at 0.6 m on the other side.
+    n_offsets: int = 17
     #: Corridor half-width used when ``allow_detour`` is false (centreline-only anyway).
     narrow_corridor: float = 0.25
     #: Quintic blend length = max(min_blend, |d_t - d0| / blend_slope), capped to the horizon.
@@ -132,7 +154,10 @@ class RoutePlannerConfig:
     return_length: float = 1.0
     #: A candidate is admissible if its first ``commit_length`` metres are collision free.
     commit_length_flat: float = 1.0
-    commit_length_stairs: float = 0.6
+    #: Stairs segments see only the 1.275 m height ROI (scan ignored), i.e. at most ~0.72 m of
+    #: footprint travel; 0.6 left no slack for one sparse far row. At 0.15 m/s with a 10 Hz
+    #: replan, 0.4 m is still ~2.7 s of verified travel.
+    commit_length_stairs: float = 0.4
     #: Footprint samples within this arc must lie on height-verified ground (FREE); beyond
     #: it SCAN_CLEAR (no body-height return, ground not verified) is admissible. Default 0:
     #: the single-frame height ROI (1.8 x 1.2 m) cannot contain a footprint that moves
@@ -169,6 +194,22 @@ class RoutePlannerConfig:
     astar_lateral_weight: float = 2.0
     astar_proximity_weight: float = 2.0
     astar_speed_fraction: float = 0.5
+    #: UNKNOWN under the REAR half of a future footprint is tolerated while it lies no further
+    #: forward than the robot's current front: the rear only follows ground the body already
+    #: covers or passed beside (often occluded, and at the height-ROI border). OBSTACLE there
+    #: still blocks. Without this, a slight turn swings the rear corners into border UNKNOWN
+    #: and every candidate is blocked a few decimetres ahead.
+    trailing_unknown_ok: bool = True
+    #: Heading error above which sample 0 is checked as an in-place pivot (rotating footprint).
+    #: Must match the controller's pivot threshold (native 10 deg): below it the controller
+    #: turns while moving and the forward samples already cover the swept body. At 5 deg the
+    #: corners were swept through a full pivot in 1 m-wide passages the robot drove through.
+    pivot_check_deg: float = 10.0
+    #: On no-detour stairs segments the robot repeats the taught line the mapping run drove;
+    #: riser cells are routinely UNKNOWN (mixed heights in one 0.15 m cell) and beyond the
+    #: 1.275 m height ROI nothing is known (scan ignored on stairs). There, UNKNOWN does not
+    #: block; OBSTACLE (height step above the stairs limit) still does.
+    stairs_trust_taught_path: bool = True
     footprint: FootprintConfig = field(default_factory=FootprintConfig)
 
 
@@ -358,8 +399,9 @@ class LocalGridBuilder:
         if c.clear_own_footprint and yaw is not None:
             fp = self.footprint
             body = (grid.cell_centers() - np.asarray(center_xy, float)[:2]) @ _rot(yaw)
-            under = (np.abs(body[..., 0]) <= fp.length / 2 + fp.margin) & (
-                np.abs(body[..., 1]) <= fp.width / 2 + fp.margin
+            pad = fp.margin + c.own_footprint_buffer
+            under = (np.abs(body[..., 0]) <= fp.length / 2 + pad) & (
+                np.abs(body[..., 1]) <= fp.width / 2 + pad
             )
             grid.state[under] = FREE
         return grid
@@ -397,7 +439,7 @@ class LocalGridBuilder:
         heights = grid.height
         rot = _rot(yaw)
         use_scan = obs.scan_ranges is not None and not (
-            gait == "stairs" and c.ignore_scan_on_stairs
+            gait in ("stairs", "stairs_taught") and c.ignore_scan_on_stairs
         )
         obstacle_from_scan = np.zeros(grid.shape, bool)
         if use_scan:
@@ -425,6 +467,15 @@ class LocalGridBuilder:
                 ix, iy, inside = grid.index(pts)
                 frame[ix[inside], iy[inside]] = SCAN_CLEAR
             end_ok = np.isfinite(r) & (r <= c.scan_obstacle_range)
+            if c.scan_endpoint_half_width is not None:
+                sub = np.tile(subs, len(ranges))
+                end_ok &= np.abs(sub) * np.where(np.isfinite(r), r, 0.0) <= max(
+                    c.scan_endpoint_half_width, 0.0
+                ) + 1e-9
+                # Always keep the sub-ray nearest the bin centre.
+                end_ok |= np.isfinite(r) & (r <= c.scan_obstacle_range) & (
+                    np.abs(sub) <= np.abs(subs).min() + 1e-12
+                )
             if end_ok.any():
                 ends = np.column_stack([x + r * np.cos(th), y + r * np.sin(th)])[end_ok]
                 if c.scan_self_filter:
@@ -438,7 +489,9 @@ class LocalGridBuilder:
         if obs.height is not None:
             h = np.asarray(obs.height, float)
             m = np.isfinite(h) if obs.mask is None else (np.asarray(obs.mask, bool) & np.isfinite(h))
-            limit = c.max_step_stairs if gait == "stairs" else c.max_step_flat
+            limit = {"stairs": c.max_step_stairs, "stairs_taught": c.max_step_taught}.get(
+                gait, c.max_step_flat
+            )
             if c.fill_hole_min_neighbours > 0:
                 h, m = fill_isolated_holes(h, m, limit, c.fill_hole_min_neighbours)
             steps = step_obstacles(h, m, limit, ground_reference(h, m, self.footprint))
@@ -452,7 +505,10 @@ class LocalGridBuilder:
             valid = m[cx, cy]
             # Inside the height ROI the height map is authoritative: an invalid cell is
             # UNKNOWN even if a body-height scan ray passed over it (holes, drops).
-            frame[gi, gj] = np.where(valid, np.where(steps[cx, cy], OBSTACLE, FREE), UNKNOWN)
+            invalid_state = np.where(
+                body[inside, 0] <= c.height_authoritative_ahead, UNKNOWN, frame[gi, gj]
+            )
+            frame[gi, gj] = np.where(valid, np.where(steps[cx, cy], OBSTACLE, FREE), invalid_state)
             heights[gi, gj] = np.where(valid, h[cx, cy] + z, np.nan)
         frame[obstacle_from_scan & (frame != FREE)] = OBSTACLE
         obs.cache[key] = grid
@@ -590,7 +646,7 @@ class RoutePlanner:
         if len(xy) and np.linalg.norm(xy[0] - np.array([rx, ry])) < 1e-6:
             turn = math.atan2(math.sin(yaw[0] - ryaw), math.cos(yaw[0] - ryaw))
             yaw[0] = ryaw
-            if abs(turn) > math.radians(5.0):
+            if abs(turn) > math.radians(self.config.pivot_check_deg):
                 steps = np.linspace(0.0, turn, max(2, int(abs(turn) / math.radians(5.0)) + 1))[1:]
                 pivot = self._sweep_raw(
                     grid, np.repeat(xy[:1], len(steps), axis=0), ryaw + steps, robot_pose,
@@ -622,7 +678,14 @@ class RoutePlanner:
         if not exempt_current:
             exempt[:] = False
         arc = _arc(xy)
-        bad = (states == OBSTACLE) | (states == UNKNOWN)
+        unknown = states == UNKNOWN
+        if getattr(self, "_unknown_passable", False):
+            unknown = np.zeros_like(unknown)
+        if self.config.trailing_unknown_ok:
+            rear = (bx < 0.0)[None, :]
+            behind_front = along.reshape(n, -1) <= fp.half_length
+            unknown &= ~(rear & behind_front)
+        bad = (states == OBSTACLE) | unknown
         near = arc <= ground_within
         bad[near] |= states[near] == SCAN_CLEAR
         bad &= ~exempt
@@ -688,6 +751,9 @@ class RoutePlanner:
         x, y, yaw = pose
         robot = np.array([x, y])
         s0, d0 = projection.s, projection.d
+        self._unknown_passable = bool(
+            cfg.stairs_trust_taught_path and segment.gait == "stairs" and not segment.allow_detour
+        )
         commit = cfg.commit_length_stairs if segment.gait == "stairs" else cfg.commit_length_flat
         to_gate = s_gate - s0
         gate_xy = np.asarray(gate_xy, float)[:2]
@@ -716,6 +782,7 @@ class RoutePlanner:
             anchor = None
         candidates: list[Candidate] = []
         paths: list[np.ndarray] = []
+        turns: list[float] = []
         for d_t in self.lateral_targets(segment):
             if anchor is not None and abs(anchor[0] - d_t) < 1e-9:
                 _, s_start, d_start, blend = anchor
@@ -736,6 +803,7 @@ class RoutePlanner:
             if gate_limited:
                 xy[-1] = gate_xy
             heads = pursuit_headings(xy, lookahead, yaw)
+            turns.append(math.atan2(math.sin(heads[0] - yaw), math.cos(heads[0] - yaw)))
             blocked = self.sweep(grid, xy, heads, pose, cfg.require_ground_within)
             hits = self._last_obstacle_hits
             arc = _arc(xy)
@@ -804,6 +872,9 @@ class RoutePlanner:
             )
 
         self._anchor = None
+        align = self._align_in_place(candidates, paths, turns, obstacle_free, lookahead)
+        if align is not None:
+            return align
         if not segment.allow_detour:
             return PlanResult(
                 "BLOCKED", "centerline_blocked_detour_forbidden", paths[0][:1], None, 0.0,
@@ -817,6 +888,35 @@ class RoutePlanner:
         return PlanResult(result.status, result.reason, result.path, result.carrot,
                           result.speed_scale, result.d_target, result.free_length,
                           tuple(candidates))
+
+    def _align_in_place(self, candidates, paths, turns, obstacle_free, lookahead):
+        """Turn in place toward the route when that is what is missing, not a free path.
+
+        Single-frame observation covers a box ahead of the CURRENT heading (and on stairs the
+        scan is ignored), so at a sharp route bend every candidate runs into UNKNOWN beside
+        the box. If a candidate needs more than a pivot's worth of turn, its pivot sweep is
+        clear and it is stopped only by UNKNOWN (no OBSTACLE on it), rotating in place gives
+        the next frame a view down the route; the plan is re-made every tick.
+        """
+        cfg = self.config
+        best = None
+        for i, cand in enumerate(candidates):
+            turn = turns[i]
+            if abs(turn) <= math.radians(cfg.pivot_check_deg) or cand.free_length <= 0.0:
+                continue
+            if obstacle_free[i] <= cand.free_length + 1e-9:
+                continue  # an OBSTACLE, not UNKNOWN, ends this candidate
+            key = (abs(cand.d_target), abs(turn))
+            if best is None or key < best[0]:
+                best = (key, i)
+        if best is None:
+            return None
+        i = best[1]
+        xy = paths[i]
+        k = min(len(xy) - 1, max(1, int(round(lookahead / max(self.config.ds, 1e-6)))))
+        return PlanResult("ALIGN", f"turn {math.degrees(turns[i]):.0f}deg to see the route",
+                          xy[: k + 1], xy[k].copy(), 0.0, candidates[i].d_target,
+                          candidates[i].free_length, tuple(candidates))
 
     # ------------------------------------------------------------------ A*
 
