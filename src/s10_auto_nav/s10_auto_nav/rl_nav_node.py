@@ -1,5 +1,5 @@
-"""ROS 2 node for RL route navigation: the route follower core and the manoeuvre router, on the
-robot. It runs the same code as the MuJoCo harness (s10-rl-sprint
+"""ROS 2 node for RL route navigation: the route follower core and the route runner
+(``rl_nav.route_runner``), on the robot. It runs the same code as the MuJoCo harness (s10-rl-sprint
 ``scripts/tools/route_rl_real_stack.py``), fed from topics instead of the simulator.
 
 Subscribed:
@@ -11,11 +11,12 @@ Subscribed:
 ``/perception/heightmap`` (std_msgs/Float32MultiArray)
     The 13x9 ``real_transfer.geometry.height_grid``: robot yaw frame, unknown cells <= -1.
 ``/scan`` (sensor_msgs/LaserScan)
-    For the follower's local grid, and binned to 72 for the router's corridor check.
-``points_topic`` (std_msgs/Float32MultiArray, N x 3, optional)
+    For the follower's local grid.
+``points_topic`` (std_msgs/Float32MultiArray, N x 3)
     LiDAR points in the robot's yaw frame relative to the base -- the cloud the height grid is built
-    from. With ``map_surface_path`` it lets the router tell terrain the map knows from something new
-    (``rl_nav.map_check``); without it the router falls back on the conservative scan.
+    from. With ``map_surface_path`` it lets the runner tell terrain the map knows from something new
+    (``rl_nav.map_check``) and plan round it on the map (``rl_nav.map_planner``). Without either,
+    the runner has no recovery beyond the first version's: it holds when it needs a detour.
 ``/joints/owner`` (std_msgs/String)
     Who the SDK joint gate says is driving.
 
@@ -29,16 +30,16 @@ Published:
     (``integration/joint_command_owner.hpp``) takes official -> stairs_stable as a moving handover
     and anything else through SafeHold. The strategy router node must not run alongside.
 ``/rl_nav/status`` (std_msgs/String)
-    JSON: mode, manoeuvre, reason, target, s, owner requested and reported, the ALIGN checks.
+    JSON: mode, manoeuvre, reason, target, s, owner requested and reported, and the mode's details
+    (heading error in ALIGN, aim on the climb, why a detour).
 ``/nav/progress`` (std_msgs/Float32), ``/nav/finished`` (std_msgs/Bool)
     Waypoints reached / total, and done (both latched).
 
-It will not act without a pose younger than ``odom_timeout`` (zero command, owner kept) or a height
-grid younger than the router's ``grid_stale`` (the router stops by itself).
+It will not act without a pose younger than ``odom_timeout`` (zero command, owner kept).
 
 Parameters: ``route_path`` (prepared route_v2 JSON), ``maneuvers_path`` (its
 ``s10_rl_maneuvers_v1`` JSON), ``profile_path`` (policy capability profile; default the packaged
-one), ``map_surface_path`` (``MapSurface`` .npz of the same map; optional), ``points_topic``,
+one), ``map_surface_path`` (``MapSurface`` .npz of the same map), ``points_topic``,
 ``control_rate`` (Hz), ``body_z_offset``, ``lookahead``, ``fuse_frames``, ``max_step_flat``
 (follower core, harness values), ``odom_timeout`` (s).
 """
@@ -61,8 +62,9 @@ from std_msgs.msg import Bool, Float32, Float32MultiArray, String
 from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains
 from s10_auto_nav.rl_nav import maneuvers as maneuver_io
 from s10_auto_nav.rl_nav.capability import PolicyProfile
-from s10_auto_nav.rl_nav.maneuver_router import ManeuverRouter, Mode, NavInput, RouterParams
 from s10_auto_nav.rl_nav.map_check import MapSurface
+from s10_auto_nav.rl_nav.map_planner import MapPlanner
+from s10_auto_nav.rl_nav.route_runner import Mode, NavInput, RouteRunner, RunnerParams
 from s10_auto_nav.route_follower import RouteFollowerConfig, RouteFollowerCore
 from s10_auto_nav.route_planner import LocalGridConfig
 from s10_auto_nav.route_v2 import CrossCheckConfig, RouteV2
@@ -129,8 +131,17 @@ class RlNavNode(Node):
         mans = maneuver_io.load(man_path)
         surface_path = str(self.get_parameter("map_surface_path").value)
         surface = MapSurface.load(surface_path) if surface_path else None
-        self.router = ManeuverRouter(
-            self.follower.path, mans, RouterParams.from_profile(self.profile), map_surface=surface
+        if surface is None:
+            self.get_logger().warn(
+                "no map_surface_path: no obstacle detection or planned detours, the runner holds "
+                "where it would need one"
+            )
+        self.router = RouteRunner(
+            self.follower.path,
+            mans,
+            RunnerParams.from_profile(self.profile),
+            surface=surface,
+            planner=MapPlanner(surface) if surface is not None else None,
         )
         self.n_wp = len(route.waypoints)
         self.reached = 0
@@ -207,28 +218,6 @@ class RlNavNode(Node):
         self.ranges, self.angles = r, msg.angle_min + msg.angle_increment * np.arange(len(r))
         self.scan_fresh = True
 
-    def _scan72(self):
-        """The router's corridor check wants the 72-bin conservative scan (5 deg bins from -pi,
-        robot yaw frame, NaN where nothing returned): the nearest return per bin."""
-        if self.ranges is None:
-            return None
-        out = np.full(72, np.nan)
-        ok = np.isfinite(self.ranges) & (self.ranges > 0.25)
-        if ok.any():
-            ids = np.clip(
-                np.floor(
-                    (np.arctan2(np.sin(self.angles[ok]), np.cos(self.angles[ok])) + math.pi)
-                    / (2 * math.pi)
-                    * 72
-                ).astype(int),
-                0,
-                71,
-            )
-            best = np.full(72, np.inf)
-            np.minimum.at(best, ids, self.ranges[ok])
-            out[np.isfinite(best)] = best[np.isfinite(best)]
-        return out
-
     def _on_points(self, msg: Float32MultiArray) -> None:
         data = np.asarray(msg.data, float)
         if data.size % 3 == 0:
@@ -266,6 +255,10 @@ class RlNavNode(Node):
             self.reached += len(f.reached)
             self.progress_pub.publish(Float32(data=self.reached / self.n_wp))
             self.get_logger().info(f"{', '.join(f.reached)} reached ({self.reached}/{self.n_wp})")
+        path = self.follower.path
+        s_gate = (
+            path.length if self.follower.finished else float(path.waypoint_s[self.follower.cursor])
+        )
         out = self.router.step(
             NavInput(
                 t,
@@ -277,14 +270,12 @@ class RlNavNode(Node):
                 roll,
                 yaw_rate,
                 v_fwd,
-                self.grid,
-                self.valid,
-                self.grid_t,
+                self.grid if t - self.grid_t < 0.5 else None,
+                self.valid if t - self.grid_t < 0.5 else None,
                 f,
-                self.follower.last_grid,
+                s_gate,
                 self.owner_reported,
-                self._scan72(),
-                self.points if self._now() - self.points_t < 0.5 else None,
+                self.points if t - self.points_t < 0.5 else None,
             )
         )
         self._publish(out.command, out.owner)
@@ -304,7 +295,7 @@ class RlNavNode(Node):
             "owner_reported": self.owner_reported,
         }
         if out is not None:
-            m = self.router._man()
+            m = self.router._zone()
             doc.update(
                 {
                     "mode": out.mode.value,
