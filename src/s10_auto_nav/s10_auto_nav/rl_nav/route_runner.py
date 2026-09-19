@@ -423,6 +423,8 @@ class RouteRunner:
                 return out
         if self.mode == Mode.WAIT:
             return self._wait(inp, s)
+        if self.mode == Mode.HOLD:  # a recovery that needed the map, without one
+            return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
 
         # ---- the first version -----------------------------------------------------------------
         if self.mode in (Mode.WALK, Mode.TRACK) and zone is not None and s >= zone.s0 - p.approach:

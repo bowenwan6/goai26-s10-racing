@@ -350,6 +350,18 @@ def test_stairs_actor_past_a_waypoint_goes_back_for_it():
     assert trace[-1][4] == Mode.DONE
 
 
+def test_without_a_map_a_needed_detour_holds_still():
+    path = RoutePath(straight())
+    runner = RouteRunner(path, [])  # no map surface, no planner: the first version alone
+
+    def push(t, mode, x, y, yaw):
+        return (x, y + 1.3, yaw) if 3.0 < x < 3.06 else (x, y, yaw)
+
+    trace = drive(runner, path, steps=200, disturb=push)
+    assert trace[-1][4] == Mode.HOLD
+    assert trace[-1][6] == (0.0, 0.0, 0.0)
+
+
 # ---------------------------------------------------------------------------- pieces
 def test_map_check_tells_terrain_from_a_new_box():
     path = RoutePath(straight())
