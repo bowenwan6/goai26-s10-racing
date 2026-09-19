@@ -7,7 +7,8 @@ loads out.
 
 writes
 
-    route_rl.json      the route handed to the follower and the runner. --method first (default):
+    route_rl.json      the route handed to the follower and the runner: heights from the map and
+                       one speed limit (ground_route), then --method first (default):
                        the first version's preparation (route_prep.sanitize_route: waypoints off
                        hazards, the line shifted into the clear; hand-validated centrelines from
                        --overrides kept as they are) -- the route the full course ran on. centre:
@@ -88,6 +89,28 @@ class MapTerrain:
         return self.known[np.clip(iy, 0, ny - 1), np.clip(ix, 0, nx - 1)] & inside
 
 
+def ground_route(route, terrain, speed=0.6):
+    """Heights from the map, one speed limit: what the first version's simulation did to the route
+    before anything else (route_follow_mujoco.sim_route). The photo-matched waypoint heights differ
+    from the map by up to 0.22 m (WP07), more than the 0.2 m the follower scores them within; the
+    follower's own speed limits (0.15-0.2 m/s) would stall the walking actor, and the runner sets
+    the speeds anyway. -> (route, waypoints whose height moved more than 5 cm)."""
+    r = copy.deepcopy(route)
+    moved = []
+    for wp in r["waypoints"]:
+        x, y, z = wp["position"]
+        zg = float(terrain.ground_at(x, y))
+        if abs(zg - z) > 0.05:
+            moved.append({"id": wp["id"], "from_z": round(z, 3), "to_z": round(zg, 3)})
+        wp["position"] = [x, y, zg]
+    for seg in r["segments"]:
+        seg["speed_limit"] = speed
+        c = np.asarray(seg["centerline"], float)
+        c[:, 2] = terrain.ground_at(c[:, 0], c[:, 1])
+        seg["centerline"] = c.tolist()
+    return r, moved
+
+
 def apply_overrides(route, overrides, terrain, ds=0.2):
     """Hand-validated edits: {"waypoints": {id: [x, y]}, "centerlines": {id: [[x, y], ...]},
     "centerline_tails": {id: {"from": [x, y], "points": [[x, y], ...]}}} (a tail keeps the taught
@@ -131,6 +154,7 @@ def apply_overrides(route, overrides, terrain, ds=0.2):
 
 def prepare(route, terrain, profile, overrides=None, method="first"):
     frozen, edits = set(), []
+    route, regrounded = ground_route(route, terrain)
     if overrides:
         route, frozen, edits = apply_overrides(route, overrides, terrain)
     # Segment flags (allow_detour, corridor) stay as taught, as the first version ran them: the
@@ -143,6 +167,7 @@ def prepare(route, terrain, profile, overrides=None, method="first"):
     mans = maneuver_io.annotate(terrain, path.points, profile)
     hazards = maneuver_io.route_hazards(terrain, path.points)
     report = {
+        "regrounded_waypoints": regrounded,
         "overrides": edits,
         "route_prep": report,
         "hazards_s": hazards,
