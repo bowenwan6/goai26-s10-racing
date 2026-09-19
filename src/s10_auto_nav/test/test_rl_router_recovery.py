@@ -230,3 +230,29 @@ def test_sliding_along_a_riser_squares_up_instead_of_pushing():
             break
     assert "squaring up" in reasons
     assert any("sliding along a riser" in entry["why"] for entry in router.log)
+
+
+def test_a_follower_that_claims_to_drive_but_stands_still_is_overruled():
+    # Its own A* mode reports "ASTAR" with a zero command for tens of seconds: after nav_stall
+    # without progress the router takes over as if it had refused, and the robot moves on.
+    path = RoutePath(straight_route())
+    router = ManeuverRouter(path, [], map_surface=flat_map())
+    x, y, yaw = 0.5, 0.0, 0.0
+    flat, valid = synthetic_grid(lambda a, b: np.zeros_like(a))
+    modes = []
+    for k in range(150):
+        t = k * 0.1
+        f = FakeFollower((0.0, 0.0, 0.0), "ASTAR", "grid A* (frontier)", x, y, 1, "WP02")
+        pts = ground_points(x, y, yaw)
+        out = router.step(
+            NavInput(
+                t, x, y, 0.42, yaw, 0.0, 0.0, 0.0, 0.3, flat, valid, t, f, None, None, None, pts
+            )
+        )
+        vx, vy, wz = out.command
+        yaw += wz * 0.1
+        x += (vx * math.cos(yaw) - vy * math.sin(yaw)) * 0.1
+        y += (vx * math.sin(yaw) + vy * math.cos(yaw)) * 0.1
+        modes.append(out.mode)
+    assert Mode.FOLLOW_ROUTE in modes
+    assert x > 2.0
