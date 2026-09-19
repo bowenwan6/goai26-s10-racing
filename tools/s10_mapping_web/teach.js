@@ -132,7 +132,8 @@
       chip($('cLidar'), '点云 ' + (t.lidar.age == null || t.lidar.age > 2 ? '无数据' : t.lidar.hz + ' Hz'), rate(t.lidar, 8));
       chip($('cImu'), 'IMU ' + (t.imu.age == null || t.imu.age > 2 ? '无数据' : t.imu.hz + ' Hz'), rate(t.imu, 150));
       chip($('cPose'), '定位 ' + (t.pose.age == null || t.pose.age > 2 ? '无数据' : t.pose.hz + ' Hz'), rate(t.pose, 5));
-      chip($('cDisk'), '磁盘剩余 ' + s.disk.free_gb + ' GB', s.disk.free_gb < 5 ? 'bad' : s.disk.free_gb < s.disk.mapping_min_gb ? 'warn' : 'good');
+      const onSsd = String(s.config.data_dir || '').startsWith('/mnt/');
+      chip($('cDisk'), (onSsd ? '硬盘剩余 ' : '未接硬盘！AGX 剩余 ') + s.disk.free_gb + ' GB', !onSsd || s.disk.free_gb < 5 ? 'bad' : s.disk.free_gb < s.disk.mapping_min_gb ? 'warn' : 'good');
       chip($('cRec'), rec ? '● 录制中 ' + ({mapping: '建图采集', survey: '标点', path: '示教'}[rec.mode]) + ' ' + fmtTime(rec.elapsed_s) : '未录制', rec ? 'rec' : '');
       const conn = $('conn');
       if (!rosOk) { conn.textContent = s.ros.error || 'ROS 未连接'; conn.dataset.tone = 'bad'; }

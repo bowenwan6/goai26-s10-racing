@@ -17,6 +17,15 @@ case "${1:-status}" in
       [ -f "$ROS1_ENV" ] && source "$ROS1_ENV"
       export ROS_MASTER_URI="${ROS_MASTER_URI:-http://127.0.0.1:11311}" ROS_IP="${ROS_IP:-127.0.0.1}"
       cd "$DIR"
+      # Data goes straight to the external SSD when it is mounted (fstab: /mnt/s10ssd, exFAT,
+      # automount); otherwise to the AGX's own storage, and the page says so in red.
+      SSD="${S10_TEACH_SSD:-/mnt/s10ssd}"
+      case " $* " in *" --data-dir "*) ;; *)
+        if mountpoint -q "$SSD" 2>/dev/null || ls "$SSD" >/dev/null 2>&1 && mountpoint -q "$SSD"; then
+          mkdir -p "$SSD/s10_teach" && set -- --data-dir "$SSD/s10_teach" "$@"
+        fi ;;
+      esac
+      echo "teach data dir args: $*"
       # exit code 3 = the ROS master restarted: restart the worker so it re-registers
       while true; do python3 -u teach_worker.py "$@"; code=$?; [ "$code" = 3 ] || exit "$code"; sleep 1; done
     ) > "$LOG" 2>&1 < /dev/null &
