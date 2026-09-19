@@ -2,6 +2,8 @@
 
 整理日期：2026-09-18。仓库：`bowenwan6/goai26-s10-racing`，本次推送分支：`codex/field-assistant`。
 
+2026-09-19 补充上传：[导航、建图、点云、IMU 与 Router 设计参考](S10_NAVIGATION_MAPPING_SENSOR_DESIGN_REFERENCE_ZH.md) · [详细文件索引](S10_NAVIGATION_SOURCE_INDEX_ZH.md)（附哈希清单 `S10_NAVIGATION_SOURCE_MANIFEST.json`）、[导航规划重设计](S10_NAVIGATION_PLANNING_REDESIGN_ZH.md)、[平台高度清单](S10_PLATFORM_HEIGHT_INVENTORY_ZH.md)，以及手机“采集助手”页面 `/teach`（[使用说明](../tools/s10_mapping_web/TEACH_GUIDE_ZH.md)）。下文“本次上传”仍是 2026-09-18 的范围。
+
 ## 本次上传
 
 | 内容 | 仓库入口 | 范围 |
