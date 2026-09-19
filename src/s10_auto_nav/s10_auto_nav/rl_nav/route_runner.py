@@ -32,9 +32,10 @@ Nominal (the first version)::
               asked, and when the grid shows a drop more than drop_depth below the route ahead.
               Back to WALK past the manoeuvre -- new: not while still sliding faster than
               settle_v, since the SDK's hand-back holds the joints rigid for 0.25 s.
-    DESCEND   A ledge to step off (nothing rises): the walking actor at walking speed. New: no
-              pivot in place until the body is clear of the ledge; stuck at the lip (a knee
-              caught) for descend_stall s: back off and try again faster.
+    DESCEND   A ledge to step off (nothing rises): the walking actor at walking speed. New:
+              straight across at the aligned heading until the body is clear of the ledge (no
+              turning on it) -- WP14's ledge then takes 3-4 s where the first version bounced at
+              its lip; stuck there anyway for descend_stall s: back off and try again.
     RECOVER   The stairs actor ran past a waypoint it did not score: go back for it walking
               (once it has stopped sliding). New: the stairs actor first carries on to ground the
               walking actor takes (the map's slope/step check), and the way back is straight
@@ -180,10 +181,9 @@ class RunnerParams:
     #: until it is slower, or settle_timeout has passed.
     settle_v: float = 0.4
     settle_timeout: float = 3.0
-    #: Stepping off a ledge, the walking actor never pivots before its body is this far past the
-    #: last edge (the rear wheels on the edge, a knee catches); it rolls on at ledge_roll_v instead.
+    #: Stepping off a ledge, the walking actor holds the heading it aligned to until its body is
+    #: this far past the last edge (turning with the rear wheels on the edge catches a knee).
     ledge_clear: float = 0.6
-    ledge_roll_v: float = 0.3
     #: Stalled (driving, no progress: a hip or a knee caught on a rock): back off before planning
     #: again, where the map is clear behind (Nav2's back-up recovery). The walking actor reverses
     #: on flat ground at about this speed.
@@ -193,8 +193,8 @@ class RunnerParams:
     #: actor takes (the first version drove straight back, and slid down WP11's crest doing so
     #: with 0.2 m of localisation bias); else walk back before the manoeuvre and climb it once more,
     #: turning harder for that waypoint; else HOLD.
-    #: Stepping off a ledge, no progress for descend_stall s (a knee caught on the lip, bouncing):
-    #: back off and try again at walk_v, for momentum; HOLD after descend_retries.
+    #: Stepping off a ledge, no progress for descend_stall s (a knee caught on the lip): back off
+    #: and try again; HOLD after descend_retries. (Held straight, WP14's ledge takes 3-4 s.)
     descend_stall: float = 6.0
     descend_retries: int = 3
     recover_v: float = 0.35
@@ -263,6 +263,7 @@ class RouteRunner:
         self.settle_since = None
         self.backup_until, self.backup_why, self.backup_kind = -math.inf, "", "rejoin"
         self.descend_best, self.descend_tries = (-math.inf, 0.0), 0
+        self.descend_heading = 0.0
         self.recover = None  # dict(t0, how, line, best, best_t) while RECOVER runs
         self.reclimbed: set = set()  # gates a manoeuvre was climbed again for
         self.reclimb_gate = None
@@ -500,13 +501,15 @@ class RouteRunner:
                         )
                     self._set(Mode.HOLD, inp.t, s, "stuck at the ledge, not clear behind")
                     return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "hold")
-                v = p.walk_floor if self.descend_tries == 0 else p.walk_v
-                vx, vy, wz = self._pursue(s, inp, v, 0.3)
-                if vx == 0.0 and s < zone.s_last + p.ledge_clear:
-                    # Straddling the ledge: a pivot here catches a knee on the edge (it did, and
-                    # sat there). Keep rolling off it while turning.
-                    vx = p.ledge_roll_v
-                return NavOutput((vx, vy, wz), "official", self.mode, "descend")
+                v = p.walk_floor
+                if s < zone.s_last + p.ledge_clear:
+                    # Straight across at the heading it aligned to, until the body is clear of the
+                    # ledge: turning on the way (the route bends just past WP14's ledge) met the lip
+                    # at an angle and bounced, and a turn with the rear on the edge caught a knee.
+                    err = wrap(self.descend_heading - inp.yaw)
+                    wz = float(np.clip(1.5 * err, -0.3, 0.3))
+                    return NavOutput((v, 0.0, wz), "official", self.mode, "descend straight")
+                return NavOutput(self._pursue(s, inp, v, 0.3), "official", self.mode, "descend")
         if self.mode == Mode.CLIMB and s > self.s_gate + p.recover_margin:
             self._set(Mode.RECOVER, inp.t, s, f"passed {f.target_id} unscored")
             self.recover_gate = self.s_gate
@@ -556,6 +559,7 @@ class RouteRunner:
             if zone.policy == "walk_descend":
                 self._set(Mode.DESCEND, inp.t, s, why)
                 self.descend_best, self.descend_tries = (s, inp.t), 0
+                self.descend_heading = tangent
             else:
                 self._set(Mode.CLIMB, inp.t, s, why)
                 self.climb_best = (s, inp.t)
