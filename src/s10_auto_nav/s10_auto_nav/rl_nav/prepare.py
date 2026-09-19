@@ -2,14 +2,17 @@
 loads out.
 
     ros2 run s10_auto_nav rl_nav_prepare --route route_v2.json --terrain course_terrain.npz \\
-        [--overrides overrides.json] [--profile policy_profile.json] --out prepared/
+        [--overrides overrides.json] [--profile policy_profile.json] [--method first|centre] \\
+        --out prepared/
 
 writes
 
-    route_rl.json      the route handed to the follower and the router (route_prep: centred,
-                       re-planned where the taught line crosses a hazard or detours, banded;
-                       hand-validated segments from --overrides kept frozen)
-    maneuvers.json     where the stairs actor is needed, with the edge priors (maneuvers.annotate)
+    route_rl.json      the route handed to the follower and the runner. --method first (default):
+                       the first version's preparation (route_prep.sanitize_route: waypoints off
+                       hazards, the line shifted into the clear; hand-validated centrelines from
+                       --overrides kept as they are) -- the route the full course ran on. centre:
+                       route_prep.centre_route (centred on steps, re-planned, banded).
+    maneuvers.json     where the stairs actor is needed (maneuvers.annotate)
     map_surface.npz    the map's surface, for telling terrain the map knows from something new
     prepare_report.json  every change route preparation made, every manoeuvre warning, and any
                        place the route still crosses unknown ground or a drop (there should be none)
@@ -32,7 +35,7 @@ import numpy as np
 from s10_auto_nav.rl_nav import maneuvers as maneuver_io
 from s10_auto_nav.rl_nav.capability import PolicyProfile
 from s10_auto_nav.rl_nav.map_check import MapSurface
-from s10_auto_nav.rl_nav.route_prep import centre_route
+from s10_auto_nav.rl_nav.route_prep import centre_route, sanitize_route
 from s10_auto_nav.route_v2 import RoutePath, RouteV2
 
 
@@ -86,9 +89,11 @@ class MapTerrain:
 
 
 def apply_overrides(route, overrides, terrain, ds=0.2):
-    """Hand-validated edits: {"waypoints": {id: [x, y]}, "centerlines": {id: [[x, y], ...]}}.
-    A centreline is densified at ``ds``, re-grounded and snapped to its (possibly moved) waypoints.
-    -> (route, frozen segment ids, edits)."""
+    """Hand-validated edits: {"waypoints": {id: [x, y]}, "centerlines": {id: [[x, y], ...]},
+    "centerline_tails": {id: {"from": [x, y], "points": [[x, y], ...]}}} (a tail keeps the taught
+    line up to the point nearest ``from``, then the given points). A centreline is densified at
+    ``ds``, re-grounded and snapped to its (possibly moved) waypoints. -> (route, ids of the
+    segments given whole centrelines, edits)."""
     r = copy.deepcopy(route)
     ids = [w["id"] for w in r["waypoints"]]
     edits = []
@@ -103,6 +108,12 @@ def apply_overrides(route, overrides, terrain, ds=0.2):
     frozen = set()
     for k, seg in enumerate(r["segments"]):
         ctrl = overrides.get("centerlines", {}).get(seg["id"])
+        tail = overrides.get("centerline_tails", {}).get(seg["id"])
+        whole = ctrl is not None
+        if ctrl is None and tail is not None:
+            orig = np.asarray(seg["centerline"], float)[:, :2]
+            cut = int(np.argmin(np.linalg.norm(orig - np.asarray(tail["from"], float), axis=1)))
+            ctrl = np.vstack([orig[: cut + 1], np.asarray(tail["points"], float)]).tolist()
         if ctrl is None:
             continue
         ctrl = np.asarray(ctrl, float)
@@ -112,19 +123,22 @@ def apply_overrides(route, overrides, terrain, ds=0.2):
         u = np.linspace(0.0, d[-1], max(2, math.ceil(d[-1] / ds) + 1))
         c = np.column_stack([np.interp(u, d, ctrl[:, 0]), np.interp(u, d, ctrl[:, 1])])
         seg["centerline"] = np.column_stack([c, terrain.ground_at(c[:, 0], c[:, 1])]).tolist()
-        frozen.add(seg["id"])
+        if whole:
+            frozen.add(seg["id"])
         edits.append({"segment": seg["id"], "points": len(ctrl)})
     return r, frozen, edits
 
 
-def prepare(route, terrain, profile, overrides=None):
+def prepare(route, terrain, profile, overrides=None, method="first"):
     frozen, edits = set(), []
     if overrides:
         route, frozen, edits = apply_overrides(route, overrides, terrain)
-    prepared, report = centre_route(route, terrain, profile, frozen=frozen)
-    for seg in prepared["segments"]:
-        seg["allow_detour"] = True
-        seg["corridor_half_width"] = max(float(seg["corridor_half_width"]), 0.6)
+    # Segment flags (allow_detour, corridor) stay as taught, as the first version ran them: the
+    # follower's own grid planner does not detour on the steps; the runner plans detours on the map.
+    if method == "centre":
+        prepared, report = centre_route(route, terrain, profile, frozen=frozen)
+    else:
+        prepared, report = sanitize_route(route, terrain, skip=frozen)
     path = RoutePath(RouteV2.from_dict(prepared))
     mans = maneuver_io.annotate(terrain, path.points, profile)
     hazards = maneuver_io.route_hazards(terrain, path.points)
@@ -155,6 +169,7 @@ def main(argv=None):
     ap.add_argument("--terrain", required=True)
     ap.add_argument("--overrides", default="")
     ap.add_argument("--profile", default="")
+    ap.add_argument("--method", choices=("first", "centre"), default="first")
     ap.add_argument("--out", required=True)
     args = ap.parse_args(argv)
     out = Path(args.out)
@@ -167,7 +182,7 @@ def main(argv=None):
     if args.overrides:
         with open(args.overrides) as f:
             overrides = json.load(f)
-    prepared, mans, report = prepare(route, terrain, profile, overrides)
+    prepared, mans, report = prepare(route, terrain, profile, overrides, args.method)
     (out / "route_rl.json").write_text(json.dumps(prepared, indent=1))
     maneuver_io.save(out / "maneuvers.json", mans, prepared.get("map_id", ""), str(args.terrain))
     MapSurface(
