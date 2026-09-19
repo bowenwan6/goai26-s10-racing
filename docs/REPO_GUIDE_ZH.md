@@ -37,8 +37,9 @@
   - `codex/*`：现场 app
   - `integration/*`：整合
   - 队友可以用个人分支（如 `Jackdev`）。
-- **合并后删分支。** 提交都已在 `main` 里，不会丢。
-- **有独有提交但不再开发的分支：** 先打 `archive/<分支名>` 标签，再删分支。
+- **旧分支暂时都保留（2026-09-19 决定）。** 下表标出每个分支是否已并入 `main`。以后要清理时：
+  - 已完全并入 `main` 的分支可以直接删，提交不会丢；
+  - 有独有提交的分支先打 `archive/<分支名>` 标签再删。
 - **8 月仿真赛版本用标签标记：**
   - `v1.0-sim-release` → `1e390f5`，"publish version 1 competition release"。
   - `sim-contest-submission` → `3660b81`，与提交镜像 `s10-racing:submission-3660b81-clean` 对应。
@@ -49,11 +50,11 @@
 
 | 分支 | 最后提交 | 状态 |
 |---|---|---|
-| `main` | 09-16 | 本次整合 PR 合并后即为最新版 |
-| `integration/2026-09-19` | 09-19 | 本次整合 PR 的源分支。包含 `rl/maneuver-router`、`nav/route-v2-integration`、`codex/field-assistant`、`main`、`ros1_gateway/` 及新文档 |
-| `rl/maneuver-router` | 09-19 | **开发中**：`rl_nav`，另一个会话在用 |
-| `nav/route-v2-integration` | 09-19 | 已并入整合分支 |
-| `codex/field-assistant` | 09-19 | 已并入整合分支（现场 app、`/teach`） |
+| `main` | 09-19 | **最新整合版**（PR #4）：`rl/maneuver-router`、`nav/route-v2-integration`、`codex/field-assistant`、原 `main`、`ros1_gateway/` 及新文档 |
+| `integration/2026-09-19` | 09-19 | PR #4 的源分支，已并入 `main` |
+| `rl/maneuver-router` | 09-19 | **开发中**（`rl_nav`）。截至 49fd514 已并入 `main`，之后的提交再通过 PR 合入 |
+| `nav/route-v2-integration` | 09-19 | 已并入 `main` |
+| `codex/field-assistant` | 09-19 | 已并入 `main`（现场 app、`/teach`） |
 | `Jackdev` | 09-18 | 队友 Jack 的分支，与 `main` 分叉；有 1 个独有提交，保留 |
 | `agent/stairs57-fusion-20260819` | 08-19 | Belsun 的 stairs57 接入；有 1 个独有提交，已停用 |
 | 其余 22 个（`bw-test-*`、`bw-fix-*`、`agent/nav-commitment-v1`、`s10-recording-review-20260909`、`codex/backup-s10-app-20260913`） | 08-13 至 09-13 | 已完全并入 `main`，没有独有提交 |
