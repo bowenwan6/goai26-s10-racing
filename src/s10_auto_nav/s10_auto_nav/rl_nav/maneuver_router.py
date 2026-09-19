@@ -159,7 +159,11 @@ class RouterParams:
     centre_strafe: float = 0.15
     exit_past_last: float = 0.3
     verify_hold: float = 0.4
-    verify_level: float = math.radians(5.0)
+    #: VERIFY: off the steps (no edge under the body) and on ground the walking actor takes -- pitch
+    #: and roll within these, not dead level: a climb often ends on a slope or a side slope.
+    verify_pitch: float = math.radians(8.0)
+    verify_roll: float = math.radians(6.0)
+    verify_timeout: float = 8.0
     handback_hold: float = 0.5
     rejoin_after: float = 1.0
     rejoin_v: float = 0.45
@@ -992,19 +996,35 @@ class ManeuverRouter:
 
         # --- VERIFY / HANDBACK -------------------------------------------------------------------
         if self.mode == Mode.VERIFY:
-            level = abs(inp.pitch) < p.verify_level and abs(inp.roll) < p.verify_level
+            level = abs(inp.pitch) < p.verify_pitch and abs(inp.roll) < p.verify_roll
             under = detect_edge(inp.grid, inp.valid, x_min=-0.45, x_max=0.45)
             ok = level and under is None
             self.verify_since = (
                 (self.verify_since if self.verify_since is not None else inp.t) if ok else None
             )
+            info = {
+                "pitch_deg": round(math.degrees(inp.pitch), 1),
+                "roll_deg": round(math.degrees(inp.roll), 1),
+                "edge_under": under is not None,
+            }
             if self.verify_since is not None and inp.t - self.verify_since >= p.verify_hold:
-                self._set(Mode.HANDBACK, inp.t, s, "level, no edge under the body")
-                return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "handback")
-            if inp.t - self.mode_t > 8.0:
+                self._set(Mode.HANDBACK, inp.t, s, "off the steps, on walkable ground")
+                return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "handback", info)
+            if inp.t - self.mode_t > p.verify_timeout:
+                if under is None:
+                    # Tilted but off the steps, past the manoeuvre the map marked: the walking actor
+                    # takes it from here (the next manoeuvre, if any, is annotated on its own).
+                    self._set(
+                        Mode.HANDBACK,
+                        inp.t,
+                        s,
+                        f"off the steps, still tilted {math.degrees(inp.pitch):.0f}/"
+                        f"{math.degrees(inp.roll):.0f} deg",
+                    )
+                    return NavOutput((0.0, 0.0, 0.0), "official", self.mode, "handback", info)
                 self._set(Mode.HOLD, inp.t, s, "never verified clear of the climb")
-                return NavOutput((0.0, 0.0, 0.0), "stairs_stable", self.mode, "hold")
-            return NavOutput((0.15, 0.0, 0.0), "stairs_stable", self.mode, "verify")
+                return NavOutput((0.0, 0.0, 0.0), "stairs_stable", self.mode, "hold", info)
+            return NavOutput((0.15, 0.0, 0.0), "stairs_stable", self.mode, "verify", info)
         if self.mode == Mode.HANDBACK:
             held = inp.t - self.mode_t
             if (inp.owner_feedback == "official" and held > 0.3) or held > p.handback_hold:
