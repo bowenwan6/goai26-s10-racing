@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f5f0">
+<title>48 号 · 手机建图</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;color:#172a29;background:#f4f5f0;color-scheme:light}
+*{box-sizing:border-box}body{margin:0}main{max-width:800px;margin:auto;padding:24px 18px max(24px,env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:25px;margin:0;letter-spacing:-.6px}h1 span{font-weight:400;color:#61716b;font-size:16px;margin-left:9px}
+a{color:#155e50;text-underline-offset:4px}header a{font-size:14px;padding:12px 0}.hint{color:#586a63;font-size:14px;line-height:1.7;margin:9px 0 24px}
+.field-entry{margin:0 0 22px}.field-button{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px;padding:15px 18px;border:1px solid #0c5945;border-radius:12px;background:#166b54;color:white;text-decoration:none;touch-action:manipulation}.field-button strong{display:block;font-size:21px;line-height:1.35}.field-button small{display:block;font-size:14px;color:#e0f3e9;margin-top:4px}.field-button .arrow{font-size:27px;flex:none}.field-button:hover{background:#115c47}.field-entry p{margin:8px 2px 0;font-size:12px;line-height:1.6;color:#52665b}
+.state-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}#state{font-size:21px;font-weight:650}.connection{font-size:13px;display:flex;align-items:center;gap:6px}.dot{width:8px;height:8px;border-radius:50%;background:#8b958e}.connected .dot{background:#147853}
+.plot{position:relative;background:#e8eee7;border:1px solid #ced8cf;border-radius:14px;overflow:hidden}canvas{display:block;width:100%;height:340px}#empty{position:absolute;top:45%;left:20px;right:20px;text-align:center;color:#566a5b;pointer-events:none;font-size:14px;line-height:1.8}
+.plot-head{display:flex;align-items:center;justify-content:space-between;padding:15px 15px 0;font-size:13px}.plot-foot{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:12px;color:#50644f}.zoom{display:flex;gap:5px}.zoom button{background:#f8faf5;border:1px solid #cbd5c8;color:#233d2a;min-width:44px;min-height:44px;border-radius:8px;font-size:19px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:19px 0}.metrics div{min-width:0}.metrics span{display:block;color:#63746c;font-size:12px;margin-bottom:5px}.metrics strong{font-size:16px;font-weight:600}
+#notice{font-size:14px;line-height:1.6;border-radius:8px;padding:12px 14px;margin:0 0 12px;background:#fff3d8;color:#694a12;overflow-wrap:anywhere}#notice:empty{display:none}
+form{border-top:1px solid #d6ddd4;padding-top:20px}.inputs{display:grid;grid-template-columns:1fr 110px;gap:12px}label{font-size:13px;display:block;color:#52665b}input,select{width:100%;margin-top:7px;border:1px solid #bac8bd;border-radius:8px;background:#fff;color:#24372e;padding:12px;font:inherit;font-size:16px;min-height:48px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 12px}button{font:inherit;cursor:pointer;touch-action:manipulation}.actions button{border:0;border-radius:9px;min-height:56px;padding:13px 8px;font-weight:650;font-size:16px}#start{background:#166b54;color:white}#save{background:#e7a42a;color:#302817}button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,a:focus-visible{outline:3px solid #078b73;outline-offset:3px}.small{font-size:12px;color:#64746b;line-height:1.7;margin:0}.session{margin:18px 0 8px;font-size:13px;color:#5b6b61;overflow-wrap:anywhere}footer{margin-top:20px;font-size:13px;display:flex;gap:20px}
+@media(min-width:700px){main{padding-top:36px}canvas{height:450px}.hint{margin-bottom:30px}}
+@media(max-width:360px){main{padding:16px 12px}h1{font-size:22px}h1 span{font-size:14px}canvas{height:290px}}
+</style>
+<main>
+  <header><h1>48 号<span>手机建图</span></h1><button id="maps" type="button" style="border:0;background:none;color:#155e50;min-height:44px">已保存地图 ↗</button></header>
+  <p class="hint">手机看建图，遥控器负责行走。电脑无需连接。<a href="/localization">实时位置 →</a> · <a href="/heightmap">实时高度图 →</a></p>
+  <section class="field-entry" aria-label="现场验收入口"><a id="fieldAssistant" class="field-button" href="/field" aria-describedby="fieldEntryHint"><span><strong>现场助手</strong><small>验图 · 录制 · 标点 · 导出报告</small></span><span class="arrow" aria-hidden="true">→</span></a><p id="fieldEntryHint">沿用本网页账号登录。无需互联网；手机负责现场工具，原厂手柄负责行走和停车。</p></section>
+  <section class="field-entry"><a id="teachAssistant" class="field-button" href="/teach" style="background:#6b3fa0"><span><strong>采集助手（新 SLAM）</strong><small>建图采集 · 标 WP / 切换点 · 示教路径</small></span><span class="arrow" aria-hidden="true">→</span></a><p>只记录数据，不控制行走。需要 AGX 上的网关和采集助手后台在运行。</p></section>
+  <section class="field-entry"><a id="imuDiagnostic" class="field-button" href="/imu-check" style="background:#284d76"><span><strong>IMU／停稳诊断</strong><small>实时曲线 · 180秒检查 · 保存与导出</small></span><span class="arrow" aria-hidden="true">→</span></a><p>只读诊断，不自动校准、不控制行走、不修改停稳保护。</p></section>
+  <section class="field-entry"><a id="nativeNavigation" class="field-button" href="/native-nav" style="background:#4a5841"><span><strong>自动导航测试</strong><small>原厂模式 · Start / B · 实机检查</small></span><span class="arrow" aria-hidden="true">→</span></a><p>独立测试页：先检查，现场条件满足后才能启动。进入页面不会运动。</p></section>
+  <form id="login" hidden><div class="inputs"><label>用户名<input id="username" value="golai" autocomplete="username" required></label><label>密码<input id="password" type="password" autocomplete="current-password" required></label></div><div class="actions"><button type="submit" style="background:#166b54;color:#fff">登录</button></div><p id="loginError" role="status"></p></form>
+  <div class="state-line"><div id="state" role="status">正在连接</div><div id="connection" class="connection"><span class="dot"></span><span id="connectionText">连接中</span></div></div>
+  <section class="plot" aria-label="点云和轨迹俯视预览">
+    <div class="plot-head"><span id="viewTitle">等待雷达数据</span><span id="scale">俯视图</span></div>
+    <canvas id="plot" aria-label="实时点云预览，深绿为点云，橙色为轨迹"></canvas><div id="empty">正在等待机器人数据…</div>
+    <div class="plot-foot"><span>+X ↑ · +Y ←</span><div class="zoom"><button type="button" id="zoomOut" aria-label="缩小">−</button><button type="button" id="fit" aria-label="适应画面">⊙</button><button type="button" id="zoomIn" aria-label="放大">+</button></div></div>
+  </section>
+  <div class="metrics"><div><span>雷达</span><strong id="lidar">—</strong></div><div><span>惯性传感器</span><strong id="imu">—</strong></div><div><span>建图位姿</span><strong id="pose">—</strong></div></div>
+  <p id="mapList" class="small" hidden></p>
+  <p id="notice" role="status"></p>
+  <form id="form"><div class="inputs"><label>地图名称<input id="name" value="s10_48" maxlength="48" pattern="[A-Za-z0-9_-]{1,48}" required autocapitalize="off" spellcheck="false" aria-describedby="nameHint"></label><label>场景<select id="mode"><option value="indoor">室内</option><option value="outdoor">室外</option></select></label></div>
+  <div class="actions"><button id="start" type="submit" disabled>开始建图</button><button id="save" type="button" disabled>结束并保存</button></div></form>
+  <p id="nameHint" class="small">名称使用字母、数字、短横线或下划线。新地图单独保存，不自动切换导航地图。开始建图会暂时停止原定位。</p>
+  <p class="session" id="session">尚未读取建图会话</p>
+  <p class="small">仅手机预览每秒更新、抽样显示；官方 SLAM 输入频率和保存地图精度不因预览限频而改变。手机熄屏或断开不会停止狗上的建图服务。</p>
+  <footer><a href="#maps">查看地图列表</a><a href="#form">建图操作</a></footer>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), canvas=$('plot'), ctx=canvas.getContext('2d');
+let last=null, busy=false, zoom=1, online=false, message='';
+const fresh=x=>x && x.age<3 && !x.error && Number.isFinite(x.stamp_age_s) && x.stamp_age_s>=-.25 && x.stamp_age_s<=1;
+function draw(){
+  const w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+  const active=last?.active, streams=last?.streams||{}, source=active?streams.map:streams.raw;
+  const usable=online&&fresh(source), pts=usable?(source.points||[]):[];
+  $('viewTitle').textContent=active?`建图累计预览 · ${pts.length.toLocaleString()} 点`:'雷达视野 · 尚未建图';
+  $('empty').hidden=pts.length>0;
+  $('empty').textContent=!online?'连接中断，正在重连…':active?'建图服务运行中，等待建图点云…':'等待雷达点云…';
+  let cx=0,cy=0,span=25;
+  if(active&&pts.length){
+    let xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity;
+    for(const [x,y] of pts){xmin=Math.min(xmin,x);xmax=Math.max(xmax,x);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y)}
+    cx=(xmin+xmax)/2;cy=(ymin+ymax)/2;span=Math.max(8,xmax-xmin,ymax-ymin)*1.12;
+  }
+  const scale=Math.min(w,h)/span*zoom, px=(x,y)=>[w/2-(y-cy)*scale,h/2-(x-cx)*scale];
+  const step=10**Math.floor(Math.log10(span/5/zoom)), grid=step*scale;
+  ctx.strokeStyle='#d2ddd0';ctx.lineWidth=1;ctx.beginPath();
+  for(let x=w/2%grid;x<w;x+=grid){ctx.moveTo(x,0);ctx.lineTo(x,h)}
+  for(let y=h/2%grid;y<h;y+=grid){ctx.moveTo(0,y);ctx.lineTo(w,y)}ctx.stroke();
+  ctx.fillStyle='#235e50';for(const [x,y] of pts){const [u,v]=px(x,y);ctx.fillRect(u,v,2,2)}
+  if(active&&usable){
+    ctx.strokeStyle='#ba6c08';ctx.lineWidth=2;ctx.beginPath();let first=true;
+    for(const row of last.trail||[]){if(row.frame!==source.frame)continue;const [u,v]=px(...row.position);if(first){ctx.moveTo(u,v);first=false}else ctx.lineTo(u,v)}ctx.stroke();
+  }
+  let pose=active?(fresh(streams.pose)&&streams.pose.frame===source?.frame?streams.pose:null):{position:[0,0],yaw:0};
+  if(usable&&pose){const [u,v]=px(...pose.position);ctx.save();ctx.translate(u,v);ctx.rotate(-pose.yaw);ctx.fillStyle='#d08613';ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(6,7);ctx.lineTo(-6,7);ctx.closePath();ctx.fill();ctx.restore()}
+  $('scale').textContent=`网格 ${step.toFixed(Math.max(0,-Math.floor(Math.log10(step))))} m`;
+}
+function render(){
+  const s=last?.streams||{}, op=last?.operation;
+  $('state').textContent=!online?'连接中断':op==='saving'?'正在保存地图':op==='starting'?'正在启动':last.active?'正在建图':'准备建图';
+  $('connection').classList.toggle('connected',online);$('connectionText').textContent=online?'已连接 48 号':'重连中';
+  for(const [id,key] of [['lidar','raw'],['imu','imu'],['pose','pose']])$(id).textContent=online&&fresh(s[key])?`延迟 ${Math.round(s[key].stamp_age_s*1000)} ms`:key==='pose'&&!last?.active?'未启动':s[key]?.error?'时间或数据异常':'暂无数据';
+  $('start').disabled=busy||!online||last?.active||!!op||!fresh(s.raw)||!fresh(s.imu);
+  $('save').disabled=busy||!online||!last?.owned||!!op;
+  $('name').disabled=$('mode').disabled=busy||!!last?.active||!!op;
+  $('notice').textContent=!$('login').hidden?'请使用 48 号网页账号登录。':!online?'请保持手机连接狗的 Wi-Fi，恢复连接后核对建图状态。':(last?.error||s.raw?.error||s.imu?.error||s.map?.error||s.pose?.error||message||(last?.active&&!last?.owned?'这是从其他入口启动的会话，当前页面只显示进度。':''));
+  $('session').textContent=last?.map_name?`当前 / 最近会话：${last.map_name}${last.saved?' · 已有地图文件':''}`:'尚未开始本次建图';
+  draw();
+}
+async function poll(){
+  try{const r=await fetch('/phone/state',{cache:'no-store',signal:AbortSignal.timeout(7000)});if(r.status===401){$('login').hidden=false;throw Error('请登录')}if(!r.ok)throw Error('读取失败');last=await r.json();online=!!last.online;$('login').hidden=true}catch(e){online=false}
+  render();setTimeout(poll,1000);
+}
+async function action(path,body){
+  busy=true;message=path.endsWith('save')?'正在保存和后处理，请等待结果。':'正在启动建图服务…';render();
+  try{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':last?.csrf||''},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:'请求失败，请检查地图名称或服务状态');message=data.message||'操作已完成'}
+  catch(e){message=e.message+'；请查看当前状态，勿连续点击。'}finally{busy=false;render()}
+}
+$('form').addEventListener('submit',e=>{e.preventDefault();if(!$('start').disabled)action('/phone/start',{name:$('name').value,mode:$('mode').value})});
+$('save').addEventListener('click',()=>{if(!$('save').disabled)action('/phone/save',{})});
+$('zoomIn').onclick=()=>{zoom=Math.min(8,zoom*1.4);draw()};$('zoomOut').onclick=()=>{zoom=Math.max(.2,zoom/1.4);draw()};$('fit').onclick=()=>{zoom=1;draw()};
+$('login').addEventListener('submit',async e=>{e.preventDefault();try{const r=await fetch('/phone/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('username').value,password:$('password').value})});const d=await r.json();if(!r.ok)throw Error(d.detail);$('login').hidden=true;$('password').value='';$('loginError').textContent='';if(location.pathname!=='/')location.reload()}catch(e){$('loginError').textContent=e.message}});
+$('maps').onclick=async()=>{try{const r=await fetch('/phone/maps');const d=await r.json();if(!r.ok)throw Error(d.detail);$('mapList').textContent=d.maps.map(m=>`${m.name}（${m.saved?'文件齐全':'待检查'}）`).join(' · ');$('mapList').hidden=!$('mapList').hidden}catch(e){message=e.message;render()}};
+window.addEventListener('resize',draw);poll();
+</script>
+</html>
