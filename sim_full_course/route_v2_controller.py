@@ -20,13 +20,19 @@ for _p in (_REPO, _REPO / "src" / "s10_auto_nav"):
         sys.path.insert(0, str(_p))
 
 from s10_auto_nav.route_follower import RouteFollowerCore  # noqa: E402
+from s10_auto_nav.route_planner import LocalGridConfig  # noqa: E402
 
 BODY_Z_OFFSET = 0.43  # matches sim_full_course.robot default base height above ground
 
 
 class RouteV2Controller:
+    #: Frames fused into the local grid (0.5 s at 10 Hz). Single frames leave scattered
+    #: invalid height cells that block; see docs/ROUTE_V2_PLANNER_ZH.md.
+    FUSE_FRAMES = 5
+
     def __init__(self, body_z_offset: float = BODY_Z_OFFSET, **config_kwargs):
         self.body_z_offset = body_z_offset
+        config_kwargs.setdefault("grid", LocalGridConfig(fuse_frames=self.FUSE_FRAMES, max_age=1.0))
         self.config_kwargs = config_kwargs
         self.core: RouteFollowerCore | None = None
         self.fb = {"gait": "flat", "gait_switching": False}
