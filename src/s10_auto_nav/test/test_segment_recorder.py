@@ -27,6 +27,7 @@ except ImportError:  # pragma: no cover - depends on the environment, not the co
 needs_ros = pytest.mark.skipif(rclpy is None, reason="ROS 2 is not installed here")
 
 
+@needs_ros
 def test_ordered_evidence_accepts_exactly_018_and_only_one_gate_per_tick():
     from s10_auto_nav.segment_recorder import OrderedWaypointEvidence
 
