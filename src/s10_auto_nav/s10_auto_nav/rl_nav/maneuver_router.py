@@ -171,6 +171,8 @@ class RouterParams:
     #: Manoeuvres whose first edge the map could not fit: the measured edge is still required, gated
     #: against the route itself (its point at the first edge, its tangent) with this much slack.
     route_gate_distance: float = 0.8
+    #: ALIGN does not start before the last bend sharper than this ahead of the entry.
+    align_bend: float = math.radians(20.0)
     #: An edge more than this after a manoeuvre's first mark does not gate its entry.
     edge_start_gap: float = 0.8
     route_gate_angle: float = math.radians(65.0)
@@ -247,6 +249,7 @@ class ManeuverRouter:
         self.yaw_rate_f = 0.0  # low-passed: a walking gait stepping in place wobbles the body
         self.blocked_since = None
         self.follow_from_s = None
+        self.align_from_s = -math.inf
 
     # ------------------------------------------------------------------ helpers
     def _set(self, mode, t, s, why=""):
@@ -284,6 +287,18 @@ class ManeuverRouter:
         normal = self._tangent(m.s_first + 0.3)
         pr = self.path.project((inp.x, inp.y), s_hint=self.last_s, window=(2.0, 2.0))
         return m.s_first - pr.s, pr.d, wrap(inp.yaw - normal), normal, False
+
+    def _last_bend_before(self, m):
+        """Arc length from which ALIGN may start: past the last bend (over align_bend) of the route
+        before the manoeuvre's entry. ALIGN creeps straight at the edge; before a corner that would
+        cut it -- onto the part of the edge the route was drawn to avoid."""
+        entry = self._tangent(m.s_first + 0.3)
+        s_from = m.s_first - self.p.approach_dist
+        for sv in np.arange(m.s_first, max(0.0, m.s_first - self.p.approach_dist), -0.1):
+            if abs(wrap(self._tangent(sv) - entry)) > self.p.align_bend:
+                s_from = sv + 0.3
+                break
+        return s_from
 
     def _make_tracker(self, m):
         want = "down" if m.policy == "walk_descend" else "up"
@@ -475,6 +490,7 @@ class ManeuverRouter:
         walking = (Mode.NAVIGATE, Mode.FOLLOW_ROUTE, Mode.REJOIN)
         if self.mode in walking and m is not None and s >= m.s_first - p.approach_dist:
             self.tracker = self._make_tracker(m)
+            self.align_from_s = self._last_bend_before(m)
             self._set(Mode.APPROACH, inp.t, s, f"{m.id} {', '.join(m.kinds)}")
         if self.mode in walking:
             s_here = max(s, self.proj_s)
@@ -556,7 +572,9 @@ class ManeuverRouter:
         # --- APPROACH ----------------------------------------------------------------------------
         if self.mode == Mode.APPROACH:
             d, _lat, _head, normal, measured = self._edge_frame(inp, m)
-            if (measured and d <= p.align_enter) or s >= m.s_first - 0.9:
+            s_here = max(s, self.proj_s)
+            past_bend = s_here >= self.align_from_s
+            if past_bend and ((measured and d <= p.align_enter) or s >= m.s_first - 0.9):
                 source = "measured" if measured else "from the map"
                 self._set(Mode.ALIGN, inp.t, s, f"edge {source} {d:.2f} m ahead")
             else:
