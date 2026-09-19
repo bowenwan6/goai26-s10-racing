@@ -36,12 +36,11 @@
   }
 
   // ---------- WP grid
-  const grid = $('wpGrid'), passSel = $('passWp');
+  const grid = $('wpGrid');
   for (const w of WPS) {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = w.slice(2); b.dataset.wp = w;
     b.setAttribute('aria-label', w); b.addEventListener('click', () => { selectedWp = w; render(); });
     grid.appendChild(b);
-    const o = document.createElement('option'); o.value = w; o.textContent = w; passSel.appendChild(o);
   }
 
   // ---------- tabs
@@ -49,7 +48,6 @@
     for (const t of document.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', String(t.dataset.tab === id));
     for (const p of document.querySelectorAll('.tabpanel')) p.hidden = p.id !== id;
     try { localStorage.setItem('teachTab', id); } catch (e) { /* storage may be blocked */ }
-    if (id === 'pData') loadSessions();
   }
   for (const t of document.querySelectorAll('.tabs button')) t.addEventListener('click', () => showTab(t.dataset.tab));
   try { const saved = localStorage.getItem('teachTab'); if (saved && $(saved)) showTab(saved); } catch (e) { /* ignore */ }
@@ -121,7 +119,7 @@
   window.addEventListener('resize', draw);
   $('btnFit').addEventListener('click', () => { follow = false; $('btnFollow').setAttribute('aria-pressed', 'false'); draw(); });
   $('btnFollow').addEventListener('click', () => { follow = !follow; $('btnFollow').setAttribute('aria-pressed', String(follow)); draw(); });
-  $('btnClearTrail').addEventListener('click', () => act({action: 'trail_clear'}));
+  $('xnavLink').href = location.protocol + '//' + location.hostname + ':' + (location.port === '18080' ? '18000' : '8000') + '/';
 
   // ---------- render
   function render() {
@@ -145,9 +143,7 @@
       $('poseText').textContent = p ? `x ${p.x.toFixed(2)}  y ${p.y.toFixed(2)}  z ${p.z.toFixed(2)} m  朝向 ${p.yaw_deg}°` : '';
       $('sessionInfo').innerHTML = hasSession
         ? `当前会话：<b>${escapeHtml(s.session.id)}</b>${s.session.map_name ? ' · 地图 ' + escapeHtml(s.session.map_name) : ''}`
-        : '还没有会话。每次上场先新建一个（所有录制和标点都存在会话里）。';
-      $('needGb').textContent = s.disk.mapping_min_gb;
-      $('dataDir').textContent = s.config.data_dir;
+        : '还没有会话：先新建一个。';
     }
     const recMode = rec ? rec.mode : null, stopping = rec && rec.state === 'stopping';
     // mapping tab
@@ -158,15 +154,13 @@
     $('mSize').textContent = recMode === 'mapping' ? fmtSize(rec.bytes) : '—';
     $('mLoop').textContent = s && s.loop ? s.loop.dist.toFixed(2) + ' m' : '—';
     // survey tab
-    $('btnSurveyStart').hidden = recMode === 'survey'; $('btnSurveyStop').hidden = recMode !== 'survey';
-    $('btnSurveyStart').disabled = busy || !hasSession || !!rec || !rosOk;
+    $('btnSurveyStop').hidden = recMode !== 'survey';
     $('btnSurveyStop').disabled = busy || stopping;
     const poseFresh = s && s.topics.pose.age != null && s.topics.pose.age < 1;
-    const canMark = !busy && hasSession && !job && poseFresh;
+    const canMark = !busy && hasSession && !job && poseFresh && (!rec || recMode === 'survey');
     $('btnMarkWp').textContent = '标 ' + selectedWp + '（停稳 3 秒）';
     $('btnMarkWp').disabled = !canMark; $('btnSwin').disabled = !canMark; $('btnSwout').disabled = !canMark;
-    $('btnRedo').disabled = busy || !hasSession; $('btnNote').disabled = busy || !hasSession;
-    $('btnPass').disabled = busy || !hasSession || !poseFresh;
+    $('btnRedo').disabled = busy || !hasSession;
     const board = (s && s.board) || {};
     for (const b of grid.children) {
       b.dataset.s = board[b.dataset.wp] || 'none';
@@ -198,13 +192,6 @@
     const pairs = (s && s.pairs) || [];
     const open = pairs.length && pairs[pairs.length - 1].swout == null;
     $('pairInfo').textContent = `已标 ${pairs.filter(p => p.swout != null).length} 对切换点` + (open ? '；有一个 ▲SWIN 还没配 ▼SWOUT' : '');
-    const list = ((s && s.marks) || []).slice(-12).reverse();
-    $('markList').innerHTML = list.map(m => {
-      const name = m.kind === 'WP' || m.kind === 'WP_PASS' ? (m.kind === 'WP_PASS' ? '经过 ' : '') + m.wp_id : {SWIN: '▲ SWIN', SWOUT: '▼ SWOUT', NOTE: '备注', PATH_START: '示教开始', PATH_END: '示教结束'}[m.kind] || m.kind;
-      const res = m.result ? (m.result.passed ? ` ✓ ${(m.result.std_xy * 100).toFixed(1)} cm` : ' ✗ 不合格') : '';
-      const pos = m.pose ? ` · (${m.pose[0].toFixed(2)}, ${m.pose[1].toFixed(2)})` : '';
-      return `<div>#${m.seq} ${escapeHtml(name)}${res}${pos}${m.note ? ' · ' + escapeHtml(m.note) : ''}</div>`;
-    }).join('') || '<div class="muted">还没有标记</div>';
     // path tab
     $('btnPathStart').hidden = recMode === 'path'; $('btnPathStop').hidden = recMode !== 'path';
     $('btnPathStart').disabled = busy || !hasSession || !!rec || !poseFresh;
@@ -221,36 +208,22 @@
   function escapeHtml(t) { return String(t).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
 
   // ---------- actions
-  $('btnNew').addEventListener('click', () => act({action: 'session_new', label: $('sLabel').value.trim(), map_name: $('sMap').value.trim()}, '已新建会话').then((r) => { if (r) formOpen = false; render(); }));
+  $('btnNew').addEventListener('click', () => act({action: 'session_new', label: $('sLabel').value.trim() || 'field', map_name: ''}, '已新建会话').then((r) => { if (r) formOpen = false; render(); }));
   $('btnShowForm').addEventListener('click', () => { formOpen = true; render(); });
   $('btnMapStart').addEventListener('click', () => act({action: 'record_start', mode: 'mapping'}, '开始采集：先原地静止 5 秒，再出发'));
   $('btnMapStop').addEventListener('click', () => { if (confirm('确定结束采集？（请先停回起点脚印框）')) act({action: 'record_stop'}, '采集已结束：去 x_nav 保存地图并记下地图名'); });
-  $('btnSurveyStart').addEventListener('click', () => act({action: 'record_start', mode: 'survey'}, '开始录制标点数据'));
   $('btnSurveyStop').addEventListener('click', () => act({action: 'record_stop'}, '标点数据已保存'));
-  $('btnMarkWp').addEventListener('click', () => act({action: 'mark', kind: 'WP', wp_id: selectedWp}));
-  $('btnSwin').addEventListener('click', () => act({action: 'mark', kind: 'SWIN'}));
-  $('btnSwout').addEventListener('click', () => act({action: 'mark', kind: 'SWOUT'}));
+  // Marking starts the survey recording by itself, so there is one button less to forget.
+  async function mark(body) {
+    if (st && !st.recording) { const r = await act({action: 'record_start', mode: 'survey'}); if (!r) return; }
+    return act(body);
+  }
+  $('btnMarkWp').addEventListener('click', () => mark({action: 'mark', kind: 'WP', wp_id: selectedWp}));
+  $('btnSwin').addEventListener('click', () => mark({action: 'mark', kind: 'SWIN'}));
+  $('btnSwout').addEventListener('click', () => mark({action: 'mark', kind: 'SWOUT'}));
   $('btnRedo').addEventListener('click', () => { if (confirm('作废上一个标记？')) act({action: 'redo'}, '已作废上一个标记'); });
-  $('btnNote').addEventListener('click', () => { const t = $('noteText').value.trim(); if (t) act({action: 'mark', kind: 'NOTE', note: t}, '备注已保存').then(() => { $('noteText').value = ''; }); });
   $('btnPathStart').addEventListener('click', () => act({action: 'record_start', mode: 'path'}, '开始示教：连续走完 WP01 → WP30'));
   $('btnPathStop').addEventListener('click', () => { if (confirm('确定结束示教？')) act({action: 'record_stop'}, '示教路径已保存'); });
-  $('btnPass').addEventListener('click', () => act({action: 'mark', kind: 'WP_PASS', wp_id: passSel.value}, '已记录经过 ' + passSel.value));
-  $('btnRefresh').addEventListener('click', loadSessions);
-
-  async function loadSessions() {
-    try {
-      const d = await get('/phone/teach/sessions');
-      $('scpHint').textContent = '在电脑上执行（按会话名替换）：\nscp -r golai@10.21.33.102:' + d.data_dir + '/<会话名> .';
-      $('sessionList').innerHTML = (d.sessions || []).map(s => {
-        const files = s.files.map(f => f.bytes <= 64e6
-          ? `<a href="/phone/teach/file?session=${encodeURIComponent(s.id)}&name=${encodeURIComponent(f.name)}">${escapeHtml(f.name)}</a> (${fmtSize(f.bytes)})`
-          : `${escapeHtml(f.name)} (${fmtSize(f.bytes)}，用电脑拷贝)`).join('<br>');
-        return `<div><b>${escapeHtml(s.id)}</b>${s.fake ? ' ［演示］' : ''}${s.map_name ? ' · 地图 ' + escapeHtml(s.map_name) : ''} · 共 ${fmtSize(s.bytes)}
-          <br><button type="button" data-open="${escapeHtml(s.id)}" style="min-height:40px;margin:6px 0">设为当前会话</button><br>${files}</div>`;
-      }).join('') || '<div class="muted">还没有会话</div>';
-      for (const b of document.querySelectorAll('[data-open]')) b.addEventListener('click', () => act({action: 'session_open', session_id: b.dataset.open}, '已切换会话'));
-    } catch (e) { say(e.message, 'bad'); }
-  }
 
   // ---------- polling
   async function poll() {
