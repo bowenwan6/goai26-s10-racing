@@ -6,6 +6,7 @@ setup(
     name=package_name,
     version="0.1.0",
     packages=find_packages(exclude=["test"]),
+    package_data={"s10_auto_nav.rl_nav": ["*.json"]},
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
@@ -23,6 +24,7 @@ setup(
             "strategy_router = s10_auto_nav.strategy_router_node:main",
             "segment_recorder = s10_auto_nav.segment_recorder:main",
             "pitfail_recorder = s10_auto_nav.pitfail_recorder:main",
+            "rl_nav = s10_auto_nav.rl_nav_node:main",
         ],
     },
 )
