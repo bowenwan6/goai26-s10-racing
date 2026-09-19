@@ -198,3 +198,35 @@ def test_align_waits_until_past_the_last_bend_before_the_entry():
     m.s_first, m.s0, m.s1, m.s_last = 5.0, 4.2, 5.7, 5.0
     s_from = router._last_bend_before(m)
     assert 4.0 <= s_from <= 4.6
+
+
+def test_sliding_along_a_riser_squares_up_instead_of_pushing():
+    # Past x = 5.2 the kinematic robot no longer climbs: pushed forward it slides sideways along
+    # the riser (what the stairs actor does when it meets one at an angle). The router must stop
+    # pushing and turn square to the riser.
+    path = RoutePath(straight_route())
+    router = ManeuverRouter(path, [maneuver()])
+    x, y, yaw = 0.0, 0.0, 0.0
+    reasons = []
+    for k in range(600):
+        t = k * 0.1
+        wp_s = path.waypoint_s
+        target = int(np.searchsorted(wp_s, x + 1e-6))
+        f = FakeFollower(
+            (0.5, 0.0, -0.8 * y), "RUNNING", "", x, y, min(target, len(wp_s) - 1), "WP"
+        )
+        grid, valid = synthetic_grid(step_surface(), pose=(x, y, yaw))
+        out = router.step(NavInput(t, x, y, 0.42, yaw, 0.0, 0.0, 0.0, 0.3, grid, valid, t, f))
+        vx, vy, wz = out.command
+        reasons.append(out.reason)
+        if out.mode == Mode.CLIMB and x >= 5.2 and vx > 0:
+            yaw = math.radians(20.0)  # skewed on the riser...
+            y -= 0.15 * 0.1  # ...and sliding sideways, not forward
+        else:
+            yaw += wz * 0.1
+            x += (vx * math.cos(yaw) - vy * math.sin(yaw)) * 0.1
+            y += (vx * math.sin(yaw) + vy * math.cos(yaw)) * 0.1
+        if "squaring up" in reasons:
+            break
+    assert "squaring up" in reasons
+    assert any("sliding along a riser" in entry["why"] for entry in router.log)
