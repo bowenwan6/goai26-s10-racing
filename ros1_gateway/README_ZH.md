@@ -127,7 +127,25 @@ bash scripts/stop_control.sh
 | 脚本启动/健康检查/停止 | AGX | 通过，无残留进程 |
 | 离线转换全流程（rosbag2_py 写合成 MCAP → 转换 → 官方 Jazzy 与官方 Noetic 容器分别解码 → 逐条比对） | Mac Docker | AUDIT_OK：2000/100/100 条全部一致，录包时间一致 |
 
-**尚未完成：** 接入机器人网络后的实时验收（频率、字段、与 ROS 2 同期数据比对、10 分钟稳定性、CPU/内存/网络、另一台机器订阅），实机运动分级测试，离线转换真实录包（需要从 106 重新拷贝原始 MCAP）。
+### 新狗（050，SN `CS10100050`）实机验收 2026-09-19
+
+AGX 已装到 050 号狗；106 软件版本与 48 号相同（robot_drivers 3.1.41、localization 3.5.14、slam 3.5.1），点云同样仅本机发布。103/106 与 48 号使用**相同的 SSH 主机密钥**（厂商镜像），主机密钥不能区分设备，身份以 106 的 `robot_manufacturing_info.toml` 序列号为准。
+
+| 项目 | 结果 |
+|---|---|
+| 实时数据 | `/LIDAR/POINTS` 经 tap 10.00 Hz；`/IMU` 经 DDS 200 Hz；`/ODOM` 无（106 官方定位服务未开启，按决定不开启，x_nav 用自己的 SLAM） |
+| 与 ROS 2 逐条比对（60 s，106 本机官方订阅做参考） | 点云 592/592、IMU 11845/11845 字段完全一致（含数据 SHA256、ring、逐点 timestamp），无倒退；AUDIT_OK |
+| 10 分钟连续运行 | AGX 网关 CPU 均值 30.3%（最高 36.9%，单核计）、内存 67 MiB 无增长；tap 收发 13621/13621、丢弃 0；每分钟频率 9.96–10.00 Hz |
+| 106 负载 | tap CPU 均值 8.4%、内存 185 MiB；厂商 rslidar 13.4%（加 tap 前 14.1–14.6%）、yesense 4.0%（之前 3.7%）；eth0 发送 117 Mbit/s |
+| 一键复原 | `scripts/robot_session.sh down` 后 106 无我们的目录和进程、厂商服务正常；`up` 20 s 内恢复 HEALTH_OK |
+| 时钟 | 原先机器人时间比 AGX 快 34 s；AGX 改为 PTP 跟随 103（`scripts/agx_ptp/`，linuxptp + `s10-ptp4l`/`s10-phc2sys`，关闭互联网 NTP），偏差数十至数百 ns；点云时间戳比本机时间早 0.13 s（采集与传输延迟），IMU 0.01 s |
+| x_nav 容器 | 容器内 `/LIDAR/POINTS` 10 Hz、`/IMU` 200 Hz；建图（地图“111”）可运行，授权通过；SLAM 输出 `/base_link/odom` 10 Hz |
+| 运控 SDK（空跑） | 读到新狗反馈（state 0、高度 0.07 m）；识别出 2 个原厂 `/NAV_CMD` 发布者（103 handler、106 localPlanner），因此开启运动前须先与其他使用者约定暂停它们 |
+| 采集助手 `/teach` | worker 运行：位姿（`/base_link/odom`）10 Hz、点云 10 Hz、IMU 199 Hz；页面 `http://10.21.33.102:8080/teach` |
+
+106 的 tap 用 `os.sched_setaffinity` 绑定 0–3 核，而不是 `taskset`：106 的 `/usr/bin/taskset` 带 `cap_sys_nice` 文件能力，glibc 会清除 `LD_LIBRARY_PATH`，导致 rclpy 无法加载。
+
+**尚未完成：** 运动分级测试（需先暂停原厂控制源）；另一台机器经机器人 Wi-Fi 订阅 ROS 1 与手机访问 `/teach`（未在机器人热点下验证）；厂商 `map_manager`（手册中导航点、虚拟障碍物的保存可能依赖它）与 S10 外参；楼梯步态切换；旧狗录包的离线转换。
 
 ## 8. 厂商 x_nav 容器（2026-09-19 已做的系统改动）
 

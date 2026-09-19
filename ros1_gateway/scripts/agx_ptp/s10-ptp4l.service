@@ -1,0 +1,12 @@
+[Unit]
+Description=S10 AGX PTP client (follows the robot PTP master on end0)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/s10-agx-ptp4l.conf -i end0 -s -m -q
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

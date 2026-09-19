@@ -35,7 +35,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing 
 **当前状态：**
 - 实机跑过的 policy 只有官方 57D、speedturn2000、HIM 1500。
 - 9 月导航方案（J3100 + 1150）在 MuJoCo 里跑完 30/30 WP，用时 713 s；还没上真机。
-- 新狗 + x_nav：ROS 1 网关、运控 SDK、`/teach` 已部署到 AGX，等现场实测。
+- 新狗（050 号）+ x_nav，09-19 实测：点云、IMU 与 ROS 2 逐条一致，x_nav 能建图，`/teach` 已接通。运控 SDK 还没做运动测试。
 
 > 以下是 9 月 18 日之前的说明，保留原文。与上文冲突时以上文为准。
 

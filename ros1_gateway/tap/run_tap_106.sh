@@ -4,7 +4,9 @@
 #   bash ~/ros1_gateway_tap/run_tap_106.sh start [--gateway 10.21.33.102:47631]
 #   bash ~/ros1_gateway_tap/run_tap_106.sh stop
 #   bash ~/ros1_gateway_tap/run_tap_106.sh status
-# nice 19 on CPU cores 0-3: the vendor drivers are pinned to cores 4-7.
+# nice 19 on CPU cores 0-3 (the vendor drivers are pinned to cores 4-7). The affinity
+# is set inside the tap: /usr/bin/taskset on 106 has file capabilities, which makes
+# glibc drop LD_LIBRARY_PATH for the child and breaks rclpy.
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PIDF="$DIR/tap.pid"
 mkdir -p "$DIR/logs"
@@ -15,7 +17,7 @@ case "${1:-status}" in
     LOG="$DIR/logs/tap-$(date +%Y%m%d-%H%M%S).log"
     ( source /opt/ros/jazzy/setup.bash
       export ROS_DOMAIN_ID=0 RMW_IMPLEMENTATION=rmw_fastrtps_cpp FASTRTPS_DEFAULT_PROFILES_FILE=/opt/robot/fastdds.xml
-      exec setsid nice -n 19 taskset -c 0-3 python3 -u "$DIR/s10_lidar_tap.py" "$@" ) > "$LOG" 2>&1 < /dev/null &
+      exec setsid nice -n 19 python3 -u "$DIR/s10_lidar_tap.py" --cpus 0-3 "$@" ) > "$LOG" 2>&1 < /dev/null &
     echo $! > "$PIDF"
     sleep 2
     kill -0 "$(cat "$PIDF")" 2>/dev/null && echo "tap started (pid $(cat "$PIDF"), log $LOG)" || { echo "tap exited"; cat "$LOG"; exit 1; }
