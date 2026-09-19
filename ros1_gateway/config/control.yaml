@@ -1,0 +1,41 @@
+# s10_ros1_control: ROS 1 /cmd_vel + /web_cmd -> S10 native ROS 2 control
+# (/NAV_CMD, /MOTION_STATE, /GAIT), with feedback from /MOTION_INFO.
+#
+# The node is a DRY RUN unless started with --enable-motion: it then reads
+# feedback and logs every command it WOULD send, but creates no ROS 2 publisher.
+
+cmd_vel_topic: /cmd_vel            # geometry_msgs/Twist from the navigation stack
+web_cmd_topic: /web_cmd            # std_msgs/String commands (see web_cmd below)
+state_topic: /s10_control/state    # std_msgs/String JSON status, 5 Hz
+
+nav_cmd_rate_hz: 10.0              # developer guide: send /NAV_CMD at a fixed 10 Hz
+cmd_vel_timeout_s: 0.5             # no /cmd_vel for this long -> zero velocity
+zero_hold_s: 1.0                   # keep sending zero this long after a stop, then go quiet
+motion_info_timeout_s: 0.5         # /MOTION_INFO older than this -> zero velocity, no commands
+start_latched: false               # true: forwarding starts stopped until "Nav continue"
+stamp_source: robot                # robot: command stamps follow /MOTION_INFO time; local: this clock
+
+limits:                            # |value| clamps; code hard caps are 1.0 / 0.5 / 1.0
+  max_vx: 0.30                     # m/s forward/backward
+  max_vy: 0.10                     # m/s lateral
+  max_wz: 0.50                     # rad/s yaw
+
+stand:                             # web_cmd "cmd4"
+  nav_gait: 0x3002                 # navigation flat gait after RL; 0x3003 = navigation stairs
+  settle_s: 2.0                    # stay in state 1 (standing) this long before requesting RL (17)
+  step_timeout_s: 15.0
+  resend_period_s: 3.0             # re-send a step request if no feedback change (max 3 sends)
+
+lie_down:                          # web_cmd "cmd3"
+  still_speed: 0.05                # |vel_x|,|vel_y| m/s and |vel_yaw| rad/s counted as still
+  still_time_s: 1.0
+  wait_still_timeout_s: 5.0
+  step_timeout_s: 15.0
+
+web_cmd:                           # strings used by the x_nav web page
+  stand: cmd4
+  lie_down: cmd3
+  stop: Nav stop
+  continue: Nav continue
+  nav_mode: cmd1                   # RL control -> navigation gait (stand.nav_gait)
+  exit_nav_mode: cmd2              # logged and ignored: no documented /GAIT value; use the remote

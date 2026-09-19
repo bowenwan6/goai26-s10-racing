@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>drdds</name>
+  <version>0.0.1</version>
+  <description>
+    Minimal copy of the S10 native drdds control messages used by s10_ros1_control.
+    Definitions are byte-identical to the 48 robot's installed files (see
+    SOURCE_SHA256.txt); MotionState follows the S10 developer guide p.48 and was
+    accepted by the robot in the 2026-09-08 stand test. Built only inside the
+    ros1_gateway workspace; it does not replace any other drdds installation.
+  </description>
+  <maintainer email="s2434350@ed.ac.uk">GOAI S10 team</maintainer>
+  <license>Proprietary-interface-copy</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <depend>builtin_interfaces</depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

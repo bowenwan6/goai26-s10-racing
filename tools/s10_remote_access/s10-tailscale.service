@@ -1,0 +1,14 @@
+[Unit]
+Description=S10 private maintenance network (unprivileged userspace Tailscale)
+After=network-online.target
+
+[Service]
+Type=simple
+UMask=0077
+ExecStart=%h/.local/lib/s10-tailscale/tailscale_1.102.4_arm64/tailscaled --tun=userspace-networking --statedir=%h/.local/state/s10-tailscale --socket=%h/.local/state/s10-tailscale/tailscaled.sock --port=0 --no-logs-no-support
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

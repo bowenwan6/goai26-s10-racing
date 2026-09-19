@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>s10_ros1_gateway</name>
+  <version>1.0.0</version>
+  <description>
+    One-way ROS 2 -> ROS 1 gateway for the S10-048 sensor topics. Converts with
+    ros1_bridge's generated factories; never publishes into ROS 2.
+  </description>
+  <maintainer email="s2434350@ed.ac.uk">GOAI S10 team</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>ros1_bridge</depend>
+  <depend>yaml-cpp</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

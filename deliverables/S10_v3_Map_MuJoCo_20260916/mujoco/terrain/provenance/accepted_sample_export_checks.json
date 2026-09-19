@@ -1,0 +1,48 @@
+{
+  "status": "GEOMETRY_EXPORT_CHECKS_PASS_NOT_FIELD_ACCEPTANCE",
+  "exports": [
+    {
+      "file": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.obj",
+      "vertices": 1625,
+      "triangles": 2669,
+      "max_vertex_roundtrip_error_m": 2.6333776375827995e-07,
+      "positive_area_XY_triangle_overlap_count": 0,
+      "max_projected_overlap_area_m2": 0.0,
+      "open3d_native_3d_predicate_reported_pairs": 60,
+      "vertex_manifold": true,
+      "edge_manifold_with_boundary": true,
+      "native_predicate_note": "OBJ float32 loader warning retained; all-pairs XY audit finds no area overlap. PLY preserves doubles."
+    },
+    {
+      "file": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.ply",
+      "vertices": 1625,
+      "triangles": 2669,
+      "max_vertex_roundtrip_error_m": 0.0,
+      "positive_area_XY_triangle_overlap_count": 0,
+      "max_projected_overlap_area_m2": 0.0,
+      "open3d_native_3d_predicate_reported_pairs": 0,
+      "vertex_manifold": true,
+      "edge_manifold_with_boundary": true,
+      "native_predicate_note": null
+    }
+  ],
+  "ray_count": 2669,
+  "all_rays_hit": true,
+  "ray_max_height_error_m": 1.0728836059570312e-06,
+  "ray_p95_height_error_m": 1.7881393432617188e-07,
+  "geometry_bounds_map_xyz": [
+    [
+      3.0,
+      -1.1,
+      -0.465391091673861
+    ],
+    [
+      8.0,
+      1.4,
+      -0.20113015513413812
+    ]
+  ],
+  "purpose": "Local export and surface geometry only; no physics, no robot, no control policy",
+  "open_surface_intentional": true,
+  "MuJoCo_run": false
+}

@@ -1,0 +1,81 @@
+metadata:
+  frame: v3 original map, metres
+  status: SIMULATION TEST ROUTE; not field waypoint capture
+  source: Start central lane + B first-ascent crop centreline + bounded post-B
+  terminal_setback_m: 0.8
+waypoints:
+- index: 0
+  position:
+  - 0.0
+  - 0.5
+  - -0.42930552770514474
+- index: 1
+  position:
+  - 4.0
+  - 0.5
+  - -0.35352293427957093
+- index: 2
+  position:
+  - 8.0
+  - 0.5
+  - -0.4201891359733825
+- index: 3
+  position:
+  - 10.5
+  - 1.4
+  - -0.3786498725896159
+- index: 4
+  position:
+  - 12.891745794
+  - 2.056971555
+  - -0.3486563870191688
+- index: 5
+  position:
+  - 18.993174443
+  - 4.521834368
+  - 1.266100462666273
+- index: 6
+  position:
+  - 21.666321289
+  - 6.410375453
+  - 1.4414046788960864
+- index: 7
+  position:
+  - 23.676936311
+  - 8.551742823
+  - 2.221133350439552
+- index: 8
+  position:
+  - 22.895283819
+  - 10.038051581
+  - 2.385344486054577
+- index: 9
+  position:
+  - 23.649611434
+  - 13.082918084
+  - 2.822303624050874
+- index: 10
+  position:
+  - 25.114925774
+  - 15.886426318
+  - 3.767960096929844
+- index: 11
+  position:
+  - 25.697540493
+  - 19.01088399
+  - 4.566065523303708
+- index: 12
+  position:
+  - 26.516563974
+  - 21.678986371
+  - 4.633584389404064
+- index: 13
+  position:
+  - 27.67052756865251
+  - 23.311518445695217
+  - 4.622530516113249
+- index: 14
+  position:
+  - 28.873627111712565
+  - 25.009173353385318
+  - 4.611036474008385

@@ -1,0 +1,18 @@
+common:
+  path: "/dev/imu0"     # 串口设备文件路径
+  baudRate: 460800        # 波特率 
+  frame_id: "basic_id"
+  freq: 200
+  distribution: true
+
+CD1:
+  orient: 121             # 轴向配置 AT+SET_ORIENT
+  att_axis: 1             # 坐标系配置 AT+SET_ATT_AXIS
+
+CC3:
+  orient: 107             # 轴向配置 AT+SET_ORIENT
+  att_axis: 1             # 坐标系配置 AT+SET_ATT_AXIS
+
+CA9C:
+  orient: 121             # 轴向配置 AT+SET_ORIENT
+  att_axis: 1             # 坐标系配置 AT+SET_ATT_AXIS
