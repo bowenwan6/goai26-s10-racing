@@ -28,7 +28,8 @@ Nominal (the first version)::
               error while it turns -- the first version slid 1 m down WP15's side slope turning
               there, and fell on three seeds of four.
     CLIMB     The stairs actor. Heading: the route's own direction, corrected towards a carrot
-              0.8 m ahead by at most climb_correction; slower near a waypoint, when faster than
+              0.8 m ahead by at most climb_correction (new: turning at most stall_w while it is
+              stalled against a riser); slower near a waypoint, when faster than
               asked, and when the grid shows a drop more than drop_depth below the route ahead.
               Back to WALK past the manoeuvre -- new: not while still sliding faster than
               settle_v, since the SDK's hand-back holds the joints rigid for 0.25 s.
@@ -137,6 +138,12 @@ class RunnerParams:
     climb_v: float = 0.3
     climb_turn_v: float = 0.2
     climb_w: float = 0.35
+    #: The stairs actor turns only while it climbs: stalled against a riser (forward speed, smoothed
+    #: over ~0.5 s, under stall_v) it is asked to turn at most stall_w. Commanded to turn hard while
+    #: stalled it twists on the step and slides off it sideways -- every stairs fall on the GPU
+    #: server's eight seeds (after WP07 on B, the step before WP20) did exactly that.
+    stall_v: float = 0.1
+    stall_w: float = 0.1
     climb_kp: float = 2.0
     climb_correction: float = math.radians(12.0)
     climb_carrot: float = 0.8
@@ -261,6 +268,7 @@ class RouteRunner:
         self.next_plan_t = -math.inf
         self.climb_best = (-math.inf, 0.0)
         self.settle_since = None
+        self.v_smooth = 0.0
         self.backup_until, self.backup_why, self.backup_kind = -math.inf, "", "rejoin"
         self.descend_best, self.descend_tries = (-math.inf, 0.0), 0
         self.descend_heading = 0.0
@@ -396,6 +404,7 @@ class RouteRunner:
         self.d = f.d if math.isfinite(f.d) else 0.0
         self.s_gate = inp.s_gate
         moving = f.status in MOVING
+        self.v_smooth += 0.2 * (inp.v_forward - self.v_smooth)
         self._remember(inp)
         if f.finished:
             if self.mode != Mode.DONE:
@@ -607,11 +616,12 @@ class RouteRunner:
         drop = self._drop_ahead(inp, s)
         if drop:
             v = p.drop_v
+        wz_max = p.stall_w if self.v_smooth < p.stall_v else p.climb_w
         return NavOutput(
-            (v, 0.0, float(np.clip(p.climb_kp * err, -p.climb_w, p.climb_w))),
+            (v, 0.0, float(np.clip(p.climb_kp * err, -wz_max, wz_max))),
             "stairs_stable",
             self.mode,
-            "drop ahead" if drop else "climb",
+            "drop ahead" if drop else ("climb, stalled" if wz_max < p.climb_w else "climb"),
             {"aim_deg": round(math.degrees(aim), 1)},
         )
 
