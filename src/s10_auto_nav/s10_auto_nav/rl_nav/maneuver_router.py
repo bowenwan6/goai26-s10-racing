@@ -170,6 +170,9 @@ class RouterParams:
     trust_reach: float = 1.6
     follow_lateral: float = 0.25
     follow_min_progress: float = 1.0
+    #: NAVIGATE watchdog: no progress along the route for this long counts as a refusal, whatever
+    #: status the follower reports (its own A* can stand still for tens of seconds).
+    nav_stall: float = 6.0
     #: An obstacle on the route that A* cannot pass: wait this long (people move), then HOLD.
     obstacle_wait: float = 10.0
     missed_gate_margin: float = 0.3
@@ -266,6 +269,7 @@ class ManeuverRouter:
         self.blocked_since = None
         self.follow_from_s = None
         self.align_from_s = -math.inf
+        self.nav_best_s, self.nav_best_t = -math.inf, 0.0
 
     # ------------------------------------------------------------------ helpers
     def _set(self, mode, t, s, why=""):
@@ -280,6 +284,7 @@ class ManeuverRouter:
             }
         )
         self.mode, self.mode_t = mode, t
+        self.nav_best_s, self.nav_best_t = -math.inf, t
         if mode == Mode.FOLLOW_ROUTE:
             self.follow_from_s = None
         self.ready_since = None
@@ -396,6 +401,12 @@ class ManeuverRouter:
                 want=want,
             )
         return None
+
+    @staticmethod
+    def _follower_driving(f):
+        """The follower claims to drive and actually commands motion (its A* can stand still)."""
+        vx, vy, wz = f.command
+        return f.status in MOVING and (abs(vx) > 0.05 or abs(vy) > 0.05 or abs(wz) > 0.1)
 
     def _shaped_walk(self, f):
         vx, vy, wz = f.command
@@ -571,12 +582,20 @@ class ManeuverRouter:
             on_route = abs(f.d) < p.trust_offset if math.isfinite(f.d) else False
             obstacle = self._scan_blocks(inp, s_here)
             if self.mode == Mode.NAVIGATE:
+                if s_here > self.nav_best_s + 0.1:
+                    self.nav_best_s, self.nav_best_t = s_here, inp.t
+                if inp.t - self.nav_best_t > p.nav_stall and self.refuse_since is None:
+                    # The follower says it drives but the robot does not move along the route.
+                    self.refuse_since = inp.t - p.rejoin_after
+                    f_reason = f"no progress for {p.nav_stall:.0f} s ({f.status})"
+                else:
+                    f_reason = f"{f.status} {f.reason}"
                 if self.refuse_since is not None and inp.t - self.refuse_since >= p.rejoin_after:
                     self.astar_path = None
                     if on_route and obstacle is None:
-                        self._set(Mode.FOLLOW_ROUTE, inp.t, s, f"{f.status} {f.reason}; scan clear")
+                        self._set(Mode.FOLLOW_ROUTE, inp.t, s, f"{f_reason}; scan clear")
                     else:
-                        self._set(Mode.REJOIN, inp.t, s, f"{f.status} {f.reason}")
+                        self._set(Mode.REJOIN, inp.t, s, f_reason)
                 else:
                     return NavOutput(self._shaped_walk(f), "official", self.mode)
             if self.mode == Mode.FOLLOW_ROUTE:
@@ -586,7 +605,7 @@ class ManeuverRouter:
                 # the next one on the same rough patch, and flipping between them stalls the walking
                 # actor.
                 if (
-                    f.status in MOVING
+                    self._follower_driving(f)
                     and inp.t - self.mode_t > 1.5
                     and s_here - self.follow_from_s >= p.follow_min_progress
                 ):
@@ -612,7 +631,7 @@ class ManeuverRouter:
                     cmd = self._pursue_route(inp, s_here, s_gate, p.walk_floor)
                     return NavOutput(cmd, "official", self.mode, "route")
             if self.mode == Mode.REJOIN:
-                if f.status in MOVING and inp.t - self.mode_t > 1.5:
+                if self._follower_driving(f) and inp.t - self.mode_t > 1.5:
                     self._set(Mode.NAVIGATE, inp.t, s, "follower driving again")
                     return NavOutput(self._shaped_walk(f), "official", self.mode)
                 if inp.t - self.mode_t > p.rejoin_timeout:
