@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f4f5f0">
-<title>采集助手 · 新 SLAM</title>
+<title>S10 采集助手</title>
 <style>
 :root{font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;color:#172a29;background:#f4f5f0;color-scheme:light;
 --green:#166b54;--purple:#6b3fa0;--red:#a3382c;--amber:#b7791f;--blue:#285f9e;--line:#d7dfd8}
@@ -20,10 +20,10 @@ h1{font-size:21px;margin:0}h2{font-size:17px;margin:0 0 10px}a{color:#155e50}
 .banner{border-radius:10px;padding:11px 13px;margin:10px 0;background:#fff3d8;border:1px solid #dbc699;color:#694a12;font-size:14px;line-height:1.6}
 .banner[data-tone=good]{background:#e6f3eb;border-color:#9fbfab;color:#244c34}.banner[data-tone=bad]{background:#fff0ef;border-color:#dcaaa4;color:#822b23}
 .banner:empty{display:none}
-#map{display:block;width:100%;height:340px;border-radius:12px;background:#f7f9f6;border:1px solid var(--line);touch-action:none}
+#map{display:block;width:100%;height:300px;border-radius:12px;background:#f7f9f6;border:1px solid var(--line);touch-action:none}
 .maprow{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}.maprow button{flex:none;min-height:40px;padding:8px 12px;font-size:14px}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:#51645b}.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:-1px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 0}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0 0}
 .tabs button{min-height:52px;font-size:15px;padding:6px 4px;border-radius:10px;background:#e8eee9;border:1px solid #c9d5cc;color:#284437;font-weight:650}
 .tabs button[aria-selected=true]{background:var(--green);border-color:var(--green);color:white}
 button,input,select{font:inherit}button{min-height:50px;border-radius:10px;padding:10px 14px;border:1px solid #b7c8bd;background:#edf3ee;color:#214c3b;font-weight:650;cursor:pointer;touch-action:manipulation}
@@ -47,107 +47,62 @@ ol.steps{padding-left:20px;margin:6px 0;line-height:1.7;font-size:14px}
 .big-num{font-size:34px;font-weight:700;letter-spacing:-.02em}
 .dock{position:fixed;left:0;right:0;bottom:0;background:#f4f5f0f2;border-top:1px solid #c4cfc5;padding:9px 14px max(9px,env(safe-area-inset-bottom));font-size:12.5px;color:#65463f;text-align:center;z-index:9}
 @media(max-width:560px){#sessionForm .row{flex-direction:column;gap:0}}
-@media(max-width:420px){.wpgrid{grid-template-columns:repeat(5,1fr)}.metrics strong{font-size:17px}#map{height:300px}}
+@media(max-width:420px){.wpgrid{grid-template-columns:repeat(5,1fr)}.metrics strong{font-size:17px}#map{height:230px}}
 </style>
 <main>
-  <header><h1>采集助手 · 新 SLAM</h1><a href="/">首页</a></header>
-  <div id="fakeTag" class="banner" data-tone="bad" hidden>演示模式：机器人和数据都是模拟的，不会录下真实数据包。</div>
+  <header><h1>S10 采集助手</h1><a id="xnavLink" href="#" target="_blank" rel="noopener" style="font-weight:650">打开 x_nav ↗</a></header>
+  <div id="fakeTag" class="banner" data-tone="bad" hidden>演示模式：数据是模拟的。</div>
   <div class="chips" aria-label="实时状态">
     <span id="cLidar" class="chip">点云 —</span><span id="cImu" class="chip">IMU —</span>
     <span id="cPose" class="chip">定位 —</span><span id="cDisk" class="chip">磁盘 —</span>
     <span id="cRec" class="chip">未录制</span>
   </div>
-  <div id="conn" class="banner" role="status">正在连接采集助手…</div>
+  <div id="conn" class="banner" role="status">正在连接…</div>
 
   <section class="card" id="sessionCard">
-    <h2>会话</h2>
-    <p id="sessionInfo" class="muted">还没有会话。每次上场先新建一个（所有录制和标点都存在会话里）。</p>
-    <div id="sessionForm">
-      <div class="row"><div><label for="sLabel">会话名（字母/数字）</label><input id="sLabel" placeholder="例如 day1_loop" maxlength="32" autocomplete="off"></div>
-      <div><label for="sMap">x_nav 地图名（没有就留空）</label><input id="sMap" placeholder="例如 garden_0920" maxlength="80" autocomplete="off"></div></div>
-      <button id="btnNew" type="button" style="width:100%;margin-top:10px">新建会话</button>
-    </div>
-    <button id="btnShowForm" type="button" hidden style="min-height:42px;font-size:14px">新建另一个会话</button>
+    <p id="sessionInfo" class="muted" style="margin:0 0 8px">还没有会话：先新建一个。</p>
+    <div id="sessionForm" class="row"><input id="sLabel" placeholder="会话名（字母/数字，可留空）" maxlength="32" autocomplete="off"><button id="btnNew" type="button" style="flex:none">新建会话</button></div>
+    <button id="btnShowForm" type="button" hidden style="min-height:40px;font-size:14px">新建另一个会话</button>
   </section>
 
   <section class="card">
-    <canvas id="map" aria-label="俯视轨迹图：轨迹、机器人位置、航点与切换点"></canvas>
-    <div class="maprow">
-      <button id="btnFit" type="button">全览</button><button id="btnFollow" type="button" aria-pressed="false">跟随机器人</button>
-      <button id="btnClearTrail" type="button">清空轨迹显示</button>
-      <span id="poseText" class="muted"></span>
-    </div>
-    <div class="legend"><span><i style="background:#285f9e"></i>轨迹</span><span><i style="background:#166b54"></i>WP</span>
-      <span><i style="background:#6b3fa0"></i>切换点 ▲进台阶 ▼出台阶</span><span><i style="background:#e0a100"></i>起点</span><span><i style="background:#a3382c"></i>机器人</span></div>
+    <canvas id="map" aria-label="俯视轨迹图"></canvas>
+    <div class="maprow"><button id="btnFit" type="button">全览</button><button id="btnFollow" type="button" aria-pressed="false">跟随</button><span id="poseText" class="muted"></span></div>
   </section>
 
   <div class="tabs" role="tablist">
-    <button role="tab" id="tMap" aria-selected="true" data-tab="pMap">① 建图</button>
-    <button role="tab" id="tMark" aria-selected="false" data-tab="pMark">② 标点</button>
-    <button role="tab" id="tPath" aria-selected="false" data-tab="pPath">③ 示教</button>
-    <button role="tab" id="tData" aria-selected="false" data-tab="pData">④ 数据</button>
+    <button role="tab" aria-selected="true" data-tab="pMap">① 建图</button>
+    <button role="tab" aria-selected="false" data-tab="pMark">② 标点</button>
+    <button role="tab" aria-selected="false" data-tab="pPath">③ 示教</button>
   </div>
 
   <section class="card tabpanel" id="pMap" role="tabpanel">
-    <h2>① 点云 + IMU 采集（带回环）</h2>
-    <ol class="steps">
-      <li>机器人放在 <b>WP01 脚印框</b>，朝赛道方向，停稳。</li>
-      <li>按厂商说明开始 x_nav 建图（x_nav 暂不可用时也可以只录数据）。</li>
-      <li>点“开始采集”，原地静止 5 秒，再用遥控器慢慢走到 <b>WP30</b>。</li>
-      <li>掉头<b>沿原路走回</b>，停回脚印框（位置、朝向都对上），静止 5 秒。</li>
-      <li>点“结束采集”，在 x_nav 保存地图并把地图名写在会话里。</li>
-    </ol>
+    <p class="muted">x_nav 新建地图 → 这里开始采集 → 静止 5 秒 → 遥控走到 WP30 → <b>原路走回</b>起点脚印框 → 结束采集 → x_nav 保存地图。</p>
     <div class="metrics"><div><span>已采集</span><strong id="mTime">—</strong></div><div><span>数据量</span><strong id="mSize">—</strong></div><div><span>距起点</span><strong id="mLoop">—</strong></div></div>
-    <p id="loopHint" class="muted">“距起点”用新 SLAM 自己的位姿计算，只作参考：回到起点请以地上的脚印框为准。回环修正后这个数字应接近 0。</p>
     <button id="btnMapStart" class="big go" type="button">开始采集</button>
     <button id="btnMapStop" class="big stop" type="button" hidden>结束采集</button>
-    <p class="muted">需要磁盘剩余 ≥ <span id="needGb">20</span> GB；约 1.5 GB/分钟。剩余低于 3 GB 自动停止。</p>
   </section>
 
   <section class="card tabpanel" id="pMark" role="tabpanel" hidden>
-    <h2>② 标 WP 与切换点</h2>
-    <p class="muted">先让 x_nav 进入<b>定位模式</b>（加载已保存的地图），再标点。建议先点“开始录制标点数据”。</p>
-    <div class="row"><button id="btnSurveyStart" class="go" type="button">开始录制标点数据</button><button id="btnSurveyStop" class="stop" type="button" hidden>结束录制</button></div>
-    <h2 style="margin-top:14px">WP（按正式顺序：WP01 = 门口 Start）</h2>
+    <p class="muted">x_nav 先进入<b>定位模式</b>。选编号 → 机身中心对准红点、停稳 → 点按钮，3 秒别动。WP01 = 门口。</p>
     <div id="wpGrid" class="wpgrid" role="group" aria-label="选择航点"></div>
-    <p class="muted">灰=未标 · 绿=合格 · 黄=合格但离散偏大 · 红=不合格（重标）。</p>
     <button id="btnMarkWp" class="big go" type="button">标 WP01（停稳 3 秒）</button>
     <div id="jobBox" hidden><div class="progress"><div id="jobBar"></div></div><p id="jobText" class="muted">采样中，保持不动…</p></div>
     <div id="result" class="result" hidden></div>
-    <h2 style="margin-top:14px">policy 切换点</h2>
-    <p class="muted">▲ 进台阶：停在第一级前 0.3–0.5 m，机身正对台阶边。▼ 出台阶：停在最后一级之后、离边缘 ≥ 0.5 m 的平地。</p>
-    <div class="row"><button id="btnSwin" class="sw" type="button">▲ 标 SWIN 交给台阶 policy</button><button id="btnSwout" class="sw" type="button">▼ 标 SWOUT 交还步行 policy</button></div>
+    <p class="muted" style="margin-top:12px">台阶切换点（成对）：▲ 第一级前 0.3–0.5 m、正对台阶；▼ 最后一级后、离边缘 ≥ 0.5 m。</p>
+    <div class="row"><button id="btnSwin" class="sw" type="button">▲ 进台阶</button><button id="btnSwout" class="sw" type="button">▼ 出台阶</button></div>
     <p id="pairInfo" class="muted"></p>
-    <div class="row" style="margin-top:10px"><button id="btnRedo" type="button">作废上一个标记</button></div>
-    <label for="noteText">备注（例如：WP16 两面旗取左边那面）</label>
-    <div class="row"><input id="noteText" maxlength="200" autocomplete="off"><button id="btnNote" type="button" style="flex:none">加备注</button></div>
-    <h2 style="margin-top:14px">最近的标记</h2><div id="markList" class="list"></div>
+    <div class="row"><button id="btnRedo" type="button">作废上一个</button><button id="btnSurveyStop" class="stop" type="button" hidden>结束标点</button></div>
   </section>
 
   <section class="card tabpanel" id="pPath" role="tabpanel" hidden>
-    <h2>③ 最短手动路径（示教）</h2>
-    <ol class="steps">
-      <li>x_nav 在<b>定位模式</b>；机器人在 WP01 脚印框。</li>
-      <li>点“开始示教”，用遥控器<b>连续</b>走完 WP01 → WP30。</li>
-      <li>走线：平地走直线；进台阶前留 ≥ 1 m 直线、垂直正对；台阶上不转弯；避开 &gt; 6° 侧坡、&gt; 18 cm 台阶；离落差 ≥ 0.4 m。</li>
-      <li>到 WP30 点“结束示教”。最好完整走两遍。</li>
-    </ol>
+    <p class="muted">x_nav 定位模式，狗在 WP01。开始示教 → 遥控<b>连续</b>走完 WP01→WP30（台阶前正对、台阶上不转弯）→ 结束示教。最好走两遍。</p>
     <div class="metrics"><div><span>路径长度</span><strong id="pLen">—</strong></div><div><span>用时</span><strong id="pTime">—</strong></div><div><span>平均速度</span><strong id="pSpeed">—</strong></div></div>
     <button id="btnPathStart" class="big go" type="button">开始示教</button>
     <button id="btnPathStop" class="big stop" type="button" hidden>结束示教</button>
-    <label for="passWp">（可选）经过某个 WP 时记一下，不用停车</label>
-    <div class="row"><select id="passWp" style="min-height:46px;border-radius:9px;border:1px solid #b7c8bd;padding:8px"></select><button id="btnPass" type="button" style="flex:none">记录经过</button></div>
-  </section>
-
-  <section class="card tabpanel" id="pData" role="tabpanel" hidden>
-    <h2>④ 数据</h2>
-    <p class="muted">所有文件在 AGX <code id="dataDir">~/teach/sessions</code>。小文件可直接下载；原始数据包（.bag）很大，请用电脑拷贝：</p>
-    <pre id="scpHint" style="font-size:12px;background:#f0f3ef;border-radius:8px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere"></pre>
-    <button id="btnRefresh" type="button">刷新列表</button>
-    <div id="sessionList" class="list"></div>
   </section>
 
   <div id="msg" class="banner" role="alert"></div>
 </main>
-<div class="dock">本页只记录数据，<b>不控制机器人</b>。行走和急停一律用遥控器。</div>
+<div class="dock">只记录数据，<b>不控制机器人</b>。行走和急停用遥控器。</div>
 <script src="/teach.js"></script>

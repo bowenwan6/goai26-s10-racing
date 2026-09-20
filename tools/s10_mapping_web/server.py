@@ -225,7 +225,15 @@ class Handler(BaseHTTPRequestHandler):
         global last_view, last_height_view
         if self.path == '/':
             return self.reply(200, (HERE/'index.html').read_bytes(), 'text/html; charset=utf-8')
-        if self.path in ('/localization', '/heightmap', '/field', '/imu-check', '/native-nav', '/teach'):
+        if self.path in ('/localization', '/heightmap', '/field', '/imu-check', '/native-nav'):
+            # 48-only pages (official SLAM on dog 48's 106): retired from the menu on 2026-09-19.
+            # The files and their APIs stay; the site now has one flow, the teach page.
+            self.send_response(302)
+            self.send_header('Location', '/teach')
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
+        if self.path == '/teach':
             page = HERE/({'/imu-check': 'imu_diag.html', '/native-nav': 'native_nav.html'}.get(self.path, self.path[1:]+'.html') if self.authenticated() else 'index.html')
             if not page.is_file():
                 return self.reply(404, dict(detail='当前地图的定位页面尚未准备'))

@@ -17,6 +17,24 @@ case "${1:-status}" in
       [ -f "$ROS1_ENV" ] && source "$ROS1_ENV"
       export ROS_MASTER_URI="${ROS_MASTER_URI:-http://127.0.0.1:11311}" ROS_IP="${ROS_IP:-127.0.0.1}"
       cd "$DIR"
+      # Data goes straight to the external SSD when it is mounted (fstab: /mnt/s10ssd, exFAT,
+      # automount); otherwise to the AGX's own storage, and the page says so in red.
+      SSD="${S10_TEACH_SSD:-/mnt/s10ssd}"
+      case " $* " in *" --data-dir "*) ;; *)
+        # "mountpoint -q" also answers yes for the bare autofs point, so the mkdir/touch is the
+        # real test; touching the path is also what triggers the automount. Retry, because after
+        # a reboot USB enumeration can lag behind s10-stack.service.
+        for _ in $(seq "${S10_TEACH_SSD_WAIT:-10}"); do
+          mkdir -p "$SSD/s10_teach" 2>/dev/null && touch "$SSD/s10_teach/.write-test" 2>/dev/null && break
+          sleep 1
+        done
+        if rm -f "$SSD/s10_teach/.write-test" 2>/dev/null && [ -d "$SSD/s10_teach" ]; then
+          set -- --data-dir "$SSD/s10_teach" "$@"
+        else
+          echo "WARNING: external SSD $SSD is not usable - recording to the AGX eMMC (~/teach), only ~20 GB free"
+        fi ;;
+      esac
+      echo "teach data dir args: $*"
       # exit code 3 = the ROS master restarted: restart the worker so it re-registers
       while true; do python3 -u teach_worker.py "$@"; code=$?; [ "$code" = 3 ] || exit "$code"; sleep 1; done
     ) > "$LOG" 2>&1 < /dev/null &
@@ -33,8 +51,21 @@ case "${1:-status}" in
     ;;
   status)
     if [ -f "$PIDF" ] && kill -0 "$(cat "$PIDF")" 2>/dev/null; then echo "teach worker running (pid $(cat "$PIDF"))"
-      curl -s --max-time 3 http://127.0.0.1:8091/status | python3 -c 'import json,sys; s=json.load(sys.stdin); print("ros", s["ros"], "| pose", s["topics"]["pose"], "| lidar", s["topics"]["lidar"], "| imu", s["topics"]["imu"], "| recording", s["recording"])' 2>/dev/null
+      curl -s --max-time 3 http://127.0.0.1:8091/status | python3 -c 'import json,sys; s=json.load(sys.stdin); print("ros", s["ros"], "| pose", s["topics"]["pose"], "| lidar", s["topics"]["lidar"], "| imu", s["topics"]["imu"], "| recording", s["recording"], "| data", s["config"]["data_dir"])' 2>/dev/null
     else echo "teach worker not running"; fi
     ;;
-  *) echo "usage: $0 start|stop|status" >&2; exit 2 ;;
+  migrate)   # move any sessions left on the AGX eMMC onto the SSD (stop the worker first)
+    SSD="${S10_TEACH_SSD:-/mnt/s10ssd}"; SRC="$HOME/teach/sessions"; DST="$SSD/s10_teach/sessions"
+    mkdir -p "$DST" 2>/dev/null || { echo "SSD $SSD not mounted"; exit 1; }
+    [ -d "$SRC" ] || { echo "nothing to migrate"; exit 0; }
+    for S in "$SRC"/*/; do
+      [ -d "$S" ] || continue
+      N="$(basename "$S")"
+      [ -e "$DST/$N" ] && { echo "skip $N (already on the SSD)"; continue; }
+      echo "moving $N ..."
+      rsync -a --info=progress2 "$S" "$DST/$N/" && rm -rf "$S" && echo "  moved $N"
+    done
+    du -sh "$DST" 2>/dev/null
+    ;;
+  *) echo "usage: $0 start|stop|status|migrate" >&2; exit 2 ;;
 esac
