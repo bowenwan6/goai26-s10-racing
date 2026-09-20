@@ -1,37 +1,50 @@
 // s10_ros1_control: ROS 1 motion interface for the S10.
 //
-// ROS 1 in   /cmd_vel  geometry_msgs/Twist   -> /NAV_CMD (drdds/NavCmd, m/s, rad/s)
+// ROS 1 in   cmd_sources (e.g. /rl_nav/cmd_vel, /cmd_vel)  geometry_msgs/Twist -> /NAV_CMD
+//              only the ACTIVE source is forwarded ("source <name>" on /web_cmd selects it)
+//            /rl_nav/gait_request std_msgs/String "flat" | "stairs": gait switch at a standstill
 //            /web_cmd  std_msgs/String       "cmd4" stand, "cmd3" lie down,
-//                                            "Nav stop" latch zero, "Nav continue"
+//                                            "Nav stop" latch zero, "Nav continue",
+//                                            "cmd1" navigation gait, "source <name>"
 // ROS 1 out  /s10_control/state std_msgs/String JSON (5 Hz)
+//            /s10_control/gait  std_msgs/String "flat" | "stairs" | "switching" | "none" (10 Hz)
 // ROS 2 in   /MOTION_INFO drdds/MotionInfo (state, gait, measured velocity)
+//            /NAV_CMD (monitor only): messages from any other publisher are counted
 // ROS 2 out  /NAV_CMD, /MOTION_STATE, /GAIT  - only with --enable-motion
 //
 // Rules (S10 developer guide p.48-52 plus the 2026-09-08/17 field notes):
 //   * Velocity is forwarded only in RL control (17) with a navigation gait
-//     (0x3002/0x3003), with fresh feedback, fresh /cmd_vel, no latch and no fault.
-//     It is clamped and sent at a fixed rate; after any stop, zero is sent for
-//     zero_hold_s and then nothing (the node does not hold control while idle).
+//     (0x3002/0x3003), with fresh feedback, fresh /cmd_vel, no latch, no fault and
+//     no gait switch in progress. It is clamped and sent at a fixed rate; after any
+//     stop, zero is sent for zero_hold_s and then nothing.
 //   * Stand = MOTION_STATE 1 -> wait standing -> 17 -> wait RL -> GAIT nav gait
 //     -> wait; every step waits for /MOTION_INFO confirmation.
+//   * Gait switch (flat <-> stairs) only in RL: zero velocity -> measured still ->
+//     /GAIT -> wait for /MOTION_INFO to confirm; timeout latches a stop.
 //   * Lie down only after zero velocity and a measured still robot.
 //   * "Nav stop" is a software stop (zero velocity), never the joint-damping soft
 //     e-stop (state 2), which would drop the robot. The remote stays the e-stop.
-//   * Any second /NAV_CMD publisher latches a fault; restart required.
+//   * Another /NAV_CMD publisher that actually SENDS while we are armed latches a
+//     fault (exclusive_mode messages). exclusive_mode publishers: any other
+//     publisher's existence does (the shared dog always has two idle native ones).
 
 #include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
 #include <csignal>
+#include <cstring>
+#include <deque>
 #include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <mutex>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "geometry_msgs/Twist.h"
 #include "ros/ros.h"
@@ -80,22 +93,39 @@ std::string jnum(double v)
   return o.str();
 }
 
+std::string trim(std::string c)
+{
+  c.erase(0, c.find_first_not_of(" \t\r\n"));
+  c.erase(c.find_last_not_of(" \t\r\n") + 1);
+  return c;
+}
+
 constexpr int32_t kIdle = 0, kStanding = 1, kBootDamping = 3, kLying = 4, kRl = 17;
 constexpr uint32_t kNavFlat = 0x3002, kNavStairs = 0x3003;
 constexpr double kHardVx = 1.0, kHardVy = 0.5, kHardWz = 1.0;
 
+const char * gait_name(uint32_t g)
+{
+  return g == kNavFlat ? "flat" : g == kNavStairs ? "stairs" : "other";
+}
+
 struct Config
 {
-  std::string cmd_vel_topic = "/cmd_vel", web_cmd_topic = "/web_cmd", state_topic = "/s10_control/state";
+  std::vector<std::pair<std::string, std::string>> cmd_sources;  // name -> topic
+  std::string cmd_source = "";
+  std::string web_cmd_topic = "/web_cmd", state_topic = "/s10_control/state";
+  std::string gait_request_topic = "/rl_nav/gait_request", gait_topic = "/s10_control/gait";
   double nav_rate = 10, cmd_timeout = 0.5, zero_hold = 1.0, info_timeout = 0.5;
   bool start_latched = false;
   bool stamp_robot = true;
+  bool exclusive_messages = true;
   double max_vx = 0.3, max_vy = 0.1, max_wz = 0.5;
   uint32_t nav_gait = kNavFlat;
   double stand_settle = 2.0, stand_timeout = 15, resend = 3.0;
   double still_speed = 0.05, still_time = 1.0, still_timeout = 5.0, lie_timeout = 15;
+  double gait_still_speed = 0.05, gait_still_time = 1.0, gait_still_timeout = 6.0, gait_timeout = 10.0;
   std::string w_stand = "cmd4", w_lie = "cmd3", w_stop = "Nav stop", w_continue = "Nav continue";
-  std::string w_nav_mode = "cmd1", w_exit_nav = "cmd2";
+  std::string w_nav_mode = "cmd1", w_exit_nav = "cmd2", w_source = "source ";
 };
 
 Config load(const std::string & path)
@@ -104,15 +134,36 @@ Config load(const std::string & path)
   YAML::Node y = YAML::LoadFile(path);
   auto str = [&](const char * k, std::string & v) {if (y[k]) {v = y[k].as<std::string>();}};
   auto num = [](const YAML::Node & n, const char * k, double & v) {if (n && n[k]) {v = n[k].as<double>();}};
-  str("cmd_vel_topic", c.cmd_vel_topic);
+  if (y["cmd_sources"]) {
+    for (const auto & kv : y["cmd_sources"]) {
+      c.cmd_sources.emplace_back(kv.first.as<std::string>(), kv.second.as<std::string>());
+    }
+  }
+  if (c.cmd_sources.empty()) {
+    std::string topic = "/cmd_vel";
+    str("cmd_vel_topic", topic);
+    c.cmd_sources.emplace_back("default", topic);
+  }
+  str("cmd_source", c.cmd_source);
+  if (c.cmd_source.empty()) {c.cmd_source = c.cmd_sources.front().first;}
+  bool known = false;
+  for (const auto & s : c.cmd_sources) {known = known || s.first == c.cmd_source;}
+  if (!known) {throw std::runtime_error("cmd_source " + c.cmd_source + " is not in cmd_sources");}
   str("web_cmd_topic", c.web_cmd_topic);
   str("state_topic", c.state_topic);
+  str("gait_request_topic", c.gait_request_topic);
+  str("gait_topic", c.gait_topic);
   num(y, "nav_cmd_rate_hz", c.nav_rate);
   num(y, "cmd_vel_timeout_s", c.cmd_timeout);
   num(y, "zero_hold_s", c.zero_hold);
   num(y, "motion_info_timeout_s", c.info_timeout);
   if (y["start_latched"]) {c.start_latched = y["start_latched"].as<bool>();}
   if (y["stamp_source"]) {c.stamp_robot = y["stamp_source"].as<std::string>() != "local";}
+  if (y["exclusive_mode"]) {
+    const std::string m = y["exclusive_mode"].as<std::string>();
+    if (m != "messages" && m != "publishers") {throw std::runtime_error("exclusive_mode must be messages or publishers");}
+    c.exclusive_messages = m == "messages";
+  }
   num(y["limits"], "max_vx", c.max_vx);
   num(y["limits"], "max_vy", c.max_vy);
   num(y["limits"], "max_wz", c.max_wz);
@@ -126,6 +177,10 @@ Config load(const std::string & path)
   num(y["lie_down"], "still_time_s", c.still_time);
   num(y["lie_down"], "wait_still_timeout_s", c.still_timeout);
   num(y["lie_down"], "step_timeout_s", c.lie_timeout);
+  num(y["gait_switch"], "still_speed", c.gait_still_speed);
+  num(y["gait_switch"], "still_time_s", c.gait_still_time);
+  num(y["gait_switch"], "wait_still_timeout_s", c.gait_still_timeout);
+  num(y["gait_switch"], "step_timeout_s", c.gait_timeout);
   if (YAML::Node w = y["web_cmd"]) {
     if (w["stand"]) {c.w_stand = w["stand"].as<std::string>();}
     if (w["lie_down"]) {c.w_lie = w["lie_down"].as<std::string>();}
@@ -133,6 +188,7 @@ Config load(const std::string & path)
     if (w["continue"]) {c.w_continue = w["continue"].as<std::string>();}
     if (w["nav_mode"]) {c.w_nav_mode = w["nav_mode"].as<std::string>();}
     if (w["exit_nav_mode"]) {c.w_exit_nav = w["exit_nav_mode"].as<std::string>();}
+    if (w["source_prefix"]) {c.w_source = w["source_prefix"].as<std::string>();}
   }
   auto in = [](double v, double lo, double hi) {return std::isfinite(v) && v >= lo && v <= hi;};
   if (!in(c.max_vx, 0, kHardVx) || !in(c.max_vy, 0, kHardVy) || !in(c.max_wz, 0, kHardWz)) {
@@ -149,7 +205,7 @@ Config load(const std::string & path)
   return c;
 }
 
-enum class Seq {None, StandUp, StandSettle, StandRl, StandGait, LieStill, LieDown};
+enum class Seq {None, StandUp, StandSettle, StandRl, StandGait, LieStill, LieDown, GaitStill, GaitWait};
 
 const char * seq_name(Seq s)
 {
@@ -161,6 +217,8 @@ const char * seq_name(Seq s)
     case Seq::StandGait: return "stand:wait_nav_gait";
     case Seq::LieStill: return "lie:wait_still";
     case Seq::LieDown: return "lie:wait_lying";
+    case Seq::GaitStill: return "gait:wait_still";
+    case Seq::GaitWait: return "gait:wait_confirm";
   }
   return "?";
 }
@@ -169,7 +227,7 @@ class Controller
 {
 public:
   Controller(const Config & cfg, bool enable_motion, const std::string & event_log)
-  : cfg_(cfg), enable_(enable_motion), latched_(cfg.start_latched)
+  : cfg_(cfg), enable_(enable_motion), latched_(cfg.start_latched), source_(cfg.cmd_source)
   {
     if (!event_log.empty()) {events_.open(event_log, std::ios::app);}
     node_ = std::make_shared<rclcpp::Node>(
@@ -179,29 +237,50 @@ public:
     info_sub_ = node_->create_subscription<drdds::msg::MotionInfo>(
       "/MOTION_INFO", rclcpp::SensorDataQoS(),
       [this](drdds::msg::MotionInfo::ConstSharedPtr m) {on_info(*m);});
+    // Monitor: who else sends /NAV_CMD. Best-effort/volatile matches any publisher QoS.
+    nav_mon_sub_ = node_->create_subscription<drdds::msg::NavCmd>(
+      "/NAV_CMD", rclcpp::SensorDataQoS().keep_last(20),
+      [this](const drdds::msg::NavCmd &, const rclcpp::MessageInfo & info) {on_nav_seen(info);});
     ros::NodeHandle nh;
-    cmd_sub_ = nh.subscribe(cfg_.cmd_vel_topic, 1, &Controller::on_cmd, this);
+    for (const auto & s : cfg_.cmd_sources) {
+      const std::string name = s.first;
+      cmd_subs_.push_back(nh.subscribe<geometry_msgs::Twist>(
+          s.second, 1, [this, name](const geometry_msgs::Twist::ConstPtr & m) {on_cmd(m, name);}));
+      cmd_ignored_[name] = 0;
+    }
     web_sub_ = nh.subscribe(cfg_.web_cmd_topic, 10, &Controller::on_web, this);
+    gait_req_sub_ = nh.subscribe(cfg_.gait_request_topic, 5, &Controller::on_gait_request, this);
     state_pub_ = nh.advertise<std_msgs::String>(cfg_.state_topic, 1);
+    gait_pub1_ = nh.advertise<std_msgs::String>(cfg_.gait_topic, 1);
+    std::string srcs;
+    for (const auto & s : cfg_.cmd_sources) {srcs += (srcs.empty() ? "" : ",") + s.first + "=" + s.second;}
     event("start", std::string("{\"enable_motion\":") + (enable_ ? "true" : "false") +
       ",\"max_vx\":" + jnum(cfg_.max_vx) + ",\"max_vy\":" + jnum(cfg_.max_vy) +
-      ",\"max_wz\":" + jnum(cfg_.max_wz) + ",\"nav_gait\":" + std::to_string(cfg_.nav_gait) + "}");
+      ",\"max_wz\":" + jnum(cfg_.max_wz) + ",\"nav_gait\":" + std::to_string(cfg_.nav_gait) +
+      ",\"cmd_sources\":" + jstr(srcs) + ",\"cmd_source\":" + jstr(source_) +
+      ",\"exclusive_mode\":" + jstr(cfg_.exclusive_messages ? "messages" : "publishers") + "}");
   }
 
   rclcpp::Node::SharedPtr node() {return node_;}
 
   // Called once after DDS discovery settled. Creates the native publishers only
-  // when motion is enabled and nobody else publishes /NAV_CMD.
+  // when motion is enabled and nobody else is sending (or, in publishers mode,
+  // nobody else exists) on /NAV_CMD.
   void arm_publishers()
   {
     std::lock_guard<std::mutex> lock(m_);
+    const double now = mono();
     const size_t others = node_->count_publishers("/NAV_CMD");
+    const size_t foreign = foreign_recent(now, 3.0);
     if (!enable_) {
-      event("dry_run", "{\"nav_cmd_publishers\":" + std::to_string(others) + "}");
+      event("dry_run", "{\"nav_cmd_publishers\":" + std::to_string(others) +
+        ",\"foreign_nav_cmd_3s\":" + std::to_string(foreign) + "}");
       return;
     }
-    if (others != 0) {
-      fault_ = "another /NAV_CMD publisher exists (" + std::to_string(others) + "); motion disabled";
+    if (cfg_.exclusive_messages ? foreign != 0 : others != 0) {
+      fault_ = cfg_.exclusive_messages ?
+        "another publisher is sending /NAV_CMD (" + std::to_string(foreign) + " msgs in 3 s); motion disabled" :
+        "another /NAV_CMD publisher exists (" + std::to_string(others) + "); motion disabled";
       enable_ = false;
       event("fault", "{\"reason\":" + jstr(fault_) + "}");
       ROS_ERROR("%s", fault_.c_str());
@@ -212,7 +291,9 @@ public:
     nav_pub_ = node_->create_publisher<drdds::msg::NavCmd>("/NAV_CMD", q);
     gait_pub_ = node_->create_publisher<drdds::msg::Gait>("/GAIT", q);
     state_cmd_pub_ = node_->create_publisher<drdds::msg::MotionState>("/MOTION_STATE", q);
-    event("armed", "{}");
+    own_gid_ = nav_pub_->get_gid();
+    have_gid_ = true;
+    event("armed", "{\"nav_cmd_publishers_before\":" + std::to_string(others) + "}");
     ROS_WARN("MOTION ENABLED: /NAV_CMD, /MOTION_STATE, /GAIT publishers created");
   }
 
@@ -220,6 +301,7 @@ public:
   {
     std::lock_guard<std::mutex> lock(m_);
     const double now = mono();
+    maybe_start_gait_switch(now);
     step_sequence(now);
     if (now >= next_nav_) {
       // Fixed-rate schedule; resynchronise only after a stall.
@@ -228,7 +310,13 @@ public:
     }
     if (now >= next_exclusive_) {
       next_exclusive_ = now + 1.0;
-      check_exclusive();
+      check_exclusive(now);
+    }
+    if (now >= next_gait_) {
+      next_gait_ = now + 0.1;
+      std_msgs::String g;
+      g.data = gait_report(now);
+      gait_pub1_.publish(g);
     }
     if (now >= next_state_) {
       next_state_ = now + 0.2;
@@ -273,9 +361,30 @@ private:
     fb_stamp_ns_ = stamp;
   }
 
-  void on_cmd(const geometry_msgs::Twist::ConstPtr & m)
+  void on_nav_seen(const rclcpp::MessageInfo & info)
   {
     std::lock_guard<std::mutex> lock(m_);
+    const auto & gid = info.get_rmw_message_info().publisher_gid;
+    if (have_gid_ && std::memcmp(gid.data, own_gid_.data, sizeof(gid.data)) == 0) {return;}
+    ++foreign_total_;
+    foreign_times_.push_back(mono());
+    while (foreign_times_.size() > 200) {foreign_times_.pop_front();}
+  }
+
+  size_t foreign_recent(double now, double window) const
+  {
+    size_t n = 0;
+    for (auto it = foreign_times_.rbegin(); it != foreign_times_.rend() && now - *it <= window; ++it) {++n;}
+    return n;
+  }
+
+  void on_cmd(const geometry_msgs::Twist::ConstPtr & m, const std::string & source)
+  {
+    std::lock_guard<std::mutex> lock(m_);
+    if (source != source_) {
+      ++cmd_ignored_[source];
+      return;
+    }
     const double vals[3] = {m->linear.x, m->linear.y, m->angular.z};
     for (double v : vals) {
       if (!std::isfinite(v)) {
@@ -290,12 +399,27 @@ private:
     ++cmd_count_;
   }
 
+  void on_gait_request(const std_msgs::String::ConstPtr & m)
+  {
+    std::lock_guard<std::mutex> lock(m_);
+    const std::string g = trim(m->data);
+    uint32_t code = g == "flat" ? kNavFlat : g == "stairs" ? kNavStairs : 0;
+    if (code == 0) {
+      if (g != last_bad_gait_req_) {
+        last_bad_gait_req_ = g;
+        event("ignored", "{\"gait_request\":" + jstr(g) + ",\"reason\":\"not flat/stairs\"}");
+      }
+      return;
+    }
+    if (code != want_gait_) {event("gait_request", "{\"gait\":" + jstr(g) + "}");}
+    want_gait_ = code;
+    want_rx_ = mono();
+  }
+
   void on_web(const std_msgs::String::ConstPtr & m)
   {
     std::lock_guard<std::mutex> lock(m_);
-    std::string c = m->data;
-    c.erase(0, c.find_first_not_of(" \t\r\n"));
-    c.erase(c.find_last_not_of(" \t\r\n") + 1);
+    const std::string c = trim(m->data);
     const double now = mono();
     event("web_cmd", "{\"data\":" + jstr(c) + "}");
     if (c == cfg_.w_stop) {
@@ -320,13 +444,35 @@ private:
       // The developer guide documents only 0x3002/0x3003 for /GAIT, so there is no
       // documented way back to the manual gait from here: use the remote.
       event("ignored", "{\"data\":" + jstr(c) + ",\"reason\":\"exit navigation mode: use the remote (no documented /GAIT value)\"}");
+    } else if (c.rfind(cfg_.w_source, 0) == 0 && c.size() > cfg_.w_source.size()) {
+      select_source(trim(c.substr(cfg_.w_source.size())), now);
     } else {
       event("ignored", "{\"data\":" + jstr(c) + ",\"reason\":\"not an S10 command\"}");
     }
   }
 
+  void select_source(const std::string & name, double now)
+  {
+    bool known = false;
+    for (const auto & s : cfg_.cmd_sources) {known = known || s.first == name;}
+    if (!known) {
+      event("rejected", "{\"command\":\"source\",\"reason\":" + jstr("unknown source " + name) + "}");
+      return;
+    }
+    if (name != source_) {
+      event("source", "{\"from\":" + jstr(source_) + ",\"to\":" + jstr(name) + "}");
+      source_ = name;
+      cmd_rx_ = -1e9;      // never carry a stale command across sources
+      zero_until_ = now + cfg_.zero_hold;
+    }
+  }
+
   // ------------------------------------------------------------ sequences
   bool fresh(double now) const {return fb_have_ && now - fb_rx_ < cfg_.info_timeout;}
+  bool still(double limit) const
+  {
+    return std::fabs(fb_vx_) < limit && std::fabs(fb_vy_) < limit && std::fabs(fb_wz_) < limit;
+  }
 
   bool reject(const char * what, const std::string & why)
   {
@@ -388,6 +534,27 @@ private:
     return true;
   }
 
+  // A fresh gait request that differs from the robot's gait starts a switch when nothing
+  // else is going on: zero velocity -> measured still -> /GAIT -> confirmed.
+  void maybe_start_gait_switch(double now)
+  {
+    if (want_gait_ == 0 || now - want_rx_ > 1.0 || seq_ != Seq::None || !fault_.empty()) {return;}
+    if (!fresh(now) || fb_state_ != kRl || fb_gait_ == want_gait_) {return;}
+    if (!enable_) {
+      if (dry_gait_logged_ != want_gait_) {
+        dry_gait_logged_ = want_gait_;
+        event("dry_run_would_send", "{\"topic\":\"/GAIT\",\"gait\":" + std::to_string(want_gait_) +
+          ",\"after\":\"robot still\"}");
+      }
+      return;
+    }
+    gait_target_ = want_gait_;
+    gait_block_ = true;
+    zero_until_ = now + cfg_.zero_hold;
+    still_since_ = -1;
+    begin(Seq::GaitStill, now, cfg_.gait_still_timeout);
+  }
+
   void begin(Seq s, double now, double timeout)
   {
     seq_ = s;
@@ -402,6 +569,7 @@ private:
     event(result, "{\"step\":\"" + std::string(seq_name(seq_)) + "\",\"detail\":" + jstr(detail) + "}");
     seq_ = Seq::None;
     lie_block_ = false;
+    gait_block_ = false;
   }
 
   void resend_or_timeout(double now, const std::function<void()> & send, const char * what)
@@ -463,9 +631,7 @@ private:
         }
         break;
       case Seq::LieStill:
-        if (std::fabs(fb_vx_) < cfg_.still_speed && std::fabs(fb_vy_) < cfg_.still_speed &&
-          std::fabs(fb_wz_) < cfg_.still_speed)
-        {
+        if (still(cfg_.still_speed)) {
           if (still_since_ < 0) {still_since_ = now;}
           if (now - still_since_ >= cfg_.still_time) {
             send_state(kLying);
@@ -490,6 +656,35 @@ private:
           resend_or_timeout(now, [this] {send_state(kLying);}, "lying (state 4)");
         }
         break;
+      case Seq::GaitStill:
+        if (fb_state_ != kRl) {
+          finish("sequence_failed", "left RL control during gait switch: " + std::to_string(fb_state_));
+          latched_ = true;
+        } else if (still(cfg_.gait_still_speed)) {
+          if (still_since_ < 0) {still_since_ = now;}
+          if (now - still_since_ >= cfg_.gait_still_time) {
+            send_gait(gait_target_);
+            seq_ = Seq::GaitWait;
+            seq_deadline_ = now + cfg_.gait_timeout;
+            seq_last_send_ = now;
+            seq_sends_ = 1;
+            event("sequence", "{\"step\":\"gait:wait_confirm\"}");
+          }
+        } else {
+          still_since_ = -1;
+          if (now > seq_deadline_) {
+            finish("sequence_failed", "robot did not become still; gait not switched");
+            latched_ = true;
+          }
+        }
+        break;
+      case Seq::GaitWait:
+        if (fb_gait_ == gait_target_ && fb_state_ == kRl) {
+          finish("gait_switched", std::string("{\"gait\":\"") + gait_name(gait_target_) + "\"}");
+        } else {
+          resend_or_timeout(now, [this] {send_gait(gait_target_);}, "gait switch");
+        }
+        break;
       case Seq::None:
         break;
     }
@@ -500,7 +695,7 @@ private:
   {
     const bool nav_mode = fresh(now) && fb_state_ == kRl && (fb_gait_ == kNavFlat || fb_gait_ == kNavStairs);
     const bool cmd_fresh = now - cmd_rx_ < cfg_.cmd_timeout;
-    const bool allowed = fault_.empty() && !latched_ && !lie_block_ && seq_ == Seq::None && nav_mode;
+    const bool allowed = fault_.empty() && !latched_ && !lie_block_ && !gait_block_ && seq_ == Seq::None && nav_mode;
     if (allowed && cmd_fresh) {
       const double vx = std::clamp(cmd_vx_, -cfg_.max_vx, cfg_.max_vx);
       const double vy = std::clamp(cmd_vy_, -cfg_.max_vy, cfg_.max_vy);
@@ -508,7 +703,7 @@ private:
       if (vx != cmd_vx_ || vy != cmd_vy_ || wz != cmd_wz_) {++clamped_;}
       if (!moving_) {
         moving_ = true;
-        event("velocity_start", "{}");
+        event("velocity_start", "{\"source\":" + jstr(source_) + "}");
       }
       last_out_[0] = vx; last_out_[1] = vy; last_out_[2] = wz;
       send_nav(vx, vy, wz);
@@ -518,20 +713,24 @@ private:
         moving_ = false;
         event("velocity_stop", std::string("{\"reason\":\"") +
           (!fault_.empty() ? "fault" : latched_ ? "latched" : lie_block_ ? "lie_down" :
-          seq_ != Seq::None ? "sequence" : !nav_mode ? "not_navigation_mode" : "cmd_vel_timeout") + "\"}");
+          gait_block_ ? "gait_switch" : seq_ != Seq::None ? "sequence" :
+          !nav_mode ? "not_navigation_mode" : "cmd_vel_timeout") + "\"}");
       }
       last_out_[0] = last_out_[1] = last_out_[2] = 0;
       if (now < zero_until_) {send_nav(0, 0, 0);}
     }
   }
 
-  void check_exclusive()
+  void check_exclusive(double now)
   {
-    const size_t n = node_->count_publishers("/NAV_CMD");
-    nav_publishers_ = n;
-    if (nav_pub_ && n > 1 && fault_.empty()) {
-      fault_ = "second /NAV_CMD publisher appeared (" + std::to_string(n) + "); restart required";
-      zero_until_ = mono() + cfg_.zero_hold;
+    nav_publishers_ = node_->count_publishers("/NAV_CMD");
+    foreign_1s_ = foreign_recent(now, 1.0);
+    if (!nav_pub_ || !fault_.empty()) {return;}
+    if (cfg_.exclusive_messages ? foreign_1s_ != 0 : nav_publishers_ > 1) {
+      fault_ = cfg_.exclusive_messages ?
+        "another publisher sent /NAV_CMD (" + std::to_string(foreign_1s_) + " msgs in 1 s); restart required" :
+        "second /NAV_CMD publisher appeared (" + std::to_string(nav_publishers_) + "); restart required";
+      zero_until_ = now + cfg_.zero_hold;
       event("fault", "{\"reason\":" + jstr(fault_) + "}");
       ROS_ERROR("%s", fault_.c_str());
     }
@@ -591,6 +790,13 @@ private:
     ROS_INFO("event %s %s", name.c_str(), json.c_str());
   }
 
+  std::string gait_report(double now) const
+  {
+    if (seq_ == Seq::GaitStill || seq_ == Seq::GaitWait) {return "switching";}
+    if (!fresh(now) || fb_state_ != kRl) {return "none";}
+    return gait_name(fb_gait_);
+  }
+
   std::string state_json(double now)
   {
     std::ostringstream o;
@@ -600,6 +806,9 @@ private:
       << ",\"latched_stop\":" << (latched_ ? "true" : "false")
       << ",\"sequence\":" << jstr(seq_name(seq_))
       << ",\"moving\":" << (moving_ ? "true" : "false")
+      << ",\"cmd_source\":" << jstr(source_)
+      << ",\"gait\":" << jstr(gait_report(now))
+      << ",\"gait_request\":" << jstr(want_gait_ && now - want_rx_ < 1.0 ? gait_name(want_gait_) : "")
       << ",\"feedback\":{\"fresh\":" << (fresh(now) ? "true" : "false")
       << ",\"age_s\":" << jnum(fb_have_ ? now - fb_rx_ : NAN)
       << ",\"state\":" << fb_state_ << ",\"gait\":" << fb_gait_
@@ -608,9 +817,18 @@ private:
       << ",\"cmd_vel\":{\"age_s\":" << jnum(cmd_count_ ? now - cmd_rx_ : NAN)
       << ",\"in\":[" << jnum(cmd_vx_) << "," << jnum(cmd_vy_) << "," << jnum(cmd_wz_) << "]"
       << ",\"out\":[" << jnum(last_out_[0]) << "," << jnum(last_out_[1]) << "," << jnum(last_out_[2]) << "]"
-      << ",\"received\":" << cmd_count_ << ",\"rejected\":" << cmd_rejected_ << ",\"clamped\":" << clamped_ << "}"
+      << ",\"received\":" << cmd_count_ << ",\"rejected\":" << cmd_rejected_ << ",\"clamped\":" << clamped_
+      << ",\"ignored\":{";
+    bool first = true;
+    for (const auto & kv : cmd_ignored_) {
+      o << (first ? "" : ",") << jstr(kv.first) << ":" << kv.second;
+      first = false;
+    }
+    o << "}}"
       << ",\"nav_cmd_sent\":" << nav_sent_
       << ",\"nav_cmd_publishers\":" << nav_publishers_
+      << ",\"nav_cmd_foreign_1s\":" << foreign_1s_
+      << ",\"nav_cmd_foreign_total\":" << foreign_total_
       << ",\"limits\":[" << jnum(cfg_.max_vx) << "," << jnum(cfg_.max_vy) << "," << jnum(cfg_.max_wz) << "]"
       << ",\"last_event\":" << jstr(last_event_) << "}";
     return o.str();
@@ -622,11 +840,19 @@ private:
   std::ofstream events_;
   rclcpp::Node::SharedPtr node_;
   rclcpp::Subscription<drdds::msg::MotionInfo>::SharedPtr info_sub_;
+  rclcpp::Subscription<drdds::msg::NavCmd>::SharedPtr nav_mon_sub_;
   rclcpp::Publisher<drdds::msg::NavCmd>::SharedPtr nav_pub_;
   rclcpp::Publisher<drdds::msg::Gait>::SharedPtr gait_pub_;
   rclcpp::Publisher<drdds::msg::MotionState>::SharedPtr state_cmd_pub_;
-  ros::Subscriber cmd_sub_, web_sub_;
-  ros::Publisher state_pub_;
+  std::vector<ros::Subscriber> cmd_subs_;
+  ros::Subscriber web_sub_, gait_req_sub_;
+  ros::Publisher state_pub_, gait_pub1_;
+
+  rmw_gid_t own_gid_{};
+  bool have_gid_ = false;
+  std::deque<double> foreign_times_;
+  uint64_t foreign_total_ = 0;
+  size_t foreign_1s_ = 0;
 
   bool fb_have_ = false;
   double fb_rx_ = 0;
@@ -637,19 +863,25 @@ private:
 
   double cmd_rx_ = -1e9, cmd_vx_ = 0, cmd_vy_ = 0, cmd_wz_ = 0;
   uint64_t cmd_count_ = 0, cmd_rejected_ = 0, clamped_ = 0, nav_sent_ = 0;
+  std::map<std::string, uint64_t> cmd_ignored_;
   size_t nav_publishers_ = 0;
   double last_out_[3] = {0, 0, 0};
 
   bool latched_;
   bool lie_block_ = false;
+  bool gait_block_ = false;
   bool moving_ = false;
   std::string fault_;
   std::string last_event_;
+  std::string source_;
   double zero_until_ = 0;
   Seq seq_ = Seq::None;
   double seq_deadline_ = 0, seq_last_send_ = 0, settle_since_ = 0, still_since_ = -1;
   int seq_sends_ = 0;
-  double next_nav_ = 0, next_exclusive_ = 0, next_state_ = 0;
+  uint32_t want_gait_ = 0, gait_target_ = 0, dry_gait_logged_ = 0;
+  double want_rx_ = -1e9;
+  std::string last_bad_gait_req_;
+  double next_nav_ = 0, next_exclusive_ = 0, next_state_ = 0, next_gait_ = 0;
 };
 
 }  // namespace
@@ -702,7 +934,7 @@ int main(int argc, char ** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  // Let DDS discovery settle before judging who else publishes /NAV_CMD.
+  // Let DDS discovery settle (and foreign /NAV_CMD traffic show up) before arming.
   const double discovery_end = mono() + 3.0;
   while (!g_stop && mono() < discovery_end) {std::this_thread::sleep_for(std::chrono::milliseconds(50));}
   if (!g_stop) {controller->arm_publishers();}

@@ -1,0 +1,13 @@
+[Unit]
+Description=S10 ROS 1 stack on the AGX (x_nav container, gateway, control dry run, teach worker, 106 tap while a session is active)
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash %h/ros1_gateway/scripts/agx_boot.sh
+KillMode=none
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target
