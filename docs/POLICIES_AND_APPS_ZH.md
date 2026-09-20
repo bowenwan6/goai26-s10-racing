@@ -14,10 +14,14 @@
 - **实机跑过的 policy 只有三个：** 官方 57D（AGX 版）、speedturn2000、HIM 1500。HIM 1500 没能上台阶。
 - **9 月导航方案**（`rl_nav`）：J3100 负责步行，1150 负责台阶。只在 MuJoCo 里跑通（30/30 WP，713 s），还没上真机。
 - **8 月仿真赛 Ver1.0**：官方 57D + Gate16 v1.5 + stairs_stable。33/33 WP，436.058 s（seed 6）。
-- **新狗（050 号）+ 新 SLAM（x_nav），09-19 实测：**
-  - 点云 10 Hz、IMU 200 Hz，与 106 本机 ROS 2 数据逐条一致；连续 10 分钟稳定。
-  - x_nav 能建图，输出位姿 `/base_link/odom`（10 Hz）；`/teach` 已接上这三路数据。
-  - 还没做：运控 SDK 只空跑过，没有运动测试；手机经机器人 Wi-Fi 打开 `/teach` 未验证。
+- **真机自主导航首次成功（09-20 19:27:46–19:28:25，048 号狗）：** 室内地图 `v6_room` 上 WP01 → WP02（直线 4.67 m，路线长 5.0 m），用时 38.2 s，模式 `DONE`，无故障、无人工干预。
+  - 限幅 0.10 m/s，实测平均约 0.12 m/s（原厂步态不会精确跟随指令）；停在离 WP02 0.22 m 处，按 0.20 m 判定半径进入时计到达。
+  - 动关节的是原厂控制器（state 17 + 平地步态 0x3002）配合“导航”使用模式，不是 J3100 / 1150。
+  - 依赖条件：切导航模式、用机器人 IMU 取姿态、高度网格盲区填充、平地台阶上限 0.12 m、放宽 z 容差、实测站立高度 0.41 m。
+  - 还没验证：台阶段（一次尝试因“25 s 没有进展”停住）、返程路线、比探测速度更高的速度。
+- **传感器链路（09-19 在 050 号实测）：** 点云 10 Hz、IMU 200 Hz，与 106 本机 ROS 2 数据逐条一致；连续 10 分钟稳定。
+- **x_nav：** 能建图、能保存地图、能重定位（发 `/initialpose` 初始化）；输出位姿 `/base_link/odom`（10 Hz）。
+- **狗的归属：** 09-19 用 050 号，09-20 已交还并换到 048 号。每换一只狗，密钥、自启、站立高度、原厂 `/NAV_CMD` 发布者都要重做和重测。
 
 ## 1. Policy
 
@@ -118,7 +122,7 @@
 | `/field` 现场助手 | 自检、切图、静止检查、限时录包、标点草稿、航点复测 | 106 field worker | ✅ 48 号；v3 现场未验收 | [FIELD_GUIDE_ZH.md](../tools/s10_mapping_web/FIELD_GUIDE_ZH.md) |
 | `/imu-check` | IMU 曲线、静止采样、复零 | 106 | ✅ 09-15 | [IMU_DIAGNOSTIC_GUIDE_ZH.md](../tools/s10_mapping_web/IMU_DIAGNOSTIC_GUIDE_ZH.md) |
 | `/native-nav` | 原生步态导航测试：只读检查、切步态、Start/B 任务、停止 | 106 native-nav 服务 | ✅ 已部署，**没实际走过** | [NATIVE_NAV_GUIDE_ZH.md](../tools/s10_mapping_web/NATIVE_NAV_GUIDE_ZH.md) |
-| **`/teach` 采集助手（新）** | 新 SLAM 用：建图采集（带回环）、标 WP01–30 和切换点、录示教路径。只记录，不控制机器人 | AGX ROS 1（不连 103 / 106） | ✅ 新狗上运行，位姿 / 点云 / IMU 10 / 10 / 199 Hz；📝 手机经机器人 Wi-Fi 访问未验证 | [TEACH_GUIDE_ZH.md](../tools/s10_mapping_web/TEACH_GUIDE_ZH.md) |
+| **`/teach` 采集助手（新）** | 新 SLAM 用：建图采集（带回环）、标 WP01–30 和切换点、录示教路径。只记录，不控制机器人 | AGX ROS 1（不连 103 / 106） | ✅ 真机上运行；手机经 103 上的用户态转发访问（交还前删除） | [TEACH_GUIDE_ZH.md](../tools/s10_mapping_web/TEACH_GUIDE_ZH.md) |
 
 - **新狗和共用的狗上只能用 `/teach`。**
   - 其余几个页面要通过 SSH 调 106 上的后台。这个后台只装在 48 号的 106 上，AGX 用的专用密钥 `backend_key` 也只加到了 48 号。
@@ -130,7 +134,7 @@
 
 | 名称 | 用途 | 状态 | 说明 |
 |---|---|---|---|
-| `rl_nav` 节点 | 第一版控制器作为名义行为，测到偏离才做恢复。输出 `/cmd_vel` 和 joint owner（`official` 槽 = J3100，`stairs_stable` 槽 = 1150） | 🧪 只在 MuJoCo | [RL_ROUTE_ROBUST_PLAN_ZH.md](RL_ROUTE_ROBUST_PLAN_ZH.md) |
+| `rl_nav` 节点（ROS 2 版） | 第一版控制器作为名义行为，测到偏离才做恢复。输出 `/cmd_vel` 和 joint owner（`official` 槽 = J3100，`stairs_stable` 槽 = 1150） | 🧪 只在 MuJoCo。真机上跑的是同一份逻辑的 ROS 1 版，见 2.3 | [RL_ROUTE_ROBUST_PLAN_ZH.md](RL_ROUTE_ROBUST_PLAN_ZH.md) |
 | `rl_nav_prepare` | 离线：route_v2 + 地图 → `route_rl.json`、`maneuvers.json`、`map_surface.npz` | 🧪 有单测 | `rl_nav/prepare.py` |
 | route_v2 跟线 + Frenet 局部规划 | 沿示教中心线走，A* 兜底 | 🧪 | [ROUTE_V2_PLANNER_ZH.md](ROUTE_V2_PLANNER_ZH.md) |
 | `native_transfer` | 原厂 flat / stairs 步态 + 我们的 follower，发 `/NAV_CMD`、`/GAIT` | ✅ 已部署 106 / 102，只读观测通过；📝 没发过真实指令 | [README](../native_transfer/README_ZH.md) |
@@ -147,7 +151,12 @@
 | `scripts/agx_ptp/` | AGX 时钟改为 PTP 跟随 103（`s10-ptp4l` / `s10-phc2sys`），关闭互联网 NTP；带回滚脚本 | AGX | ✅ 偏差百纳秒级（原先机器人比 AGX 快 34 s） |
 | `s10_ros1_control` | ROS 1 `/cmd_vel`、`/web_cmd` → 原厂 `/NAV_CMD`、`/MOTION_STATE`、`/GAIT`；默认空跑 | AGX | 🧪 19 项模拟测试；新狗上只空跑过（能读到反馈，发现 2 个原厂 `/NAV_CMD` 发布者）；📝 **从未做过运动测试** |
 | MCAP → ROS 1 bag 转换 + 审计 | 离线转换，用 ROS 2 / ROS 1 官方解码器逐条比对 | Mac（Docker） | ✅ 合成数据；📝 真实录包待转 |
-| x_nav（厂商容器） | ROS 1 SLAM / 定位 | AGX Docker | ✅ 能建图（地图“111”，授权通过），输出 `/base_link/odom` 10 Hz；📝 `map_manager`、外参未解决 |
+| x_nav（厂商容器） | ROS 1 SLAM / 定位 | AGX Docker | ✅ 建图、保存、重定位都跑通（发 `/initialpose` 初始化），输出 `/base_link/odom` 10 Hz；📝 `map_manager` 仍缺 |
+| **ROS 1 导航运行时** `nav/` | 把主仓的路线跟随器（`src/s10_auto_nav`）按记录的提交同步成纯 Python 版，在 ROS 1 下运行，输出 `/rl_nav/cmd_vel` 和步态请求 | AGX | ✅ **09-20 首次自主跑通 4.7 m**；📝 台阶、长路线、提速未做 |
+| **一键运行** `robot_session.sh nav` / `nav_session.sh` | 选地图 → 发初始位姿 → 等站立 → 上电 → 切导航模式 → 跑 → 结束或异常时一律切回遥控模式。`--shadow` 只算不发 | Mac → AGX | ✅ 现场用过 |
+| `tools/teach_to_route.py` | `/teach` 会话 → `route_v2.json` + 切换点生成的爬坡动作 | Mac / AGX | ✅ 已用它生成首条真机路线 |
+| `tools/asdu_mode.py` | 读机器人状态；切换“使用模式”（遥控 ↔ 导航），切导航需要 `--i-am-on-site` | Mac / AGX | ✅ 首次自主运行靠它进导航模式 |
+| 开机自启 `s10-stack.service` | AGX 用户级服务：x_nav 容器 → 网关 → 运控空跑 → 采集助手。106 的 tap 只在会话激活时启动 | AGX | ✅ 已装 |
 | `/teach` 采集助手 | 见 2.1 | AGX | 见 2.1 |
 
 - **`/ODOM`：** 新狗上 106 的官方定位按决定不开，定位用 x_nav 自己的 SLAM。
@@ -198,17 +207,17 @@
 
 ## 4. 已知缺口（按先后）
 
-1. **`rl_nav` 上真机还缺两样东西：**
-   - SDK runner 双槽都支持 59 维 + 相位时钟；
-   - 真机感知话题：`/perception/heightmap`、`/scan`、点云目前只有 MuJoCo 的 `sim_node.py` 发布。
-2. **J3100 / 1150 没有任何实机记录。** 1150 在台阶上轮速超过 30 rad/s 诊断线。
+1. **真机导航接下来要做的（09-20 首跑之后）：**
+   - 分级限速：运控硬限幅现在固定 0.30 / 0.10 / 0.50，需要按阶段可配。
+   - 上电期间隔离 `/web_cmd`，避免 x_nav 网页发起立 / 趴下或改速度来源。
+   - 台阶要先查清 AGX 复位原因；长路线、提速逐级放开。
+   - 只有真跑能回答：`/NAV_CMD` 停发后狗是否自己停；导航模式是否每次都必须切。
+2. **J3100 / 1150 仍然只在仿真里。** 真机上关节控制在 103 内部，我们下发的是速度指令 + 原厂步态；1150 在台阶上轮速还超 30 rad/s 诊断线。
 3. **x_nav 的问题：**
    - `map_manager` 仍缺（手册里导航点、虚拟障碍物的保存可能依赖它）；
    - 外参是默认值；
    - 8000 / 9000 / 8765 端口对所有网卡开放，开发页用默认密码。
-4. **新狗还没做的：**
-   - 运控 SDK 的运动测试。开始前要和其他使用者约定，暂停 2 个原厂 `/NAV_CMD` 发布者（103 handler、106 localPlanner）。
-   - 手机经机器人 Wi-Fi 打开 `/teach`；另一台机器经 Wi-Fi 订阅 ROS 1。
+4. **户外还没做：** WP 重测、x_nav 地图与 v3 的配准、整条赛道的路线重建。
 5. **说法不一致，待核实：**
    - 没有 Ver1.0 带 stairs_stable 跑全程的证据。
    - “stairs_stable”一名多用：Ver1.0 的 model_599、另一个模型 stable499、9 月 `rl_nav` 里装 1150 的槽名。

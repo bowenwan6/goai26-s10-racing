@@ -42,6 +42,17 @@ results/
 !/artifacts/native-navigation-audit-20260917/
 !/artifacts/native-start-b-implementation-20260917/
 !/artifacts/ros1-gateway-20260918/
+
+# ros1_gateway/nav/s10_auto_nav is generated from src/s10_auto_nav by
+# ros1_gateway/nav/sync_auto_nav.sh at the commit recorded in ros1_gateway/nav/COMMIT.
+/ros1_gateway/nav/s10_auto_nav/
+
+# ros1_gateway/vendor/agx_only holds an unmodified upstream snapshot staged for the AGX
+# (ros1_bridge at ros2/ros1_bridge@611755f); fetch it from upstream instead.
+/ros1_gateway/vendor/agx_only/
+
+# Raw investigation dump: quotes a vendor default password in its review text.
+/ros1_gateway/docs/NAV_TEST_PLAN_20260920.raw.json
 /tmp/
 /.playwright-cli/
 
