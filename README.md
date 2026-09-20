@@ -46,6 +46,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 ## What is in here
 
 - **A route-following navigation stack** for a 30-waypoint outdoor course: a taught centreline, per-segment gait selection, and recovery that only fires on a measured deviation — [module 1](#1--planning-and-navigation).
+- **First autonomous run on the robot** on 2026-09-20: WP01 → WP02 in 38 s, driven by our route runner on ROS 1 and the robot's native flat gait — [Results](#results).
 - **Two simulators**: a fast kinematic whole-course harness in this repo, and a full MuJoCo run of the real map with real ONNX policies — **30/30 waypoints, 713 s** — [module 2](#2--simulation).
 - **Locomotion policies** from three sources: the vendor's 57-D controller, our Isaac Lab training runs, and teammate models. Three have run on hardware — [module 3](#3--locomotion-policies-and-rl-training).
 - **Mapping and localisation**, from the vendor SLAM map (`0914_fr_v3`) to a new third-party SLAM (x_nav) reached through a byte-exact ROS 2 → ROS 1 gateway — [module 4](#4--mapping-and-localisation).
@@ -90,12 +91,14 @@ flowchart LR
   MC -- "/MOTION_INFO feedback" --> CTL
 ```
 
-Two ways to move the robot, and the navigation layer is the same for both: **native vendor gaits** (`/GAIT` 0x3002 flat, 0x3003 stairs) or **our RL policies** through the SDK runner. Only one of them owns the joints at any instant — see [module 6](#6--real-robot-deployment-and-safety).
+Two ways to move the robot, and the navigation layer is the same for both: **native vendor gaits** (`/GAIT` 0x3002 flat, 0x3003 stairs), or **our RL policies** through the SDK runner. Only one of them owns the joints at any instant — see [module 6](#6--real-robot-deployment-and-safety).
+
+On the robot today the native-gait path is the live one: joint-level control would have to run inside the vendor's motion board, so J3100 and 1150 stay in simulation while the route runner drives `/NAV_CMD` through `s10_ros1_control`. x_nav contributes localisation only.
 
 | Board | Role | Owner | What we run there |
 |---|---|---|---|
 | **102** AGX Orin, Ubuntu 24.04 | our compute | us (`golai`) | ROS 2 Jazzy stack, user-space ROS 1 master + gateway, x_nav container, phone web app |
-| **103** motion control | native gaits, PTP master | vendor | nothing of ours; we only publish commands to it |
+| **103** motion control | native gaits, PTP master | vendor | commands only, plus a user-level port forwarder so phones reach the AGX; both removed at handover |
 | **106** perception | lidar, IMU, vendor SLAM | vendor | one read-only lidar tap in a user directory, removed by `robot_session.sh down` |
 | **Phone** | field UI | — | browser on the robot Wi-Fi |
 
@@ -166,10 +169,11 @@ The competition stack from the August simulation contest runs in its own contain
 
 | Piece | What it does | Status |
 |---|---|---|
-| [`rl_nav/route_runner.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/route_runner.py) | Mode machine over the taught route; emits body velocity and the joint-owner request | 🧪 |
+| [`rl_nav/route_runner.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/route_runner.py) | Mode machine over the taught route; emits body velocity and the joint-owner request | ✅ first autonomous run, 4.7 m |
 | [`rl_nav/prepare.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/prepare.py) | Offline route grounding, climb manoeuvres, map surface, report | 🧪 |
 | [`route_v2.py`](src/s10_auto_nav/s10_auto_nav/route_v2.py), [`route_planner.py`](src/s10_auto_nav/s10_auto_nav/route_planner.py) | Centreline following with a Frenet local planner, A\* fallback on the prior map | 🧪 |
-| [`native_transfer/`](native_transfer/README_ZH.md) | Same follower driving the vendor's native gaits | ✅ deployed; observation only, no commands sent yet |
+| [`native_transfer/`](native_transfer/README_ZH.md) | Same follower driving the vendor's native gaits (ROS 2 route) | ✅ deployed; observation only, no commands sent |
+| [`ros1_gateway/nav/`](ros1_gateway/docs/HANDOFF_S10_AUTONOMY_STACK.md) | The same runner under ROS 1 on the AGX, plus one-command run scripts | ✅ drives the robot through `s10_ros1_control` |
 
 ```mermaid
 stateDiagram-v2
@@ -223,6 +227,8 @@ Policies come from three places: the vendor's shipped controller, our Isaac Lab 
 
 The measured limits matter more than the list. J3100 clears 3–8 cm steps and 8–12° slopes at 0.6–0.8 m/s, yet stalls on the same terrain at 0.4 m/s. 1150 climbs 12–18 cm steps and 20° slopes, but barely turns and drives wheel speed to 37–47 rad/s, past the robot's 30 rad/s diagnostic limit. No single model covers the course, which is why the stack hands the joints over segment by segment.
 
+On the robot the joints still belong to the vendor's controller: running J3100 or 1150 there needs joint-level control inside the motion board, so today's autonomous runs use the native gaits and the RL policies stay in simulation.
+
 Training, evaluation harnesses and the acceptance criteria live in the sprint repo; this repo holds the exported ONNX models, the deployment glue in [`integration/`](integration/), and the August training code in [`training/`](training/).
 
 ### 4 · Mapping and localisation
@@ -239,7 +245,7 @@ Training, evaluation harnesses and the acceptance criteria live in the sprint re
 </table>
 
 - **Vendor SLAM on 106** produced the v3 map and the localisation used through August and September. Map, MuJoCo scene and an offline viewer are in [`deliverables/`](deliverables/S10_v3_Map_MuJoCo_20260916/README.md).
-- **New third-party SLAM (x_nav)** runs in a container on our AGX and publishes `/base_link/odom` at 10 Hz. It needs ROS 1 sensor topics, which is what the gateway provides.
+- **New third-party SLAM (x_nav)** runs in a container on our AGX and publishes `/base_link/odom` at 10 Hz. It needs ROS 1 sensor topics, which is what the gateway provides. Indoor maps are built, saved and re-localised into; localisation is initialised by publishing `/initialpose`, which the run script does automatically.
 - **ROS 2 → ROS 1 gateway** — [`ros1_gateway/`](ros1_gateway/README_ZH.md) (ZH). It forwards point cloud fields, timestamps and frame ids byte for byte and invents no TF. The 106 lidar publishes host-locally, so a read-only tap there relays CDR frames over TCP. Checked against an independent ROS 2 reference on the new robot: **592/592 clouds and 11 845/11 845 IMU messages identical over 60 s**.
 - **Map alignment** to the v3 frame, waypoint re-survey and the route rebuild are planned in [`docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md`](docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md) (ZH).
 
@@ -248,6 +254,8 @@ Training, evaluation harnesses and the acceptance criteria live in the sprint re
 A small standard-library web server on the AGX serves the field pages over the robot's Wi-Fi ([`tools/s10_mapping_web/`](tools/s10_mapping_web/README.md)):
 
 - **`/teach` — collection assistant** (current): mapping capture with a loop-closure helper, waypoint survey with a 3 s still test (≤2 cm position and ≤1° heading spread to pass), switch-point pairs for policy hand-off, and taught-path recording. Records only — it never commands motion and never switches maps. Guide: [`TEACH_GUIDE_ZH.md`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH).
+- A teach session becomes a route with [`ros1_gateway/tools/teach_to_route.py`](ros1_gateway/tools/teach_to_route.py): waypoints and the taught centreline turn into `route_v2.json`, and the switch points become the climb manoeuvres the runner consumes.
+- Phones reach the page through a user-level forwarder on the vendor board; the app itself stays on our AGX. The forwarder is removed at handover.
 - **`/`, `/localization`, `/heightmap`, `/field`, `/imu-check`, `/native-nav`**: mapping control, live pose, elevation map, field checklists and native-gait tests. They are bound to robot 48; do not open them on the shared robot — the reason is in [`docs/POLICIES_AND_APPS_ZH.md`](docs/POLICIES_AND_APPS_ZH.md) §2.1.
 
 <table>
@@ -268,9 +276,23 @@ A small standard-library web server on the AGX serves the field pages over the r
 - **One joint owner.** [`integration/joint_command_owner.hpp`](integration/joint_command_owner.hpp) guarantees a single source of `/JOINTS_CMD`; switching owners passes through a 0.25 s SafeHold, so a policy hand-off can never overlap.
 - **Diagnostic limits** are the robot's, not ours: 25.76 / 30 rad/s leg and wheel speed, 45 / 12 N·m torque. Crossing them drops the robot into damping — this is what stopped HIM 1500 on the stairs and what 1150 would hit today.
 - **Velocity bridge** [`ros1_gateway/src/s10_ros1_control`](ros1_gateway/README_ZH.md) converts ROS 1 `/cmd_vel` and web commands into native motion commands with clamps, timeouts, a latched stop and an exclusivity fault. It is a **dry run by default**; motion needs `--enable-motion` and a person on site.
-- **Sharing the robot.** `robot_session.sh up` deploys what we need; `down` removes every file and process we created on 106 and leaves the vendor services running. Before a motion test we agree with the other team first, because the robot already carries two native publishers on `/NAV_CMD`.
+- **Sharing the robot.** `robot_session.sh up` deploys what we need; `down` removes every file and process we created on 106 and leaves the vendor services running, and `unkeys` removes our SSH keys. Any change to a vendor board — including the plaintext control ports that `/NAV_CMD` needs — is recorded and restored before handover. Before a motion test we agree with the other team first, because the robot already carries two native publishers on `/NAV_CMD`.
+- **Arming is explicit.** The robot ignores `/NAV_CMD` until it is switched into navigation use mode; our scripts switch it, run, and always switch back to remote-control mode on exit, fault or Ctrl-C. `--shadow` runs the whole stack without sending a single command.
+- **One command per run**, because a field operator should hold the remote, not a keyboard: `robot_session.sh nav --speed <m/s> [--route short|full] [--shadow]` selects the map, sets the initial pose, waits for the robot to stand, arms, runs, prints one status line per second, and restores the mode at the end. Procedure and thresholds: [`ROOM_NAV_RUNBOOK_ZH.md`](ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md) (ZH), field log: [`EXPERIMENT_048_ZH.md`](ros1_gateway/docs/EXPERIMENT_048_ZH.md) (ZH).
 
 ## Results
+
+**First autonomous run on the robot, 2026-09-20** — dog 048, an indoor room map, our route runner on ROS 1, native flat gait:
+
+| Metric | Value |
+|---|---|
+| Route | WP01 → WP02 on map `v6_room`, straight-line 4.67 m, route length 5.0 m, flat |
+| Run | 19:27:46 → 19:28:25, **38.2 s**, mode `DONE`, no fault, no operator input |
+| Speed | commanded clamp 0.10 m/s; measured mean ≈ 0.12 m/s over ≈ 4.5 m — the native gait does not track the command exactly |
+| Arrival | stopped 0.22 m from WP02, counted on entry into the 0.20 m radius |
+| Who moved the joints | the vendor controller (state 17, flat gait `0x3002`) under navigation use mode — not J3100 or 1150 |
+| What it needed | navigation use mode for `/NAV_CMD`; the robot's IMU for roll and pitch (x_nav pitch is biased); blind-zone fill of the height grid; a 0.12 m flat step limit; a loose z tolerance because x_nav height drifts; the measured standing height 0.41 m |
+| Not verified yet | the stairs segment (one attempt held on "no progress"), the reverse route, and any speed above the probe value |
 
 **MuJoCo whole course, 2026-09-19** — `route_v2` follower, J3100 + 1150, ground-truth localisation:
 
@@ -292,17 +314,19 @@ A small standard-library web server on the AGX serves the field pages over the r
 
 Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Full evidence: [`docs/TECHNICAL_DESIGN.md`](docs/TECHNICAL_DESIGN.md).
 
-**Sensor gateway on the new robot, 2026-09-19** — 10 minutes continuous: gateway at ~30 % of one core and 67 MiB flat, tap 13 621/13 621 frames with zero drops, vendor lidar driver load unchanged.
+**Many-seed simulation, 2026-09-19** — on the team GPU server, full course, 32 seeds per stack: the current runner completes 19/32 (23/32 at the previous commit) against 4/24 for the first version. Section runs need injected localisation noise to produce real samples, and outcomes reshuffle whenever the command stream changes, so we judge over 32+ seeds rather than a handful.
+
+**Sensor gateway, 2026-09-19** — 10 minutes continuous: gateway at ~30 % of one core and 67 MiB flat, tap 13 621/13 621 frames with zero drops, vendor lidar driver load unchanged.
 
 ## Status
 
 | Area | Proven on hardware | Simulation only | Pending |
 |---|---|---|---|
-| Locomotion | vendor 57-D, `speedturn2000`, HIM 1500 (no stairs) | J3100, 1150, Isaac Lab candidates | 59-D dual-slot SDK runner; 1150 wheel-speed margin |
-| Navigation | native-gait transfer, read-only observation | `rl_nav` route runner, route_v2 follower | first motion test with a person on site |
-| Sensing | ROS 1 gateway, 106 tap, PTP clock sync | — | phone access over the robot Wi-Fi |
-| Mapping | v3 vendor map; x_nav mapping on the new robot | — | x_nav ↔ v3 registration; waypoint re-survey |
-| Field tools | `/teach` running on the robot with live topics | — | end-to-end survey session in the field |
+| Locomotion | vendor 57-D, `speedturn2000`, HIM 1500 (no stairs), native flat gait under our commands | J3100, 1150, Isaac Lab candidates | joint-level control on the robot; 1150 wheel-speed margin |
+| Navigation | route runner on ROS 1: 4.7 m autonomous run, shadow runs | route_v2 follower over the full course | longer routes, higher speeds, stairs; per-stage speed limits |
+| Sensing | ROS 1 gateway, 106 tap, PTP clock sync, boot autostart | — | — |
+| Mapping | v3 vendor map; x_nav mapping and localisation on the robot | — | x_nav ↔ v3 registration; outdoor waypoint re-survey |
+| Field tools | `/teach` on the robot, phone reachable through the 103 forwarder | — | end-to-end outdoor survey session |
 
 ## Repository layout
 
@@ -310,7 +334,7 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 |---|---|
 | [`src/`](src/) | ROS 2 packages: `s10_auto_nav` (navigation), `s10_perception`, `s10_bringup` |
 | [`integration/`](integration/) | C++ SDK glue: joint owner, policy runners, stand-up state machine |
-| [`ros1_gateway/`](ros1_gateway/) | ROS 2 → ROS 1 gateway, 106 lidar tap, motion bridge, MCAP converter, x_nav deployment |
+| [`ros1_gateway/`](ros1_gateway/) | ROS 2 → ROS 1 gateway, 106 lidar tap, motion bridge, the ROS 1 navigation runtime and run scripts, MCAP converter, x_nav deployment |
 | [`sim_full_course/`](sim_full_course/) | Kinematic whole-course simulator |
 | [`native_transfer/`](native_transfer/), [`real_transfer/`](real_transfer/), [`tests_real/`](tests_real/) | Real-robot transfer, shadow computation, replay and their tests |
 | [`policy/`](policy/), [`policies/`](policies/), [`training/`](training/) | Deployed policy bundles, exported ONNX models, August training code |
@@ -335,7 +359,10 @@ Most working documents are in Chinese, marked (ZH).
 | By area | |
 |---|---|
 | [New SLAM integration plan](docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md) (ZH) | waypoint survey, switch points, taught path, map alignment |
-| [ROS 1 gateway](ros1_gateway/README_ZH.md) (ZH) | design, evidence, acceptance on the new robot |
+| [ROS 1 gateway](ros1_gateway/README_ZH.md) (ZH) | design, evidence, acceptance on the robot |
+| [Autonomy stack handoff](ros1_gateway/docs/HANDOFF_S10_AUTONOMY_STACK.md) | every layer's interfaces, status and gotchas, for a new contributor |
+| [Room navigation runbook](ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md) (ZH) · [test plan](ros1_gateway/docs/NAV_TEST_PLAN_20260920.md) (ZH) | the field procedure, thresholds and open questions for autonomous runs |
+| [App integration API](ros1_gateway/docs/APP_INTEGRATION_API_ZH.md) (ZH) | interfaces for the field app |
 | [Collection assistant guide](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH) | the field procedure for `/teach` |
 | [Route follower robustness plan](docs/RL_ROUTE_ROBUST_PLAN_ZH.md) (ZH) · [route_v2 planner](docs/ROUTE_V2_PLANNER_ZH.md) (ZH) | navigation design and evaluation |
 | [Native gait acceptance](docs/NATIVE_START_B_ACCEPTANCE.md) (ZH) · [HIM deployment](docs/S10_HIM_DEPLOYMENT.md) (ZH) | on-robot control paths |
