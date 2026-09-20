@@ -11,7 +11,7 @@
 | `policy/` | Ver1.0 部署用的 policy 包（`gate16`、`stairs_stable`） |
 | `policies/` | 8 月训练的 57D ONNX 模型 |
 | `training/` | 8 月的 RL 训练代码 |
-| `ros1_gateway/` | ROS 2 → ROS 1 网关、106 点云 tap、ROS 1 运控 SDK、MCAP 转换、x_nav 部署 |
+| `ros1_gateway/` | ROS 2 → ROS 1 网关、106 点云 tap、ROS 1 运控 SDK、**ROS 1 导航运行时 `nav/` 与一键运行脚本**、MCAP 转换、x_nav 部署、现场文档 `docs/` |
 | `tools/` | `s10_mapping_web`（手机页面）、`wp_match`（WP 与路线）、`s10_remote_access`、`s10_gait_capture`、`s10/`（高度图回放等） |
 | `native_transfer/` | 原生步态（0x3002 / 0x3003）导航 |
 | `real_transfer/`、`tests_real/` | 真机适配（只读采集、影子计算、回放）及其测试 |
@@ -57,6 +57,7 @@
 | `ros1/newdog-20260919` | 09-19 | PR #5（新狗 050 号实测结果、ROS 1 网关同步），已并入 `main` |
 | `ros1/oldpages-check-20260919` | 09-19 | PR #6（旧页面连不上新狗的实测结论），已并入 `main` |
 | `docs/readme-overhaul-20260920` | 09-20 | PR #8（英文 README 改版、配图），已并入 `main` |
+| `ros1/nav-048-20260920` | 09-20 | PR #9（ROS 1 导航运行时、一键运行、开机自启、048 实验文档），已并入 `main` |
 | `rl/maneuver-router` | 09-19 | **开发中**（`rl_nav`）。截至 e1aaf73 已并入 `main`（PR #4、#7），之后的提交再通过 PR 合入 |
 | `nav/route-v2-integration` | 09-19 | 已并入 `main` |
 | `codex/field-assistant` | 09-19 | 已并入 `main`（现场 app、`/teach`） |
@@ -68,6 +69,8 @@
 
 - **Git LFS：** 点云、网格、图片、PDF、视频、ZIP 用 LFS。克隆后执行 `git lfs pull`。
 - **不进 git：**
+  - `ros1_gateway/nav/s10_auto_nav/`：由 `nav/sync_auto_nav.sh` 从 `src/s10_auto_nav` 生成，版本记在 `nav/COMMIT`
+  - `ros1_gateway/vendor/agx_only/`：上游 `ros2/ros1_bridge@611755f` 的原样快照，需要时从上游取
   - 原始录包（MCAP / bag）
   - x_nav 授权文件 `ssd_whitelist.conf.hash`
   - `.venv`、ROS 1 运行包 `bundle/`、`build/`

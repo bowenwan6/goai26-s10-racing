@@ -1,0 +1,85 @@
+{
+ "schema": "s10_rl_maneuvers_v1",
+ "route": "synthetic",
+ "source": "test_nav_core",
+ "maneuvers": [
+  {
+   "id": "Z00",
+   "s0": 10.282851532894822,
+   "s1": 98.8748114649235,
+   "s_first": 10.982851532894822,
+   "s_last": 98.1748114649235,
+   "policy": "stairs",
+   "kinds": [
+    "synthetic"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": []
+  },
+  {
+   "id": "Z01",
+   "s0": 108.88339616858177,
+   "s1": 128.47165231695004,
+   "s_first": 109.58339616858177,
+   "s_last": 127.77165231695005,
+   "policy": "stairs",
+   "kinds": [
+    "synthetic"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": []
+  },
+  {
+   "id": "Z02",
+   "s0": 230.90272389622658,
+   "s1": 257.3165056658336,
+   "s_first": 231.60272389622656,
+   "s_last": 256.6165056658336,
+   "policy": "stairs",
+   "kinds": [
+    "synthetic"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": []
+  }
+ ]
+}

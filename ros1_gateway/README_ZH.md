@@ -4,6 +4,8 @@
 
 **当前状态：** 代码、离线测试和 AGX 原生部署已完成。**尚未在接通机器人网络的状态下做实机验收，也没有做过任何运动测试。**
 
+> **交接 / 背景总览（英文）：** [docs/HANDOFF_S10_AUTONOMY_STACK.md](docs/HANDOFF_S10_AUTONOMY_STACK.md)：建图、定位、规划、policy、运控各层的接口和函数，现状与未知项。分阶段测试计划：[docs/NAV_TEST_PLAN_20260920.md](docs/NAV_TEST_PLAN_20260920.md)。
+
 ## 1. 组成
 
 ```text
@@ -97,15 +99,50 @@ bash scripts/start_control.sh --enable-motion
 | `/web_cmd` `cmd3` | 速度归零 → 实测静止 ≥1 s → 趴下(4) → 确认 |
 | `/web_cmd` `Nav stop` | 软件停止：发零速并锁住，忽略 `/cmd_vel`（**不是**关节泄力的软急停；遥控器才是急停） |
 | `/web_cmd` `Nav continue` | 解除锁停 |
-| `/cmd_vel` | 仅在 RL(17)+导航步态、反馈新鲜时转发；限幅 0.3 m/s、0.1 m/s、0.5 rad/s；10 Hz 固定频率；0.5 s 无新指令即归零，零速保持 1 s 后停止发送 |
+| `/rl_nav/cmd_vel`（或 `/cmd_vel`） | 仅在 RL(17)+导航步态、反馈新鲜、无步态切换进行中时转发；限幅 0.3 m/s、0.1 m/s、0.5 rad/s；10 Hz 固定频率；0.5 s 无新指令即归零，零速保持 1 s 后停止发送 |
 
-其他保护：发现第二个 `/NAV_CMD` 发布者时锁定故障，需重启节点；启动时如已有别的 `/NAV_CMD` 发布者，拒绝进入运动模式。状态见 ROS 1 话题 `/s10_control/state`（JSON），事件日志在 `logs/control-events-*.jsonl`。
+其他保护：`exclusive_mode: messages`（默认）下，别的发布者**真的发出** `/NAV_CMD` 时锁定故障，需重启节点；共用狗上原厂 handler / localPlanner 的两个发布者只要不发消息就不影响。`publishers` 模式则只要存在别的发布者就拒绝。状态见 ROS 1 话题 `/s10_control/state`（JSON），事件日志在 `logs/control-events-*.jsonl`。
+
+**速度来源只有一个**（`config/control.yaml` 的 `cmd_sources`）：默认转发我们导航程序的 `/rl_nav/cmd_vel`，x_nav 的 `/cmd_vel` 被计数后丢弃；`/web_cmd` 发 `source x_nav` / `source rl_nav` 切换。
+
+**步态切换**：导航程序在 `/rl_nav/gait_request` 上持续发 `flat` / `stairs`；节点只在 RL 控制下切换：先归零速度 → 实测静止 ≥ 1 s → 发 `/GAIT` → 等 `/MOTION_INFO` 确认（10 s 未确认则锁停）。确认结果在 `/s10_control/gait`（`flat` / `stairs` / `switching` / `none`）。
 
 停止：
 
 ```bash
 bash scripts/stop_control.sh
 ```
+
+### 5.1 自动导航（我们的路线跟随器，ROS 1）
+
+`nav/s10_rl_nav_ros1.py` 在 AGX 上运行队里的路线跟随核心（`s10_auto_nav.rl_nav`：跟线 + 路线 runner，与 MuJoCo 仿真、GPU 评测同一份代码，版本见 `nav/COMMIT`），输入 x_nav 位姿 `/base_link/odom` 和网关点云 `/LIDAR/POINTS`（在节点内生成 13×9 高度网格、保守扫描和机身系点云，与仿真传感器模型同一算法），输出 `/rl_nav/cmd_vel` 和步态请求给运控节点。runner 的 “official / stairs_stable” policy 请求在真机上映射为原厂平地 / 楼梯步态。
+
+```bash
+# 路线：现场 /teach 会话 -> route_v2.json + maneuvers.json
+python3 tools/teach_to_route.py ~/teach/sessions/<会话> --map-id <x_nav 地图名> --out ~/routes/<名字>
+# 第一次运动测试：从当前位姿直行 2 m 的两点路线
+python3 tools/teach_to_route.py --straight <x> <y> <z> <yaw> 2.0 --map-id <地图名> --out ~/routes/straight2
+
+bash scripts/start_nav.sh --route-dir ~/routes/<名字> --shadow     # 影子运行：只看状态，不发速度
+bash scripts/start_nav.sh --route-dir ~/routes/<名字>              # 等 start 指令
+rostopic pub -1 /rl_nav/cmd std_msgs/String "data: start"          # start / pause / reset
+rostopic echo /rl_nav/status                                        # 模式、目标 WP、进度、步态
+bash scripts/stop_nav.sh
+```
+
+参数在 `config/nav.yaml`：`body_z_offset`（机身参考点离地高度，现场平地实测）、`lidar_extrinsics`（雷达安装位姿，需对照厂商标定）、`runner_params`（原厂步态下的速度：平地 0.30、楼梯 0.15 m/s）。没有 `maneuvers.json` 时，楼梯段会停下等待（runner 只在有 zone 时切楼梯步态）。
+
+**遥控 ↔ 自动切换**：`tools/asdu_mode.py status` 读机器人 BasicStatus（心跳，只读）；`set-mode 1 --i-am-on-site` 进导航模式、`set-mode 0` 回常规（遥控）。103 的 30004 端口默认加密，厂商示例说明本机已关闭加密；收不到状态就停止并报告。
+
+离线验证（Mac，Docker）：
+
+```bash
+python3 tests/nav/test_nav_core.py --stairs-zones            # 运动学仿真沿 v3 草稿路线
+docker run --rm --network none -e REBUILD=1 -v "$PWD":/src:ro -v /tmp/out:/out s10-ros1-gateway-test bash /src/tests/control/run_control_test.sh enabled
+docker run --rm --network none -v "$PWD":/src:ro -v /tmp/out:/out s10-ros1-nav-test bash /src/tests/nav/run_nav_ros1_test.sh
+```
+
+部署到 AGX 并在 AGX 上重跑（不动机器人）：`bash scripts/deploy_nav.sh`。
 
 ## 6. 离线录包转换
 
@@ -183,7 +220,7 @@ cd /opt/data/compose && sudo docker compose up -d
 
 ## 9. 回滚
 
-网关、tap、运控 SDK：全部在 `~/ros1_gateway`（AGX）和 `~/ros1_gateway_tap`（106）里，没有 systemd 服务、没有开机自启。停止进程后删除这两个目录即可。
+网关、tap、运控 SDK：全部在 `~/ros1_gateway`（AGX）和 `~/ros1_gateway_tap`（106）里。2026-09-20 起 AGX 上有一个开机自启的 systemd 用户单元 `s10-stack.service`（`scripts/agx_boot.sh`；只有 `run/session_active` 存在时才会去启动 106 的 tap）。回滚：`systemctl --user disable --now s10-stack.service`，`scripts/robot_session.sh down` 和 `unkeys`，然后删除这两个目录。
 
 Docker 与 x_nav（`ysc`）：
 
@@ -199,6 +236,6 @@ sudo systemctl disable --now docker.service docker.socket containerd.service
 
 ## 10. 已知限制
 
-- AGX 时钟比机器人时间慢约 14 s（2026-09-18 实测）。网关不改时间戳；运控节点用机器人时钟填指令时间戳。x_nav 若比较传感器时间与本机时间，可能判为过期，需要同步 AGX 时钟（属于系统改动，需先确认）。
+- AGX 时钟已于 2026-09-19 改为 PTP 跟随机器人（`scripts/agx_ptp/`，雷达时间戳与 AGX 时钟差约 −0.13 s；此前机器人比 AGX 快 34 s）。冷启动后、PTP 锁定前，AGX 时钟会显示 1970 年。网关不改时间戳；运控节点用机器人时钟填指令时间戳。
 - 点云约 200 Mbit/s；通过 Wi-Fi 订阅的 ROS 1 客户端可能跟不上，全速建议有线或在 AGX 本机运行。
 - ROS-O 与 ros1_bridge 在 Ubuntu 24.04 上不是官方支持组合，以本目录测试结果为准。
