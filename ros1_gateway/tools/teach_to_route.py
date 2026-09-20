@@ -2,7 +2,7 @@
 """Turn a 采集助手 (/teach) session into the files the navigation node loads.
 
   python3 tools/teach_to_route.py <session_dir> --map-id <x_nav map name> --out <route_dir>
-        [--path-recording <name>] [--body-z-offset 0.41] [--flat-speed 0.20] [--stairs-speed 0.15]
+        [--path-recording <name>] [--body-z-offset 0.41] [--flat-speed 1.0] [--stairs-speed 0.30]
   python3 tools/teach_to_route.py --straight X Y Z YAW LENGTH --map-id <map> --out <route_dir>
 
 Session input (written by tools/s10_mapping_web/teach_worker.py on the AGX, ~/teach/sessions/<id>/):
@@ -219,8 +219,8 @@ def main():
     ap.add_argument("--path-recording", default="")
     ap.add_argument("--last-wp", default="", help="stop the route at this WP (e.g. WP02 for a flat first test)")
     ap.add_argument("--body-z-offset", type=float, default=0.41)
-    ap.add_argument("--flat-speed", type=float, default=0.20)
-    ap.add_argument("--stairs-speed", type=float, default=0.15)
+    ap.add_argument("--flat-speed", type=float, default=1.0, help="per-segment cap; the run speed is set at arm time")
+    ap.add_argument("--stairs-speed", type=float, default=0.30)
     ap.add_argument("--radius", type=float, default=0.20)
     ap.add_argument("--tol-z", type=float, default=0.30)
     ap.add_argument("--pre", type=float, default=0.3, help="stairs zone starts this far before SWIN (m)")

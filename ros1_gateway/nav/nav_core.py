@@ -268,7 +268,7 @@ class NavCore:
         self.cfg = c
         self.rate = float(c["control_rate"])
         self.profile = PolicyProfile.load(bundle.profile_path) if bundle.profile_path else PolicyProfile.default()
-        route = RouteV2.load(bundle.route_path)
+        route = RouteV2.load(self._route_with_speed_override(bundle.route_path, c))
         g = dict(DEFAULTS["gains"])
         g.update(c.get("gains") or {})
         gains = PursuitGains(
@@ -312,6 +312,26 @@ class NavCore:
         if surface is None:
             self.warnings.append("no map_surface: no obstacle detection or planned detours; the runner holds where it would need one")
 
+    @staticmethod
+    def _route_with_speed_override(route_path, c):
+        """flat_speed_override / stairs_speed_override (m/s) replace every segment's speed_limit, so
+        the run's speed is ONE number whatever the route was built with. 0 / missing = keep the file."""
+        flat, stairs = float(c.get("flat_speed_override") or 0.0), float(c.get("stairs_speed_override") or 0.0)
+        if flat <= 0.0 and stairs <= 0.0:
+            return route_path
+        import json
+        import tempfile
+        with open(route_path) as f:
+            doc = json.load(f)
+        for seg in doc.get("segments", []):
+            v = stairs if seg.get("gait") == "stairs" else flat
+            if v > 0.0:
+                seg["speed_limit"] = v
+        tmp = tempfile.NamedTemporaryFile("w", suffix=".route_v2.json", delete=False)
+        json.dump(doc, tmp)
+        tmp.close()
+        return tmp.name
+
     # -------------------------------------------------------------------------------
     def describe(self):
         return dict(waypoints=self.n_wp, maneuvers=len(self.maneuvers), length_m=round(float(self.follower.path.length), 1),
@@ -353,7 +373,8 @@ class NavCore:
             target=f.target_id, s=round(float(f.s), 2) if math.isfinite(f.s) else None, d=round(float(f.d), 2) if math.isfinite(f.d) else None,
             follower=f.status, follower_reason=f.reason, reached=self.reached, total=self.n_wp,
             progress=round(self.reached / self.n_wp, 3), info=out.info, why=log.get("why", "") if changed else "",
-            obs_fresh=fresh,
+            obs_fresh=fresh, speed_limit=getattr(f, "speed_limit", None),
+            plan_scale=round(float(f.plan.speed_scale), 2) if getattr(f, "plan", None) is not None else None,
         )
         return StepResult(tuple(float(v) for v in out.command), out.owner, OWNER_TO_GAIT.get(out.owner), out.mode.value,
                           out.reason, status, reached, out.mode == Mode.DONE)
