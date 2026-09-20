@@ -185,7 +185,7 @@
 
 ### 2.7 历史：8 月仿真赛
 
-包括比赛全栈（MuJoCo 感知 + follower + strategy_router / Gate16 + SDK）、分段实验、视频、打包脚本和 WASD 手控。入口见 [README 的 Ver1.0 部分](../README.md#current-status) 和 [SUBMISSION.md](SUBMISSION.md)。
+包括比赛全栈（MuJoCo 感知 + follower + strategy_router / Gate16 + SDK）、分段实验、视频、打包脚本和 WASD 手控。入口见 [Ver1.0 时期的 README 存档](README_V1_ARCHIVE.md#current-status) 和 [SUBMISSION.md](SUBMISSION.md)。
 
 ## 3. 代码在哪
 

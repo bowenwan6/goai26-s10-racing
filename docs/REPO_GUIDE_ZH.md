@@ -36,6 +36,7 @@
   - `rl/*`：RL 导航
   - `codex/*`：现场 app
   - `ros1/*`：ROS 1 网关、新 SLAM 接入
+  - `docs/*`：文档
   - `integration/*`：整合
   - 队友可以用个人分支（如 `Jackdev`）。
 - **旧分支暂时都保留（2026-09-19 决定）。** 下表标出每个分支是否已并入 `main`。以后要清理时：
@@ -54,7 +55,9 @@
 | `main` | 09-19 | **最新整合版**（PR #4）：`rl/maneuver-router`、`nav/route-v2-integration`、`codex/field-assistant`、原 `main`、`ros1_gateway/` 及新文档 |
 | `integration/2026-09-19` | 09-19 | PR #4 的源分支，已并入 `main` |
 | `ros1/newdog-20260919` | 09-19 | PR #5（新狗 050 号实测结果、ROS 1 网关同步），已并入 `main` |
-| `rl/maneuver-router` | 09-19 | **开发中**（`rl_nav`）。截至 49fd514 已并入 `main`，之后的提交再通过 PR 合入 |
+| `ros1/oldpages-check-20260919` | 09-19 | PR #6（旧页面连不上新狗的实测结论），已并入 `main` |
+| `docs/readme-overhaul-20260920` | 09-20 | PR #8（英文 README 改版、配图），已并入 `main` |
+| `rl/maneuver-router` | 09-19 | **开发中**（`rl_nav`）。截至 e1aaf73 已并入 `main`（PR #4、#7），之后的提交再通过 PR 合入 |
 | `nav/route-v2-integration` | 09-19 | 已并入 `main` |
 | `codex/field-assistant` | 09-19 | 已并入 `main`（现场 app、`/teach`） |
 | `Jackdev` | 09-18 | 队友 Jack 的分支，与 `main` 分叉；有 1 个独有提交，保留 |
