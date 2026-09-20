@@ -229,6 +229,8 @@ The measured limits matter more than the list. J3100 clears 3–8 cm steps and 8
 
 On the robot the joints still belong to the vendor's controller: running J3100 or 1150 there needs joint-level control inside the motion board, so today's autonomous runs use the native gaits and the RL policies stay in simulation.
 
+Two findings shape the next training round (details in [`docs/POLICIES_AND_APPS_ZH.md`](docs/POLICIES_AND_APPS_ZH.md) §1.2, sources in the sprint repo). The deployed actors take **59 inputs** — this repo's 57-D observation plus the sine and cosine of the runner's gait phase — so any replacement has to match that contract. And the stairs actor **cannot be fine-tuned**: dropped into Isaac Lab on flat ground with clean observations it collapses within a few seconds, while the vendor's model stands, so a better climber has to be trained from a model that survives there. Training on stair patches cut from the course reconstruction is in progress and does not beat the current stairs actor yet.
+
 Training, evaluation harnesses and the acceptance criteria live in the sprint repo; this repo holds the exported ONNX models, the deployment glue in [`integration/`](integration/), and the August training code in [`training/`](training/).
 
 ### 4 · Mapping and localisation
@@ -314,7 +316,7 @@ A small standard-library web server on the AGX serves the field pages over the r
 
 Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Full evidence: [`docs/TECHNICAL_DESIGN.md`](docs/TECHNICAL_DESIGN.md).
 
-**Many-seed simulation, 2026-09-19** — on the team GPU server, full course, 32 seeds per stack: the current runner completes 19/32 (23/32 at the previous commit) against 4/24 for the first version. Section runs need injected localisation noise to produce real samples, and outcomes reshuffle whenever the command stream changes, so we judge over 32+ seeds rather than a handful.
+**Many-seed simulation** — on the team GPU server. Full course, 32 seeds per stack: the current runner completes 19/32 (23/32 at the previous commit) against 4/24 for the first version. With 5 cm / 2° localisation noise over seeds 0–11: the B staircase 9/12 (three falls at 60–63° of tilt), the terrace 11/12, the whole course 8/12. Outcomes reshuffle whenever the command stream changes, so we judge over 32+ seeds rather than a handful.
 
 **Sensor gateway, 2026-09-19** — 10 minutes continuous: gateway at ~30 % of one core and 67 MiB flat, tap 13 621/13 621 frames with zero drops, vendor lidar driver load unchanged.
 
