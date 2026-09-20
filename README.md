@@ -118,7 +118,7 @@ flowchart TD
   SIM -- "smoothness, stops, time vs the first version" --> BOT
 ```
 
-The current `route_v2.json` came from matching 30 waypoint photos to mapping keyframes ([`tools/wp_match`](tools/wp_match/README_ZH.md)); its uncertainty radius is 1.5–3 m, which is why the [`/teach`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) survey exists.
+The current `route_v2.json` came from matching 30 waypoint photos to mapping keyframes ([`tools/wp_match`](tools/wp_match/README_ZH.md)); its uncertainty radius is 1.5–3 m, which is why the [`/teach`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) survey exists. The design behind all of this is in [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) (ZH).
 
 ## Quick start
 
@@ -169,7 +169,7 @@ The competition stack from the August simulation contest runs in its own contain
 
 | Piece | What it does | Status |
 |---|---|---|
-| [`rl_nav/route_runner.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/route_runner.py) | Mode machine over the taught route; emits body velocity and the joint-owner request | ✅ first autonomous run, 4.7 m |
+| [`rl_nav/route_runner.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/route_runner.py) | Mode machine over the taught route; emits body velocity and the joint-owner request | ✅ first autonomous run |
 | [`rl_nav/prepare.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/prepare.py) | Offline route grounding, climb manoeuvres, map surface, report | 🧪 |
 | [`route_v2.py`](src/s10_auto_nav/s10_auto_nav/route_v2.py), [`route_planner.py`](src/s10_auto_nav/s10_auto_nav/route_planner.py) | Centreline following with a Frenet local planner, A\* fallback on the prior map | 🧪 |
 | [`native_transfer/`](native_transfer/README_ZH.md) | Same follower driving the vendor's native gaits (ROS 2 route) | ✅ deployed; observation only, no commands sent |
@@ -191,7 +191,7 @@ stateDiagram-v2
   RECOVER --> WALK: re-acquired
 ```
 
-Details: [`docs/RL_ROUTE_ROBUST_PLAN_ZH.md`](docs/RL_ROUTE_ROBUST_PLAN_ZH.md) (ZH), [`docs/ROUTE_V2_PLANNER_ZH.md`](docs/ROUTE_V2_PLANNER_ZH.md) (ZH).
+Details: [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) (ZH).
 
 ### 2 · Simulation
 
@@ -246,10 +246,10 @@ Training, evaluation harnesses and the acceptance criteria live in the sprint re
 </tr>
 </table>
 
-- **Vendor SLAM on 106** produced the v3 map and the localisation used through August and September. Map, MuJoCo scene and an offline viewer are in [`deliverables/`](deliverables/S10_v3_Map_MuJoCo_20260916/README.md).
+- **Vendor SLAM on 106** produced the v3 map and the localisation used through August and September. Map, MuJoCo scene and an offline viewer are in [`data/deliverables/`](data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md).
 - **New third-party SLAM (x_nav)** runs in a container on our AGX and publishes `/base_link/odom` at 10 Hz. It needs ROS 1 sensor topics, which is what the gateway provides. Indoor maps are built, saved and re-localised into; localisation is initialised by publishing `/initialpose`, which the run script does automatically.
 - **ROS 2 → ROS 1 gateway** — [`ros1_gateway/`](ros1_gateway/README_ZH.md) (ZH). It forwards point cloud fields, timestamps and frame ids byte for byte and invents no TF. The 106 lidar publishes host-locally, so a read-only tap there relays CDR frames over TCP. Checked against an independent ROS 2 reference on the new robot: **592/592 clouds and 11 845/11 845 IMU messages identical over 60 s**.
-- **Map alignment** to the v3 frame, waypoint re-survey and the route rebuild are planned in [`docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md`](docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md) (ZH).
+- **Map alignment** to the v3 frame, waypoint re-survey and the route rebuild are planned in [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) §3 (ZH).
 
 ### 5 · Field tools on the phone
 
@@ -314,7 +314,7 @@ A small standard-library web server on the AGX serves the field pages over the r
 | Official elapsed | 436.058 s |
 | Distance | 257.49 m, maximum tilt 57.9° |
 
-Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Full evidence: [`docs/TECHNICAL_DESIGN.md`](docs/TECHNICAL_DESIGN.md).
+Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Full evidence: `TECHNICAL_DESIGN.md` (archived).
 
 **Many-seed simulation** — on the team GPU server. Full course, 32 seeds per stack: the current runner completes 19/32 (23/32 at the previous commit) against 4/24 for the first version. With 5 cm / 2° localisation noise over seeds 0–11: the B staircase 9/12 (three falls at 60–63° of tilt), the terrace 11/12, the whole course 8/12. Outcomes reshuffle whenever the command stream changes, so we judge over 32+ seeds rather than a handful.
 
@@ -341,34 +341,40 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 | [`native_transfer/`](native_transfer/), [`real_transfer/`](real_transfer/), [`tests_real/`](tests_real/) | Real-robot transfer, shadow computation, replay and their tests |
 | [`policy/`](policy/), [`policies/`](policies/), [`training/`](training/) | Deployed policy bundles, exported ONNX models, August training code |
 | [`tools/`](tools/) | Phone web app, waypoint matching, remote access, capture tools |
-| [`deliverables/`](deliverables/), [`map-reviews/`](map-reviews/), [`waypoint-photos-20260914/`](waypoint-photos-20260914/) | Map and MuJoCo bundle, map reviews, course photos (Git LFS) |
+| [`data/`](data/) | Map and MuJoCo bundle, map reviews, course photos, recording notes (Git LFS) |
 | [`docs/`](docs/) | Documentation, media, references |
-| `artifacts/`, `evidence/`, `backups/` | Field evidence, sync records, snapshots of deployed software |
+| [`evidence/`](evidence/) | Field evidence, sync records, snapshots of deployed software |
+| [`reports/`](reports/) | Reports, posters and their build assets (August–September deliverables) |
+| `vendor/contest_material/` | Organiser material, unmodified |
 | `scripts/`, `docker/`, `.github/` | Build and run scripts, dev container, CI |
 
 A per-directory description, branch rules and what never enters Git: [`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md) (ZH).
 
 ## Documentation
 
-Most working documents are in Chinese, marked (ZH).
+Three documents describe the whole repository; everything else lives next to the code it documents. Chinese documents are marked (ZH).
 
-| Start here | |
+| Document | What it covers |
 |---|---|
-| [Policies and apps overview](docs/POLICIES_AND_APPS_ZH.md) (ZH) | every policy and tool, status, measured numbers, gaps |
-| [Repository guide](docs/REPO_GUIDE_ZH.md) (ZH) | directories, branches, large files, pre-push checks |
-| [File index](docs/GITHUB_FILE_INDEX_ZH.md) (ZH) | what was uploaded and where it came from |
+| [Policies and apps overview](docs/POLICIES_AND_APPS_ZH.md) (ZH) | every policy and tool, status, measured numbers, open gaps |
+| [Navigation design](docs/NAVIGATION_DESIGN_ZH.md) (ZH) | route_v2 following, the `rl_nav` runner and its robustness plan, the new-SLAM integration plan |
+| [Repository guide](docs/REPO_GUIDE_ZH.md) (ZH) | directories, branches, large files, third-party and licensing, pre-push checks |
 
-| By area | |
+Operational manuals stay with their code:
+
+| Where | What |
 |---|---|
-| [New SLAM integration plan](docs/NEW_SLAM_XNAV_INTEGRATION_ZH.md) (ZH) | waypoint survey, switch points, taught path, map alignment |
-| [ROS 1 gateway](ros1_gateway/README_ZH.md) (ZH) | design, evidence, acceptance on the robot |
-| [Autonomy stack handoff](ros1_gateway/docs/HANDOFF_S10_AUTONOMY_STACK.md) | every layer's interfaces, status and gotchas, for a new contributor |
-| [Room navigation runbook](ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md) (ZH) · [test plan](ros1_gateway/docs/NAV_TEST_PLAN_20260920.md) (ZH) | the field procedure, thresholds and open questions for autonomous runs |
-| [App integration API](ros1_gateway/docs/APP_INTEGRATION_API_ZH.md) (ZH) | interfaces for the field app |
-| [Collection assistant guide](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH) | the field procedure for `/teach` |
-| [Route follower robustness plan](docs/RL_ROUTE_ROBUST_PLAN_ZH.md) (ZH) · [route_v2 planner](docs/ROUTE_V2_PLANNER_ZH.md) (ZH) | navigation design and evaluation |
-| [Native gait acceptance](docs/NATIVE_START_B_ACCEPTANCE.md) (ZH) · [HIM deployment](docs/S10_HIM_DEPLOYMENT.md) (ZH) | on-robot control paths |
-| [Technical design](docs/TECHNICAL_DESIGN.md) · [Submission](docs/SUBMISSION.md) · [Third party](docs/THIRD_PARTY.md) | August contest architecture, evidence and provenance |
+| [`ros1_gateway/README_ZH.md`](ros1_gateway/README_ZH.md) (ZH) | the ROS 1 gateway and motion bridge: design, evidence, acceptance |
+| [`ros1_gateway/docs/`](ros1_gateway/docs/) | autonomy-stack handoff, room-navigation runbook, test plan, field log, app API |
+| [`tools/s10_mapping_web/TEACH_GUIDE_ZH.md`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH) | the field procedure for `/teach` |
+| [`sim_full_course/README_ZH.md`](sim_full_course/README_ZH.md) (ZH) · [`tools/wp_match/README_ZH.md`](tools/wp_match/README_ZH.md) (ZH) | simulator and waypoint matching |
+
+Documents written before 2026-09-20 — the August contest technical design, submission and third-party records, the older robot setup, mapping, matching and research notes, and the previous README — were folded into the three above or retired. They stay reachable at the `docs-archive-20260920` tag:
+
+```bash
+git show docs-archive-20260920:docs/TECHNICAL_DESIGN.md
+git show docs-archive-20260920:docs/S10_REAL_ROBOT_QUICKSTART_ZH.md
+```
 
 ## Development
 
@@ -386,10 +392,10 @@ The August 2026 simulation contest release is preserved:
 | [`v1.0-sim-release`](https://github.com/bowenwan6/goai26-s10-racing/releases/tag/v1.0-sim-release) | `1e390f5` | Ver 1.0 competition release |
 | [`sim-contest-submission`](https://github.com/bowenwan6/goai26-s10-racing/releases/tag/sim-contest-submission) | `3660b81` | the submitted build (`s10-racing:submission-3660b81-clean`) |
 
-The README that shipped with that release, including the contest run instructions and the Gate 16 contract, is archived verbatim at [`docs/README_V1_ARCHIVE.md`](docs/README_V1_ARCHIVE.md).
+The README that shipped with that release, with the contest run instructions and the Gate 16 contract, is at `git show docs-archive-20260920:docs/README_V1_ARCHIVE.md`.
 
 ## License and credits
 
-Released under [BSD-3-Clause](LICENSE), matching upstream. Dependency, data and model provenance are disclosed in [`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md); the post-competition open-source scope is in [`docs/OPEN_SOURCE_PLAN.md`](docs/OPEN_SOURCE_PLAN.md).
+Released under [BSD-3-Clause](LICENSE), matching upstream. Dependency, data and model provenance, including the one unresolved model-licence item, are summarised in [`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md) §4; the full records are archived at `git show docs-archive-20260920:docs/THIRD_PARTY.md` and `…:docs/OPEN_SOURCE_PLAN.md`.
 
-The Lynx S10 platform, its SDK, native gaits and the vendor SLAM are DEEP Robotics'. Contest material is the organisers'. Everything in `src/`, `ros1_gateway/`, `sim_full_course/`, `tools/`, `integration/` and `docs/` is ours unless a file says otherwise.
+The Lynx S10 platform, its SDK, native gaits and the vendor SLAM are DEEP Robotics'. Contest material is the organisers' and sits unmodified in `vendor/contest_material/`. Everything in `src/`, `ros1_gateway/`, `sim_full_course/`, `tools/`, `integration/` and `docs/` is ours unless a file says otherwise.

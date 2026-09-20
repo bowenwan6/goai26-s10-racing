@@ -28,6 +28,6 @@ scripts/replay_waypoint.sh 18 0.35 20
 RMS/peak 为 0.280/0.540 m；当前 stable `model_499` 为 11.3 s 和
 0.259/0.506 m。因此这些候选不替换默认上楼模型。
 
-并排回放保存在 `artifacts/straight_up_compare/stable499_vs_model800_wp18.mp4`：左侧为
+并排回放保存在 `evidence/artifacts/straight_up_compare/stable499_vs_model800_wp18.mp4`（未入库，见本地工作区）：左侧为
 stable `model_499`，右侧为续训 `model_800`。`model_800.onnx` 的 SHA-256 为
 `13B22645F6B8D5679EF1FDDFD3109057F4896849E2A572E33FED3F311EE3E65F`。
