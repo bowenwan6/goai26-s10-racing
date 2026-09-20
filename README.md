@@ -46,7 +46,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 ## What is in here
 
 - **A route-following navigation stack** for a 30-waypoint outdoor course: a taught centreline, per-segment gait selection, and recovery that only fires on a measured deviation — [module 1](#1--planning-and-navigation).
-- **First autonomous run on the robot** on 2026-09-20: 4.7 m, WP01 → WP02, at a 0.10 m/s probe speed, driven by our route runner on ROS 1 and the robot's native gait — [Results](#results).
+- **First autonomous run on the robot** on 2026-09-20: WP01 → WP02 in 38 s, driven by our route runner on ROS 1 and the robot's native flat gait — [Results](#results).
 - **Two simulators**: a fast kinematic whole-course harness in this repo, and a full MuJoCo run of the real map with real ONNX policies — **30/30 waypoints, 713 s** — [module 2](#2--simulation).
 - **Locomotion policies** from three sources: the vendor's 57-D controller, our Isaac Lab training runs, and teammate models. Three have run on hardware — [module 3](#3--locomotion-policies-and-rl-training).
 - **Mapping and localisation**, from the vendor SLAM map (`0914_fr_v3`) to a new third-party SLAM (x_nav) reached through a byte-exact ROS 2 → ROS 1 gateway — [module 4](#4--mapping-and-localisation).
@@ -286,10 +286,13 @@ A small standard-library web server on the AGX serves the field pages over the r
 
 | Metric | Value |
 |---|---|
-| Route | WP01 → WP02, **4.7 m**, flat |
-| Probe speed | 0.10 m/s, finished `DONE` |
-| What it needed | navigation use mode for `/NAV_CMD`; the robot's IMU for roll and pitch (x_nav pitch is biased); blind-zone fill of the height grid; a 0.12 m flat step limit; a loose z tolerance because x_nav height drifts |
-| Not done | stairs, longer routes, speeds above the probe value |
+| Route | WP01 → WP02 on map `v6_room`, straight-line 4.67 m, route length 5.0 m, flat |
+| Run | 19:27:46 → 19:28:25, **38.2 s**, mode `DONE`, no fault, no operator input |
+| Speed | commanded clamp 0.10 m/s; measured mean ≈ 0.12 m/s over ≈ 4.5 m — the native gait does not track the command exactly |
+| Arrival | stopped 0.22 m from WP02, counted on entry into the 0.20 m radius |
+| Who moved the joints | the vendor controller (state 17, flat gait `0x3002`) under navigation use mode — not J3100 or 1150 |
+| What it needed | navigation use mode for `/NAV_CMD`; the robot's IMU for roll and pitch (x_nav pitch is biased); blind-zone fill of the height grid; a 0.12 m flat step limit; a loose z tolerance because x_nav height drifts; the measured standing height 0.41 m |
+| Not verified yet | the stairs segment (one attempt held on "no progress"), the reverse route, and any speed above the probe value |
 
 **MuJoCo whole course, 2026-09-19** — `route_v2` follower, J3100 + 1150, ground-truth localisation:
 
