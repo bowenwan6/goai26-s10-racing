@@ -50,6 +50,9 @@ results/
 # ros1_gateway/vendor/agx_only holds an unmodified upstream snapshot staged for the AGX
 # (ros1_bridge at ros2/ros1_bridge@611755f); fetch it from upstream instead.
 /ros1_gateway/vendor/agx_only/
+
+# Raw investigation dump: quotes a vendor default password in its review text.
+/ros1_gateway/docs/NAV_TEST_PLAN_20260920.raw.json
 /tmp/
 /.playwright-cli/
 

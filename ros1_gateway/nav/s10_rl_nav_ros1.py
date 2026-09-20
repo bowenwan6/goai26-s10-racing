@@ -276,6 +276,11 @@ class Node:
         r = self.core.step(t, pose, obs, gait, obs_age)
         st = dict(base, **r.status)
         self.publish(r.command, r.gait_request, st)
+        if t - self.last_log >= 1.0:
+            self.last_log = t
+            rospy.loginfo("run %s cmd %s s=%s d=%s follower=%s/%s seg_limit=%s plan_scale=%s gait=%s", r.mode, st.get("cmd"),
+                          st.get("s"), st.get("d"), st.get("follower"), st.get("follower_reason"), st.get("speed_limit"),
+                          st.get("plan_scale"), gait)
         if r.reached:
             self.progress_pub.publish(Float32(self.core.reached / self.core.n_wp))
             rospy.loginfo("%s reached (%d/%d)", ", ".join(r.reached), self.core.reached, self.core.n_wp)

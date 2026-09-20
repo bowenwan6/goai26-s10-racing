@@ -16,7 +16,7 @@ class Msg:
 class Tw:
     def __init__(self):
         self.linear = types.SimpleNamespace(x=0, y=0, z=0); self.angular = types.SimpleNamespace(x=0, y=0, z=0)
-for mod, names in {"geometry_msgs.msg": {"Twist": Tw}, "sensor_msgs.msg": {"PointCloud2": object},
+for mod, names in {"geometry_msgs.msg": {"Twist": Tw}, "sensor_msgs.msg": {"PointCloud2": object, "Imu": object},
                    "std_msgs.msg": {"Bool": Msg, "Float32": Msg, "String": Msg}}.items():
     m = types.ModuleType(mod); m.__dict__.update(names); sys.modules[mod] = m
     sys.modules[mod.split(".")[0]] = types.ModuleType(mod.split(".")[0])

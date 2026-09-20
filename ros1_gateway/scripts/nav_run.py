@@ -129,6 +129,7 @@ class Run:
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--speed", default="0.3", help="forward limit m/s (0.1-1.0), or zero|probe|flat")
+    ap.add_argument("--climb-speed", default="", help="stairs part m/s (default: nav.yaml climb_v 0.15)")
     ap.add_argument("--route", default="short", help="short | full | a route dir")
     ap.add_argument("--map", default="", help="x_nav map name (default: the route's map_id)")
     ap.add_argument("--at", choices=["start", "end"], default="start",
@@ -229,7 +230,7 @@ def main():
     signal.signal(signal.SIGINT, lambda *_: (finish(), sys.exit(130)))
     signal.signal(signal.SIGTERM, lambda *_: (finish(), sys.exit(143)))
     try:
-        rc, out = sh("bash", NAV, "arm", a.speed, route, quiet=True)
+        rc, out = sh("bash", NAV, "arm", a.speed, route, a.climb_speed, quiet=True)
         if "ARMED" not in out:
             print(out[-600:])
             die("arming failed")

@@ -4,7 +4,9 @@
 #   nav_session.sh route [<session dir>|latest] --map-id <x_nav map> [teach_to_route options]
 #                                   # session -> ~/routes/<session id>/ (route_v2.json, maneuvers.json, report.json)
 #   nav_session.sh shadow [<route dir>|latest]   # nav node publishes status only; drive with the remote
-#   nav_session.sh arm zero|probe|flat|<v> [<route dir>|latest]   (<v> = forward limit in m/s, e.g. 0.5)
+#   nav_session.sh arm zero|probe|flat|<v> [<route dir>|latest] [<climb v>]
+#                                   # <v> = THE forward speed in m/s (e.g. 0.8): control clamp, runner walking speed and
+#                                   # the route's flat limits all follow it. <climb v> = same for the stairs part.
 #                                   # control with --enable-motion at that stage's limits + nav node, PAUSED
 #   nav_session.sh go               # start / continue the route
 #   nav_session.sh pause            # zero velocity, keep position on the route
@@ -52,12 +54,20 @@ case "${1:-}" in
       zero|probe|flat) ;;
       0.*|1|1.0)      # a number = forward speed limit (m/s) for BOTH the control clamp and the runner's walking speed
         NAVCFG="$ROOT/run/nav-$STAGE.yaml"
-        python3 - "$ROOT/config/nav.yaml" "$NAVCFG" "$STAGE" <<'PY'
+        python3 - "$ROOT/config/nav.yaml" "$NAVCFG" "$STAGE" "${4:-}" <<'PY'
 import sys, yaml
 src, dst, v = sys.argv[1], sys.argv[2], float(sys.argv[3])
 c = yaml.safe_load(open(src))
+climb = float(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else 0.0
 c["runner_params"]["walk_v"] = v
 c["gains"]["max_forward"] = max(float(c["gains"]["max_forward"]), v)
+c["flat_speed_override"] = v                 # the route file's flat limits no longer matter
+for k in ("approach_v", "detour_v", "recover_v"):
+    c["runner_params"][k] = max(float(c["runner_params"][k]), min(v, 0.5))
+if climb > 0.0:                              # stairs: climb speed, also ONE number
+    c["stairs_speed_override"] = climb
+    c["runner_params"]["climb_v"] = climb
+    c["runner_params"]["climb_turn_v"] = round(climb * 0.66, 2)
 yaml.safe_dump(c, open(dst, "w"), sort_keys=False)
 PY
         ;;
