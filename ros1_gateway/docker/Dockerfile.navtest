@@ -1,0 +1,6 @@
+# Test image for the ROS 1 navigation node: the gateway test image plus scipy/yaml.
+#   docker build -f docker/Dockerfile.navtest -t s10-ros1-nav-test docker/
+FROM s10-ros1-gateway-test
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN apt-get update && apt-get install -y --no-install-recommends python3-scipy python3-yaml \
+ && rm -rf /var/lib/apt/lists/*
