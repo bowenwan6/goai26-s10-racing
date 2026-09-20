@@ -5,7 +5,8 @@
 - 它们放在哪里；
 - 各自做到哪一步。
 
-细节看表中链接。仓库目录和分支说明见 [REPO_GUIDE_ZH.md](REPO_GUIDE_ZH.md)。
+细节看表中链接。仓库目录和分支说明见 [REPO_GUIDE_ZH.md](REPO_GUIDE_ZH.md)，导航设计见 [NAVIGATION_DESIGN_ZH.md](NAVIGATION_DESIGN_ZH.md)。
+标“已归档”的文档 2026-09-20 合并文档时删除，可从标签取回：`git show docs-archive-20260920:docs/<文件名>`。
 
 **状态标记：** ✅ 实机用过 / 已部署　🧪 只在仿真　📝 待开发 / 待实测　🗄 历史
 
@@ -31,7 +32,7 @@
 
 | 名称 | 维度 | 用途 | 状态 | 文件 |
 |---|---|---|---|---|
-| 官方 57D（AGX SDK 版） | 57→16 | 通用行走 | ✅ 机上默认 | `goai_embodied_future_material-main/…/S10_sdk_deploy/policy/policy.onnx` |
+| 官方 57D（AGX SDK 版） | 57→16 | 通用行走 | ✅ 机上默认 | `vendor/contest_material/…/S10_sdk_deploy/policy/policy.onnx` |
 | 官方 57D（本地 SDK 版 model0） | 57→16 | 通用行走；训练热启动起点 | 🧪 基线 | s10-rl-sprint `pretrained/s10/policy.onnx` |
 | speedturn2000 | 57→16 | 高速 + 转向 | ✅ 48 号实机试过 | `policies/s10_general_speedturn_57d_model2000.onnx` |
 | HIM 1500 | 342→16（57 维 × 6 帧） | 通用 | ✅ 实机试过，上台阶失败 | 不在仓库，在 AGX 的独立 SDK 副本里 |
@@ -48,14 +49,14 @@
 ### 1.2 实测要点
 
 **实机**
-- **官方 57D（AGX 版）：** 数据来自 50 号实机（[`S10_REAL_ROBOT_QUICKSTART_ZH.md`](S10_REAL_ROBOT_QUICKSTART_ZH.md)）。
+- **官方 57D（AGX 版）：** 数据来自 50 号实机（`S10_REAL_ROBOT_QUICKSTART_ZH.md`（已归档））。
   - 起身 + 零速支撑：roll / pitch 最大 2.20° / 2.81°。
   - 右移 −0.5 m/s 持续 1 s：能看到平移，关节力矩峰值 29.85。
 - **speedturn2000：** 数据来自 48 号实机（`Jackdev` 分支 `docs/S10_SPEEDTURN_2000_TRIAL_ZH.md`）。
   - 零速支撑 5 s 通过。
   - 前后 ±2.0 m/s 完成，轮速峰值 27.1 rad/s。
   - +2.1 m/s 时右前轮 31.9 rad/s，触发 30 rad/s 诊断线，进入阻尼。
-- **HIM 1500：** 09-16 实机（[`S10_HIM_DEPLOYMENT.md`](S10_HIM_DEPLOYMENT.md)）。
+- **HIM 1500：** 09-16 实机（`S10_HIM_DEPLOYMENT.md`（已归档））。
   - 起身、1 s 零指令、趴下都通过；ARM 与本地推理最大误差 4.8×10⁻⁷。
   - 上第一级台阶时两个前轮约 31 rad/s，触发保护，爬阶未通过。
 
@@ -76,7 +77,7 @@
   - 轮速超过 30 rad/s 累计 1.94 s（峰值 57.9），倾角超过 15° 累计 21.8 s。
 
 **8 月仿真赛（Ver1.0）**
-- **Gate16 v1.5**（[`TECHNICAL_DESIGN.md`](TECHNICAL_DESIGN.md) §9）
+- **Gate16 v1.5**（`TECHNICAL_DESIGN.md`（已归档） §9）
   - 低层矩阵 39/45，其中摔倒 2/45。
   - 比赛时用稳定 fallback：交接窗口 d = 0.62–0.70 m，指令 0.18 m/s。
   - 全程：seed 6 通过；seed 8 两次失败（Gate16 处、WP27→28）；seed 10 卡在 WP29 前。
@@ -118,7 +119,7 @@
 7. **`rl_nav` 上机的前提（未完成）：**
    - SDK runner 两个槽都要支持 59 维观测和各自的相位时钟。
    - 1150 的轮速超线问题要先解决。
-8. **原生步态路线（备选）：** `native_transfer` 请求 0x3002（平地）或 0x3003（楼梯）。代码和 78 项本地测试已就绪，现场验收还没做（[`NATIVE_START_B_ACCEPTANCE.md`](NATIVE_START_B_ACCEPTANCE.md)）。
+8. **原生步态路线（备选）：** `native_transfer` 请求 0x3002（平地）或 0x3003（楼梯）。代码和 78 项本地测试已就绪，现场验收还没做（`NATIVE_START_B_ACCEPTANCE.md`（已归档））。
 
 ## 2. App 与工具
 
@@ -130,7 +131,7 @@
 |---|---|---|---|---|
 | `/` 建图首页 | 官方 drmap 建图启停、保存、点云预览 | 106 后端（SSH） | ✅ 48 号 | [README](../tools/s10_mapping_web/README.md) |
 | `/localization` | 在点云底图上显示位置和朝向 | 106 `/ODOM` | ✅，但底图还是旧图 `indoor_loop_01` | 同上 |
-| `/heightmap` | 显示 `/elevation_map_raw` | 106 `heightmap.py` | ✅ 已部署，交互未验收 | `backups/s10-mapping-web/2026-09-13/README.md` |
+| `/heightmap` | 显示 `/elevation_map_raw` | 106 `heightmap.py` | ✅ 已部署，交互未验收 | `evidence/backups/s10-mapping-web/2026-09-13/README.md` |
 | `/field` 现场助手 | 自检、切图、静止检查、限时录包、标点草稿、航点复测 | 106 field worker | ✅ 48 号；v3 现场未验收 | [FIELD_GUIDE_ZH.md](../tools/s10_mapping_web/FIELD_GUIDE_ZH.md) |
 | `/imu-check` | IMU 曲线、静止采样、复零 | 106 | ✅ 09-15 | [IMU_DIAGNOSTIC_GUIDE_ZH.md](../tools/s10_mapping_web/IMU_DIAGNOSTIC_GUIDE_ZH.md) |
 | `/native-nav` | 原生步态导航测试：只读检查、切步态、Start/B 任务、停止 | 106 native-nav 服务 | ✅ 已部署，**没实际走过** | [NATIVE_NAV_GUIDE_ZH.md](../tools/s10_mapping_web/NATIVE_NAV_GUIDE_ZH.md) |
@@ -146,11 +147,11 @@
 
 | 名称 | 用途 | 状态 | 说明 |
 |---|---|---|---|
-| `rl_nav` 节点（ROS 2 版） | 第一版控制器作为名义行为，测到偏离才做恢复。输出 `/cmd_vel` 和 joint owner（`official` 槽 = J3100，`stairs_stable` 槽 = 1150） | 🧪 只在 MuJoCo。真机上跑的是同一份逻辑的 ROS 1 版，见 2.3 | [RL_ROUTE_ROBUST_PLAN_ZH.md](RL_ROUTE_ROBUST_PLAN_ZH.md) |
+| `rl_nav` 节点（ROS 2 版） | 第一版控制器作为名义行为，测到偏离才做恢复。输出 `/cmd_vel` 和 joint owner（`official` 槽 = J3100，`stairs_stable` 槽 = 1150） | 🧪 只在 MuJoCo。真机上跑的是同一份逻辑的 ROS 1 版，见 2.3 | [NAVIGATION_DESIGN_ZH.md §2](NAVIGATION_DESIGN_ZH.md) |
 | `rl_nav_prepare` | 离线：route_v2 + 地图 → `route_rl.json`、`maneuvers.json`、`map_surface.npz` | 🧪 有单测 | `rl_nav/prepare.py` |
-| route_v2 跟线 + Frenet 局部规划 | 沿示教中心线走，A* 兜底 | 🧪 | [ROUTE_V2_PLANNER_ZH.md](ROUTE_V2_PLANNER_ZH.md) |
+| route_v2 跟线 + Frenet 局部规划 | 沿示教中心线走，A* 兜底 | 🧪 | [NAVIGATION_DESIGN_ZH.md §1](NAVIGATION_DESIGN_ZH.md) |
 | `native_transfer` | 原厂 flat / stairs 步态 + 我们的 follower，发 `/NAV_CMD`、`/GAIT` | ✅ 已部署 106 / 102，只读观测通过；📝 没发过真实指令 | [README](../native_transfer/README_ZH.md) |
-| HIM SDK 部署 | 独立 SDK 副本 + HIM 1500 + Windows GUI | ✅ 09-16 实测 | [S10_HIM_DEPLOYMENT.md](S10_HIM_DEPLOYMENT.md) |
+| HIM SDK 部署 | 独立 SDK 副本 + HIM 1500 + Windows GUI | ✅ 09-16 实测 | `S10_HIM_DEPLOYMENT.md`（已归档） |
 | `real_transfer` + `tests_real` | 只读采集、影子计算、离线回放 | 🗄 09-12；测试 164 项通过 | [README](../real_transfer/README_ZH.md) |
 
 ### 2.3 新狗 / 新 SLAM（ROS 1，[`ros1_gateway/`](../ros1_gateway/README_ZH.md)）
@@ -172,7 +173,7 @@
 | `/teach` 采集助手 | 见 2.1 | AGX | 见 2.1 |
 
 - **`/ODOM`：** 新狗上 106 的官方定位按决定不开，定位用 x_nav 自己的 SLAM。
-- 整体计划见 [NEW_SLAM_XNAV_INTEGRATION_ZH.md](NEW_SLAM_XNAV_INTEGRATION_ZH.md)；新狗验收记录见 [ros1_gateway/README_ZH.md](../ros1_gateway/README_ZH.md)。
+- 整体计划见 [NAVIGATION_DESIGN_ZH.md §3](NAVIGATION_DESIGN_ZH.md)；新狗验收记录见 [ros1_gateway/README_ZH.md](../ros1_gateway/README_ZH.md)。
 
 ### 2.4 仿真与评估
 
@@ -190,9 +191,9 @@
 | 名称 | 用途 | 状态 |
 |---|---|---|
 | [`tools/wp_match`](../tools/wp_match/README_ZH.md) | 照片时间戳 → v3 关键帧位姿 → 30 个 WP 和中心线 → `route_v2.json` | 草稿，误差半径 1.5–3 m，要现场重测 |
-| [`deliverables/S10_v3_Map_MuJoCo_20260916/`](../deliverables/S10_v3_Map_MuJoCo_20260916/README.md) | v3 全场点云、Start/B 精细 MuJoCo 场景、离线预览 | ✅（Git LFS） |
-| `map-reviews/0914_fr_v3-20260914-142008/` | v3 地图的审阅、重建和 policy 试验 | 资料 |
-| `waypoint-photos-20260914/` | 30 张 WP 照片。**正式顺序与照片顺序相反**：WP01 是最后一张 | 资料（LFS） |
+| [`data/deliverables/S10_v3_Map_MuJoCo_20260916/`](../data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md) | v3 全场点云、Start/B 精细 MuJoCo 场景、离线预览 | ✅（Git LFS） |
+| `data/map-reviews/0914_fr_v3-20260914-142008/` | v3 地图的审阅、重建和 policy 试验 | 资料 |
+| `data/waypoint-photos-20260914/` | 30 张 WP 照片。**正式顺序与照片顺序相反**：WP01 是最后一张 | 资料（LFS） |
 
 ### 2.6 运维
 
@@ -206,7 +207,7 @@
 
 ### 2.7 历史：8 月仿真赛
 
-包括比赛全栈（MuJoCo 感知 + follower + strategy_router / Gate16 + SDK）、分段实验、视频、打包脚本和 WASD 手控。入口见 [Ver1.0 时期的 README 存档](README_V1_ARCHIVE.md#current-status) 和 [SUBMISSION.md](SUBMISSION.md)。
+包括比赛全栈（MuJoCo 感知 + follower + strategy_router / Gate16 + SDK）、分段实验、视频、打包脚本和 WASD 手控。入口见 `README_V1_ARCHIVE.md`（已归档） 和 `SUBMISSION.md`（已归档）。
 
 ## 3. 代码在哪
 

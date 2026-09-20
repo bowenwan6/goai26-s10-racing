@@ -19,8 +19,8 @@
     "upper_flat_starts_at_station": 24.437500000000004,
     "ground_z_method": "interpolate existing simulation-route ground heights; field check required",
     "sources": {
-      "map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/course_full.yaml": "b8c4cfa53e7ac78b67556228ac5dcf40dea18aabc15086d0aed519d0499f4bcc",
-      "map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/delivery/repair_report.json": "5c486a6f915ff2d16d75e1043685e977d086b6994f9a66bb1d54a146d9d1e530"
+      "data/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/official_policy_v1/bundle/course_full.yaml": "b8c4cfa53e7ac78b67556228ac5dcf40dea18aabc15086d0aed519d0499f4bcc",
+      "data/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/delivery/repair_report.json": "5c486a6f915ff2d16d75e1043685e977d086b6994f9a66bb1d54a146d9d1e530"
     }
   },
   "waypoints": [

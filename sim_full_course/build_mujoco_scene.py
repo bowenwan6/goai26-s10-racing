@@ -1,7 +1,7 @@
 """Full-course MuJoCo scene: hfield from course_terrain.npz + the packaged S10 robot.
 
 Coarse terrain only (0.10 m hfield from the v3 cloud). The fine Start+B mesh scene in
-deliverables/S10_v3_Map_MuJoCo_20260916 remains the reference for stair contact.
+data/deliverables/S10_v3_Map_MuJoCo_20260916 remains the reference for stair contact.
 
 Outputs (ARTIFACTS/mujoco/, not committed):
   course_ground.bin               MuJoCo binary hfield (int32 nrow, int32 ncol, float32 data)
