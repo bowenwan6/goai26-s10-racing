@@ -278,7 +278,13 @@ class Worker:
             if self.recording and self.recording['mode'] == 'mapping' and self.loop_start is None:
                 self.loop_start = dict(x=x, y=y, yaw=yaw)
             if self.recording and self.recording.get('trail_file'):
-                self.recording['trail_file'].write('%.3f,%.4f,%.4f,%.4f,%.5f\n' % (time.time(), x, y, z, yaw))
+                tf = self.recording['trail_file']
+                tf.write('%.3f,%.4f,%.4f,%.4f,%.5f\n' % (time.time(), x, y, z, yaw))
+                now = time.time()
+                if now - self.recording.get('trail_sync', 0) > 2.0:   # survive an AGX power cut
+                    tf.flush()
+                    os.fsync(tf.fileno())
+                    self.recording['trail_sync'] = now
 
     # ---- helpers
     def _hz(self, name):
@@ -300,6 +306,8 @@ class Worker:
     def _append(self, name, row):
         with open(self._session_dir() / name, 'a') as f:
             f.write(json.dumps(row, ensure_ascii=False) + '\n')
+            f.flush()
+            os.fsync(f.fileno())   # a mark must survive an AGX power cut
 
     def _publish(self, row):
         try:
@@ -621,6 +629,15 @@ def main():
     ap.add_argument('--fake', action='store_true', help='demo robot without ROS')
     args = ap.parse_args()
     worker = Worker(args)
+    # The AGX restarts more often than sessions end: come back with the newest session open, so the page
+    # does not ask for a new one (a new one would split marks and taught paths over two folders).
+    try:
+        last = max((p for p in worker.data.iterdir() if (p / 'session.json').is_file()), key=lambda p: p.stat().st_mtime, default=None)
+        if last is not None:
+            worker.session_open(last.name)
+            print('reopened session ' + last.name, flush=True)
+    except Exception as e:  # noqa: BLE001
+        print('no session reopened: %s' % e, flush=True)
     server = ThreadingHTTPServer(('127.0.0.1', args.port), make_handler(worker))
 
     def shutdown(*_):
