@@ -10,7 +10,7 @@ import yaml
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    reconstruction = root / "map-reviews/0914_fr_v3-20260914-142008/reconstruction"
+    reconstruction = root / "data/map-reviews/0914_fr_v3-20260914-142008/reconstruction"
     source = reconstruction / "start_B_short_fine_v1/official_policy_v1/bundle/course_full.yaml"
     edges_file = reconstruction / "B_structured_repair_v1/delivery/repair_report.json"
     original = yaml.safe_load(source.read_text())["waypoints"][:13]

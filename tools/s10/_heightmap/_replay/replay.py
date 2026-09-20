@@ -330,7 +330,7 @@ def eligible(history,src,now,max_age):
 
 def process(d,out,repo):
     start_wall=time.perf_counter();kin=Kinematics(repo)
-    target,=pure_functions(repo/'artifacts/s10-recording-review-20260909/reconstruct_stairs.py',
+    target,=pure_functions(repo/'evidence/artifacts/s10-recording-review-20260909/reconstruct_stairs.py',
         ['target'],dict(np=np,cKDTree=cKDTree,voxel=voxel))
     events=d['events'];anchor=int(d['anchor_ns']);arrival=d['arrival_ns'];end=float(d['end_s'])
     imu=deque(maxlen=600);joints=deque(maxlen=600);maps=HeightMap();recent=deque(maxlen=8)
