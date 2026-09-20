@@ -1,0 +1,70 @@
+# s10_rl_nav_ros1: the team's route runner on the real S10 (ROS 1, AGX).
+# Inputs: x_nav pose + gateway lidar. Output: /rl_nav/cmd_vel + /rl_nav/gait_request
+# for s10_ros1_control (cmd_source rl_nav).
+
+pose_topic: /base_link/odom          # x_nav localisation (Odometry / PoseStamped / PoseWithCovarianceStamped)
+lidar_topic: /LIDAR/POINTS           # gateway, lidar frame (frame_id lidar_link)
+attitude_topic: /IMU                 # robot IMU: roll/pitch for levelling (x_nav's are biased); "" = use the pose
+gait_topic: /s10_control/gait        # confirmed gait from s10_ros1_control
+control_state_topic: /s10_control/state
+
+control_rate: 20.0
+pose_timeout: 0.3                    # s; older pose -> zero command
+obs_timeout: 0.5                     # s; older grid/scan -> the runner gets none
+max_points: 60000                    # cloud subsample before the height grid (CPU bound)
+
+# Lidar blind zone around the body (no floor returns): unseen cells within this radius take the
+# nearest seen height. 0 = off. Measured on dog 048: no returns within about 0.6 m ahead.
+blind_radius: 1.1
+
+# Body reference point above the ground the route's z refers to (route z_reference: ground).
+# MEASURED on dog 048 standing in RL control, 2026-09-20 (tools/check_ground_plane.py: ground
+# 0.414 m below the cloud origin; /MOTION_INFO height 0.419). Use the same number in
+# teach_to_route.py (--body-z-offset). Lying down is 0.07-0.08.
+body_z_offset: 0.41
+
+# /LIDAR/POINTS (frame lidar_link) is the vendor driver's MERGED cloud of the front and back
+# lidars. The driver's per-lidar extrinsics (front x=+0.22341, back x=-0.22341, z=-0.0001) are
+# the same as front_lidar_joint / back_lidar_joint in S10.urdf relative to base_link, so the
+# merged cloud is already in base_link: identity here. Checked on live data by
+# tools/check_ground_plane.py (ground level and at -body height).
+lidar_extrinsics:
+  translation: [0.0, 0.0, 0.0]
+  rpy_deg: [0.0, 0.0, 0.0]
+
+# x_nav map -> route map (only when the route was made on another map). Empty: identity.
+route_from_xnav_file: ""
+
+lookahead: 1.0
+fuse_frames: 3
+max_step_flat: 0.12                  # real lidar: 2-3 cm noise plus a 5-8 cm ridge seen on flat floor (0.07 flickered BLOCKED)
+
+# Pure-pursuit gains (the ROS 2 rl_nav node's values; forward speed is capped again below).
+gains:
+  max_forward: 0.6
+  max_lateral: 0.2
+  max_yaw_rate: 0.6
+  lookahead: 1.0
+  lookahead_speed_gain: 0.0
+  pivot_threshold_deg: 35.0
+  align_falloff_deg: 60.0
+  brake_distance: 0.05
+
+# Route runner speeds for the VENDOR gaits and the first field tests. The simulation's numbers
+# (walk 0.6 / floor 0.5 / climb 0.3) are the RL policies'; the native flat gait has no stall
+# floor. s10_ros1_control clamps to its own limits (0.30 / 0.10 / 0.50) on top of these.
+runner_params:
+  walk_v: 0.30
+  walk_floor: 0.0
+  climb_v: 0.15
+  climb_turn_v: 0.10
+  approach_v: 0.20
+  detour_v: 0.20
+  recover_v: 0.20
+  backup_v: 0.15
+  drop_v: 0.10
+  settle_v: 0.15
+
+# Localisation jump between two pose messages -> pause until the operator sends "start" again.
+pose_jump_m: 0.5
+pose_jump_deg: 30.0
