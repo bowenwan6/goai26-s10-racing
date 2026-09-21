@@ -401,9 +401,15 @@ class NavCore:
 
         def _plan_full_speed_on_line(*args, **kwargs):
             r = _plan(*args, **kwargs)
-            if self.scale_on_line > 0.0 and r.status in ("TRACK", "DETOUR") and abs(r.d_target) < 1e-6 and r.speed_scale < self.scale_on_line:
+            if self.scale_on_line > 0.0 and r.status in ("TRACK", "DETOUR") and abs(r.d_target) < 1e-6:
+                # On the taught line only the PROXIMITY rule slows the robot: obstacle or unknown cells within
+                # planner.inflation (0.20 m) of the body -> proportionally slower, at most half. The "free length
+                # seen ahead" taper is dropped here (the 0.9 m grid cannot see far enough for it to mean anything).
                 import dataclasses
-                r = dataclasses.replace(r, speed_scale=self.scale_on_line)
+                prox = next((float(c_.proximity) for c_ in r.candidates if getattr(c_, "valid", True) and abs(c_.d_target - r.d_target) < 1e-6), 0.0)
+                want = self.scale_on_line * (1.0 - 0.5 * float(np.clip(prox, 0.0, 1.0)))
+                if want > r.speed_scale:
+                    r = dataclasses.replace(r, speed_scale=want)
             return r
         self.follower.planner.plan = _plan_full_speed_on_line
         self.runner = RouteRunner(self.follower.path, [] if self.zone_mode == "gait_only" else mans, params, surface=surface,

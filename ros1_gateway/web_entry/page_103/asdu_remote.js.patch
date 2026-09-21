@@ -1,0 +1,74 @@
+--- web_103_live_0921/asdu_remote.js	2026-09-21 01:33:32
++++ web_103_new/asdu_remote.js	2026-09-21 01:40:12
+@@ -171,6 +171,29 @@
+   if (routes.some(r => r.id === chosen)) $('nav-route').value = chosen;
+   else $('nav-route').value = routes.find(r => r.flat)?.id || '';
+   $('nav-confirm').checked = false;
++  updateFrom();
++}
++function updateFrom() {
++  const route = (state?.navigation?.routes || []).find(r => r.id === $('nav-route').value);
++  const chosen = $('nav-from').value, ids = route?.ids || [];
++  const auto = document.createElement('option'); auto.value = ''; auto.textContent = '自动 · 离当前位置最近的路段';
++  $('nav-from').replaceChildren(auto, ...ids.map(id => { const o = document.createElement('option'); o.value = id; o.textContent = `${id} → 下一个点（机器狗在 ${id} 附近）`; return o; }));
++  $('nav-from').value = ids.includes(chosen) ? chosen : '';
++}
++function navRouteRequest() {
++  const clamp = (id, lo, hi, fallback) => { const v = Number($(id).value); return (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback).toFixed(2).replace(/0$/, ''); };
++  let value = $('nav-route').value;
++  if ($('nav-from').value) value += '@from=' + $('nav-from').value;
++  return value + '@speed=' + clamp('nav-speed', .1, 1.67, 1) + '@climb=' + clamp('nav-climb', .1, 1.2, .7);
++}
++let estopping = null;
++function navEstop() {
++  // Never blocked by another pending page operation: this is the software e-stop.
++  clearInputs();
++  if (!csrf || estopping) return;
++  localError = '';
++  estopping = post('nav_stop', {}, true).then(result => render(result.state)).catch(error => { localError = error.message || '急停请求未送达，请再按一次或用硬急停'; })
++    .finally(() => { estopping = null; if (state) render(state); });
+ }
+ function drawRoute(route, pose) {
+   const svg = $('nav-map');
+@@ -212,7 +235,8 @@
+   const mine=Boolean(owned()), available=online && nav.connected && !operationBusy && !nav.pending;
+   const selectable=available && ['idle','stopped'].includes(nav.phase);
+   $('nav-map-select').disabled=$('nav-route').disabled=!selectable;
+-  $('nav-localization').disabled=!selectable;
++  $('nav-localization').disabled=$('nav-from').disabled=$('nav-speed').disabled=$('nav-climb').disabled=!selectable;
++  $('nav-estop').disabled=!online || !nav.connected || ['idle','stopped'].includes(nav.phase);
+   $('nav-confirm').disabled=!selectable;
+   const resetPose=$('nav-localization').value==='start';
+   $('nav-confirm-text').textContent=resetPose ? '机器狗确实位于所选路线起点，且朝向与录制方向一致；接入路线畅通。'
+@@ -221,7 +245,7 @@
+   $('nav-start').disabled=!available || !mine || nav.phase!=='ready';
+   $('nav-pause').disabled=!available || nav.phase!=='running';
+   $('nav-resume').disabled=!available || !mine || nav.phase!=='paused';
+-  $('nav-return').disabled=!available || ['idle','stopped','external'].includes(nav.phase);
++  $('nav-return').disabled=!online || !nav.connected || ['idle','stopped'].includes(nav.phase);
+   $('nav-status').textContent=nav.message+(nav.last_error ? ' · 原因：'+nav.last_error : '');
+   $('nav-route-info').textContent=route ? `当前位置接入 → 终点 ${route.end} · 原路线 ${route.start} → ${route.end}` : '没有可用路线';
+   const pose=Array.isArray(nav.pose) && nav.pose.every(Number.isFinite) ? nav.pose : null;
+@@ -424,16 +448,18 @@
+ $('navigation').addEventListener('click', () => operate('navigation', {enabled:Boolean(state?.can_recover_navigation || !(state?.nav_test || state?.status.Mode === 1))}));
+ $('stop').addEventListener('click', forceStop);
+ $('nav-tab').addEventListener('click', () => { if (owned() && !state?.navigation?.locked) forceStop(); showDriveView('nav'); });
+-$('manual-tab').addEventListener('click', () => { if (state?.navigation?.locked) operate('nav_stop'); else showDriveView('manual'); });
++$('manual-tab').addEventListener('click', () => { if (state?.navigation?.locked) navEstop(); else showDriveView('manual'); });
+ $('nav-map-select').addEventListener('change', () => { updateRoutes(); renderNavigation(); });
+-$('nav-route').addEventListener('change', () => { $('nav-confirm').checked=false; renderNavigation(); });
++$('nav-route').addEventListener('change', () => { $('nav-confirm').checked=false; updateFrom(); renderNavigation(); });
++$('nav-from').addEventListener('change', () => { $('nav-confirm').checked=false; renderNavigation(); });
++$('nav-estop').addEventListener('click', navEstop);
+ $('nav-localization').addEventListener('change', () => { $('nav-confirm').checked=false; renderNavigation(); });
+ $('nav-confirm').addEventListener('change', renderNavigation);
+-$('nav-prepare').addEventListener('click', () => operate('nav_prepare', {route:$('nav-route').value, position_confirmed:$('nav-confirm').checked, localization:$('nav-localization').value}));
++$('nav-prepare').addEventListener('click', () => operate('nav_prepare', {route:navRouteRequest(), position_confirmed:$('nav-confirm').checked, localization:$('nav-localization').value}));
+ $('nav-start').addEventListener('click', () => operate('nav_start'));
+ $('nav-pause').addEventListener('click', forceStop);
+ $('nav-resume').addEventListener('click', () => operate('nav_resume'));
+-$('nav-return').addEventListener('click', () => operate('nav_stop'));
++$('nav-return').addEventListener('click', navEstop);
+ for (const button of document.querySelectorAll('[data-gait]')) button.addEventListener('click', () => operate('gait', {gait:Number(button.dataset.gait)}));
+ $('limit').addEventListener('input', event => { setLimit(Number(event.target.value)/100); forceStop(); });
+ for (const button of document.querySelectorAll('[data-input-mode]')) {
