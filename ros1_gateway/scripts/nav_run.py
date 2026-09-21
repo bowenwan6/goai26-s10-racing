@@ -53,7 +53,7 @@ def die(msg):
 
 
 def latest_route(short):
-    ds = sorted((d for d in os.listdir(ROUTES) if d.endswith("-short") == short and not d.endswith("-rev")),
+    ds = sorted((d for d in os.listdir(ROUTES) if d.endswith("-short") == short and not d.endswith(("-rev", "-here"))),
                 key=lambda d: os.path.getmtime(os.path.join(ROUTES, d)))
     if not ds:
         die("no route in ~/routes (build one: nav_session.sh route latest --map-id <map>)")
@@ -87,6 +87,91 @@ def reverse_route(route_dir):
     dst = route_dir.rstrip("/") + "-rev"
     os.makedirs(dst, exist_ok=True)
     json.dump(out, open(os.path.join(dst, "route_v2.json"), "w"), indent=1)
+    return dst
+
+
+def pick_segment(src, x, y, yaw, frm):
+    """Index of the segment to resume on. frm = "WP08" (the dog stands at / just past that waypoint) or "here"
+    (nearest stretch of the line the dog is facing along: out-and-back stretches lie on top of each other)."""
+    segs = src["segments"]
+    if frm != "here":
+        ks = [k for k, g in enumerate(segs) if g["from"] == frm.upper()]
+        if not ks:
+            die(f"{frm} is not the start of a segment of this route (its last waypoint cannot be resumed from)")
+        return ks[0]
+    best = None
+    for k, g in enumerate(segs):
+        c = g["centerline"]
+        for i in range(len(c) - 1):
+            d = math.hypot(c[i][0] - x, c[i][1] - y)
+            th = math.atan2(c[i + 1][1] - c[i][1], c[i + 1][0] - c[i][0])
+            if abs(math.atan2(math.sin(th - yaw), math.cos(th - yaw))) < math.radians(75) and (best is None or d < best[0]):
+                best = (d, k)
+    if best is None or best[0] > 1.0:
+        die("the dog is not within 1 m of the route, facing along it. Drive it onto the line, or name the waypoint: --from WP08")
+    return best[1]
+
+
+def start_here(route_dir, x, y, yaw, k0=0):
+    """<route>-here: the same route, but it starts where the dog stands now, on segment k0 (0 = the first one;
+    later = resume a run in the middle). Without this a dog parked a little PAST a waypoint turns round to go
+    back and touch it first. Gait zones are in arc length: they move with the start; a zone the dog stands in
+    begins at 0, so the run first waits for that gait."""
+    src = json.load(open(os.path.join(route_dir, "route_v2.json")))
+    seglen = lambda c: sum(math.hypot(c[k + 1][0] - c[k][0], c[k + 1][1] - c[k][1]) for k in range(len(c) - 1))
+    dropped = sum(seglen(g["centerline"]) for g in src["segments"][:k0])
+    src["segments"], src["waypoints"] = src["segments"][k0:], src["waypoints"][k0:]
+    w0, seg = src["waypoints"][0], src["segments"][0]
+    line = seg["centerline"]
+    old_len = seglen(line)
+    i = min(range(len(line)), key=lambda k: math.hypot(line[k][0] - x, line[k][1] - y))
+    if math.hypot(line[i][0] - x, line[i][1] - y) > 1.2:
+        die(f"the dog is {math.hypot(line[i][0] - x, line[i][1] - y):.1f} m from the line {seg['id']}: drive it closer, or the localisation is wrong")
+    ahead = line[i + 1:] if i + 1 < len(line) else line[-1:]
+    while len(ahead) > 1 and math.hypot(ahead[0][0] - x, ahead[0][1] - y) < 0.15:
+        ahead = ahead[1:]                                 # never a first step shorter than 15 cm
+    z = line[i][2]
+    first = [round(x, 3), round(y, 3), z]
+    pts, prev = [first], first
+    for p in ahead:                                       # route_v2 wants centreline steps <= 0.30 m
+        n = int(math.hypot(p[0] - prev[0], p[1] - prev[1]) // 0.25)
+        for k in range(1, n + 1):
+            f = k / (n + 1)
+            pts.append([round(prev[0] + f * (p[0] - prev[0]), 3), round(prev[1] + f * (p[1] - prev[1]), 3), prev[2] + f * (p[2] - prev[2])])
+        pts.append(p)
+        prev = p
+    seg["centerline"] = pts
+    seg["length_m"] = round(seglen(pts), 2)
+    w0["position"] = [first[0], first[1], w0["position"][2]]
+    w0["yaw"] = round(yaw, 4)
+    dst = route_dir.rstrip("/") + "-here"
+    import shutil
+    shutil.rmtree(dst, ignore_errors=True)
+    os.makedirs(dst)
+    json.dump(src, open(os.path.join(dst, "route_v2.json"), "w"), indent=1)
+    man = os.path.join(route_dir, "maneuvers.json")
+    if os.path.exists(man):
+        doc = json.load(open(man))
+        shift = dropped + old_len - seg["length_m"]       # > 0: route metres behind the dog
+        kept = []
+        for m in doc.get("maneuvers", []):
+            if m["s1"] - shift <= 0.5:
+                continue                                  # wholly behind the dog
+            for key in ("s0", "s1", "s_first", "s_last", "s_edge"):
+                if m.get(key) is not None:
+                    m[key] = max(0.0, m[key] - shift)
+            kept.append(m)
+        doc["maneuvers"] = kept
+        json.dump(doc, open(os.path.join(dst, "maneuvers.json"), "w"), indent=1)
+    ter = os.path.join(route_dir, "terrain.json")
+    if os.path.exists(ter):                               # steep stretches are in arc length too
+        td = json.load(open(ter))
+        shift = dropped + old_len - seg["length_m"]
+        td["steep"] = [[max(0.0, a_ - shift), b_ - shift] for a_, b_ in td.get("steep", []) if b_ - shift > 0.0]
+        json.dump(td, open(os.path.join(dst, "terrain.json"), "w"), indent=1)
+    clr = os.path.join(route_dir, "clearance.json")
+    if os.path.exists(clr):                               # same line, minus what is behind the dog: the check still holds
+        shutil.copy(clr, os.path.join(dst, "clearance.json"))
     return dst
 
 
@@ -128,14 +213,26 @@ class Run:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--speed", default="0.3", help="forward limit m/s (0.1-1.0), or zero|probe|flat")
+    ap.add_argument("--speed", default="0.3", help="forward speed: m/s (up to 1.67), or a multiplier of the robot maximum like 0.7x, or zero|probe|flat")
     ap.add_argument("--climb-speed", default="", help="stairs part m/s (default: nav.yaml climb_v 0.15)")
     ap.add_argument("--route", default="short", help="short | full | a route dir")
+    ap.add_argument("--from", dest="frm", default="", help="resume in the middle: WP08 (the dog stands at that waypoint) or here (nearest stretch of the line)")
     ap.add_argument("--map", default="", help="x_nav map name (default: the route's map_id)")
     ap.add_argument("--at", choices=["start", "end"], default="start",
                     help="only used when localisation has to be initialised: which end of the route the dog stands on")
     ap.add_argument("--shadow", action="store_true", help="no motion: status only, drive with the remote")
     a = ap.parse_args()
+
+    # one run at a time: a second start would stop the first one's nodes in the middle of arming
+    import fcntl
+    os.makedirs(os.path.join(ROOT, "run"), exist_ok=True)
+    lock = open(os.path.join(ROOT, "run", "nav_run.lock"), "w")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        die("another navigation run is already active on the AGX (someone else started one?). "
+            "Wait for it, or stop it with: robot_session.sh navstop")
+    globals()["_LOCK"] = lock
 
     route = a.route if os.path.isdir(os.path.expanduser(a.route)) else latest_route(a.route == "short")
     route = os.path.expanduser(route).rstrip("/")
@@ -171,6 +268,10 @@ def main():
     time.sleep(1.5)
     if not run.pose_fresh():
         w = first if a.at == "start" else last
+        if a.frm and a.frm != "here":
+            w = next((q for q in doc["waypoints"] if q["id"] == a.frm.upper()), None) or die(f"{a.frm} is not in this route")
+        elif a.frm:
+            die("no pose from x_nav: 'here' needs a working localisation. Stand the dog on a waypoint and use --from WPxx")
         say(f"3/6 no pose yet: sending the initial pose = {w['id']} ({w['position'][0]:.2f}, {w['position'][1]:.2f}, "
             f"{math.degrees(w['yaw']):.0f} deg). The dog must be standing THERE, facing along the route.")
         pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1, latch=True)
@@ -189,17 +290,25 @@ def main():
     x, y, yaw = run.pose
     say(f"3/6 pose ok: x {x:.2f} y {y:.2f} yaw {math.degrees(yaw):.0f} deg")
 
-    # 4. which way
-    d0 = math.hypot(x - first["position"][0], y - first["position"][1])
-    d1 = math.hypot(x - last["position"][0], y - last["position"][1])
-    if d0 <= 1.2:
-        say(f"4/6 dog at the route START ({d0:.2f} m from {first['id']}): forward route")
-    elif d1 <= 1.2:
-        route = reverse_route(route)
-        say(f"4/6 dog at the route END ({d1:.2f} m from {last['id']}): reverse route {route}")
+    # 4. which way / where from
+    if a.frm:
+        k0 = pick_segment(doc, x, y, yaw, a.frm)
+        say(f"4/6 resuming on segment {doc['segments'][k0]['id']} ({len(doc['segments']) - k0} segments to go)")
+        route = start_here(route, x, y, yaw, k0)
     else:
-        die(f"the dog is {d0:.1f} m from {first['id']} and {d1:.1f} m from {last['id']}. Drive it to one end with the remote "
-            "(or the localisation is wrong: check red/green clouds in the x_nav page).")
+        d0 = math.hypot(x - first["position"][0], y - first["position"][1])
+        d1 = math.hypot(x - last["position"][0], y - last["position"][1])
+        if d0 <= 1.2:
+            say(f"4/6 dog at the route START ({d0:.2f} m from {first['id']}): forward route")
+        elif d1 <= 1.2:
+            route = reverse_route(route)
+            say(f"4/6 dog at the route END ({d1:.2f} m from {last['id']}): reverse route {route}")
+        else:
+            die(f"the dog is {d0:.1f} m from {first['id']} and {d1:.1f} m from {last['id']}. To continue in the middle of the route: "
+                "--from WP08 (dog at that waypoint) or --from here. Otherwise drive it to one end, or check the localisation.")
+        route = start_here(route, x, y, yaw)
+    zones = json.load(open(os.path.join(route, "maneuvers.json"))).get("maneuvers", []) if os.path.exists(os.path.join(route, "maneuvers.json")) else []
+    say(f"    route starts where the dog stands ({route}); gait zones from here: {[(round(m['s0'], 1), round(m['s1'], 1)) for m in zones] or 'none'}")
 
     if a.shadow:
         sh("bash", NAV, "shadow", route)
