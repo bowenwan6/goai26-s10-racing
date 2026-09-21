@@ -70,6 +70,13 @@ def main():
 
     cfg = core.load_yaml(os.path.join(HERE, "..", "..", "config", "nav.yaml"))
     cfg["control_rate"] = args.rate
+    for kv in filter(None, os.environ.get("NAV_TEST_OVERRIDES", "").split(";")):   # e.g. "lane.enabled=false;planner={}"
+        k, v = kv.split("=", 1)
+        import yaml as _y
+        node, keys = cfg, k.split(".")
+        for kk in keys[:-1]:
+            node = node.setdefault(kk, {})
+        node[keys[-1]] = _y.safe_load(v)
     route = RouteV2.load(args.route)
     if args.first > 1 or args.last:
         raw = dict(route.raw)

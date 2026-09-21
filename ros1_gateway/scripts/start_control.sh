@@ -10,7 +10,8 @@
 #   zero  : limits 0 / 0 / 0        (everything armed, robot cannot move: checks the whole chain)
 #   probe : limits 0.10 / 0 / 0.30  (first motion)
 #   flat  : limits 0.20 / 0.10 / 0.50
-#   <v>   : a number, e.g. 0.5: forward limit v m/s, lateral min(0.20, v/2), yaw 0.80 rad/s
+#   <v>   : a number (m/s, up to 1.67) or a multiplier of the robot maximum ("0.7x" = 1.17 m/s):
+#           forward limit v, lateral min(0.40, v/2), yaw 1.0 rad/s
 # and in all three: rl_nav is the ONLY velocity source and commands are read from the private
 # topic /s10_control/web_cmd, so the x_nav web page (/web_cmd, /cmd_vel) cannot move the robot.
 #
@@ -48,12 +49,13 @@ src, dst, stage = sys.argv[1:4]
 limits = {"zero": (0.0, 0.0, 0.0), "probe": (0.10, 0.0, 0.30), "flat": (0.20, 0.10, 0.50)}
 if stage not in limits:
     try:
-        v = float(stage)                      # "--stage 0.5": forward limit in m/s (code hard cap 1.0)
+        v = float(stage[:-1]) * 1.67 if stage.endswith("x") else float(stage)   # "0.7x" = 0.7 of the robot maximum
     except ValueError:
-        sys.exit("unknown --stage %r (zero|probe|flat|<max forward m/s>)" % stage)
-    if not 0.0 < v <= 1.0:
-        sys.exit("--stage speed must be in (0, 1.0] m/s")
-    limits[stage] = (v, min(0.20, round(v / 2, 2)), 0.80)
+        sys.exit("unknown --stage %r (zero|probe|flat|<m/s>|<k>x)" % stage)
+    if not 0.0 < v <= 1.67:
+        sys.exit("--stage speed must be in (0, 1.67] m/s (robot command range)")
+    v = round(v, 3)
+    limits[stage] = (v, min(0.40, round(v / 2, 2)), 1.0)
 c = yaml.safe_load(open(src))
 c["limits"] = dict(zip(("max_vx", "max_vy", "max_wz"), limits[stage]))
 c["cmd_sources"] = {"rl_nav": c["cmd_sources"]["rl_nav"]}
@@ -77,7 +79,13 @@ export ROS_MASTER_URI="http://127.0.0.1:$PORT"
     --config "$CONFIG" --event-log "$LOGS/control-events-$STAMP.jsonl" $FLAG
 ) > "$LOGS/control-$STAMP.log" 2>&1 < /dev/null &
 echo $! > "$RUN/control.pid"
-sleep 4
+# ready = the node logged its start event, and with --enable-motion its "armed" event (was a fixed 4 s wait)
+WANT="event start"; [ -n "$FLAG" ] && WANT="event armed"
+for i in $(seq 1 40); do
+  sleep 0.25
+  kill -0 "$(cat "$RUN/control.pid")" 2>/dev/null || break
+  grep -q "$WANT\|event fault" "$LOGS/control-$STAMP.log" 2>/dev/null && break
+done
 if ! kill -0 "$(cat "$RUN/control.pid")" 2>/dev/null; then
   echo "control exited; see $LOGS/control-$STAMP.log"; tail -20 "$LOGS/control-$STAMP.log"; exit 1
 fi

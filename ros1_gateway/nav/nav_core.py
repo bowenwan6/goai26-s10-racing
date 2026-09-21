@@ -34,9 +34,9 @@ from s10_auto_nav.rl_nav import maneuvers as maneuver_io
 from s10_auto_nav.rl_nav.capability import PolicyProfile
 from s10_auto_nav.rl_nav.map_check import MapSurface
 from s10_auto_nav.rl_nav.map_planner import MapPlanner
-from s10_auto_nav.rl_nav.route_runner import Mode, NavInput, RouteRunner, RunnerParams
+from s10_auto_nav.rl_nav.route_runner import Mode, NavInput, NavOutput, RouteRunner, RunnerParams
 from s10_auto_nav.route_follower import RouteFollowerConfig, RouteFollowerCore
-from s10_auto_nav.route_planner import LocalGridConfig
+from s10_auto_nav.route_planner import FREE, LocalGrid, LocalGridConfig, RoutePlannerConfig
 from s10_auto_nav.route_v2 import CrossCheckConfig, RouteV2
 
 OWNER_TO_GAIT = {"official": "flat", "stairs_stable": "stairs", "stop": None}
@@ -164,6 +164,8 @@ class Perception:
         self.base_from_lidar = np.asarray(base_from_lidar, float)
         self.max_points = int(max_points)
         self.blind_radius = 0.0
+        self.self_box = (0.0, 0.0, -0.30)          # half length, half width (m), keep points below this z
+        self.self_clear_radius = 0.0
         self.rng = np.random.default_rng(seed)
 
     def fill_blind(self, grid, valid):
@@ -177,8 +179,7 @@ class Perception:
             return grid, valid
         from scipy.ndimage import distance_transform_edt
         n, m = grid.shape
-        xs = (np.arange(n) - (n - 1) / 2.0) * 0.15
-        ys = (np.arange(m) - (m - 1) / 2.0) * 0.15
+        xs, ys = GRID_X[:n], GRID_Y[:m]
         near = np.hypot(xs[:, None], ys[None, :]) <= r
         idx = distance_transform_edt(~valid, return_distances=False, return_indices=True)
         fill = near & ~valid
@@ -186,19 +187,49 @@ class Perception:
         grid[fill] = grid[idx[0][fill], idx[1][fill]]
         return grid, valid | fill
 
+    def clear_under_body(self, grid, valid):
+        """The ground the robot stands on is traversable by definition: cells within self_clear_radius
+        take the median floor height of the rest of the grid. Without this, levelling errors while
+        trotting (body pitch, 40 Hz attitude against a 10 Hz cloud) and leg returns make the planner's
+        footprint check fail at the robot's own position, which stops it every other second."""
+        r = self.self_clear_radius
+        if r <= 0 or not valid.any():
+            return grid, valid
+        n, m = grid.shape
+        xs, ys = GRID_X[:n], GRID_Y[:m]
+        near = np.hypot(xs[:, None], ys[None, :]) <= r
+        ring = valid & ~near
+        if ring.sum() < 8:
+            return grid, valid
+        grid = np.array(grid, float)
+        grid[near] = float(np.median(grid[ring]))
+        return grid, valid | near
+
     def observe(self, cloud_xyz, pose6):
         pts = np.asarray(cloud_xyz, float)
         pts = pts[np.isfinite(pts).all(axis=1)]
         if len(pts) > self.max_points:
             pts = pts[self.rng.choice(len(pts), self.max_points, replace=False)]
+        # The robot's own legs and body: returns inside the body box that are not floor. While trotting
+        # the swinging legs otherwise show up as obstacles AT the robot ("blocked at 0.00 m").
+        bx, by, bz = self.self_box
+        if bx > 0:
+            own = (np.abs(pts[:, 0]) < bx) & (np.abs(pts[:, 1]) < by) & (pts[:, 2] > bz)
+            pts = pts[~own]
         x, y, z, roll, pitch, yaw = pose6
         # The transform removes the position and heading only; roll/pitch level the cloud.
         world = pose_matrix(0.0, 0.0, 0.0, roll, pitch, yaw)
         pts_yaw = points_in_yaw_frame(pts, self.base_from_lidar, world)
         grid, valid, counts = height_grid(pts_yaw)
         grid, valid = self.fill_blind(grid, valid)
+        grid, valid = self.clear_under_body(grid, valid)
         scan = conservative_scan(pts_yaw)
         return dict(grid=grid, valid=valid, counts=counts, scan=scan, points_yaw=pts_yaw, n_points=len(pts_yaw))
+
+
+# Cell centres of geometry.height_grid (13 x 9 cells of 0.15 m; x -0.675..1.275 m, y -0.675..0.675 m).
+GRID_X = -0.6 + 0.15 * np.arange(13)
+GRID_Y = -0.6 + 0.15 * np.arange(9)
 
 
 def flat_observation(body_z_offset=0.27):
@@ -223,6 +254,11 @@ DEFAULTS = dict(
                pivot_threshold_deg=35.0, align_falloff_deg=60.0, brake_distance=0.05),
     runner_params={},
 )
+
+
+LANE_DEFAULTS = dict(enabled=True, half_width=0.10, release=0.05, heading_deg=6.0, heading_gain=0.8, heading_max_wz=0.35,
+                     return_gain=0.8, return_max_vy=0.15, steer=True, steer_gain=0.9, steer_max_deg=20.0, steer_vy_share=0.3, handback_d=0.35, handback_heading_deg=25.0, end_zone=1.0, corner_deg=12.0)
+SMOOTH_DEFAULTS = dict(enabled=True, accel=0.6, decel=1.0, vy_accel=0.5, wz_accel=1.5, vy_tau=0.25, wz_tau=0.25)
 
 
 @dataclass
@@ -254,6 +290,15 @@ class RouteBundle:
             if not cands:
                 raise FileNotFoundError(f"no route_rl.json / route_v2.json in {d}")
             route = cands[0]
+        clr = d / "clearance.json"
+        if clr.exists():
+            try:
+                hard = int(json.loads(clr.read_text()).get("hard_violating_cells", 0))
+            except (ValueError, TypeError):
+                hard = 0
+            if hard > 0:
+                raise ValueError(f"{d}: clearance.json reports the body on {hard} obstacle cells (tools/verify_route_clearance.py); "
+                                 "this route must not be driven")
         man = d / "maneuvers.json"
         surf = d / "map_surface.npz"
         prof = d / "policy_profile.json"
@@ -281,12 +326,32 @@ class NavCore:
             align_falloff=math.radians(float(g["align_falloff_deg"])),
             brake_distance=float(g["brake_distance"]),
         )
+        for k in ("yaw_gain", "lateral_gain", "min_speed_fraction", "forward_slew", "yaw_slew", "lateral_slew"):
+            if k in g:
+                setattr(gains, k, float(g[k]))
+        planner = RoutePlannerConfig()
+        for k, v in (c.get("planner") or {}).items():      # e.g. w_lat, w_side_switch, switch_margin, astar_*
+            if not hasattr(planner, k):
+                raise ValueError(f"planner: unknown parameter {k!r}")
+            setattr(planner, k, type(getattr(planner, k))(v))
+        self.lane = dict(LANE_DEFAULTS)
+        self.lane.update(c.get("lane") or {})
+        self.smooth = dict(SMOOTH_DEFAULTS)
+        self.smooth.update(c.get("smooth") or {})
+        self._lane_out = False
+        self._cmd = (0.0, 0.0, 0.0)
+        self._cmd_t = None
         self.follower = RouteFollowerCore(
             route,
             RouteFollowerConfig(
                 body_z_offset=float(c["body_z_offset"]),
                 control_rate=self.rate,
-                lookahead=float(c["lookahead"]),
+                # adaptive lookahead (gains.lookahead + lookahead_speed_gain * v) when the speed gain is set
+                lookahead=None if float(g["lookahead_speed_gain"]) > 0 else float(c["lookahead"]),
+                planner=planner,
+                # how far the projection may fall BACK along the route. 1.0 m (upstream default) lets it jump onto
+                # the way in at a dead-end turn-around, where both lanes are 0.4 m apart: the robot then spins.
+                tracker_back=float(c.get("tracker_back", 1.0)),
                 cross_check=CrossCheckConfig(stairs_pitch_deg=25.0),
                 grid=LocalGridConfig(max_step_flat=float(c["max_step_flat"]), fuse_frames=int(c["fuse_frames"])),
             ),
@@ -299,7 +364,49 @@ class NavCore:
             if not hasattr(params, k):
                 raise ValueError(f"runner_params: unknown parameter {k!r}")
             setattr(params, k, type(getattr(params, k))(v) if not isinstance(getattr(params, k), tuple) else tuple(v))
-        self.runner = RouteRunner(self.follower.path, mans, params, surface=surface,
+        # zone_mode "gait_only" (native vendor gaits): a stairs zone only means "stairs gait + its speed cap".
+        # The operator walks whole stretches in the stairs gait, turning freely, so the approach / align /
+        # climb state machine (made for the RL stairs policy, which needs the stair edge) is not used:
+        # the runner stays in WALK and NavCore requests the gait by arc length.
+        self.zone_mode = str(c.get("zone_mode", "maneuver"))
+        self.zone_blind = bool(c.get("zone_blind", True))
+        # terrain.json (tools/teach_line.py): steep stretches (arc length) and waypoints the dog drives INTO (wall /
+        # platform edge). zone_speed: speed caps inside a stairs-gait zone, slower where the ground really is steep.
+        self.steep, self.contact = [], []
+        tj = Path(bundle.route_path).parent / "terrain.json"
+        if tj.exists():
+            doc_t = json.loads(tj.read_text())
+            self.steep = [(float(a_), float(b_)) for a_, b_ in doc_t.get("steep", [])]
+            self.contact = [(float(q["xy"][0]), float(q["xy"][1]), float(q.get("radius", 1.0))) for q in doc_t.get("contact", [])]
+        zs_ = c.get("zone_speed") or {}
+        self.zone_v = (float(zs_.get("cruise", 0.0)), float(zs_.get("steep", 0.0)))
+        self.gait_zones = [(float(m.s0), float(m.s1)) for m in mans] if self.zone_mode == "gait_only" else []
+        # In a blind zone the local planner gets an all-free grid: what it fuses from the small 13 x 9 patch is
+        # too little for its footprint sweep (any bend pushes the footprint into "unknown" = blocked).
+        self._blind_now = False
+        _build = self.follower.grid_builder.build
+        _gc = self.follower.grid_builder.config
+
+        def _build_or_free(center_xy, *args, **kwargs):
+            if self._blind_now:
+                return LocalGrid.centred(center_xy, _gc.size, _gc.resolution, fill=FREE)
+            return _build(center_xy, *args, **kwargs)
+        self.follower.grid_builder.build = _build_or_free
+        # The team planner slows down (to 50 % at most) whenever obstacle OR UNKNOWN cells are near the body. Our live
+        # grid only reaches ~0.9 m and its rim is unknown, so that factor is below 1 even on an open road. While the
+        # plan is the taught line itself (verified offline by the body sweep) the scale is set to planner_scale_on_line;
+        # real detours, A* and BLOCKED keep the planner's own value. 0 = the planner's behaviour unchanged.
+        self.scale_on_line = float(c.get("planner_scale_on_line", 1.0))
+        _plan = self.follower.planner.plan
+
+        def _plan_full_speed_on_line(*args, **kwargs):
+            r = _plan(*args, **kwargs)
+            if self.scale_on_line > 0.0 and r.status in ("TRACK", "DETOUR") and abs(r.d_target) < 1e-6 and r.speed_scale < self.scale_on_line:
+                import dataclasses
+                r = dataclasses.replace(r, speed_scale=self.scale_on_line)
+            return r
+        self.follower.planner.plan = _plan_full_speed_on_line
+        self.runner = RouteRunner(self.follower.path, [] if self.zone_mode == "gait_only" else mans, params, surface=surface,
                                   planner=MapPlanner(surface) if surface is not None else None)
         self.route = route
         self.maneuvers = mans
@@ -312,11 +419,107 @@ class NavCore:
         if surface is None:
             self.warnings.append("no map_surface: no obstacle detection or planned detours; the runner holds where it would need one")
 
+    def _route_observation(self, x, y, z, yaw):
+        """Perception replaced by the route's own height profile: every grid cell gets the height of the
+        taught line next to it. On a slope or on steps a FLAT synthetic grid would contradict the rising
+        route and block it; this one agrees with it by construction."""
+        path = self.follower.path
+        c, s_ = math.cos(yaw), math.sin(yaw)
+        gx, gy = np.meshgrid(GRID_X, GRID_Y, indexing="ij")
+        pts = np.c_[(x + gx * c - gy * s_).ravel(), (y + gx * s_ + gy * c).ravel()]
+        s0 = getattr(self, "_last_s", None)
+        s0 = float(path.project(np.array([x, y]), None).s) if s0 is None else s0
+        ss, _ = path.project_many(pts, max(0.0, s0 - 1.5), min(float(path.length), s0 + 2.5))
+        zc = np.asarray(path.point_at(ss))[:, 2]
+        grid = (zc - z).reshape(len(GRID_X), len(GRID_Y))
+        return grid, np.ones(grid.shape, bool), np.full(72, 8.0), None
+
+    def _in_gait_zone(self):
+        """Hysteresis-free by construction: zones are arc-length intervals on the route and the
+        projection s only moves forward."""
+        if not self.gait_zones:
+            return False
+        s = getattr(self, "_last_s", None)
+        return s is not None and any(s0 <= s <= s1 for s0, s1 in self.gait_zones)
+
+    def _lane(self, out, f, x, y, yaw):
+        """Bowling lane. While the planner wants the taught line itself (no obstacle offset) and the
+        runner is simply walking, the body within +-half_width of the line and roughly along it gets
+        NO lateral or heading correction: it walks straight. Outside, the correction grows smoothly
+        from the lane edge (not from the line) and stops again at `release`; far outside, or badly
+        mis-headed, the follower's own command is used unchanged."""
+        L = self.lane
+        vx, vy, wz = (float(v) for v in out.command)
+        if not L.get("enabled", True) or out.mode != Mode.WALK or (out.owner != "official" and self.zone_mode != "gait_only"):
+            self._lane_out = False
+            return (vx, vy, wz), "off"
+        plan = getattr(f, "plan", None)
+        if f.status not in ("RUNNING", "DETOUR", "TRACK") or plan is None or abs(getattr(plan, "d_target", 0.0)) > 1e-6 \
+                or not math.isfinite(f.s) or not math.isfinite(f.d):
+            self._lane_out = False
+            return (vx, vy, wz), "follower"
+        path = self.follower.path
+        if path.length - f.s < float(L["end_zone"]):          # final approach: the follower brakes and aligns
+            return (vx, vy, wz), "end"
+        d = float(f.d)                                        # + = left of travel
+        wrap = lambda a_: math.atan2(math.sin(a_), math.cos(a_))
+        herr = wrap(float(path.tangent_yaw_at(f.s)) - yaw)
+        # A corner ahead is the follower's business: the lane only straightens what is straight. (Without this
+        # the lane held heading on the current tangent while the follower wanted to turn: a standstill.)
+        ahead = max(abs(wrap(float(path.tangent_yaw_at(min(path.length, f.s + ds_))) - float(path.tangent_yaw_at(f.s)))) for ds_ in (0.4, 0.8, 1.2))
+        pivoting = vx < 0.05 and abs(wz) > 0.15
+        if pivoting or ahead > math.radians(float(L["corner_deg"])):
+            self._lane_out = False
+            return (vx, vy, wz), "corner"
+        if abs(d) > float(L["handback_d"]) or abs(herr) > math.radians(float(L["handback_heading_deg"])):
+            self._lane_out = True
+            return (vx, vy, wz), "follower"
+        half, release = float(L["half_width"]), float(L["release"])
+        self._lane_out = abs(d) > (release if self._lane_out else half)
+        hdead = math.radians(float(L["heading_deg"]))
+        h_excess = math.copysign(max(0.0, abs(herr) - hdead), herr)
+        wz_new = float(np.clip(float(L["heading_gain"]) * h_excess, -float(L["heading_max_wz"]), float(L["heading_max_wz"])))
+        if not self._lane_out:
+            return (vx, 0.0, wz_new), "in"
+        e = math.copysign(abs(d) - release, d)                # smooth: zero at the release line
+        vy_new = float(np.clip(-float(L["return_gain"]) * e, -float(L["return_max_vy"]), float(L["return_max_vy"])))
+        if L.get("steer", True):
+            # Come back by STEERING (Stanley): aim the body a few degrees towards the line, more when slow or far
+            # out, and keep walking forward; only a share of the sideways step remains. A legged robot shuffles and
+            # slows down when it has to side-step at speed.
+            delta = math.atan2(float(L["steer_gain"]) * e, max(vx, 0.3))
+            delta = float(np.clip(delta, -math.radians(float(L["steer_max_deg"])), math.radians(float(L["steer_max_deg"]))))
+            wz_new = float(np.clip(float(L["heading_gain"]) * wrap(herr - delta), -float(L["heading_max_wz"]), float(L["heading_max_wz"])))
+            return (vx, vy_new * float(L["steer_vy_share"]), wz_new), "steer"
+        return (vx, vy_new, wz_new), "return"
+
+    def _smooth(self, t, command, moving=True):
+        """Acceleration limits on all three axes plus a first-order low pass on lateral and yaw.
+        Stops are not delayed beyond `decel`; HOLD / DONE / WAIT pass straight through."""
+        S = self.smooth
+        if not S.get("enabled", True) or not moving or self._cmd_t is None or t <= self._cmd_t or t - self._cmd_t > 0.5:
+            self._cmd, self._cmd_t = tuple(float(v) for v in command), t
+            return self._cmd
+        dt = t - self._cmd_t
+        pvx, pvy, pwz = self._cmd
+        vx, vy, wz = (float(v) for v in command)
+        a = float(S["accel"]) if abs(vx) > abs(pvx) else float(S["decel"])
+        vx = pvx + float(np.clip(vx - pvx, -a * dt, a * dt))
+        for_lp = lambda prev, new, tau: prev + (new - prev) * (dt / (tau + dt)) if tau > 0 else new
+        vy = for_lp(pvy, vy, float(S["vy_tau"]))
+        wz = for_lp(pwz, wz, float(S["wz_tau"]))
+        vy = pvy + float(np.clip(vy - pvy, -float(S["vy_accel"]) * dt, float(S["vy_accel"]) * dt))
+        wz = pwz + float(np.clip(wz - pwz, -float(S["wz_accel"]) * dt, float(S["wz_accel"]) * dt))
+        self._cmd, self._cmd_t = (vx, vy, wz), t
+        return self._cmd
+
     @staticmethod
     def _route_with_speed_override(route_path, c):
         """flat_speed_override / stairs_speed_override (m/s) replace every segment's speed_limit, so
         the run's speed is ONE number whatever the route was built with. 0 / missing = keep the file."""
         flat, stairs = float(c.get("flat_speed_override") or 0.0), float(c.get("stairs_speed_override") or 0.0)
+        if (c.get("zone_speed") or {}).get("cruise") and flat > 0.0:
+            stairs = flat                                  # the stairs-gait caps are applied by arc length (zone_speed), not per segment
         if flat <= 0.0 and stairs <= 0.0:
             return route_path
         import json
@@ -353,7 +556,29 @@ class NavCore:
         scan = obs["scan"] if fresh else None
         points = obs.get("points_yaw") if fresh else None
         owner_reported = GAIT_TO_OWNER.get(gait_reported)
+        if self.cfg.get("ignore_pose_z", False):
+            # x_nav's height is not reliable (the same spot read 0.5 m apart on 2026-09-20), and the follower
+            # drops the route when the height disagrees by 0.6 m. Single-level course: take the height from
+            # the route at the last known arc length, so only x, y and heading come from the localisation.
+            path = self.follower.path
+            s_ref = getattr(self, "_last_s", None)
+            if s_ref is None:
+                s_ref = float(path.project(np.array([x, y]), None).s)
+            z = float(np.asarray(path.point_at(s_ref)).ravel()[2]) + float(self.cfg["body_z_offset"])
+        in_zone = self._in_gait_zone()
+        # blind = inside a gait zone, or on a segment marked stairs (detours are off there and the real height
+        # grid would stop the robot at the first riser a metre before the zone starts)
+        s_now = getattr(self, "_last_s", None)
+        on_stairs_segment = self.zone_mode == "gait_only" and s_now is not None and self.follower.path.gait_at(s_now) == "stairs"
+        at_contact = any(math.hypot(x - cx, y - cy) < cr for cx, cy, cr in self.contact)   # the wall there is the target
+        self._blind_now = bool((self.zone_blind and (in_zone or on_stairs_segment)) or at_contact)
+        if self._blind_now:
+            # Stairs / rough ground: risers and slopes look like obstacles to the flat-ground height grid and
+            # to the body-height scan. The taught line was walked by the operator, so follow it as taught.
+            grid, valid, scan, points = self._route_observation(x, y, z, yaw)
         f = self.follower.step(t, (x, y, z, yaw), grid, valid, scan, None, pitch=pitch, roll=roll)
+        if math.isfinite(f.s):
+            self._last_s = float(f.s)
         reached = tuple(f.reached)
         if reached:
             self.reached += len(reached)
@@ -361,7 +586,22 @@ class NavCore:
         s_gate = path.length if self.follower.finished else float(path.waypoint_s[self.follower.cursor])
         out = self.runner.step(NavInput(t, x, y, z, yaw, pitch, roll, yaw_rate, v_fwd, grid, valid, f, s_gate,
                                         owner_reported, points))
+        if self.zone_mode == "gait_only":
+            want = "stairs_stable" if in_zone else "official"
+            cmd = out.command
+            if in_zone and s_now is not None:
+                cap = self.zone_v[1] if any(a_ <= s_now <= b_ for a_, b_ in self.steep) else self.zone_v[0]
+                if cap > 0.0 and cmd[0] > cap:
+                    k_ = cap / cmd[0]
+                    cmd = (cap, cmd[1] * k_, cmd[2])
+                    out = NavOutput(cmd, out.owner, out.mode, out.reason, out.info)
+            if owner_reported is not None and owner_reported != want:
+                cmd = (0.0, 0.0, 0.0)                 # stand still while s10_ros1_control switches the gait
+            out = NavOutput(cmd, want, out.mode, out.reason if cmd is out.command else "waiting for the %s gait" % OWNER_TO_GAIT[want], out.info)
         self.owner_requested = out.owner
+        command, lane_state = self._lane(out, f, x, y, yaw)
+        command = self._smooth(t, command, moving=out.mode not in (Mode.HOLD, Mode.DONE, Mode.WAIT))
+        out = NavOutput(command, out.owner, out.mode, out.reason, out.info) if hasattr(out, "info") else out
         log = self.runner.log[-1] if self.runner.log else {}
         changed = out.mode != self.last_mode
         self.last_mode = out.mode
@@ -373,7 +613,9 @@ class NavCore:
             target=f.target_id, s=round(float(f.s), 2) if math.isfinite(f.s) else None, d=round(float(f.d), 2) if math.isfinite(f.d) else None,
             follower=f.status, follower_reason=f.reason, reached=self.reached, total=self.n_wp,
             progress=round(self.reached / self.n_wp, 3), info=out.info, why=log.get("why", "") if changed else "",
-            obs_fresh=fresh, speed_limit=getattr(f, "speed_limit", None),
+            lane=lane_state, obs_fresh=fresh,
+            blocked=[f"{c.d_target:+.1f}:{c.reason}" for c in (f.plan.candidates if getattr(f, "plan", None) is not None else ())
+                     if not c.valid][:5] if f.status == "BLOCKED" else None, speed_limit=getattr(f, "speed_limit", None),
             plan_scale=round(float(f.plan.speed_scale), 2) if getattr(f, "plan", None) is not None else None,
         )
         return StepResult(tuple(float(v) for v in out.command), out.owner, OWNER_TO_GAIT.get(out.owner), out.mode.value,

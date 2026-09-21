@@ -29,7 +29,8 @@ for r in s['routes']:
           f"stamp-localclock {lag['last'] if lag['last'] is not None else float('nan'):+.3f}s  "
           f"subs {r['ros1_subscribers']}  frame '{r['last_frame_id']}'")
     optional = r['ros2_topic'] in OPTIONAL
-    if r['convert_errors'] or r['stamp_backwards']:
+    # a few stamps going backwards happen once when a source (re)starts; only a growing count is a fault
+    if r['convert_errors'] or r['stamp_backwards'] > 5:
         bad = True
     elif r['published'] == 0 or (r['last_rx_age_s'] or 99) > 2:
         if optional:

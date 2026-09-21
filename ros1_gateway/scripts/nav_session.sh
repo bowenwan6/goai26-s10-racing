@@ -5,11 +5,12 @@
 #                                   # session -> ~/routes/<session id>/ (route_v2.json, maneuvers.json, report.json)
 #   nav_session.sh shadow [<route dir>|latest]   # nav node publishes status only; drive with the remote
 #   nav_session.sh arm zero|probe|flat|<v> [<route dir>|latest] [<climb v>]
-#                                   # <v> = THE forward speed in m/s (e.g. 0.8): control clamp, runner walking speed and
+#                                   # <v> = THE forward speed: m/s (e.g. 0.8, up to 1.67) or "0.7x" = 0.7 of the robot maximum: control clamp, runner walking speed and
 #                                   # the route's flat limits all follow it. <climb v> = same for the stairs part.
 #                                   # control with --enable-motion at that stage's limits + nav node, PAUSED
 #   nav_session.sh go               # start / continue the route
 #   nav_session.sh pause            # zero velocity, keep position on the route
+#   nav_session.sh loc [status|restore|wp <WPxx> [route]]   # map + pose back WITHOUT the x_nav page
 #   nav_session.sh usemode [status|nav|normal]   # ON SITE ONLY for nav/normal. Robot "use mode" over ASDU
 #                                   # (developer guide 1.2.2 / 2.3.1): /NAV_CMD only works in 导航模式 (1).
 #                                   # status is read-only. "stop" switches back to 常规模式 (0).
@@ -52,13 +53,15 @@ case "${1:-}" in
     NAVCFG="$ROOT/config/nav.yaml"
     case "$STAGE" in
       zero|probe|flat) ;;
-      0.*|1|1.0)      # a number = forward speed limit (m/s) for BOTH the control clamp and the runner's walking speed
+      [0-9]*)         # a number = forward speed limit (m/s) for BOTH the control clamp and the runner's walking speed
         NAVCFG="$ROOT/run/nav-$STAGE.yaml"
         python3 - "$ROOT/config/nav.yaml" "$NAVCFG" "$STAGE" "${4:-}" <<'PY'
 import sys, yaml
-src, dst, v = sys.argv[1], sys.argv[2], float(sys.argv[3])
+src, dst = sys.argv[1], sys.argv[2]
+v = float(sys.argv[3][:-1]) * 1.67 if sys.argv[3].endswith("x") else float(sys.argv[3])   # "0.7x" = 0.7 of the robot maximum
 c = yaml.safe_load(open(src))
 climb = float(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else 0.0
+c["gains"]["max_yaw_rate"] = max(float(c["gains"]["max_yaw_rate"]), 0.8 if v > 0.5 else 0.6)
 c["runner_params"]["walk_v"] = v
 c["gains"]["max_forward"] = max(float(c["gains"]["max_forward"]), v)
 c["flat_speed_override"] = v                 # the route file's flat limits no longer matter
@@ -66,6 +69,7 @@ for k in ("approach_v", "detour_v", "recover_v"):
     c["runner_params"][k] = max(float(c["runner_params"][k]), min(v, 0.5))
 if climb > 0.0:                              # stairs: climb speed, also ONE number
     c["stairs_speed_override"] = climb
+    c["zone_speed"] = dict(cruise=climb, steep=min(climb, float((c.get("zone_speed") or {}).get("steep", 0.45))))
     c["runner_params"]["climb_v"] = climb
     c["runner_params"]["climb_turn_v"] = round(climb * 0.66, 2)
 yaml.safe_dump(c, open(dst, "w"), sort_keys=False)
@@ -84,6 +88,25 @@ PY
     ;;
   go)    ros rostopic pub -1 /rl_nav/cmd std_msgs/String "data: start" ;;
   pause) ros rostopic pub -1 /rl_nav/cmd std_msgs/String "data: pause" ;;
+  loc)
+    # Localisation without the x_nav page (scripts/loc_keeper.py):
+    #   loc status | loc restore | loc wp <WPxx> [route dir|latest]  (robot standing ON that waypoint, facing as marked)
+    case "${2:-status}" in
+      status)  ros rostopic echo -n1 /s10_loc/state | head -4 ;;
+      restore) ros rostopic pub -1 /s10_loc/cmd std_msgs/String "data: restore" >/dev/null; sleep 1; echo "asked; watch: nav_session.sh loc status" ;;
+      wp)
+        R="$(route_dir "${4:-}")"; [ -f "$R/route_v2.json" ] || { echo "no route"; exit 1; }
+        CMD="$(python3 - "$R/route_v2.json" "$3" <<'PY'
+import json, math, sys
+d = json.load(open(sys.argv[1])); w = next((w for w in d["waypoints"] if w["id"] == sys.argv[2]), None)
+if w is None: sys.exit("no such waypoint in this route: " + sys.argv[2])
+print("at %s %.3f %.3f %.1f %.2f" % (d["map_id"], w["position"][0], w["position"][1], math.degrees(w["yaw"]), w["position"][2] + 0.41))
+PY
+)" || exit 1
+        echo "$CMD"; ros rostopic pub -1 /s10_loc/cmd std_msgs/String "data: $CMD" >/dev/null; echo "asked; watch: nav_session.sh loc status" ;;
+      *) echo "loc status|restore|wp <WPxx> [route]"; exit 2 ;;
+    esac
+    ;;
   usemode)
     case "${2:-status}" in
       status) python3 "$ROOT/tools/asdu_mode.py" status --seconds 4 ;;
@@ -130,5 +153,5 @@ PY
     sleep 1
     bash "$ROOT/scripts/start_control.sh" | tail -1
     ;;
-  *) sed -n '2,19p' "${BASH_SOURCE[0]}"; exit 2 ;;
+  *) sed -n '2,22p' "${BASH_SOURCE[0]}"; exit 2 ;;
 esac
