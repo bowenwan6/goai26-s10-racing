@@ -87,7 +87,7 @@ On the full course the straight share rose from 35–50 % to 86 % and total turn
 <sub><b>Kinematic simulation, not a field run.</b> The straightened line followed over the whole course, with the flat and stairs zones and the waypoint touch discs.</sub>
 </div>
 
-**Where it actually runs.** On the robot: the flat 5 m room route (2026-09-20) and a real run from WP10 to WP29 on the course (2026-09-21, 569 s, the morning version of the stack). The midday improvements — steering-based lane return, faster acceleration, terrain-aware stairs zones, splice/drop/contact editing of the line, resume from any waypoint, the web-page e-stop — pass 29/29 in simulation in 413 s against about 470 s for the morning version, and have not yet run on the robot.
+**Where it actually runs.** On the robot: the flat 5 m room route (2026-09-20) and a real run from WP10 to WP29 on the course (2026-09-21, 569 s, the morning version of the stack). The midday improvements — steering-based lane return, faster acceleration, terrain-aware stairs zones, splice/drop/contact editing of the line, resume from any waypoint, the web-page e-stop — passed 29/29 in simulation — 413 s at the time of that route build, against about 470 s for the morning version — and have not yet run on the robot. Work since then (braking before every gait change, a take-off check and dedicated lanes for platform jumps, one locked parameter file for the whole stack) is offline only.
 
 ## System overview
 
@@ -326,7 +326,7 @@ A small standard-library web server on the AGX serves the field pages over the r
 |---|---|
 | Section | **WP10 → WP29**, 569 s |
 | Where the time went | 66 % in the stairs gait at its default 0.30 m/s cap (the operator's own median in that gait is 0.73 m/s); the flat stretches averaged 0.69 m/s, slowed by a visible-space speed scaling and by strafing back to the line |
-| What changed because of it | the midday version: stairs speed by distance and terrain, steering instead of strafing, faster acceleration — simulated 413 s against about 470 s, not yet run on the robot |
+| What changed because of it | the midday version: stairs speed by distance and terrain, steering instead of strafing, faster acceleration — simulated 413 s against about 470 s at the time of the route build, not yet run on the robot |
 
 **First autonomous run on the robot, 2026-09-20** — dog 048, an indoor room map, our route runner on ROS 1, native flat gait:
 
@@ -369,7 +369,7 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 | Area | Proven on hardware | Simulation only | Pending |
 |---|---|---|---|
 | Locomotion | vendor 57-D, `speedturn2000`, HIM 1500 (no stairs), native flat gait under our commands | J3100, 1150, Isaac Lab candidates | joint-level control on the robot; 1150 wheel-speed margin |
-| Navigation | route runner on ROS 1: 4.7 m room run; WP10 → WP29 on the course in 569 s | the midday tracking and planning changes (29/29, 413 s) | the full WP01 → WP30 run; higher stairs-gait speeds |
+| Navigation | route runner on ROS 1: 4.7 m room run; WP10 → WP29 on the course in 569 s | the midday tracking and planning changes (29/29, 413 s at build time); platform-jump handling | the full WP01 → WP30 run; higher stairs-gait speeds |
 | Sensing | ROS 1 gateway, 106 tap, PTP clock sync, boot autostart | — | — |
 | Mapping | v3 vendor map; x_nav mapping and localisation on the robot | — | x_nav ↔ v3 registration; outdoor waypoint re-survey |
 | Field tools | `/teach` on the robot, phone reachable through the 103 forwarder | — | end-to-end outdoor survey session |

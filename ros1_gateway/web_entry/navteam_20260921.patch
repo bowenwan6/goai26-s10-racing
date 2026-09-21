@@ -1,6 +1,6 @@
 --- s10_web_navigation.py.friend_20260921	2026-09-20 13:51:01
-+++ s10_web_navigation.py	2026-09-21 01:38:42
-@@ -23,11 +23,48 @@
++++ s10_web_navigation.py	2026-09-21 04:22:40
+@@ -23,11 +23,53 @@
  ROUTES = Path.home() / 'routes'
  
  
@@ -12,10 +12,15 @@
 +    climb_speed = the same for stairs-gait stretches ('' = nav.yaml); allow_stairs = also offer routes with
 +    stairs-gait zones (navigation runs them with zone_mode gait_only: same follower, gait switched by arc length)."""
 +    cfg = dict(speed='0.3', climb_speed='', allow_stairs=False)
-+    try:
-+        cfg.update(json.loads((Path.home() / 'ros1_gateway' / 'config' / 'web_nav.json').read_text()))
-+    except (OSError, ValueError):
-+        pass
++    base = Path.home() / 'ros1_gateway' / 'config'
++    try:                                                   # THE parameter file (section web); web_nav.json is generated from it
++        import yaml
++        cfg.update({k: v for k, v in (yaml.safe_load((base / 's10_params.yaml').read_text()) or {}).get('web', {}).items() if k in cfg})
++    except Exception:
++        try:
++            cfg.update({k: v for k, v in json.loads((base / 'web_nav.json').read_text()).items() if k in cfg})
++        except (OSError, ValueError):
++            pass
 +    cfg['speed'] = str(cfg['speed'])
 +    return cfg
 +
@@ -31,7 +36,7 @@
 +        if k == 'from' and re.fullmatch(r'WP\d{1,3}', v.upper()):
 +            opts['from'] = v.upper()
 +        elif k in ('speed', 'climb') and re.fullmatch(r'\d(\.\d{1,2})?', v):
-+            lim = (0.1, 1.67) if k == 'speed' else (0.1, 1.2)
++            lim = (0.1, 1.67)
 +            if not lim[0] <= float(v) <= lim[1]:
 +                raise ValueError(f'{k} 超出范围 {lim[0]}–{lim[1]} m/s')
 +            opts[k] = v
@@ -52,7 +57,7 @@
              raise ValueError('当前位置接入只支持平地路线')
          line = segment['centerline']
          for j, (a, b) in enumerate(zip(line, line[1:])):
-@@ -43,7 +80,7 @@
+@@ -43,7 +85,7 @@
      if best is None:
          raise ValueError('路线没有有效中心线')
      distance, i, j, p = best
@@ -61,7 +66,7 @@
      if distance > corridor:
          raise ValueError(f'距路线 {distance:.2f} m，超出接入范围 {corridor:.2f} m；请先遥控靠近路线')
      end = doc['waypoints'][-1]
-@@ -70,9 +107,31 @@
+@@ -70,9 +112,31 @@
          raise ValueError('当前位置没有剩余路线；请选择反向路线')
      first['centerline'] = line
      first['length_m'] = sum(math.hypot(b[0]-a[0], b[1]-a[1]) for a,b in zip(line,line[1:]))
@@ -94,7 +99,7 @@
  def mode_command(mode):
      return {'PatrolDevice': {'Type': 0x00100002, 'Command': 0x00500002,
                              'Time': now_str(), 'Items': {'Mode': mode}}}
-@@ -84,7 +143,7 @@
+@@ -84,7 +148,7 @@
               and f['motion_at'] is not None and 0 <= now - f['motion_at'] < .5)
      still = fresh and all(isinstance(f['motion'].get(k), (int, float))
                           and math.isfinite(f['motion'][k]) and abs(f['motion'][k]) < v
@@ -103,7 +108,7 @@
      return f, fresh, still
  
  
-@@ -93,6 +152,8 @@
+@@ -93,6 +157,8 @@
      if not root.exists():
          return result
      for path in sorted(root.glob('*/route_v2.json')):
@@ -112,7 +117,7 @@
          try:
              if path.parent.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                  continue
-@@ -104,11 +165,14 @@
+@@ -104,11 +170,14 @@
              maneuvers = json.loads(man.read_text()) if man.exists() else {}
              flat = bool(doc.get('segments')) and all(s.get('gait') == 'flat' for s in doc['segments'])
              flat = flat and not (maneuvers.get('maneuvers') or maneuvers.get('zones'))
@@ -128,7 +133,7 @@
          except (ValueError, KeyError, TypeError, OSError):
              continue
      return result
-@@ -123,10 +187,13 @@
+@@ -123,10 +192,13 @@
          self.route = None
          self.owner_at = self.link_at = time.monotonic()
          self.cancel = threading.Event()
@@ -142,7 +147,7 @@
          self.return_verified = False
          self.closed = threading.Event()
          self.last_error = ''
-@@ -176,6 +243,7 @@
+@@ -176,6 +248,7 @@
                     for line in result.stdout.splitlines())
  
      def select(self, route_id):
@@ -150,7 +155,7 @@
          catalog = {r['id']: r for r in route_catalog()}
          if route_id not in catalog or not catalog[route_id]['flat']:
              raise ValueError('请选择已有的平地路线；楼梯路线尚未开放')
-@@ -206,14 +274,22 @@
+@@ -206,14 +279,22 @@
              before = time.monotonic()
              self.ros.initial_pose(doc['waypoints'][0])
              self.wait(lambda: self.ros.pose_at > before and self.ros.pose_fresh(), 20, '没有定位反馈')
@@ -174,7 +179,7 @@
          target = self.marker.parent / 'web-route'
          if write:
              target.mkdir(parents=True, exist_ok=True)
-@@ -224,6 +300,24 @@
+@@ -224,6 +305,25 @@
                      (target / name).write_bytes((path / name).read_bytes())
                  else:
                      (target / name).unlink(missing_ok=True)
@@ -188,6 +193,7 @@
 +            if ter.exists():
 +                td = json.loads(ter.read_text())
 +                td['steep'] = [[max(0.0, a - shift), b - shift] for a, b in td.get('steep', []) if b - shift > 0.0]
++                td['gaits'] = [[max(0.0, a - shift), b - shift, n] for a, b, n in td.get('gaits', []) if b - shift > 0.0]
 +                (target / 'terrain.json').write_text(json.dumps(td))
 +            else:
 +                (target / 'terrain.json').unlink(missing_ok=True)
@@ -199,7 +205,7 @@
          return target
  
      def start(self):
-@@ -237,7 +331,9 @@
+@@ -237,7 +337,9 @@
          self.marker.write_text(json.dumps(dict(route=self.route)))
          self.owned = True
          self.set('arming', '正在启动导航与切换步态，约需 10 秒，请保持页面前台')
@@ -210,7 +216,7 @@
          def armed():
              ctl = self.ros.control
              return (self.ros.control_fresh() and ctl.get('enable_motion') and not ctl.get('fault')
-@@ -256,7 +352,7 @@
+@@ -256,7 +358,7 @@
          self.run_since = time.monotonic()
          self.ros.publish('/rl_nav/cmd', 'start')
          self.wait(lambda: self.ros.nav_fresh() and self.ros.nav.get('running') is True, 3, '导航程序未确认开始')
@@ -219,7 +225,7 @@
  
      def set_mode(self, target):
          sent = time.monotonic()
-@@ -287,28 +383,38 @@
+@@ -287,28 +389,47 @@
          self.ros.publish('/s10_control/web_cmd', 'Nav continue')
          self.run_since = time.monotonic()
          self.ros.publish('/rl_nav/cmd', 'start')
@@ -266,11 +272,20 @@
 +            self.run_script('start_control.sh')            # read-only bridge (feedback + gait log), no velocity publishers
 +            return
 +        if not self.manual_verified():
-+            raise ValueError('尚未确认常规控制（使用模式 / 步态 / 停稳），请看机器人实际状态后再点一次')
++            # Nothing of ours is running, but the robot was left in a navigation state (a terminal run that ended in
++            # 0x3002 / 0x3003, or use mode 1): finish the hand-back here instead of refusing.
++            f, fresh, _ = fresh_robot(self.robot)
++            if fresh and f['status'].get('HES') == 0:
++                if f['status'].get('Mode') != 0:
++                    self.set_mode(0)
++                f, fresh, _ = fresh_robot(self.robot)
++                if fresh and f['status'].get('MotionState') == 17 and f['status'].get('Gait') not in (0x1001, 0x1003):
++                    self.robot.send(make_gait_switch(0x1001), 'restore manual gait')
++            self.wait(self.manual_verified, 10, '常规模式或遥控步态尚未恢复：请看机器人实际状态（使用模式 / 步态 / 是否停稳）后再点一次', cancellable=False)
          self.return_verified = True
          self.set('stopped', reason)
  
-@@ -419,11 +525,17 @@
+@@ -419,11 +540,17 @@
              self.set('stopped', '外部任务已结束 · 请重新接管遥控')
  
      def snapshot(self):
@@ -289,7 +304,7 @@
  
  
  class ROS:
-@@ -439,7 +551,7 @@
+@@ -439,7 +566,7 @@
          self.lidar_at = self.imu_at = 0.
          rospy.init_node('golai_web_navigation', anonymous=True, disable_signals=True)
          self.pubs = {t: rospy.Publisher(t, String, queue_size=1) for t in

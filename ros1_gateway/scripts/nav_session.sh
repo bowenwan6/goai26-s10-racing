@@ -24,6 +24,8 @@ set -eo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROUTES="$HOME/routes"
 PORT="${S10_ROS1_MASTER_PORT:-11311}"
+# all parameters live in config/s10_params.yaml; the file read below is regenerated from it first (tools/params.py)
+python3 "$ROOT/tools/params.py" sync --quiet || { echo "params sync failed: config/s10_params.yaml is broken"; exit 1; }
 ros() { ( source "$ROOT/ros1/ros1_env.sh"; export ROS_MASTER_URI="http://127.0.0.1:$PORT" ROS_IP=127.0.0.1; "$@" ); }
 latest_in() { ls -1dt "$@" 2>/dev/null | head -1 || true; }
 route_dir() {
@@ -71,9 +73,12 @@ if climb > 0.0:                              # stairs: climb speed, also ONE num
     c["stairs_speed_override"] = climb
     import os
     steep = float(os.environ.get("S10_STEEP_V") or (c.get("zone_speed") or {}).get("steep", 0.45))
-    c["zone_speed"] = dict(cruise=climb, steep=min(climb, steep))
+    c["zone_speed"] = dict(c.get("zone_speed") or {}, cruise=climb, steep=(min(climb, steep) if steep > 0.0 else 0.0))
     c["runner_params"]["climb_v"] = climb
     c["runner_params"]["climb_turn_v"] = round(climb * 0.66, 2)
+import os as _os
+if _os.environ.get("S10_WALK_V"):
+    c.setdefault("zone_speed", {})["walk"] = float(_os.environ["S10_WALK_V"])
 yaml.safe_dump(c, open(dst, "w"), sort_keys=False)
 PY
         ;;
@@ -152,6 +157,8 @@ PY
     bash "$ROOT/scripts/stop_control.sh" || true
     # give the robot back to the remote: use mode 常规 (0). No effect if it already is, or if ASDU is unreachable.
     python3 "$ROOT/tools/asdu_mode.py" set-mode 0 --i-am-on-site --seconds 3 2>&1 | tail -1 || true
+    # ... and its remote gait: a run ends in a navigation gait, in which the remote page cannot drive or take over.
+    python3 "$ROOT/tools/asdu_mode.py" remote-gait --i-am-on-site --seconds 3 2>&1 | tail -1 || true
     sleep 1
     bash "$ROOT/scripts/start_control.sh" | tail -1
     ;;

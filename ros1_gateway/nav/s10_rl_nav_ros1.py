@@ -189,7 +189,7 @@ class Node:
 
     def on_gait(self, msg):
         with self.lock:
-            self.gait_reported = msg.data if msg.data in ("flat", "stairs") else None
+            self.gait_reported = msg.data if msg.data in ("flat", "stairs", "fast", "platform") else None
             self.gait_t = self.now()
 
     def on_control(self, msg):
