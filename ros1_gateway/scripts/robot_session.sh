@@ -71,6 +71,7 @@ case "${1:-status}" in
       for i in $(seq 1 30); do (exec 3<>/dev/tcp/127.0.0.1/11311) 2>/dev/null && break; sleep 1; done
       bash ~/ros1_gateway/scripts/start_gateway.sh
       [ -f ~/ros1_gateway/run/control.pid ] && kill -0 "$(cat ~/ros1_gateway/run/control.pid)" 2>/dev/null || bash ~/ros1_gateway/scripts/start_control.sh | tail -1
+      [ -f ~/ros1_gateway/run/loc_keeper.pid ] && kill -0 "$(cat ~/ros1_gateway/run/loc_keeper.pid)" 2>/dev/null || bash ~/ros1_gateway/scripts/start_loc_keeper.sh | tail -1
       rm -f ~/teach/teach-worker.pid.stale; setsid nohup bash ~/s10_mapping_web/teach-worker.sh start > /tmp/teach-start.log 2>&1 < /dev/null; tail -1 /tmp/teach-start.log'
     echo "== start tap on 106"
     "${S106[@]}" "bash $TAP_DIR/run_tap_106.sh start"

@@ -17,6 +17,11 @@ max_points: 60000                    # cloud subsample before the height grid (C
 # nearest seen height. 0 = off. Measured on dog 048: no returns within about 0.6 m ahead.
 blind_radius: 1.1
 
+# The robot's own body and legs in the cloud, and the floor it stands on (2026-09-20, dog 048: every
+# candidate "blocked at 0.00 m" every other second while walking on a clear floor).
+self_box: [0.62, 0.33, -0.30]        # |x| < 0.62, |y| < 0.33, z > -0.30 m: dropped before the grid and the scan
+self_clear_radius: 0.6               # grid cells this close to the body centre = median floor height
+
 # Body reference point above the ground the route's z refers to (route z_reference: ground).
 # MEASURED on dog 048 standing in RL control, 2026-09-20 (tools/check_ground_plane.py: ground
 # 0.414 m below the cloud origin; /MOTION_INFO height 0.419). Use the same number in
@@ -36,21 +41,84 @@ lidar_extrinsics:
 route_from_xnav_file: ""
 
 lookahead: 1.0
-fuse_frames: 3
-max_step_flat: 0.12                  # real lidar: 2-3 cm noise plus a 5-8 cm ridge seen on flat floor (0.07 flickered BLOCKED)
+fuse_frames: 6                       # was 3: steadier height grid
+max_step_flat: 0.15                  # real lidar: 2-3 cm noise plus a 5-8 cm ridge seen on flat floor (0.07 flickered BLOCKED)
 
-# Pure-pursuit gains (the ROS 2 rl_nav node's values; forward speed is capped again below).
+# Stairs zones with the VENDOR gaits: "gait_only" = same follower, the zone only switches the gait (by arc
+# length, where the operator switched it) and applies the stairs speed cap; inside a zone the local height
+# grid and scan are ignored (zone_blind): the taught line is followed as the operator walked it.
+# "maneuver" = the approach / align / climb state machine made for the RL stairs policy.
+ignore_pose_z: true                  # height from the route, not from x_nav (unreliable z); single-level courses only
+tracker_back: 0.2                    # m the route projection may move backwards (dead-end turn-arounds: see nav_core)
+zone_mode: gait_only                 # 2026-09-21: full v7_o course 29/29 in the kinematic simulation (tests/nav/sim_full_route.py)
+zone_blind: true
+
+# Path tracking. 2026-09-20 on dog 048 at 0.7 m/s: yaw commands flipped between +0.8 and -0.8 rad/s
+# every second with only a few cm of cross-track error, forward speed was zeroed for "pivots" and the
+# local planner flickered between centreline / detour / A* on a clear floor: 5 m took 36 s. Hence:
 gains:
   max_forward: 0.6
   max_lateral: 0.2
   max_yaw_rate: 0.6
   lookahead: 1.0
-  lookahead_speed_gain: 0.0
-  pivot_threshold_deg: 35.0
-  align_falloff_deg: 60.0
-  brake_distance: 0.05
+  lookahead_speed_gain: 0.8          # carrot = 1.0 m + 0.8 s * v (regulated pure pursuit): calmer at speed
+  yaw_gain: 1.0                      # was 1.8
+  lateral_gain: 0.6                  # was 0.9
+  pivot_threshold_deg: 70.0          # was 35: turn on the spot only when really needed
+  align_falloff_deg: 120.0           # between aligned and the pivot limit, slow down gently ...
+  min_speed_fraction: 0.7   # strategy1 (09-21): was 0.4 in gains / 0.6 in planner; keep the speed on a straight line
+  brake_distance: 0.6                # ease into the last waypoint instead of overshooting
+  forward_slew: 3.0   # strategy1: was 1.0
+  yaw_slew: 4.0   # strategy1: was 2.0
+  lateral_slew: 0.8                  # m/s^2
 
-# Route runner speeds for the VENDOR gaits and the first field tests. The simulation's numbers
+# Local planner costs: leaving the taught line must be expensive, so it happens for a real obstacle,
+# not for one noisy frame. (w_smooth must stay below w_lat.)
+planner:
+  w_lat: 3.0                         # was 1.0: cost of a lateral offset
+  w_smooth: 1.0                      # was 0.3
+  w_side_switch: 3.0                 # was 1.0: changing side
+  switch_margin: 1.0                 # was 0.3: keep the current target unless another is clearly better
+  astar_lateral_weight: 5.0          # was 2.0: A* paths hug the taught line, turn only where needed
+  astar_speed_fraction: 0.7          # was 0.5
+  min_speed_fraction: 0.7   # strategy1 (09-21): was 0.4 in gains / 0.6 in planner; keep the speed on a straight line
+  commit_length_flat: 0.6            # was 1.0: the live grid reaches ~0.9 m; 1.0 also flickered BLOCKED in the last metre
+                                     # before a waypoint (free length = remaining length, quantised), freezing the run
+  min_horizon: 0.65                  # was 0.3. Closer than this to a waypoint the robot heads straight for it. Must be
+                                     # > commit_length: below it the planner compares a quantised free length with the
+                                     # remaining distance and wrongly reports BLOCKED (always, where detours are off)
+  full_speed_free_length: 0.8   # strategy1: was 1.0; the live grid reaches ~0.9 m, 1.0 kept the scale below 1 on open road
+
+# Bowling lane: inside +-half_width of the taught line (and within heading_deg of its direction) the
+# robot gets NO lateral or heading correction. Outside, the correction grows smoothly from the lane
+# edge and ends at `release`. Beyond handback_* the follower's own command is used.
+lane:
+  enabled: true
+  half_width: 0.10                   # m
+  release: 0.05                      # m  (hysteresis: correction ends here)
+  heading_deg: 6.0                   # heading dead band
+  heading_gain: 1.2   # strategy1: was 0.8
+  heading_max_wz: 0.6   # strategy1: was 0.35 rad/s
+  return_gain: 0.8                   # 1/s on (|d| - release)
+  return_max_vy: 0.15                # m/s sideways while returning
+  handback_d: 0.35                   # m
+  handback_heading_deg: 25.0
+  corner_deg: 12.0                   # the route turns more than this within the next 1.2 m: the follower steers
+  end_zone: 1.0                      # m before the route end: follower brakes and aligns
+  steer: true                        # strategy1: come back to the line by STEERING (Stanley), not by side-stepping
+  steer_gain: 0.9                    # 1/s: heading offset = atan(gain * offset / speed)
+  steer_max_deg: 20.0
+  steer_vy_share: 0.3                # share of the old sideways correction that is kept
+
+# Output smoothing (20 Hz): acceleration limits + low pass. HOLD / DONE / pause stop at once.
+smooth:
+  enabled: true
+  accel: 2.0   # strategy1: was 0.6 m/s^2
+  decel: 3.0   # strategy1: was 1.0
+  vy_accel: 0.5
+  wz_accel: 4.0   # strategy1: was 1.5 rad/s^2
+  vy_tau: 0.10   # strategy1: was 0.25 s
+  wz_tau: 0.10   # strategy1: was 0.25 s
 # (walk 0.6 / floor 0.5 / climb 0.3) are the RL policies'; the native flat gait has no stall
 # floor. s10_ros1_control clamps to its own limits (0.30 / 0.10 / 0.50) on top of these.
 runner_params:
@@ -68,3 +136,16 @@ runner_params:
 # Localisation jump between two pose messages -> pause until the operator sends "start" again.
 pose_jump_m: 0.5
 pose_jump_deg: 30.0
+
+# Speed inside a stairs-gait zone (strategy1). The operator's own median in the stairs gait was 0.73 m/s.
+# steep = where the ground map shows steps / slope (terrain.json next to the route). nav_session arm <v> <climb v>
+# replaces cruise.
+zone_speed:
+  cruise: 0.7
+  steep: 0.45
+
+# Planner speed scale while the plan IS the taught line (TRACK, or DETOUR with zero target offset). The team planner
+# halves the speed near obstacle/unknown cells; our 0.9 m live grid has an unknown rim, so it slowed open road too.
+# Real detours, A* and BLOCKED are untouched. 0 = team behaviour (for comparison / rollback).
+planner_scale_on_line: 1.0
+

@@ -19,7 +19,7 @@ python3 "$SRC/tools/teach_to_route.py" --straight 1.0 2.0 0.27 0.5 3.0 --map-id 
 sleep 4
 ( source "$ROS1_SETUP" && exec python3 -u "$SRC/tests/nav/fake_xnav_ros1.py" --log "$OUT/fake.jsonl" --x 1.0 --y 2.0 --yaw 0.5 ) > "$OUT/fake.log" 2>&1 & pids+=($!)
 sleep 2
-( source "$ROS1_SETUP" && exec python3 -u "$SRC/nav/s10_rl_nav_ros1.py" --config "$SRC/config/nav.yaml" --route-dir "$OUT/route" ) > "$OUT/nav.log" 2>&1 & pids+=($!)
+( source "$ROS1_SETUP" && exec python3 -u "$SRC/nav/s10_rl_nav_ros1.py" --config "${NAV_CONFIG:-$SRC/config/nav.yaml}" --route-dir "$OUT/route" ) > "$OUT/nav.log" 2>&1 & pids+=($!)
 sleep 6
 ( source "$ROS1_SETUP"
   rostopic echo -n 1 /rl_nav/status > "$OUT/status_paused.txt" 2>&1 || true
