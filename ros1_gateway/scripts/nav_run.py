@@ -213,13 +213,15 @@ class Run:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--speed", default="0.3", help="forward speed: m/s (up to 1.67), or a multiplier of the robot maximum like 0.7x, or zero|probe|flat")
-    ap.add_argument("--climb-speed", default="", help="stairs part m/s (default: nav.yaml climb_v 0.15)")
-    ap.add_argument("--route", default="short", help="short | full | a route dir")
+    ap.add_argument("--speed", default="1.0", help="forward speed: m/s (up to 1.67), or a multiplier of the robot maximum like 0.7x, or zero|probe|flat")
+    ap.add_argument("--climb-speed", default="1.0", help="speed in a stairs-gait zone where the ground is gentle, m/s")
+    ap.add_argument("--steep-speed", default="", help="speed in a stairs-gait zone on real steps / slopes, m/s (default: nav.yaml zone_speed.steep 0.45)")
+    ap.add_argument("--route", default="full", help="short | full | a route dir")
     ap.add_argument("--from", dest="frm", default="", help="resume in the middle: WP08 (the dog stands at that waypoint) or here (nearest stretch of the line)")
     ap.add_argument("--map", default="", help="x_nav map name (default: the route's map_id)")
     ap.add_argument("--at", choices=["start", "end"], default="start",
                     help="only used when localisation has to be initialised: which end of the route the dog stands on")
+    ap.add_argument("--flat-gait", default="", help="EXPERIMENT: gait code used instead of the navigation flat gait 0x3002 (0xF002 踏步移动, 0x1002 高台, 0x1001 基础)")
     ap.add_argument("--shadow", action="store_true", help="no motion: status only, drive with the remote")
     a = ap.parse_args()
 
@@ -339,6 +341,11 @@ def main():
     signal.signal(signal.SIGINT, lambda *_: (finish(), sys.exit(130)))
     signal.signal(signal.SIGTERM, lambda *_: (finish(), sys.exit(143)))
     try:
+        if a.flat_gait:
+            os.environ["S10_FLAT_GAIT"] = a.flat_gait
+            say(f"    EXPERIMENT: flat gait = {a.flat_gait} instead of 0x3002 (not in the developer guide for /GAIT; a refusal latches a stop)")
+        if a.steep_speed:
+            os.environ["S10_STEEP_V"] = str(float(a.steep_speed))
         rc, out = sh("bash", NAV, "arm", a.speed, route, a.climb_speed, quiet=True)
         if "ARMED" not in out:
             print(out[-600:])
