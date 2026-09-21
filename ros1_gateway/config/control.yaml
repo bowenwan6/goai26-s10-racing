@@ -30,7 +30,7 @@ stamp_source: robot                # robot: command stamps follow /MOTION_INFO t
 #           without a task). publishers: fault as soon as another publisher exists.
 exclusive_mode: messages
 
-limits:                            # |value| clamps; code hard caps are 1.0 / 0.5 / 1.0
+limits:                            # |value| clamps; the code only rejects values beyond the robot's command range 1.67 / 0.5 / 1.0
   max_vx: 0.30                     # m/s forward/backward
   max_vy: 0.10                     # m/s lateral
   max_wz: 0.50                     # rad/s yaw

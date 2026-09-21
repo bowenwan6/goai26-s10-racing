@@ -102,7 +102,10 @@ std::string trim(std::string c)
 
 constexpr int32_t kIdle = 0, kStanding = 1, kBootDamping = 3, kLying = 4, kRl = 17;
 constexpr uint32_t kNavFlat = 0x3002, kNavStairs = 0x3003;
-constexpr double kHardVx = 1.0, kHardVy = 0.5, kHardWz = 1.0;
+// Not a policy limit: the robot's own documented command range (developer guide 1.2.6: X +-1.67 m/s,
+// Y +-0.4 m/s, yaw +-1.0 rad/s), with margin, so a typo in a config cannot send nonsense. The
+// operator sets the real limit per run (config limits / --stage).
+constexpr double kHardVx = 1.67, kHardVy = 0.5, kHardWz = 1.0;
 
 const char * gait_name(uint32_t g)
 {
@@ -192,7 +195,7 @@ Config load(const std::string & path)
   }
   auto in = [](double v, double lo, double hi) {return std::isfinite(v) && v >= lo && v <= hi;};
   if (!in(c.max_vx, 0, kHardVx) || !in(c.max_vy, 0, kHardVy) || !in(c.max_wz, 0, kHardWz)) {
-    throw std::runtime_error("limits exceed hard caps (1.0 m/s, 0.5 m/s, 1.0 rad/s)");
+    throw std::runtime_error("limits exceed the robot command range (1.67 m/s, 0.5 m/s, 1.0 rad/s)");
   }
   if (!in(c.nav_rate, 5, 50) || !in(c.cmd_timeout, 0.1, 2) || !in(c.zero_hold, 0.2, 5) ||
     !in(c.info_timeout, 0.1, 2))
