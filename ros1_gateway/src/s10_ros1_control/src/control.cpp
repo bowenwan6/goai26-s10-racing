@@ -107,9 +107,14 @@ constexpr uint32_t kNavFlat = 0x3002, kNavStairs = 0x3003;
 // operator sets the real limit per run (config limits / --stage).
 constexpr double kHardVx = 1.67, kHardVy = 0.5, kHardWz = 1.0;
 
+// EXPERIMENT (2026-09-21): the gait used for "flat" can be replaced (stand.nav_gait / gait_switch.flat_gait), to try
+// a gait the developer guide does not list for /GAIT (0xF002 踏步移动, 0x1002 高台, 0x1001 基础). Default 0x3002.
+// If the robot does not confirm it on /MOTION_INFO the usual step timeout latches a stop: it fails safe.
+uint32_t g_flat_gait = kNavFlat;
+
 const char * gait_name(uint32_t g)
 {
-  return g == kNavFlat ? "flat" : g == kNavStairs ? "stairs" : "other";
+  return (g == kNavFlat || g == g_flat_gait) ? "flat" : g == kNavStairs ? "stairs" : "other";
 }
 
 struct Config
@@ -202,8 +207,14 @@ Config load(const std::string & path)
   {
     throw std::runtime_error("rate/timeout values out of range");
   }
-  if (c.nav_gait != kNavFlat && c.nav_gait != kNavStairs) {
-    throw std::runtime_error("stand.nav_gait must be 0x3002 or 0x3003");
+  if (y["gait_switch"] && y["gait_switch"]["flat_gait"]) {
+    g_flat_gait = static_cast<uint32_t>(std::stoul(y["gait_switch"]["flat_gait"].as<std::string>(), nullptr, 0));
+  }
+  if (g_flat_gait != kNavFlat && g_flat_gait != 0xF002 && g_flat_gait != 0x1002 && g_flat_gait != 0x1001) {
+    throw std::runtime_error("gait_switch.flat_gait must be 0x3002 (default), 0xF002, 0x1002 or 0x1001");
+  }
+  if (c.nav_gait != kNavFlat && c.nav_gait != kNavStairs && c.nav_gait != g_flat_gait) {
+    throw std::runtime_error("stand.nav_gait must be 0x3002, 0x3003 or gait_switch.flat_gait");
   }
   return c;
 }
@@ -406,7 +417,7 @@ private:
   {
     std::lock_guard<std::mutex> lock(m_);
     const std::string g = trim(m->data);
-    uint32_t code = g == "flat" ? kNavFlat : g == "stairs" ? kNavStairs : 0;
+    uint32_t code = g == "flat" ? g_flat_gait : g == "stairs" ? kNavStairs : 0;
     if (code == 0) {
       if (g != last_bad_gait_req_) {
         last_bad_gait_req_ = g;
@@ -696,7 +707,7 @@ private:
   // ------------------------------------------------------------ velocity
   void nav_tick(double now)
   {
-    const bool nav_mode = fresh(now) && fb_state_ == kRl && (fb_gait_ == kNavFlat || fb_gait_ == kNavStairs);
+    const bool nav_mode = fresh(now) && fb_state_ == kRl && (fb_gait_ == kNavFlat || fb_gait_ == kNavStairs || fb_gait_ == g_flat_gait);
     const bool cmd_fresh = now - cmd_rx_ < cfg_.cmd_timeout;
     const bool allowed = fault_.empty() && !latched_ && !lie_block_ && !gait_block_ && seq_ == Seq::None && nav_mode;
     if (allowed && cmd_fresh) {

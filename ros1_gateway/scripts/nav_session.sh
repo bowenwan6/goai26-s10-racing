@@ -69,7 +69,9 @@ for k in ("approach_v", "detour_v", "recover_v"):
     c["runner_params"][k] = max(float(c["runner_params"][k]), min(v, 0.5))
 if climb > 0.0:                              # stairs: climb speed, also ONE number
     c["stairs_speed_override"] = climb
-    c["zone_speed"] = dict(cruise=climb, steep=min(climb, float((c.get("zone_speed") or {}).get("steep", 0.45))))
+    import os
+    steep = float(os.environ.get("S10_STEEP_V") or (c.get("zone_speed") or {}).get("steep", 0.45))
+    c["zone_speed"] = dict(cruise=climb, steep=min(climb, steep))
     c["runner_params"]["climb_v"] = climb
     c["runner_params"]["climb_turn_v"] = round(climb * 0.66, 2)
 yaml.safe_dump(c, open(dst, "w"), sort_keys=False)

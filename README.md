@@ -25,6 +25,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 ## Contents
 
 - [What is in here](#what-is-in-here)
+- [What we built](#what-we-built)
 - [System overview](#system-overview)
 - [From map to robot](#from-map-to-robot)
 - [Quick start](#quick-start)
@@ -46,12 +47,47 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 ## What is in here
 
 - **A route-following navigation stack** for a 30-waypoint outdoor course: a taught centreline, per-segment gait selection, and recovery that only fires on a measured deviation — [module 1](#1--planning-and-navigation).
-- **First autonomous run on the robot** on 2026-09-20: WP01 → WP02 in 38 s, driven by our route runner on ROS 1 and the robot's native flat gait — [Results](#results).
+- **Autonomous runs on the robot**: a first 4.7 m run on 2026-09-20, then **WP10 → WP29 of the course in 569 s** on 2026-09-21 — our route runner on ROS 1 driving the robot's native gaits — [Results](#results).
 - **Two simulators**: a fast kinematic whole-course harness in this repo, and a full MuJoCo run of the real map with real ONNX policies — **30/30 waypoints, 713 s** — [module 2](#2--simulation).
 - **Locomotion policies** from three sources: the vendor's 57-D controller, our Isaac Lab training runs, and teammate models. Three have run on hardware — [module 3](#3--locomotion-policies-and-rl-training).
 - **Mapping and localisation**, from the vendor SLAM map (`0914_fr_v3`) to a new third-party SLAM (x_nav) reached through a byte-exact ROS 2 → ROS 1 gateway — [module 4](#4--mapping-and-localisation).
 - **Field tools**: phone pages served from the robot's own compute for mapping, waypoint survey and taught-path recording — [module 5](#5--field-tools-on-the-phone).
 - **Status labels** throughout: ✅ proven on hardware, 🧪 simulation only, 🗄 historical, 📝 pending — summarised under [Status](#status).
+
+## What we built
+
+Five pieces of this stack are ours rather than the vendor's. Each exists because something in the way could not be solved by configuration. The full technical reference — chain, planning strategy, parameters, tests, what is unverified, rollback — is [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) (ZH).
+
+**1 · A read-only tap and a byte-exact bridge.** The vendor publishes the lidar only on its own board, and the SLAM we integrate speaks ROS 1. A read-only subscriber on that board forwards the raw frames to our compute, where a one-way bridge republishes them with fields, timestamps and frame ids untouched — 592/592 clouds and 11 845/11 845 IMU messages identical to an independent reference over 60 s. Nothing vendor-side changes, and one command removes every trace.
+
+**2 · A control node that can only ever have one owner.** One velocity source at a time; a foreign publisher on the robot's command topic latches a fault; command and feedback watchdogs stop the robot when either goes stale; the gait changes only at a standstill and only once the robot confirms it; a dry run creates no publishers at all. It also encodes a precondition we found the hard way — the robot ignores navigation commands unless it is in navigation use mode — and puts it back in remote-control mode on exit, fault or Ctrl-C.
+
+**3 · A taught line instead of a drawn route.** The operator drives the course a few times. The tool turns those demonstrations into an obstacle grid from the SLAM map and a corridor of ground that was actually walked, then straightens the line inside that corridor with fillets at the corners. Waypoints are touch discs rather than points, gates sit on walked ground, dead ends become keep-right hairpins, and a zone gets the stairs gait only where the operator used it *and* the map shows a step or slope. Every candidate line passes an independent body-sweep clearance check before the runner will accept it.
+
+<table>
+<tr>
+<td width="58%"><img src="docs/media/teach_line_overview.jpg" alt="Three operator demonstrations and the straightened line over the obstacle map"></td>
+<td><img src="docs/media/taught_paths_by_gait.jpg" alt="Demonstrations coloured by the gait the operator used, with switch points"></td>
+</tr>
+<tr>
+<td><sub>Thin lines: the operator's three demonstrations. Dots: the straightened line, blue for the flat gait and red for the stairs gait. Dark: real obstacles; grey: the 0.35 m centre keep-out.</sub></td>
+<td><sub>The same demonstrations coloured by the gait the operator actually used, with the recorded switch points (▲ into stairs, ▼ out).</sub></td>
+</tr>
+</table>
+
+On the full course the straight share rose from 35–50 % to 86 % and total turning fell from 9 390–14 313° to 2 209°, over a 279.7 m line with 29 waypoints.
+
+**4 · A tracking layer that trusts the right sensor.** Around the follower: the robot's own IMU instead of the SLAM's attitude, the route's height instead of the SLAM's z, a self-body filter and blind-zone fill for the height grid, a lane that steers back to the line (Stanley-style, at most 20°) instead of strafing, acceleration-limited output, one speed knob, and stairs-gait zones where speed is set by distance along the route and by what the map shows.
+
+**5 · Operations a shared robot can survive.** One command brings a session up and another puts the robot back exactly as it was; boot autostart with a watchdog; map and pose restored without the vendor web page; one command to run a route forward, in reverse, or from any waypoint; an e-stop on the web page that also stops runs started from a terminal.
+
+<div align="center">
+<img src="docs/media/teach_line_sim.gif" width="720" alt="Kinematic simulation of the taught line over the whole course">
+<br>
+<sub><b>Kinematic simulation, not a field run.</b> The straightened line followed over the whole course, with the flat and stairs zones and the waypoint touch discs.</sub>
+</div>
+
+**Where it actually runs.** On the robot: the flat 5 m room route (2026-09-20) and a real run from WP10 to WP29 on the course (2026-09-21, 569 s, the morning version of the stack). The midday improvements — steering-based lane return, faster acceleration, terrain-aware stairs zones, splice/drop/contact editing of the line, resume from any waypoint, the web-page e-stop — pass 29/29 in simulation in 413 s against about 470 s for the morning version, and have not yet run on the robot.
 
 ## System overview
 
@@ -284,6 +320,14 @@ A small standard-library web server on the AGX serves the field pages over the r
 
 ## Results
 
+**First long run on the course, 2026-09-21** — dog 048, our route runner on ROS 1, native flat and stairs gaits, the morning version of the stack:
+
+| Metric | Value |
+|---|---|
+| Section | **WP10 → WP29**, 569 s |
+| Where the time went | 66 % in the stairs gait at its default 0.30 m/s cap (the operator's own median in that gait is 0.73 m/s); the flat stretches averaged 0.69 m/s, slowed by a visible-space speed scaling and by strafing back to the line |
+| What changed because of it | the midday version: stairs speed by distance and terrain, steering instead of strafing, faster acceleration — simulated 413 s against about 470 s, not yet run on the robot |
+
 **First autonomous run on the robot, 2026-09-20** — dog 048, an indoor room map, our route runner on ROS 1, native flat gait:
 
 | Metric | Value |
@@ -325,7 +369,7 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 | Area | Proven on hardware | Simulation only | Pending |
 |---|---|---|---|
 | Locomotion | vendor 57-D, `speedturn2000`, HIM 1500 (no stairs), native flat gait under our commands | J3100, 1150, Isaac Lab candidates | joint-level control on the robot; 1150 wheel-speed margin |
-| Navigation | route runner on ROS 1: 4.7 m autonomous run, shadow runs | route_v2 follower over the full course | longer routes, higher speeds, stairs; per-stage speed limits |
+| Navigation | route runner on ROS 1: 4.7 m room run; WP10 → WP29 on the course in 569 s | the midday tracking and planning changes (29/29, 413 s) | the full WP01 → WP30 run; higher stairs-gait speeds |
 | Sensing | ROS 1 gateway, 106 tap, PTP clock sync, boot autostart | — | — |
 | Mapping | v3 vendor map; x_nav mapping and localisation on the robot | — | x_nav ↔ v3 registration; outdoor waypoint re-survey |
 | Field tools | `/teach` on the robot, phone reachable through the 103 forwarder | — | end-to-end outdoor survey session |
@@ -364,8 +408,9 @@ Operational manuals stay with their code:
 
 | Where | What |
 |---|---|
+| [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) (ZH) | **the technical reference for the robot stack**: whole chain, planning strategy, parameters, tests, what is unverified, rollback |
 | [`ros1_gateway/README_ZH.md`](ros1_gateway/README_ZH.md) (ZH) | the ROS 1 gateway and motion bridge: design, evidence, acceptance |
-| [`ros1_gateway/docs/`](ros1_gateway/docs/) | autonomy-stack handoff, room-navigation runbook, test plan, field log, app API |
+| [`ros1_gateway/docs/`](ros1_gateway/docs/) | English interface handoff (its planning sections predate the pipeline doc), field runbook, first-run log, test plan, app API |
 | [`tools/s10_mapping_web/TEACH_GUIDE_ZH.md`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH) | the field procedure for `/teach` |
 | [`sim_full_course/README_ZH.md`](sim_full_course/README_ZH.md) (ZH) · [`tools/wp_match/README_ZH.md`](tools/wp_match/README_ZH.md) (ZH) | simulator and waypoint matching |
 

@@ -78,3 +78,8 @@ MUJOCO_LOG.TXT
 /recordings/**/raw_bag/*.mcap
 /deliverables/S10_048_LiDAR_IMU_*.zip
 /academic_assets/*.aux
+
+# Teammate's web adapter: their code, no licence header, handed over for integration only.
+# The repo keeps web_entry/README.md and our patch (navteam_*.patch) against it.
+/ros1_gateway/web_entry/s10_web_navigation.py*
+/ros1_gateway/web_entry/page_103/*.navteam
