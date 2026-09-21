@@ -26,3 +26,5 @@ Regenerate after editing `s10_web_navigation.py`:
 ```bash
 diff -u s10_web_navigation.py.friend_20260921 s10_web_navigation.py > navteam_20260921.patch
 ```
+
+`page_103/*.patch` = e-stop button that also stops terminal-started runs, start-from-waypoint select, flat/stairs-gait speed inputs; applied on 103 on 2026-09-21, originals in /home/user/golai/backup_navteam_estop_20260921_1400. The full patched copies (`*.navteam`) are the teammate's page and stay out of the repository.

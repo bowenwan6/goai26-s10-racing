@@ -58,6 +58,11 @@ if stage not in limits:
     limits[stage] = (v, min(0.40, round(v / 2, 2)), 1.0)
 c = yaml.safe_load(open(src))
 c["limits"] = dict(zip(("max_vx", "max_vy", "max_wz"), limits[stage]))
+import os
+if os.environ.get("S10_FLAT_GAIT"):                  # experiment: another gait in place of the navigation flat gait
+    g = int(os.environ["S10_FLAT_GAIT"], 0)
+    c.setdefault("gait_switch", {})["flat_gait"] = g
+    c.setdefault("stand", {})["nav_gait"] = g
 c["cmd_sources"] = {"rl_nav": c["cmd_sources"]["rl_nav"]}
 c["cmd_source"] = "rl_nav"
 c["web_cmd_topic"] = "/s10_control/web_cmd"
