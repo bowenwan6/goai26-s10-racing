@@ -31,4 +31,14 @@ if [ -f "$ROOT/run/session_active" ] && [ -f "$HOME/.ssh/s10_tap_ed25519" ]; the
 else
   echo "no active session (or no AGX tap key): 106 not touched"
 fi
+# The gateway sometimes starts before the robot's DDS is up and then never receives /IMU (seen
+# 2026-09-21: 0 Hz for 16 min until restarted). x_nav's SLAM needs the IMU, so fix that first.
+for i in 1 2 3 4; do
+  sleep 12
+  bash "$ROOT/scripts/health_check.sh" | grep -q "dds /IMU .* 0.00 Hz" || break
+  echo "IMU not arriving through the gateway: restarting it ($i)"
+  bash "$ROOT/scripts/stop_gateway.sh" | tail -1; sleep 2; bash "$ROOT/scripts/start_gateway.sh" | tail -1
+done
+# Localisation without the x_nav page: last map + last pose back (only right if the dog was not moved).
+bash "$ROOT/scripts/start_loc_keeper.sh" | tail -1
 sleep 6; bash "$ROOT/scripts/health_check.sh" | tail -3
