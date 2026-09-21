@@ -36,6 +36,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt, binary_dilation
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from scipy.spatial import cKDTree as cKDTree_  # noqa: E402
 from audit_teach_session import read_marks, read_trail, gait_timeline, gait_at, turn_stats  # noqa: E402
 
 STAIRS_GAITS = (0x1003, 0x3003)
@@ -223,6 +224,24 @@ class Clearance:
         return bad
 
 
+def strip_backward(t, v_min=-0.10, n_min=4):
+    """Cut out what was driven BACKWARDS (forward speed along the recorded yaw < v_min for n_min samples) together with
+    the ground covered again afterwards, so the trail only ever advances. Returns (trail, metres removed)."""
+    if len(t) < 10: return t, 0.0
+    dt = np.maximum(np.diff(t[:, 0]), 1e-3); v = np.diff(t[:, 1:3], axis=0) / dt[:, None]
+    vf = np.convolve(v[:, 0] * np.cos(t[:-1, 4]) + v[:, 1] * np.sin(t[:-1, 4]), np.ones(5) / 5, "same")
+    keep, k, removed = np.ones(len(t), bool), 0, 0.0
+    while k < len(vf):
+        if vf[k] >= v_min: k += 1; continue
+        k1 = k
+        while k1 + 1 < len(vf) and vf[k1 + 1] < v_min: k1 += 1
+        if k1 - k + 1 < n_min: k = k1 + 1; continue
+        h = np.array([math.cos(t[k, 4]), math.sin(t[k, 4])]); j = k1 + 1
+        while j < len(t) - 1 and (t[j, 1:3] - t[k, 1:3]) @ h < 0.0: j += 1
+        keep[k:j] = False; removed += float(np.linalg.norm(t[k1, 1:3] - t[k, 1:3])); k = j
+    return t[keep], removed
+
+
 def cut_leg(trail, a_xy, b_xy, cursor):
     d = np.linalg.norm(trail[cursor:, 1:3] - a_xy, axis=1); i0 = cursor + int(np.argmin(d))
     d = np.linalg.norm(trail[i0:, 1:3] - b_xy, axis=1)
@@ -376,6 +395,19 @@ def main():
     ap.add_argument("--contact", default="", help="waypoints on a wall / platform edge the dog must drive INTO to touch: the line goes to the mark itself, the wall round it is not an obstacle (WP17,WP24)")
     ap.add_argument("--contact-radius", type=float, default=1.5)
     ap.add_argument("--terrain-zones", type=int, default=1, help="1 = stairs gait only where the operator used it AND the ground map shows steps/slope (pad 1.5 m, gaps < 6 m merged)")
+    ap.add_argument("--fast-gait", type=int, default=0, help="1 = also plan 'fast' (0xF002) stretches. OFF: on the robot (2026-09-21) that gait ran ~2.7 m/s on a 0.9 m/s command and left the line")
+    ap.add_argument("--gait-plan", type=int, default=1, help="1 = write the four-gait plan (walk / fast / stairs / platform) into terrain.json")
+    ap.add_argument("--fast-turn-deg", type=float, default=25.0, help="fast gait only where the line turns less than this over 2 m")
+    ap.add_argument("--fast-clearance", type=float, default=0.0, help="... and the body side keeps this distance from real obstacles, m")
+    ap.add_argument("--fast-min-run", type=float, default=8.0, help="... for at least this many metres")
+    ap.add_argument("--strip-backward", default="", help="recordings in which stretches driven BACKWARDS (a slip after a jump, an operator correction) are cut out before use: 193500,194417")
+    ap.add_argument("--jump-lane", type=int, default=1, help="1 = where a --splice recording climbs a ledge in the platform gait (0x1002), the line is a STRAIGHT lane through the operators' crossing point, square to it (narrow gaps between objects on the edge)")
+    ap.add_argument("--jump-before", type=float, default=2.0, help="straight lane this far before the ledge, m (shortened automatically where a waypoint or an obstacle needs it)")
+    ap.add_argument("--jump-after", type=float, default=1.0, help="... and this far after it, m")
+    ap.add_argument("--jump-max-shift", type=float, default=1.5, help="a lane may move the line sideways by at most this, m; every moved point must also lie inside the corridor of the recordings (one of them drove there) and pass the body sweep")
+    ap.add_argument("--platform-before", type=float, default=0.8, help="platform gait from this far before a ledge (body centre; the switch is made standing) ...")
+    ap.add_argument("--platform-after", type=float, default=1.2, help="... to this far after it (hind legs up), then straight back to the operator's gait. Operator 2026-09-21: platform gait ONLY for the jump itself")
+    ap.add_argument("--platform-absorb", type=float, default=4.0, help="a stairs-gait stretch shorter than this that touches a platform zone is walked in the platform gait (saves two gait switches, ~2 s standing each); 0 = off")
     ap.add_argument("--free-at", default="", help='the operator says there is NO obstacle at these waypoints: "WP06:1.5,WP11" (radius m, default 1.5); map obstacle cells there are ignored')
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
@@ -391,6 +423,10 @@ def main():
     tl = gait_timeline(a.control_logs) if a.control_logs else []
 
     trails = {os.path.basename(f)[:-10]: read_trail(f) for f in sorted(glob.glob(os.path.join(a.session, "path_*.trail.csv")))}
+    for d in [v for v in a.strip_backward.split(",") if v]:
+        if d not in trails: sys.exit("--strip-backward: no recording " + d)
+        trails[d], cut_m = strip_backward(trails[d])
+        print(f"   {d}: {cut_m:.2f} m driven backwards cut out")
     def coverage(t): return np.mean([np.min(np.linalg.norm(t[:, 1:3] - w, axis=1)) < 0.8 for w in W]) if len(t) > 1 else 0.0
     patches = [d for d in a.splice.split(",") if d]
     for d in patches:
@@ -431,6 +467,45 @@ def main():
     # operator gait along each gait demo -> stairs flag per point
     def stairs_flags(t): return np.array([gait_at(tl, tt) in STAIRS_GAITS for tt in t[:, 0]]) if tl else np.zeros(len(t), bool)
     flags = {d: stairs_flags(trails[d]) for d in demos + patches}
+    PLATFORM_GAITS = (0x1002,)
+    pflags = {d: (np.array([gait_at(tl, tt) in PLATFORM_GAITS for tt in trails[d][:, 0]]) if tl else np.zeros(len(trails[d]), bool)) for d in demos + patches}
+
+    # ---- ledges climbed in the platform gait: crossing point and direction, agreed between the recordings
+    jumps = []
+    if a.jump_lane and tl:
+        cross = []
+        for d in patches:
+            t, pf = trails[d], pflags[d]
+            dcum = np.r_[0, np.cumsum(np.linalg.norm(np.diff(t[:, 1:3], axis=0), axis=1))]
+            idx = np.where(pf)[0]
+            for run in (np.split(idx, np.where(np.diff(idx) > 1)[0] + 1) if len(idx) else []):
+                if len(run) < 8: continue
+                zr = np.convolve(np.pad(t[run, 3], 2, mode="edge"), np.ones(5) / 5, "valid"); z0, z1 = float(np.median(zr[:5])), float(np.median(zr[-5:]))
+                if z1 - z0 < 0.12: continue                       # platform gait, but no ledge climbed in this run
+                kc = int(run[int(np.argmax(zr > 0.5 * (z0 + z1)))])               # body centre half way up
+                ka, kb = int(np.searchsorted(dcum, dcum[kc] - 1.0)), min(len(t) - 1, int(np.searchsorted(dcum, dcum[kc] + 1.0)))
+                u_ = t[kb, 1:3] - t[ka, 1:3]
+                cross.append(dict(rec=d, xy=t[kc, 1:3].copy(), u=u_ / max(np.linalg.norm(u_), 1e-6), rise=z1 - z0))
+        while cross:
+            grp = [c_ for c_ in cross if np.linalg.norm(c_["xy"] - cross[0]["xy"]) < 1.5]; cross = [c_ for c_ in cross if not any(c_ is g_ for g_ in grp)]
+            u_ = np.mean([g_["u"] for g_ in grp], axis=0); u_ /= np.linalg.norm(u_); E_ = np.mean([g_["xy"] for g_ in grp], axis=0)
+            # the ledge itself: where x_nav's ground cloud steps up along the lane (the body-height estimate is +-0.2 m)
+            us_ = np.arange(-1.0, 1.01, 0.05); prof = np.full(len(us_), np.nan); gt_ = cKDTree_(ground_pts[:, :2])
+            for q_, uu in enumerate(us_):
+                nb = gt_.query_ball_point(E_ + uu * u_, 0.15)
+                if len(nb) >= 3: prof[q_] = np.percentile(ground_pts[nb, 2], 50)
+            lo_z, hi_z = np.nanmedian(prof[us_ < -0.5]) if np.isfinite(prof[us_ < -0.5]).any() else np.nan, np.nanmedian(prof[us_ > 0.5]) if np.isfinite(prof[us_ > 0.5]).any() else np.nan
+            shift_ = 0.0
+            if np.isfinite(lo_z) and np.isfinite(hi_z) and hi_z - lo_z > 0.10:
+                up_ = np.where(np.isfinite(prof) & (prof > 0.5 * (lo_z + hi_z)))[0]
+                if len(up_): shift_ = float(us_[up_[0]])
+            nrm_ = np.array([-u_[1], u_[0]]); lat = [float((g_["xy"] - E_) @ nrm_) for g_ in grp]
+            jumps.append(dict(xy=E_ + shift_ * u_, u=u_, yaw=float(math.atan2(u_[1], u_[0])), rise=float(np.mean([g_["rise"] for g_ in grp])),
+                              recordings=[g_["rec"] for g_ in grp], spread=float(max(lat) - min(lat)), edge_from_map=bool(shift_ != 0.0)))
+        for J in jumps:
+            kw = int(np.argmin(np.linalg.norm(W - J["xy"], axis=1)))
+            print("   ledge %.2f m near %s (%.2f m away): %d recordings cross within %.2f m of each other, direction %.0f deg, ledge position %s" % (
+                J["rise"], ids[kw], np.linalg.norm(W[kw] - J["xy"]), len(J["recordings"]), J["spread"], math.degrees(J["yaw"]), "from the ground cloud" if J["edge_from_map"] else "from the body height"))
 
     # ---- one reference for the whole course: the calmest demonstration among those touching the most waypoints
     def touched(t): return [float(np.min(np.linalg.norm(t[:, 1:3] - w, axis=1))) for w in W]
@@ -620,6 +695,33 @@ def main():
             if done: break
     line = resample(line, 0.10)
 
+    # ---- jump lanes: the last metres before a ledge and the first after it are ONE straight, square to the ledge, through
+    # the operators' crossing point. Nothing above may round or shortcut it; blended into the line on both sides. Every
+    # candidate passes the body sweep and keeps the waypoint touches, else a shorter lane is tried.
+    for J in jumps:
+        E_, u_ = J["xy"], J["u"]; nrm_ = np.array([-u_[1], u_[0]]); J["lane"] = None
+        i0 = int(np.argmin(np.linalg.norm(line - E_, axis=1)))
+        if np.linalg.norm(line[i0] - E_) > 1.0:
+            print("   JUMP LANE NOT APPLIED: the line does not pass the ledge at", np.round(E_, 2)); continue
+        for before, blend in [(b_, l_) for b_ in (a.jump_before, 1.5, 1.0, 0.7) for l_ in (1.5, 1.0, 0.6)]:
+            su, sv = (line - E_) @ u_, (line - E_) @ nrm_
+            lo_ = i0
+            while lo_ > 0 and su[lo_ - 1] > -(before + blend) and su[lo_ - 1] < su[lo_] + 0.05: lo_ -= 1
+            hi_ = i0
+            while hi_ < len(line) - 1 and su[hi_ + 1] < a.jump_after + blend and su[hi_ + 1] > su[hi_] - 0.05: hi_ += 1
+            wgt = np.zeros(len(line)); k_ = np.arange(lo_, hi_ + 1); q_ = su[k_]
+            wgt[k_] = np.where(q_ < -before, 0.5 * (1 + np.cos(np.pi * np.clip((-before - q_) / blend, 0, 1))), np.where(q_ > a.jump_after, 0.5 * (1 + np.cos(np.pi * np.clip((q_ - a.jump_after) / blend, 0, 1))), 1.0))
+            cand = line - (wgt * sv)[:, None] * nrm_[None, :]
+            ci, cj = grid.idx(cand[k_]); w_lo, w_hi = max(0, lo_ - 8), min(len(cand), hi_ + 9)
+            touch_ok = all(body_touch(cand, W[kk], (w_lo, w_hi))[0] <= max(a.body_touch, body_touch(line, W[kk], (w_lo, w_hi))[0] + 0.01)
+                           for kk in range(len(W)) if np.min(np.linalg.norm(line[w_lo:w_hi] - W[kk], axis=1)) < a.reach)
+            if os.environ.get("TEACH_LINE_DEBUG"):
+                print("      lane %.1f/%.1f: shift %.2f corridor %s touch %s sweep %s" % (before, blend, np.abs(wgt * sv).max(), bool(free[ci, cj].all()), touch_ok, not clr.bad_vertices(cand[w_lo:w_hi]).any()))
+            if float(np.abs(wgt * sv).max()) <= a.jump_max_shift and free[ci, cj].all() and touch_ok and not clr.bad_vertices(cand[w_lo:w_hi]).any():
+                line = cand; J["lane"] = dict(before=before, after=a.jump_after, blend=blend, moved=round(float(np.abs(wgt * sv).max()), 2)); break
+        print("   jump lane at %s: %s" % (np.round(E_, 2), J["lane"] or "NOT APPLIED (no straight lane passes the body sweep and keeps the waypoints): the operator's own line stays"))
+    line = resample(line, 0.10)
+
     # pass-by point of every waypoint = its gate on the route (on walked ground), radius = reach - offset
     gates, cur = [], 0
     for k, w in enumerate(W):
@@ -670,10 +772,14 @@ def main():
         votes += v; n_votes += 1
     stairs_line = (votes / max(n_votes, 1)) >= 0.5 if n_votes else np.zeros(len(line), bool)
     gate_i = [g["i"] for g in gates]
+    keep_op = np.zeros(len(line), bool)
     for sp in spliced:                                            # where a partial recording is the reference, its gait counts
         t = trails[sp["recording"]]; lo_, hi_ = gate_i[sp["k"][0]], gate_i[sp["k"][1]]
         dist, idx = cKDTree(t[:, 1:3]).query(line[lo_:hi_ + 1])
         if tl: stairs_line[lo_:hi_ + 1] = np.where(dist < 0.8, flags[sp["recording"]][idx], stairs_line[lo_:hi_ + 1])
+        if tl and pflags[sp["recording"]].any():                 # a platform-gait teaching: the operator's gait as driven, from 6 m before the first ledge
+            on_ = np.where((dist < 0.8) & pflags[sp["recording"]][idx])[0]
+            if len(on_): keep_op[max(lo_, lo_ + int(on_[0]) - 60):hi_ + 1] = True
     # terrain: height of x_nav's ground cloud under the line; steep = steps or slope. The stairs gait is slow, so it is
     # only kept where the operator used it AND the ground needs it.
     gtree = cKDTree(ground_pts[:, :2]); zg = np.full(len(line), np.nan)
@@ -687,7 +793,7 @@ def main():
     from scipy.ndimage import binary_dilation as _dil, binary_closing as _close
     if a.terrain_zones and steep.any():
         need = _dil(steep, iterations=15)                         # 1.5 m before and after
-        stairs_line = stairs_line & need
+        stairs_line = (stairs_line & need) | (stairs_line & keep_op)
         stairs_line = _close(np.pad(stairs_line, 60), iterations=30)[60:-60]    # gaps < 6 m are not worth two gait switches
     def runs(mask, min_len):
         out, k_ = [], 0
@@ -701,6 +807,51 @@ def main():
                 k_ += 1
         return out
     steep_runs = [(round(float(sline[k0]), 1), round(float(sline[k1]), 1)) for k0, k1 in runs(_dil(steep, iterations=8) if steep.any() else steep, 0.5)]
+    # ---- four-gait plan: platform (0x1002) where an operator recording used it; stairs as above; FAST (0xF002) on open,
+    # straight, flat ground; the rest = walk (0x3002, slow). A switch costs ~3 s standing, so short runs are absorbed.
+    platform_line = np.zeros(len(line), bool)
+    plat_refs = [sp["recording"] for sp in spliced if pflags[sp["recording"]].any()]
+    for J in jumps:                                               # only the jump itself; the switch is made standing
+        sJ = sline[int(np.argmin(np.linalg.norm(line - J["xy"], axis=1)))]
+        platform_line |= (sline >= sJ - a.platform_before) & (sline <= sJ + a.platform_after)
+    if not jumps:                                                 # no ledge found: wherever an operator used the gait
+        for d in (plat_refs or demos + patches):
+            if pflags[d].any():
+                dist, idx = cKDTree(line).query(trails[d][pflags[d], 1:3])
+                platform_line[idx[dist < 0.8]] = True
+        if platform_line.any():
+            platform_line = _close(np.pad(_dil(platform_line, iterations=5), 30), iterations=15)[30:-30]   # +-0.5 m, gaps < 3 m
+    if platform_line.any():
+        stairs_line = stairs_line & ~platform_line
+    hd = np.unwrap(np.arctan2(np.gradient(line[:, 1]), np.gradient(line[:, 0])))
+    w_ = 10
+    turn = np.abs(np.r_[np.zeros(w_), hd[2 * w_:] - hd[:-2 * w_], np.zeros(w_)])                     # heading change over 2 m
+    li_, lj_ = grid.idx(line); narrow = clear[li_, lj_] < (HW + a.fast_clearance)
+    fast_line = ~stairs_line & ~platform_line & ~_dil(steep, iterations=10) & ~_dil(turn > math.radians(a.fast_turn_deg), iterations=8) & ~_dil(narrow, iterations=5)
+    fast_line = _close(np.pad(fast_line, 50), iterations=20)[50:-50] & ~stairs_line & ~platform_line   # walk gaps < 4 m absorbed
+    keep = np.zeros(len(line), bool)
+    for k0, k1 in runs(fast_line, a.fast_min_run): keep[k0:k1 + 1] = True
+    fast_line = keep if a.fast_gait else np.zeros(len(line), bool)
+    gait_plan = sorted([(round(float(sline[k0]), 1), round(float(sline[k1]), 1), name) for mask, name, ml in ((platform_line, "platform", 0.5), (stairs_line, "stairs", 1.0), (fast_line, "fast", 1.0)) for k0, k1 in runs(mask, ml)])
+    gait_plan = [list(g) for g in gait_plan]
+    if a.platform_absorb > 0:                                     # short stairs stretch touching a platform zone -> platform
+        for k_, g in enumerate(gait_plan):
+            nb_ = [q for q in (gait_plan[k_ - 1] if k_ else None, gait_plan[k_ + 1] if k_ + 1 < len(gait_plan) else None) if q is not None]
+            if g[2] == "stairs" and g[1] - g[0] < a.platform_absorb and any(q[2] == "platform" and (abs(q[0] - g[1]) < 0.15 or abs(g[0] - q[1]) < 0.15) for q in nb_):
+                g[2] = "platform"
+        merged = []
+        for g in gait_plan:
+            if merged and merged[-1][2] == g[2] and g[0] - merged[-1][1] < 0.15: merged[-1][1] = g[1]
+            else: merged.append(g)
+        gait_plan = merged
+    for ga, gb in zip(gait_plan, gait_plan[1:]):                  # a walk gap < 3 m between two zones = two extra switches: close it
+        if 0.0 < gb[0] - ga[1] < 3.0:
+            if ga[2] == "fast": ga[1] = gb[0]
+            elif gb[2] == "fast": gb[0] = ga[1]
+            else: ga[1] = gb[0]
+    gait_plan = [tuple(g) for g in gait_plan]
+    tot = {n: round(sum(b - a_ for a_, b, m in gait_plan if m == n), 1) for n in ("fast", "stairs", "platform")}
+    print("gait plan (m): fast %.0f, stairs %.0f, platform %.0f, walk %.0f; %d switches" % (tot["fast"], tot["stairs"], tot["platform"], sline[-1] - sum(tot.values()), 2 * len(gait_plan)))
     zones, k = [], 0
     while k < len(line):
         if stairs_line[k]:
@@ -735,14 +886,15 @@ def main():
                     seq += 1; r = dict(r); r["seq"] = seq; f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
     # for the run time: where the ground is steep (slower inside a stairs zone) and which waypoints are driven INTO
-    json.dump(dict(schema="s10_route_terrain_v1", steep=steep_runs,
+    json.dump(dict(schema="s10_route_terrain_v1", steep=steep_runs, gaits=[list(g) for g in gait_plan] if a.gait_plan else [],
+                   jumps=[dict(xy=[round(float(v), 3) for v in J["xy"]], yaw=round(J["yaw"], 4), rise=round(J["rise"], 2), before=J["lane"]["before"], after=J["lane"]["after"]) for J in jumps if J.get("lane")],
                    contact=[dict(id=g["id"], xy=[float(v) for v in wps[g["id"]]["pose"][:2]], radius=a.contact_radius) for g in gates if g.get("contact")]),
               open(os.path.join(ds, "terrain.json"), "w"), indent=1)
     before = {d: turn_stats(trails[d][:, 1:3]) for d in demos}; after = turn_stats(line)
     miss = {g["id"]: round(g["off"], 3) for g in gates}
     rep = dict(session=a.session, demos=demos, gait_demos=gait_demos, before=before, after=after, worst_wp_distance=max(miss.values()),
                wp_distance=miss, zones=[dict(s0=round(float(sline[k0]), 1), s1=round(float(sline[k1]), 1), xy0=[round(float(v), 2) for v in line[k0]], xy1=[round(float(v), 2) for v in line[k1]]) for k0, k1 in zones],
-               legs=report_legs, spliced=[dict(recording=x['recording'], first=x['first'], last=x['last']) for x in spliced], steep=steep_runs, params=dict(contact=contact, dropped=a.drop, corridor=a.corridor, corridor_stairs=a.corridor_stairs, clearance=a.clearance, fillet=a.fillet, reach=a.reach, touch=a.touch, free_at=freed), hairpins=hairpin_notes, body_sweep=dict(repaired=repaired, legs_given_back=[f"{ids[k]}-{ids[k + 1]}" for k in sorted(legs_given_back)], points_on_obstacle=int(bad.sum())), gates=[dict(id=g["id"], offset=round(g["off"], 3), body_distance=g["body"], radius=g["radius"], guaranteed=g["guaranteed"]) for g in gates])
+               legs=report_legs, gait_plan=[list(g) for g in gait_plan], spliced=[dict(recording=x['recording'], first=x['first'], last=x['last']) for x in spliced], steep=steep_runs, params=dict(contact=contact, dropped=a.drop, corridor=a.corridor, corridor_stairs=a.corridor_stairs, clearance=a.clearance, fillet=a.fillet, reach=a.reach, touch=a.touch, free_at=freed), hairpins=hairpin_notes, body_sweep=dict(repaired=repaired, legs_given_back=[f"{ids[k]}-{ids[k + 1]}" for k in sorted(legs_given_back)], points_on_obstacle=int(bad.sum())), gates=[dict(id=g["id"], offset=round(g["off"], 3), body_distance=g["body"], radius=g["radius"], guaranteed=g["guaranteed"]) for g in gates])
     json.dump(rep, open(os.path.join(a.out, "teach_line.json"), "w"), indent=1, ensure_ascii=False)
     print("before:", {d[-6:]: (v["length"], v["kinks_over_15deg"], v["straight_fraction"], v["total_turning_deg"]) for d, v in before.items()})
     print("after :", (after["length"], after["kinks_over_15deg"], after["straight_fraction"], after["total_turning_deg"]), "(length m, kinks > 15 deg, straight fraction, total turning deg)")

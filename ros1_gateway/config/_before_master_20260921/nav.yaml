@@ -1,5 +1,3 @@
-# GENERATED from config/s10_params.yaml (section `nav`) by tools/params.py sync. DO NOT EDIT: this file is
-# overwritten at every start. Change the master file instead (it is LOCKED: operator approval needed).
 # s10_rl_nav_ros1: the team's route runner on the real S10 (ROS 1, AGX).
 # Inputs: x_nav pose + gateway lidar. Output: /rl_nav/cmd_vel + /rl_nav/gait_request
 # for s10_ros1_control (cmd_source rl_nav).
@@ -61,14 +59,14 @@ zone_blind: true
 gains:
   max_forward: 0.6
   max_lateral: 0.2
-  max_yaw_rate: 1.0                # robot maximum (was 0.6 / 0.8): faster pivots at waypoints
+  max_yaw_rate: 0.6
   lookahead: 1.0
   lookahead_speed_gain: 0.8          # carrot = 1.0 m + 0.8 s * v (regulated pure pursuit): calmer at speed
   yaw_gain: 1.0                      # was 1.8
   lateral_gain: 0.6                  # was 0.9
   pivot_threshold_deg: 70.0          # was 35: turn on the spot only when really needed
   align_falloff_deg: 120.0           # between aligned and the pivot limit, slow down gently ...
-  min_speed_fraction: 0.7   # 2026-09-21 20:50 back to 0.7 (operator): with 1.0 the dog ran full speed while still turning after stops/starts (runs 20:02-20:15). 16:40-20:50 it was 1.0
+  min_speed_fraction: 0.7   # strategy1 (09-21): was 0.4 in gains / 0.6 in planner; keep the speed on a straight line
   brake_distance: 0.6                # ease into the last waypoint instead of overshooting
   forward_slew: 3.0   # strategy1: was 1.0
   yaw_slew: 4.0   # strategy1: was 2.0
@@ -144,47 +142,9 @@ pose_jump_deg: 30.0
 # Speed inside a stairs-gait zone (strategy1). The operator's own median in the stairs gait was 0.73 m/s.
 # steep = where the ground map shows steps / slope (terrain.json next to the route). nav_session arm <v> <climb v>
 # replaces cruise.
-# READJUST instead of HOLD (operator, 2026-09-21 18:40): off the line, stalled or refused at a gate, the dog walks
-# on slowly and steers back to the taught line (see nav_core._install_readjust). HOLD only for safety.
-readjust:
-  enabled: true
-  speed: 0.5                       # m/s forward while coming back (was 0: a side-step only, which fails in the stairs gait)
-  lookahead: 1.2                   # m carrot on the line
-  max_yaw: 0.8                     # rad/s
-  lateral: 0.15                    # m/s side-step share
-  hold_beyond_m: 1.5               # farther than this from the line: HOLD
-  timeout_s: 20.0                  # readjusting this long without 0.5 m of progress: HOLD
-
-# JUMP LANE (operator, 2026-09-21 20:30: the gap between the steel stools on the WP17 ledge is about the dog's width).
-# Before a ledge from terrain.json `jumps`: slow straight approach, one check of the body against the lane, pivot /
-# back up and come again, HOLD only if still off (see nav_core._jump_step).
-jump:
-  enabled: true
-  approach_speed: 0.35             # m/s over the straight before the ledge (operator: 0.33-0.37 there)
-  check_at_m: 0.7                  # body centre this far before the ledge when it is checked (nose 0.25 m before it)
-  tol_lateral: 0.10                # m beside the lane. Was 0.05; operator 21:20: "don't be so strict"
-  tol_yaw_deg: 10.0                # deg off square (was 5)
-  backup_m: 0.5                    # m backed up along the lane before coming again (operator: 1 m is too much)
-  backup_speed: 0.2                # m/s
-  retries: 2                       # then: go anyway, unless more than hold_beyond_m beside the lane
-  hold_beyond_m: 0.25              # m: only this far off after the retries is a HOLD (the body would hit what stands beside the gap)
-  pivot_timeout_s: 8.0
-  track: true                      # in a platform zone (0.4 m/s): short-carrot tracking instead of the follower's 1.3 m carrot
-  track_lookahead: 0.5             # m
-  track_yaw_gain: 2.0              # rad/s per rad
-  track_max_yaw: 0.6               # rad/s
-
-# Entering a stairs / platform zone (added 2026-09-21 16:10 after two runs at --speed 1.67 got stuck on the first
-# steps: see nav_core). The dog brakes before the zone so that it ARRIVES at entry_speed, and the zone (gait request,
-# zone speed, blind stretch) begins lead_m before the recorded start.
-zone_entry:
-  lead_m: 0.6                      # m
-  entry_speed: 0.3                 # m/s at the zone start (the first version arrived at 0.29 and always switched)
-  decel: 0.8                       # m/s^2 used for the braking curve before the zone (from 1.67 m/s: the last 1.7 m)
-
 zone_speed:
   cruise: 0.7
-  steep: 0.0                         # 0 = no separate cap on real steps: the whole stairs zone runs at --climb-speed (was 0.45, my own guess)
+  steep: 0.45
   walk: 0.0                          # 0 = no extra cap: the walk gait 0x3002 runs at the run's --speed (as in the room test)
   platform: 0.4                      # 0x1002 高台: climbing a ledge
 
@@ -198,5 +158,6 @@ planner_scale_on_line: 1.0
 # makes within the next ~1.5 s of travel; a turn of full_stop_deg or more brings it down to v_ref.
 corner_speed:
   enabled: true
-  v_ref: 0.6                         # 2026-09-21 20:50 back to 0.6 (operator): 1.0 was a floor that kept 1 m/s through big heading errors
+  v_ref: 0.6
   full_stop_deg: 90.0
+
