@@ -1,0 +1,354 @@
+{
+ "history": [
+  {
+   "when": "2026-09-21 03:51",
+   "sha256": "b9b3d5bf",
+   "note": "initial lock = strategy3 values as deployed 2026-09-21 15:45 (walk uncapped, fast gait off, inflation 0.20, accel 2.0); requested by Bowen: no change without his approval"
+  },
+  {
+   "when": "2026-09-21 04:07",
+   "sha256": "08ebd62b",
+   "note": "zone_entry added (lead 0.6 m, entry 0.3 m/s, decel 0.8): fix for the stairs-entry stall at --speed 1.67, requested by Bowen 2026-09-21 16:00"
+  },
+  {
+   "when": "2026-09-21 04:24",
+   "sha256": "8696275c",
+   "note": "defaults = maximum (speed/climb 1.67, web too); steep cap removed; align slowdown off; yaw 1.0; corner v_ref 1.0; still_time 0.3. Ordered by Bowen 2026-09-21 16:40 (use the -- values, defaults highest, no non-essential limits)"
+  },
+  {
+   "when": "2026-09-21 05:49",
+   "sha256": "8d4d9944",
+   "note": "route_build.v7_o.simulate 1.0/0.7 -> 1.67/1.67 (= run defaults; sim at these speeds: 29/29, 297 s). Approved by Bowen 2026-09-21 ('改 2，其他不动')"
+  },
+  {
+   "when": "2026-09-21 07:25",
+   "sha256": "8bcf2bf9",
+   "note": "nav.readjust added (readjust instead of HOLD: speed 0.5, lookahead 1.2, max_yaw 0.8, lateral 0.15, hold beyond 1.5 m, timeout 20 s). Ordered by Bowen 2026-09-21 18:45 ('fix this, for 1')"
+  },
+  {
+   "when": "2026-09-21 09:03",
+   "sha256": "214140c7",
+   "note": "s4 platform jumps: route_build.v7_o splice +5 platform-gait recordings (193500,193630,194417,194635,194927), strip_backward, contact [] (WP17/WP24 jumped), jump_lane/jump_before 2.0/jump_after 1.0/jump_max_shift 1.5/platform_absorb 4.0, out/routes/installed_as -> s4; new nav.jump block (approach 0.35, check_at 0.7, tol_lateral 0.05, tol_yaw 5, backup_m 0.5, retries 2, platform-zone tracking 0.5/2.0/0.6). Plan approved by Bowen 2026-09-21 ~20:40 ('批准', gap = dog width, back up 0.5 m)"
+  },
+  {
+   "when": "2026-09-21 21:03",
+   "sha256": "7c128267",
+   "note": "gains.min_speed_fraction 1.0 -> 0.7, corner_speed.v_ref 1.0 -> 0.6 (back to the values before 16:40): full speed while still turning after stops/starts caused the 20:02-20:15 exits. Approved by Bowen 2026-09-21 20:50 (修1, 只修yaml)"
+  },
+  {
+   "when": "2026-09-21 09:32",
+   "sha256": "db5c3c4f",
+   "note": "operator 2026-09-21 ~21:20 ('dont be so strict' / 'only use platform mode right before the platform, switch back right after'): teach_line.platform_absorb 4.0 -> 0, platform_before 0.8 / platform_after 1.2 (new); nav.jump.tol_lateral 0.05 -> 0.10, tol_yaw_deg 5 -> 10, hold_beyond_m 0.25 (new: after the retries go anyway unless farther off than this)"
+  }
+ ],
+ "sha256": "db5c3c4fe9a3624aa567c05a0737fdea8b89104f9d832670b6eadd760beaf2e7",
+ "values": {
+  "schema": "s10_params_v1",
+  "run": {
+   "route": "full",
+   "speed": "1.67",
+   "climb_speed": "1.67",
+   "steep_speed": "",
+   "walk_speed": "",
+   "at": "start",
+   "start_radius_m": 1.2,
+   "flat_gait": ""
+  },
+  "web": {
+   "speed": "1.67",
+   "climb_speed": "1.67",
+   "allow_stairs": true
+  },
+  "route_build": {
+   "v7_o": {
+    "map_id": "v7_o",
+    "session": "field_data/20260920-v7_o/session_0921",
+    "map_dir": "field_data/20260920-v7_o/map",
+    "control_logs": "field_data/20260920-v7_o/logs_all",
+    "out": "field_data/20260920-v7_o/teach_line_s4",
+    "routes": {
+     "full": "field_data/20260920-v7_o/routes/v7_o-s4-full",
+     "short": "field_data/20260920-v7_o/routes/v7_o-s4-short"
+    },
+    "installed_as": {
+     "full": "20260921e-v7_o-s4-full",
+     "short": "20260921e-v7_o-s4-short"
+    },
+    "short_last_wp": "WP03",
+    "teach_line": {
+     "demos": [
+      "path_20260921_003133",
+      "path_20260921_004546",
+      "path_20260921_005347"
+     ],
+     "gait_demos": [
+      "path_20260921_004546",
+      "path_20260921_005347"
+     ],
+     "splice": [
+      "path_20260921_102232",
+      "path_20260921_111817",
+      "path_20260921_112020",
+      "path_20260921_112444",
+      "path_20260921_112657",
+      "path_20260921_193500",
+      "path_20260921_193630",
+      "path_20260921_194417",
+      "path_20260921_194635",
+      "path_20260921_194927"
+     ],
+     "strip_backward": [
+      "path_20260921_193500",
+      "path_20260921_193630",
+      "path_20260921_194417",
+      "path_20260921_194635",
+      "path_20260921_194927"
+     ],
+     "drop": [
+      "WP25"
+     ],
+     "contact": [],
+     "contact_radius": 1.5,
+     "free_at": "",
+     "corridor": 0.5,
+     "corridor_stairs": 0.25,
+     "margin": 0.05,
+     "clearance": 0.1,
+     "fillet": 1.2,
+     "reach": 0.45,
+     "touch": 0.2,
+     "body_touch": 0.05,
+     "body_z_offset": 0.41,
+     "terrain_zones": 1,
+     "gait_plan": 1,
+     "fast_gait": 0,
+     "fast_turn_deg": 25.0,
+     "fast_clearance": 0.0,
+     "fast_min_run": 8.0,
+     "jump_lane": 1,
+     "jump_before": 2.0,
+     "jump_after": 1.0,
+     "jump_max_shift": 1.5,
+     "platform_absorb": 0.0,
+     "platform_before": 0.8,
+     "platform_after": 1.2
+    },
+    "teach_to_route": {
+     "tol_z": 5,
+     "step": 0.1,
+     "flat_speed": 1.0,
+     "stairs_speed": 0.3,
+     "body_z_offset": 0.41
+    },
+    "verify": {
+     "margin": 0.05
+    },
+    "simulate": {
+     "speed": 1.67,
+     "stairs_speed": 1.67
+    }
+   }
+  },
+  "nav": {
+   "pose_topic": "/base_link/odom",
+   "lidar_topic": "/LIDAR/POINTS",
+   "attitude_topic": "/IMU",
+   "gait_topic": "/s10_control/gait",
+   "control_state_topic": "/s10_control/state",
+   "control_rate": 20.0,
+   "pose_timeout": 0.3,
+   "obs_timeout": 0.5,
+   "max_points": 60000,
+   "blind_radius": 1.1,
+   "self_box": [
+    0.62,
+    0.33,
+    -0.3
+   ],
+   "self_clear_radius": 0.6,
+   "body_z_offset": 0.41,
+   "lidar_extrinsics": {
+    "translation": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "rpy_deg": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "route_from_xnav_file": "",
+   "lookahead": 1.0,
+   "fuse_frames": 6,
+   "max_step_flat": 0.15,
+   "ignore_pose_z": true,
+   "tracker_back": 0.2,
+   "zone_mode": "gait_only",
+   "zone_blind": true,
+   "gains": {
+    "max_forward": 0.6,
+    "max_lateral": 0.2,
+    "max_yaw_rate": 1.0,
+    "lookahead": 1.0,
+    "lookahead_speed_gain": 0.8,
+    "yaw_gain": 1.0,
+    "lateral_gain": 0.6,
+    "pivot_threshold_deg": 70.0,
+    "align_falloff_deg": 120.0,
+    "min_speed_fraction": 0.7,
+    "brake_distance": 0.6,
+    "forward_slew": 3.0,
+    "yaw_slew": 4.0,
+    "lateral_slew": 0.8
+   },
+   "planner": {
+    "w_lat": 3.0,
+    "w_smooth": 1.0,
+    "w_side_switch": 3.0,
+    "switch_margin": 1.0,
+    "astar_lateral_weight": 5.0,
+    "astar_speed_fraction": 0.7,
+    "min_speed_fraction": 0.7,
+    "commit_length_flat": 0.6,
+    "min_horizon": 0.65,
+    "inflation": 0.2,
+    "full_speed_free_length": 0.8
+   },
+   "lane": {
+    "enabled": true,
+    "half_width": 0.1,
+    "release": 0.05,
+    "heading_deg": 6.0,
+    "heading_gain": 1.2,
+    "heading_max_wz": 0.6,
+    "return_gain": 0.8,
+    "return_max_vy": 0.15,
+    "handback_d": 0.35,
+    "handback_heading_deg": 25.0,
+    "corner_deg": 12.0,
+    "end_zone": 1.0,
+    "steer": true,
+    "steer_gain": 0.9,
+    "steer_max_deg": 20.0,
+    "steer_vy_share": 0.3
+   },
+   "smooth": {
+    "enabled": true,
+    "accel": 2.0,
+    "decel": 3.0,
+    "vy_accel": 0.5,
+    "wz_accel": 4.0,
+    "vy_tau": 0.1,
+    "wz_tau": 0.1
+   },
+   "runner_params": {
+    "walk_v": 0.3,
+    "walk_floor": 0.0,
+    "climb_v": 0.15,
+    "climb_turn_v": 0.1,
+    "approach_v": 0.2,
+    "detour_v": 0.2,
+    "recover_v": 0.2,
+    "backup_v": 0.15,
+    "drop_v": 0.1,
+    "settle_v": 0.15
+   },
+   "pose_jump_m": 0.5,
+   "pose_jump_deg": 30.0,
+   "readjust": {
+    "enabled": true,
+    "speed": 0.5,
+    "lookahead": 1.2,
+    "max_yaw": 0.8,
+    "lateral": 0.15,
+    "hold_beyond_m": 1.5,
+    "timeout_s": 20.0
+   },
+   "jump": {
+    "enabled": true,
+    "approach_speed": 0.35,
+    "check_at_m": 0.7,
+    "tol_lateral": 0.1,
+    "tol_yaw_deg": 10.0,
+    "backup_m": 0.5,
+    "backup_speed": 0.2,
+    "retries": 2,
+    "hold_beyond_m": 0.25,
+    "pivot_timeout_s": 8.0,
+    "track": true,
+    "track_lookahead": 0.5,
+    "track_yaw_gain": 2.0,
+    "track_max_yaw": 0.6
+   },
+   "zone_entry": {
+    "lead_m": 0.6,
+    "entry_speed": 0.3,
+    "decel": 0.8
+   },
+   "zone_speed": {
+    "cruise": 0.7,
+    "steep": 0.0,
+    "walk": 0.0,
+    "platform": 0.4
+   },
+   "planner_scale_on_line": 1.0,
+   "corner_speed": {
+    "enabled": true,
+    "v_ref": 0.6,
+    "full_stop_deg": 90.0
+   }
+  },
+  "control": {
+   "cmd_sources": {
+    "rl_nav": "/rl_nav/cmd_vel",
+    "x_nav": "/cmd_vel"
+   },
+   "cmd_source": "rl_nav",
+   "web_cmd_topic": "/web_cmd",
+   "state_topic": "/s10_control/state",
+   "gait_request_topic": "/rl_nav/gait_request",
+   "gait_topic": "/s10_control/gait",
+   "nav_cmd_rate_hz": 10.0,
+   "cmd_vel_timeout_s": 0.5,
+   "zero_hold_s": 1.0,
+   "motion_info_timeout_s": 0.5,
+   "start_latched": false,
+   "stamp_source": "robot",
+   "exclusive_mode": "messages",
+   "limits": {
+    "max_vx": 0.3,
+    "max_vy": 0.1,
+    "max_wz": 0.5
+   },
+   "stand": {
+    "nav_gait": 12290,
+    "settle_s": 2.0,
+    "step_timeout_s": 15.0,
+    "resend_period_s": 3.0
+   },
+   "lie_down": {
+    "still_speed": 0.05,
+    "still_time_s": 1.0,
+    "wait_still_timeout_s": 5.0,
+    "step_timeout_s": 15.0
+   },
+   "gait_switch": {
+    "still_speed": 0.12,
+    "still_time_s": 0.3,
+    "wait_still_timeout_s": 6.0,
+    "step_timeout_s": 10.0
+   },
+   "web_cmd": {
+    "stand": "cmd4",
+    "lie_down": "cmd3",
+    "stop": "Nav stop",
+    "continue": "Nav continue",
+    "nav_mode": "cmd1",
+    "exit_nav_mode": "cmd2",
+    "source_prefix": "source "
+   }
+  }
+ }
+}
