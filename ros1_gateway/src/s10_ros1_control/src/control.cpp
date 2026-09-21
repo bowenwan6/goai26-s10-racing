@@ -112,9 +112,14 @@ constexpr double kHardVx = 1.67, kHardVy = 0.5, kHardWz = 1.0;
 // If the robot does not confirm it on /MOTION_INFO the usual step timeout latches a stop: it fails safe.
 uint32_t g_flat_gait = kNavFlat;
 
+// Four gaits since 2026-09-21 (field-checked by the operator: /NAV_CMD drives the robot in all of them):
+//   flat 0x3002 (navigation walk) | fast 0xF002 (踏步移动, quick) | stairs 0x3003 | platform 0x1002 (高台, jumps up a ledge)
+constexpr uint32_t kFast = 0xF002, kPlatform = 0x1002;
+
 const char * gait_name(uint32_t g)
 {
-  return (g == kNavFlat || g == g_flat_gait) ? "flat" : g == kNavStairs ? "stairs" : "other";
+  if (g == g_flat_gait) {return "flat";}
+  return g == kNavFlat ? "flat" : g == kNavStairs ? "stairs" : g == kFast ? "fast" : g == kPlatform ? "platform" : "other";
 }
 
 struct Config
@@ -417,11 +422,11 @@ private:
   {
     std::lock_guard<std::mutex> lock(m_);
     const std::string g = trim(m->data);
-    uint32_t code = g == "flat" ? g_flat_gait : g == "stairs" ? kNavStairs : 0;
+    uint32_t code = g == "flat" ? g_flat_gait : g == "stairs" ? kNavStairs : g == "fast" ? kFast : g == "platform" ? kPlatform : 0;
     if (code == 0) {
       if (g != last_bad_gait_req_) {
         last_bad_gait_req_ = g;
-        event("ignored", "{\"gait_request\":" + jstr(g) + ",\"reason\":\"not flat/stairs\"}");
+        event("ignored", "{\"gait_request\":" + jstr(g) + ",\"reason\":\"not flat/fast/stairs/platform\"}");
       }
       return;
     }
@@ -707,7 +712,7 @@ private:
   // ------------------------------------------------------------ velocity
   void nav_tick(double now)
   {
-    const bool nav_mode = fresh(now) && fb_state_ == kRl && (fb_gait_ == kNavFlat || fb_gait_ == kNavStairs || fb_gait_ == g_flat_gait);
+    const bool nav_mode = fresh(now) && fb_state_ == kRl && (fb_gait_ == kNavFlat || fb_gait_ == kNavStairs || fb_gait_ == g_flat_gait || fb_gait_ == kFast || fb_gait_ == kPlatform);
     const bool cmd_fresh = now - cmd_rx_ < cfg_.cmd_timeout;
     const bool allowed = fault_.empty() && !latched_ && !lie_block_ && !gait_block_ && seq_ == Seq::None && nav_mode;
     if (allowed && cmd_fresh) {

@@ -33,6 +33,7 @@ from std_msgs.msg import String
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROUTES = os.path.expanduser("~/routes")
+START_RADIUS = 1.2                     # overwritten from config/s10_params.yaml (run.start_radius_m) in main()
 NAV = os.path.join(ROOT, "scripts", "nav_session.sh")
 
 
@@ -125,7 +126,7 @@ def start_here(route_dir, x, y, yaw, k0=0):
     line = seg["centerline"]
     old_len = seglen(line)
     i = min(range(len(line)), key=lambda k: math.hypot(line[k][0] - x, line[k][1] - y))
-    if math.hypot(line[i][0] - x, line[i][1] - y) > 1.2:
+    if math.hypot(line[i][0] - x, line[i][1] - y) > START_RADIUS:
         die(f"the dog is {math.hypot(line[i][0] - x, line[i][1] - y):.1f} m from the line {seg['id']}: drive it closer, or the localisation is wrong")
     ahead = line[i + 1:] if i + 1 < len(line) else line[-1:]
     while len(ahead) > 1 and math.hypot(ahead[0][0] - x, ahead[0][1] - y) < 0.15:
@@ -142,7 +143,7 @@ def start_here(route_dir, x, y, yaw, k0=0):
         prev = p
     seg["centerline"] = pts
     seg["length_m"] = round(seglen(pts), 2)
-    w0["position"] = [first[0], first[1], w0["position"][2]]
+    w0["position"] = [first[0], first[1], first[2]]       # same height as the first line point: the route validator compares them (slopes!)
     w0["yaw"] = round(yaw, 4)
     dst = route_dir.rstrip("/") + "-here"
     import shutil
@@ -168,6 +169,7 @@ def start_here(route_dir, x, y, yaw, k0=0):
         td = json.load(open(ter))
         shift = dropped + old_len - seg["length_m"]
         td["steep"] = [[max(0.0, a_ - shift), b_ - shift] for a_, b_ in td.get("steep", []) if b_ - shift > 0.0]
+        td["gaits"] = [[max(0.0, a_ - shift), b_ - shift, n_] for a_, b_, n_ in td.get("gaits", []) if b_ - shift > 0.0]
         json.dump(td, open(os.path.join(dst, "terrain.json"), "w"), indent=1)
     clr = os.path.join(route_dir, "clearance.json")
     if os.path.exists(clr):                               # same line, minus what is behind the dog: the check still holds
@@ -213,17 +215,26 @@ class Run:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--speed", default="1.0", help="forward speed: m/s (up to 1.67), or a multiplier of the robot maximum like 0.7x, or zero|probe|flat")
-    ap.add_argument("--climb-speed", default="1.0", help="speed in a stairs-gait zone where the ground is gentle, m/s")
-    ap.add_argument("--steep-speed", default="", help="speed in a stairs-gait zone on real steps / slopes, m/s (default: nav.yaml zone_speed.steep 0.45)")
-    ap.add_argument("--route", default="full", help="short | full | a route dir")
+    import yaml
+    P = (yaml.safe_load(open(os.path.join(ROOT, "config", "s10_params.yaml"))) or {}).get("run", {})   # THE parameter file (locked)
+    globals()["START_RADIUS"] = float(P.get("start_radius_m", 1.2))
+    ap.add_argument("--speed", default=str(P.get("speed", "1.0")), help="forward speed: m/s (up to 1.67), or a multiplier of the robot maximum like 0.7x, or zero|probe|flat")
+    ap.add_argument("--climb-speed", default=str(P.get("climb_speed", "1.0")), help="speed in a stairs-gait zone where the ground is gentle, m/s")
+    ap.add_argument("--steep-speed", default=str(P.get("steep_speed", "") or ""), help="speed in a stairs-gait zone on real steps / slopes, m/s (default: nav.yaml zone_speed.steep 0.45)")
+    ap.add_argument("--route", default=str(P.get("route", "full")), help="short | full | a route dir")
     ap.add_argument("--from", dest="frm", default="", help="resume in the middle: WP08 (the dog stands at that waypoint) or here (nearest stretch of the line)")
     ap.add_argument("--map", default="", help="x_nav map name (default: the route's map_id)")
-    ap.add_argument("--at", choices=["start", "end"], default="start",
+    ap.add_argument("--at", choices=["start", "end"], default=str(P.get("at", "start")),
                     help="only used when localisation has to be initialised: which end of the route the dog stands on")
-    ap.add_argument("--flat-gait", default="", help="EXPERIMENT: gait code used instead of the navigation flat gait 0x3002 (0xF002 踏步移动, 0x1002 高台, 0x1001 基础)")
+    ap.add_argument("--walk-speed", default=str(P.get("walk_speed", "") or ""), help="speed of the slow walk 0x3002 on routes with a gait plan, m/s (default: nav.yaml zone_speed.walk 0.6)")
+    ap.add_argument("--flat-gait", default=str(P.get("flat_gait", "") or ""), help="EXPERIMENT: gait code used instead of the navigation flat gait 0x3002 (0xF002 踏步移动, 0x1002 高台, 0x1001 基础)")
     ap.add_argument("--shadow", action="store_true", help="no motion: status only, drive with the remote")
     a = ap.parse_args()
+    rc_, out_ = sh("python3", os.path.join(ROOT, "tools", "params.py"), "sync", "--quiet", quiet=True)
+    rc_, out_ = sh("python3", os.path.join(ROOT, "tools", "params.py"), "check", quiet=True)
+    say("params: " + (out_.strip().splitlines() or ["?"])[-1])
+    say(f"run: route {a.route} | speed {a.speed} | climb {a.climb_speed} | steep {a.steep_speed or 'file'} | walk cap {a.walk_speed or 'file'}"
+        + (f" | from {a.frm}" if a.frm else "") + (f" | FLAT GAIT {a.flat_gait}" if a.flat_gait else ""))
 
     # one run at a time: a second start would stop the first one's nodes in the middle of arming
     import fcntl
@@ -300,9 +311,9 @@ def main():
     else:
         d0 = math.hypot(x - first["position"][0], y - first["position"][1])
         d1 = math.hypot(x - last["position"][0], y - last["position"][1])
-        if d0 <= 1.2:
+        if d0 <= START_RADIUS:
             say(f"4/6 dog at the route START ({d0:.2f} m from {first['id']}): forward route")
-        elif d1 <= 1.2:
+        elif d1 <= START_RADIUS:
             route = reverse_route(route)
             say(f"4/6 dog at the route END ({d1:.2f} m from {last['id']}): reverse route {route}")
         else:
@@ -344,18 +355,24 @@ def main():
         if a.flat_gait:
             os.environ["S10_FLAT_GAIT"] = a.flat_gait
             say(f"    EXPERIMENT: flat gait = {a.flat_gait} instead of 0x3002 (not in the developer guide for /GAIT; a refusal latches a stop)")
+        if a.walk_speed:
+            os.environ["S10_WALK_V"] = str(float(a.walk_speed))
         if a.steep_speed:
             os.environ["S10_STEEP_V"] = str(float(a.steep_speed))
         rc, out = sh("bash", NAV, "arm", a.speed, route, a.climb_speed, quiet=True)
         if "ARMED" not in out:
-            print(out[-600:])
-            die("arming failed")
+            errs = [l for l in out.splitlines() if "Error" in l or "error" in l]
+            print("    " + (errs[-1].strip() if errs else out[-400:]))
+            die("arming failed (full output: ~/ros1_gateway/logs/nav-*.log, newest)")
         rc, out = sh("bash", NAV, "usemode", "nav", quiet=True)
         if "MODE_OK 1" not in out and "already in mode 1" not in out:
             print(out[-400:])
             die("the robot did not enter navigation use mode (ASDU). Is encryption off? robot_session.sh tls status")
-        say(f"6/6 armed at {a.speed}, navigation mode on. GO in 3 s  (Ctrl-C = stop)")
-        time.sleep(3.0)
+        if a.frm:                                    # resuming (--from here / --from WPxx): go at once (operator 2026-09-21)
+            say(f"6/6 armed at {a.speed}, navigation mode on. GO  (Ctrl-C = stop)")
+        else:
+            say(f"6/6 armed at {a.speed}, navigation mode on. GO in 3 s  (Ctrl-C = stop)")
+            time.sleep(3.0)
         sh("bash", NAV, "go", quiet=True)
         t0, last_line = time.monotonic(), ""
         while not rospy.is_shutdown():
