@@ -25,7 +25,7 @@
    - 这是任何一个录制真正变成地图的唯一途径。成功后，以后建图途中再复位也不会丢数据。
    - 第一次运动不依赖它。
 
-第一次运动的顺序，所有运动指令都由你本人在现场发出，Claude 不发任何运动指令：
+第一次运动的顺序，所有运动指令都由操作员本人在现场发出，自动化工具和脚本不会自行发出任何运动指令：
    1. 遥控驾驶 + control DRY RUN 的 shadow。
    2. armed 零速度：站立、步态切换、遥控器接管。
    3. 0.10 m/s 短探测。这一步回答 ASDU 模式的问题。
@@ -476,7 +476,7 @@ GATE:
 
 - **需要机器人：** Yes. This is the first time our node publishes to the robot: stand, gait and lie only.
 
-The user is on site holding the remote as the only e-stop, with a second person on the laptop. The user types every command and confirms every step. Claude never arms, never sends cmd4/cmd3 or 'start', and never sets the ASDU mode.
+The user is on site holding the remote as the only e-stop, with a second person on the laptop. The user types every command and confirms every step. Nothing arms the control node, sends cmd4/cmd3 or 'start', or sets the ASDU mode unless the operator on site runs that command.
 - **用时：** 45-60 min on site
 
 PROVES:
