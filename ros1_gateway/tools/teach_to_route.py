@@ -134,7 +134,7 @@ def build_from_session(args):
     for k, w in enumerate(ids):
         p = wps[w]["pose"]
         waypoints.append(dict(id=w, position=[round(p[0], 3), round(p[1], 3), round(p[2] - zoff, 3)], yaw=round(p[3], 4),
-                              radius_xy=float(args.radius), tol_z=float(args.tol_z), terrain="", confidence="high",
+                              radius_xy=float(wps[w].get("radius_xy") or args.radius), tol_z=float(args.tol_z), terrain="", confidence="high",
                               mark_seq=wps[w]["seq"], mark_std_xy=wps[w]["result"].get("std_xy")))
     # --- SWIN/SWOUT zones on the trail
     # Paired in the order they lie ALONG THE TAUGHT PATH, not the order they were pressed: a
@@ -175,7 +175,7 @@ def build_from_session(args):
         line[:, 2] -= zoff
         line[0, :2] = waypoints[k]["position"][:2]
         line[-1, :2] = waypoints[k + 1]["position"][:2]
-        line = resample_xy(line, 0.20)
+        line = resample_xy(line, float(args.step))
         # stairs segment = a switch zone covers at least half of it. A zone that only clips the
         # end of a long flat segment leaves it flat (full flat speed, detours allowed); the runner
         # still hands over to the stairs gait at the zone start, by arc length.
@@ -217,6 +217,7 @@ def main():
     ap.add_argument("--map-id", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--path-recording", default="")
+    ap.add_argument("--step", type=float, default=0.20, help="centreline spacing, m (teach_line routes: 0.10, so the route file is the verified line)")
     ap.add_argument("--last-wp", default="", help="stop the route at this WP (e.g. WP02 for a flat first test)")
     ap.add_argument("--body-z-offset", type=float, default=0.41)
     ap.add_argument("--flat-speed", type=float, default=1.0, help="per-segment cap; the run speed is set at arm time")
@@ -246,6 +247,19 @@ def main():
                               policy="stairs", kinds=["teach:SWIN/SWOUT"], warnings=["no edge prior (from teach marks): handover at s_first"]))
         _ = s0
     save_maneuvers(out / "maneuvers.json", zones, route_id=args.map_id, source="teach_to_route")
+    tj = Path(args.session).expanduser() / "terrain.json" if args.session else None
+    if tj is not None and tj.exists():                     # teach_line: steep stretches (line arc length -> route arc length), contact waypoints
+        td = json.loads(tj.read_text())
+        trail_s = np.r_[0.0, np.cumsum(np.linalg.norm(np.diff(np.asarray(txy)[:, :2], axis=0), axis=1))]
+        def to_route(sv):
+            k = int(np.argmin(np.abs(trail_s - sv))); near = np.abs(np.asarray(path.s, float) - sv) < 8.0   # same stretch of the course, not the way back
+            pts = np.asarray(path.points if hasattr(path, "points") else path.xyz, float)[:, :2]
+            dd = np.where(near, np.linalg.norm(pts - np.asarray(txy[k][:2], float), axis=1), np.inf)
+            return round(float(np.asarray(path.s, float)[int(np.argmin(dd))]), 2)
+        td["steep"] = [[to_route(a_), to_route(b_)] for a_, b_ in td.get("steep", [])]
+        keep_ids = {w.id for w in route.waypoints}
+        td["contact"] = [q for q in td.get("contact", []) if q["id"] in keep_ids]
+        (out / "terrain.json").write_text(json.dumps(td, indent=1))
     report.update(waypoints=len(route.waypoints), segments=len(route.segments), length_m=round(float(path.length), 1),
                   stairs_segments=[s.id for s in route.segments if s.gait == "stairs"],
                   zones=[dict(id=z.id, s0=round(z.s0, 2), s1=round(z.s1, 2)) for z in zones])
