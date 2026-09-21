@@ -256,7 +256,9 @@ def main():
             pts = np.asarray(path.points if hasattr(path, "points") else path.xyz, float)[:, :2]
             dd = np.where(near, np.linalg.norm(pts - np.asarray(txy[k][:2], float), axis=1), np.inf)
             return round(float(np.asarray(path.s, float)[int(np.argmin(dd))]), 2)
-        td["steep"] = [[to_route(a_), to_route(b_)] for a_, b_ in td.get("steep", [])]
+        L_ = float(path.length)                              # a shortened route (--last-wp): what lies beyond its end is dropped
+        td["steep"] = [[to_route(a_), to_route(min(b_, L_))] for a_, b_ in td.get("steep", []) if a_ < L_ - 0.5]
+        td["gaits"] = [[to_route(a_), to_route(min(b_, L_)), n_] for a_, b_, n_ in td.get("gaits", []) if a_ < L_ - 0.5]
         keep_ids = {w.id for w in route.waypoints}
         td["contact"] = [q for q in td.get("contact", []) if q["id"] in keep_ids]
         (out / "terrain.json").write_text(json.dumps(td, indent=1))

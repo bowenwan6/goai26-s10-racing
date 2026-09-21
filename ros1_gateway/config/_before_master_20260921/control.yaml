@@ -1,5 +1,3 @@
-# GENERATED from config/s10_params.yaml (section `control`) by tools/params.py sync. DO NOT EDIT: this file is
-# overwritten at every start. Change the master file instead (it is LOCKED: operator approval needed).
 # s10_ros1_control: ROS 1 velocity sources + /web_cmd + gait requests -> S10 native ROS 2
 # control (/NAV_CMD, /MOTION_STATE, /GAIT), with feedback from /MOTION_INFO.
 #
@@ -51,7 +49,7 @@ lie_down:                          # web_cmd "cmd3"
 
 gait_switch:                       # /rl_nav/gait_request flat <-> stairs (only in RL control)
   still_speed: 0.12                # was 0.05: the 踏步 gait 0xF002 marks time, its measured speed never settles below 0.05
-  still_time_s: 0.3                # ... for this long (developer guide: switch gait only when stopped)  (was 1.0)
+  still_time_s: 1.0                # ... for this long (developer guide: switch gait only when stopped)
   wait_still_timeout_s: 6.0
   step_timeout_s: 10.0             # /GAIT not confirmed by /MOTION_INFO -> latched stop
 

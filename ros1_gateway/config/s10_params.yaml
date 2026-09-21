@@ -1,0 +1,364 @@
+# =====================================================================================================================
+# S10 navigation: ALL parameters in ONE file.                                            (master file, 2026-09-21)
+#
+#   LOCKED.  Do not change a value in this file without the operator's approval (Bowen).  After an approved change:
+#            python3 tools/params.py lock "<what changed and who approved>"
+#   Every run prints whether this file still matches the lock.
+#
+#   config/nav.yaml, config/control.yaml and config/web_nav.json are GENERATED from this file every time a script
+#   starts (tools/params.py sync).  Editing them has no effect: they are overwritten.
+#
+#   Sections
+#     run          defaults of the one-command run            scripts/nav_run.py  (robot_session.sh nav)
+#     web          what the teammate's page uses              web_entry/s10_web_navigation.py
+#     route_build  how each route was generated               tools/build_route.py <name>
+#     nav          the navigation node                        nav/s10_rl_nav_ros1.py + nav/nav_core.py
+#     control      the control node (the only motion output)  src/s10_ros1_control
+# =====================================================================================================================
+schema: s10_params_v1
+
+# ---------------------------------------------------------------------------------------------------------------------
+# run: defaults of `robot_session.sh nav` (every one can still be given on the command line for ONE run)
+# ---------------------------------------------------------------------------------------------------------------------
+run:
+  route: full                        # full | short | a route directory.  full/short = the newest route of that kind in ~/routes
+  speed: "1.67"                       # walk gait 0x3002 forward limit, m/s (robot maximum 1.67) or "0.7x" = 0.7 of the maximum.
+                                     # The lateral limit follows: min(0.40, speed / 2); yaw limit 1.0 rad/s
+  climb_speed: "1.67"                 # stairs-gait zone, gentle ground, m/s
+  steep_speed: ""                    # stairs-gait zone on real steps / slopes, m/s.  "" = nav.zone_speed.steep (0.45)
+  walk_speed: ""                     # extra cap on the walk gait, m/s.  "" = nav.zone_speed.walk (0 = none, runs at `speed`)
+  at: start                          # without a pose: initial pose = the route's first (start) or last (end) waypoint
+  start_radius_m: 1.2                # the dog must stand this close to the start waypoint / to the line when resuming
+  flat_gait: ""                      # EXPERIMENT only: another gait instead of 0x3002 (0xF002 | 0x1002 | 0x1001).  "" = off
+
+# ---------------------------------------------------------------------------------------------------------------------
+# web: defaults of the page (the page's own speed boxes override speed / climb_speed for one run)
+# ---------------------------------------------------------------------------------------------------------------------
+web:
+  speed: "1.67"
+  climb_speed: "1.67"
+  allow_stairs: true                 # also list routes that have stairs-gait zones
+
+# ---------------------------------------------------------------------------------------------------------------------
+# route_build: the exact arguments every installed route was generated with (tools/build_route.py <name> repeats it)
+# ---------------------------------------------------------------------------------------------------------------------
+route_build:
+  v7_o:
+    map_id: v7_o
+    session: field_data/20260920-v7_o/session_0921            # relative to s10-real-readiness/
+    map_dir: field_data/20260920-v7_o/map
+    control_logs: field_data/20260920-v7_o/logs_all
+    out: field_data/20260920-v7_o/teach_line_s4
+    routes: {full: field_data/20260920-v7_o/routes/v7_o-s4-full, short: field_data/20260920-v7_o/routes/v7_o-s4-short}
+    installed_as: {full: 20260921e-v7_o-s4-full, short: 20260921e-v7_o-s4-short}   # s3 (20260921d-...) stays on the AGX as the fallback
+    short_last_wp: WP03
+    teach_line:
+      demos: [path_20260921_003133, path_20260921_004546, path_20260921_005347]      # full demonstrations
+      gait_demos: [path_20260921_004546, path_20260921_005347]                       # operator gait is taken from these
+      splice: [path_20260921_102232, path_20260921_111817, path_20260921_112020, path_20260921_112444, path_20260921_112657,
+               path_20260921_193500, path_20260921_193630,                           # WP14-WP18 over the WP17 ledge in the platform gait (runs 4, 5; 1-3 ignored)
+               path_20260921_194417, path_20260921_194635, path_20260921_194927]     # WP22-WP30 over the two ledges WP24 / before WP26 (runs 3-5; 1-2 ignored)
+      strip_backward: [path_20260921_193500, path_20260921_193630, path_20260921_194417, path_20260921_194635, path_20260921_194927]   # backward slips cut out
+      drop: [WP25]                   # cancelled waypoints
+      contact: []                    # waypoints the dog drives INTO (wall / platform edge). Was [WP17, WP24] up to s3: they are JUMPED now
+      contact_radius: 1.5            # m: the wall inside this radius is not an obstacle (generation, check and run time)
+      free_at: ""                    # operator statement "no obstacle here", e.g. "WP06:0.6".  Keep it small.
+      corridor: 0.5                  # m the line may move sideways from demonstrated ground (flat gait)
+      corridor_stairs: 0.25          # ... in the stairs gait
+      margin: 0.05                   # m kept between the body and every obstacle (unless the operator passed closer)
+      clearance: 0.10                # m kept between the body side and obstacles when straightening
+      fillet: 1.2                    # m largest corner radius
+      reach: 0.45                    # m body centre this close to a mark = touched whatever the heading
+      touch: 0.20                    # m the line passes every mark within this
+      body_touch: 0.05               # m the body sweep must come this close to the mark
+      body_z_offset: 0.41
+      terrain_zones: 1               # stairs gait only where the operator used it AND the ground map shows steps / slope
+      gait_plan: 1                   # write the gait plan (stairs / platform; the rest = walk)
+      fast_gait: 0                   # 0xF002 stretches: OFF (2026-09-21: it does not follow the commanded speed)
+      fast_turn_deg: 25.0
+      fast_clearance: 0.0
+      fast_min_run: 8.0
+      jump_lane: 1                   # straight lane, square to the ledge, through the operators' crossing point, at every platform-gait ledge
+      jump_before: 2.0               # m straight before the ledge (shortened automatically: waypoint touch, corridor, body sweep)
+      jump_after: 1.0                # m straight after it
+      jump_max_shift: 1.5            # m a lane may move the line sideways (always inside the recordings' corridor)
+      platform_absorb: 0.0           # 0 = off (operator 21:20: platform gait ONLY for the jump). Was 4.0: short stairs stretches next to a platform zone joined it
+      platform_before: 0.8           # m before the ledge the platform gait starts (operator switched 0.5-0.6 m before it, standing)
+      platform_after: 1.2            # m after the ledge it ends (hind legs up), then straight back to the operator's gait (stairs / walk)
+    teach_to_route: {tol_z: 5, step: 0.10, flat_speed: 1.0, stairs_speed: 0.30, body_z_offset: 0.41}
+    verify: {margin: 0.05}           # free_at = the contact waypoints with contact_radius (+ teach_line.free_at)
+    simulate: {speed: 1.67, stairs_speed: 1.67}   # = run.speed / run.climb_speed: the simulation checks the speeds the run uses (was 1.0 / 0.7)
+
+# ---------------------------------------------------------------------------------------------------------------------
+# nav: the navigation node  ->  generated config/nav.yaml
+# ---------------------------------------------------------------------------------------------------------------------
+nav:
+  # s10_rl_nav_ros1: the team's route runner on the real S10 (ROS 1, AGX).
+  # Inputs: x_nav pose + gateway lidar. Output: /rl_nav/cmd_vel + /rl_nav/gait_request
+  # for s10_ros1_control (cmd_source rl_nav).
+
+  pose_topic: /base_link/odom          # x_nav localisation (Odometry / PoseStamped / PoseWithCovarianceStamped)
+  lidar_topic: /LIDAR/POINTS           # gateway, lidar frame (frame_id lidar_link)
+  attitude_topic: /IMU                 # robot IMU: roll/pitch for levelling (x_nav's are biased); "" = use the pose
+  gait_topic: /s10_control/gait        # confirmed gait from s10_ros1_control
+  control_state_topic: /s10_control/state
+
+  control_rate: 20.0
+  pose_timeout: 0.3                    # s; older pose -> zero command
+  obs_timeout: 0.5                     # s; older grid/scan -> the runner gets none
+  max_points: 60000                    # cloud subsample before the height grid (CPU bound)
+
+  # Lidar blind zone around the body (no floor returns): unseen cells within this radius take the
+  # nearest seen height. 0 = off. Measured on dog 048: no returns within about 0.6 m ahead.
+  blind_radius: 1.1
+
+  # The robot's own body and legs in the cloud, and the floor it stands on (2026-09-20, dog 048: every
+  # candidate "blocked at 0.00 m" every other second while walking on a clear floor).
+  self_box: [0.62, 0.33, -0.30]        # |x| < 0.62, |y| < 0.33, z > -0.30 m: dropped before the grid and the scan
+  self_clear_radius: 0.6               # grid cells this close to the body centre = median floor height
+
+  # Body reference point above the ground the route's z refers to (route z_reference: ground).
+  # MEASURED on dog 048 standing in RL control, 2026-09-20 (tools/check_ground_plane.py: ground
+  # 0.414 m below the cloud origin; /MOTION_INFO height 0.419). Use the same number in
+  # teach_to_route.py (--body-z-offset). Lying down is 0.07-0.08.
+  body_z_offset: 0.41
+
+  # /LIDAR/POINTS (frame lidar_link) is the vendor driver's MERGED cloud of the front and back
+  # lidars. The driver's per-lidar extrinsics (front x=+0.22341, back x=-0.22341, z=-0.0001) are
+  # the same as front_lidar_joint / back_lidar_joint in S10.urdf relative to base_link, so the
+  # merged cloud is already in base_link: identity here. Checked on live data by
+  # tools/check_ground_plane.py (ground level and at -body height).
+  lidar_extrinsics:
+    translation: [0.0, 0.0, 0.0]
+    rpy_deg: [0.0, 0.0, 0.0]
+
+  # x_nav map -> route map (only when the route was made on another map). Empty: identity.
+  route_from_xnav_file: ""
+
+  lookahead: 1.0
+  fuse_frames: 6                       # was 3: steadier height grid
+  max_step_flat: 0.15                  # real lidar: 2-3 cm noise plus a 5-8 cm ridge seen on flat floor (0.07 flickered BLOCKED)
+
+  # Stairs zones with the VENDOR gaits: "gait_only" = same follower, the zone only switches the gait (by arc
+  # length, where the operator switched it) and applies the stairs speed cap; inside a zone the local height
+  # grid and scan are ignored (zone_blind): the taught line is followed as the operator walked it.
+  # "maneuver" = the approach / align / climb state machine made for the RL stairs policy.
+  ignore_pose_z: true                  # height from the route, not from x_nav (unreliable z); single-level courses only
+  tracker_back: 0.2                    # m the route projection may move backwards (dead-end turn-arounds: see nav_core)
+  zone_mode: gait_only                 # 2026-09-21: full v7_o course 29/29 in the kinematic simulation (tests/nav/sim_full_route.py)
+  zone_blind: true
+
+  # Path tracking. 2026-09-20 on dog 048 at 0.7 m/s: yaw commands flipped between +0.8 and -0.8 rad/s
+  # every second with only a few cm of cross-track error, forward speed was zeroed for "pivots" and the
+  # local planner flickered between centreline / detour / A* on a clear floor: 5 m took 36 s. Hence:
+  gains:
+    max_forward: 0.6
+    max_lateral: 0.2
+    max_yaw_rate: 1.0                # robot maximum (was 0.6 / 0.8): faster pivots at waypoints
+    lookahead: 1.0
+    lookahead_speed_gain: 0.8          # carrot = 1.0 m + 0.8 s * v (regulated pure pursuit): calmer at speed
+    yaw_gain: 1.0                      # was 1.8
+    lateral_gain: 0.6                  # was 0.9
+    pivot_threshold_deg: 70.0          # was 35: turn on the spot only when really needed
+    align_falloff_deg: 120.0           # between aligned and the pivot limit, slow down gently ...
+    min_speed_fraction: 0.7   # 2026-09-21 20:50 back to 0.7 (operator): with 1.0 the dog ran full speed while still turning after stops/starts (runs 20:02-20:15). 16:40-20:50 it was 1.0
+    brake_distance: 0.6                # ease into the last waypoint instead of overshooting
+    forward_slew: 3.0   # strategy1: was 1.0
+    yaw_slew: 4.0   # strategy1: was 2.0
+    lateral_slew: 0.8                  # m/s^2
+
+  # Local planner costs: leaving the taught line must be expensive, so it happens for a real obstacle,
+  # not for one noisy frame. (w_smooth must stay below w_lat.)
+  planner:
+    w_lat: 3.0                         # was 1.0: cost of a lateral offset
+    w_smooth: 1.0                      # was 0.3
+    w_side_switch: 3.0                 # was 1.0: changing side
+    switch_margin: 1.0                 # was 0.3: keep the current target unless another is clearly better
+    astar_lateral_weight: 5.0          # was 2.0: A* paths hug the taught line, turn only where needed
+    astar_speed_fraction: 0.7          # was 0.5
+    min_speed_fraction: 0.7   # strategy1 (09-21): was 0.4 in gains / 0.6 in planner; keep the speed on a straight line
+    commit_length_flat: 0.6            # was 1.0: the live grid reaches ~0.9 m; 1.0 also flickered BLOCKED in the last metre
+                                       # before a waypoint (free length = remaining length, quantised), freezing the run
+    min_horizon: 0.65                  # was 0.3. Closer than this to a waypoint the robot heads straight for it. Must be
+                                       # > commit_length: below it the planner compares a quantised free length with the
+                                       # remaining distance and wrongly reports BLOCKED (always, where detours are off)
+    inflation: 0.20                    # 09-21: was 0.3 (team default). Obstacle or unknown cells within this distance of the body
+                                       # slow the robot in proportion, to half speed at most
+    full_speed_free_length: 0.8   # strategy1: was 1.0; the live grid reaches ~0.9 m, 1.0 kept the scale below 1 on open road
+
+  # Bowling lane: inside +-half_width of the taught line (and within heading_deg of its direction) the
+  # robot gets NO lateral or heading correction. Outside, the correction grows smoothly from the lane
+  # edge and ends at `release`. Beyond handback_* the follower's own command is used.
+  lane:
+    enabled: true
+    half_width: 0.10                   # m
+    release: 0.05                      # m  (hysteresis: correction ends here)
+    heading_deg: 6.0                   # heading dead band
+    heading_gain: 1.2   # strategy1: was 0.8
+    heading_max_wz: 0.6   # strategy1: was 0.35 rad/s
+    return_gain: 0.8                   # 1/s on (|d| - release)
+    return_max_vy: 0.15                # m/s sideways while returning
+    handback_d: 0.35                   # m
+    handback_heading_deg: 25.0
+    corner_deg: 12.0                   # the route turns more than this within the next 1.2 m: the follower steers
+    end_zone: 1.0                      # m before the route end: follower brakes and aligns
+    steer: true                        # strategy1: come back to the line by STEERING (Stanley), not by side-stepping
+    steer_gain: 0.9                    # 1/s: heading offset = atan(gain * offset / speed)
+    steer_max_deg: 20.0
+    steer_vy_share: 0.3                # share of the old sideways correction that is kept
+
+  # Output smoothing (20 Hz): acceleration limits + low pass. HOLD / DONE / pause stop at once.
+  smooth:
+    enabled: true
+    accel: 2.0   # strategy1: was 0.6 m/s^2
+    decel: 3.0   # strategy1: was 1.0
+    vy_accel: 0.5
+    wz_accel: 4.0   # strategy1: was 1.5 rad/s^2
+    vy_tau: 0.10   # strategy1: was 0.25 s
+    wz_tau: 0.10   # strategy1: was 0.25 s
+  # (walk 0.6 / floor 0.5 / climb 0.3) are the RL policies'; the native flat gait has no stall
+  # floor. s10_ros1_control clamps to its own limits (0.30 / 0.10 / 0.50) on top of these.
+  runner_params:
+    walk_v: 0.30
+    walk_floor: 0.0
+    climb_v: 0.15
+    climb_turn_v: 0.10
+    approach_v: 0.20
+    detour_v: 0.20
+    recover_v: 0.20
+    backup_v: 0.15
+    drop_v: 0.10
+    settle_v: 0.15
+
+  # Localisation jump between two pose messages -> pause until the operator sends "start" again.
+  pose_jump_m: 0.5
+  pose_jump_deg: 30.0
+
+  # Speed inside a stairs-gait zone (strategy1). The operator's own median in the stairs gait was 0.73 m/s.
+  # steep = where the ground map shows steps / slope (terrain.json next to the route). nav_session arm <v> <climb v>
+  # replaces cruise.
+  # READJUST instead of HOLD (operator, 2026-09-21 18:40): off the line, stalled or refused at a gate, the dog walks
+  # on slowly and steers back to the taught line (see nav_core._install_readjust). HOLD only for safety.
+  readjust:
+    enabled: true
+    speed: 0.5                       # m/s forward while coming back (was 0: a side-step only, which fails in the stairs gait)
+    lookahead: 1.2                   # m carrot on the line
+    max_yaw: 0.8                     # rad/s
+    lateral: 0.15                    # m/s side-step share
+    hold_beyond_m: 1.5               # farther than this from the line: HOLD
+    timeout_s: 20.0                  # readjusting this long without 0.5 m of progress: HOLD
+
+  # JUMP LANE (operator, 2026-09-21 20:30: the gap between the steel stools on the WP17 ledge is about the dog's width).
+  # Before a ledge from terrain.json `jumps`: slow straight approach, one check of the body against the lane, pivot /
+  # back up and come again, HOLD only if still off (see nav_core._jump_step).
+  jump:
+    enabled: true
+    approach_speed: 0.35             # m/s over the straight before the ledge (operator: 0.33-0.37 there)
+    check_at_m: 0.7                  # body centre this far before the ledge when it is checked (nose 0.25 m before it)
+    tol_lateral: 0.10                # m beside the lane. Was 0.05; operator 21:20: "don't be so strict"
+    tol_yaw_deg: 10.0                # deg off square (was 5)
+    backup_m: 0.5                    # m backed up along the lane before coming again (operator: 1 m is too much)
+    backup_speed: 0.2                # m/s
+    retries: 2                       # then: go anyway, unless more than hold_beyond_m beside the lane
+    hold_beyond_m: 0.25              # m: only this far off after the retries is a HOLD (the body would hit what stands beside the gap)
+    pivot_timeout_s: 8.0
+    track: true                      # in a platform zone (0.4 m/s): short-carrot tracking instead of the follower's 1.3 m carrot
+    track_lookahead: 0.5             # m
+    track_yaw_gain: 2.0              # rad/s per rad
+    track_max_yaw: 0.6               # rad/s
+
+  # Entering a stairs / platform zone (added 2026-09-21 16:10 after two runs at --speed 1.67 got stuck on the first
+  # steps: see nav_core). The dog brakes before the zone so that it ARRIVES at entry_speed, and the zone (gait request,
+  # zone speed, blind stretch) begins lead_m before the recorded start.
+  zone_entry:
+    lead_m: 0.6                      # m
+    entry_speed: 0.3                 # m/s at the zone start (the first version arrived at 0.29 and always switched)
+    decel: 0.8                       # m/s^2 used for the braking curve before the zone (from 1.67 m/s: the last 1.7 m)
+
+  zone_speed:
+    cruise: 0.7
+    steep: 0.0                         # 0 = no separate cap on real steps: the whole stairs zone runs at --climb-speed (was 0.45, my own guess)
+    walk: 0.0                          # 0 = no extra cap: the walk gait 0x3002 runs at the run's --speed (as in the room test)
+    platform: 0.4                      # 0x1002 高台: climbing a ledge
+
+  # Planner speed scale while the plan IS the taught line (TRACK, or DETOUR with zero target offset). The team planner
+  # halves the speed near obstacle/unknown cells; our 0.9 m live grid has an unknown rim, so it slowed open road too.
+  # Real detours, A* and BLOCKED are untouched. 0 = team behaviour (for comparison / rollback).
+  # On the line the scale is planner_scale_on_line * (1 - 0.5 * proximity): only the 0.20 m proximity rule slows it.
+  planner_scale_on_line: 1.0
+
+  # Corner speed (regulated pure pursuit idea): above v_ref the speed falls linearly with the turn the taught line
+  # makes within the next ~1.5 s of travel; a turn of full_stop_deg or more brings it down to v_ref.
+  corner_speed:
+    enabled: true
+    v_ref: 0.6                         # 2026-09-21 20:50 back to 0.6 (operator): 1.0 was a floor that kept 1 m/s through big heading errors
+    full_stop_deg: 90.0
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# control: the control node  ->  generated config/control.yaml
+# ---------------------------------------------------------------------------------------------------------------------
+control:
+  # s10_ros1_control: ROS 1 velocity sources + /web_cmd + gait requests -> S10 native ROS 2
+  # control (/NAV_CMD, /MOTION_STATE, /GAIT), with feedback from /MOTION_INFO.
+  #
+  # The node is a DRY RUN unless started with --enable-motion: it then reads
+  # feedback and logs every command it WOULD send, but creates no ROS 2 publisher.
+
+  # Velocity sources (geometry_msgs/Twist). Exactly one is forwarded at a time: cmd_source
+  # below, changed at run time with "source <name>" on /web_cmd. Messages from the other
+  # sources are counted (state.cmd_vel.ignored) and dropped, so x_nav's own planner can
+  # never drive the robot while our navigation owns it, and the other way round.
+  cmd_sources:
+    rl_nav: /rl_nav/cmd_vel            # our route runner (nav/s10_rl_nav_ros1.py)
+    x_nav: /cmd_vel                    # x_nav web page / w_nav single-point navigation
+  cmd_source: rl_nav
+
+  web_cmd_topic: /web_cmd            # std_msgs/String commands (see web_cmd below)
+  state_topic: /s10_control/state    # std_msgs/String JSON status, 5 Hz
+  gait_request_topic: /rl_nav/gait_request   # std_msgs/String "flat" | "stairs" (re-sent every tick)
+  gait_topic: /s10_control/gait      # std_msgs/String "flat" | "stairs" | "switching" | "none", 10 Hz
+
+  nav_cmd_rate_hz: 10.0              # developer guide: send /NAV_CMD at a fixed 10 Hz
+  cmd_vel_timeout_s: 0.5             # no command from the active source for this long -> zero velocity
+  zero_hold_s: 1.0                   # keep sending zero this long after a stop, then go quiet
+  motion_info_timeout_s: 0.5         # /MOTION_INFO older than this -> zero velocity, no commands
+  start_latched: false               # true: forwarding starts stopped until "Nav continue"
+  stamp_source: robot                # robot: command stamps follow /MOTION_INFO time; local: this clock
+
+  # messages: fault only when ANOTHER publisher actually sends /NAV_CMD while we are armed
+  #           (the shared dog's native handler/localPlanner publishers exist but stay quiet
+  #           without a task). publishers: fault as soon as another publisher exists.
+  exclusive_mode: messages
+
+  limits:                            # |value| clamps; the code only rejects values beyond the robot's command range 1.67 / 0.5 / 1.0
+    max_vx: 0.30                     # m/s forward/backward
+    max_vy: 0.10                     # m/s lateral
+    max_wz: 0.50                     # rad/s yaw
+
+  stand:                             # web_cmd "cmd4"
+    nav_gait: 0x3002                 # navigation flat gait after RL; 0x3003 = navigation stairs
+    settle_s: 2.0                    # stay in state 1 (standing) this long before requesting RL (17)
+    step_timeout_s: 15.0
+    resend_period_s: 3.0             # re-send a step request if no feedback change (max 3 sends)
+
+  lie_down:                          # web_cmd "cmd3"
+    still_speed: 0.05                # |vel_x|,|vel_y| m/s and |vel_yaw| rad/s counted as still
+    still_time_s: 1.0
+    wait_still_timeout_s: 5.0
+    step_timeout_s: 15.0
+
+  gait_switch:                       # /rl_nav/gait_request flat <-> stairs (only in RL control)
+    still_speed: 0.12                # was 0.05: the 踏步 gait 0xF002 marks time, its measured speed never settles below 0.05
+    still_time_s: 0.3                # ... for this long (developer guide: switch gait only when stopped)  (was 1.0)
+    wait_still_timeout_s: 6.0
+    step_timeout_s: 10.0             # /GAIT not confirmed by /MOTION_INFO -> latched stop
+
+  web_cmd:                           # strings used by the x_nav web page and our app
+    stand: cmd4
+    lie_down: cmd3
+    stop: Nav stop
+    continue: Nav continue
+    nav_mode: cmd1                   # RL control -> navigation gait (stand.nav_gait)
+    exit_nav_mode: cmd2              # logged and ignored: no documented /GAIT value; use the remote
+    source_prefix: "source "         # "source rl_nav" / "source x_nav" selects the velocity source
