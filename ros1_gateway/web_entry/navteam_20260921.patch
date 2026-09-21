@@ -1,0 +1,162 @@
+--- s10_web_navigation.py.friend_20260921	2026-09-20 13:51:01
++++ s10_web_navigation.py	2026-09-20 14:55:52
+@@ -23,11 +23,25 @@
+ ROUTES = Path.home() / 'routes'
+ 
+ 
++def web_cfg():
++    """Navigation team's knobs for the web entry (ros1_gateway/config/web_nav.json), read at every use:
++    speed = forward speed handed to nav_session.sh arm (m/s, or '0.7x' of the robot maximum);
++    climb_speed = the same for stairs-gait stretches ('' = nav.yaml); allow_stairs = also offer routes with
++    stairs-gait zones (navigation runs them with zone_mode gait_only: same follower, gait switched by arc length)."""
++    cfg = dict(speed='0.3', climb_speed='', allow_stairs=False)
++    try:
++        cfg.update(json.loads((Path.home() / 'ros1_gateway' / 'config' / 'web_nav.json').read_text()))
++    except (OSError, ValueError):
++        pass
++    cfg['speed'] = str(cfg['speed'])
++    return cfg
++
++
+ def route_from_pose(doc, pose):
+     """Trim a flat taught route at its nearest point; keep the original untouched."""
+     best = None
+     for i, segment in enumerate(doc['segments']):
+-        if segment['gait'] != 'flat':
++        if segment['gait'] != 'flat' and not web_cfg()['allow_stairs']:
+             raise ValueError('当前位置接入只支持平地路线')
+         line = segment['centerline']
+         for j, (a, b) in enumerate(zip(line, line[1:])):
+@@ -70,9 +84,31 @@
+         raise ValueError('当前位置没有剩余路线；请选择反向路线')
+     first['centerline'] = line
+     first['length_m'] = sum(math.hypot(b[0]-a[0], b[1]-a[1]) for a,b in zip(line,line[1:]))
+-    return result, dict(distance=round(distance, 2), target=first['to'], end=end['id'])
++    # Arc length cut off in front of the join: stairs zones (maneuvers.json) are arc-length intervals and move with it.
++    seg_len = lambda l: sum(math.hypot(b[0]-a[0], b[1]-a[1]) for a, b in zip(l, l[1:]))
++    old = doc['segments'][i]['centerline']
++    before = sum(seg_len(sg['centerline']) for sg in doc['segments'][:i]) + seg_len(old[:j+1]) + math.hypot(p[0]-old[j][0], p[1]-old[j][1])
++    shift = before - math.hypot(p[0]-pose[0], p[1]-pose[1])
++    return result, dict(distance=round(distance, 2), target=first['to'], end=end['id'], s_shift=round(shift, 3))
+ 
+ 
++def shift_maneuvers(doc, shift):
++    """maneuvers.json for a route that lost `shift` metres at its start; zones wholly behind the robot are dropped."""
++    out = copy.deepcopy(doc)
++    kept = []
++    for m in out.get('maneuvers', []):
++        if m['s1'] - shift <= 0.5:
++            continue
++        for key in ('s0', 's1', 's_first', 's_last'):
++            if m.get(key) is not None:
++                m[key] = max(0.0, m[key] - shift)
++        if m.get('s_edge') is not None:
++            m['s_edge'] = max(0.0, m['s_edge'] - shift)
++        kept.append(m)
++    out['maneuvers'] = kept
++    return out
++
++
+ def mode_command(mode):
+     return {'PatrolDevice': {'Type': 0x00100002, 'Command': 0x00500002,
+                             'Time': now_str(), 'Items': {'Mode': mode}}}
+@@ -104,6 +140,8 @@
+             maneuvers = json.loads(man.read_text()) if man.exists() else {}
+             flat = bool(doc.get('segments')) and all(s.get('gait') == 'flat' for s in doc['segments'])
+             flat = flat and not (maneuvers.get('maneuvers') or maneuvers.get('zones'))
++            stairs = not flat
++            flat = flat or bool(web_cfg()['allow_stairs'])   # the page only lets flat routes be chosen
+             points = [[float(w['position'][0]), float(w['position'][1])] for w in wps]
+             if not all(math.isfinite(n) for p in points for n in p):
+                 continue
+@@ -127,6 +165,8 @@
+         self.owned = False
+         self.marker = ROOT / 'run' / 'web-navigation.json'
+         self.routes = route_catalog()
++        self.routes_at = time.monotonic()
++        self.speed = web_cfg()['speed']
+         self.return_verified = False
+         self.closed = threading.Event()
+         self.last_error = ''
+@@ -206,6 +246,12 @@
+             before = time.monotonic()
+             self.ros.initial_pose(doc['waypoints'][0])
+             self.wait(lambda: self.ros.pose_at > before and self.ros.pose_fresh(), 20, '没有定位反馈')
++        elif not self.ros.pose_fresh():     # no pose at all (x_nav restarted). A pose on ANOTHER map is never replaced here.
++            self.set('preparing', '正在恢复上次保存的定位（地图 ' + doc['map_id'] + '）')
++            self.ros.publish('/s10_loc/cmd', 'restore ' + doc['map_id'])
++            self.wait(lambda: self.localisation(doc['map_id']) and self.ros.pose_fresh(), 75,
++                      '没有可恢复的定位：机器狗被搬动过或从未在该地图定位，请选择“在起点重新定位”')
++            self.cancel.wait(3)
+         self.check_start()
+         self.set('ready', '已按当前位置接入 → '+self.join['end']+' · 核对黄色箭头后点击开始导航')
+ 
+@@ -224,6 +270,11 @@
+                     (target / name).write_bytes((path / name).read_bytes())
+                 else:
+                     (target / name).unlink(missing_ok=True)
++            man = path / 'maneuvers.json'
++            if man.exists():
++                (target / 'maneuvers.json').write_text(json.dumps(shift_maneuvers(json.loads(man.read_text()), self.join.get('s_shift', 0.0))))
++            else:
++                (target / 'maneuvers.json').unlink(missing_ok=True)
+         return target
+ 
+     def start(self):
+@@ -237,7 +288,9 @@
+         self.marker.write_text(json.dumps(dict(route=self.route)))
+         self.owned = True
+         self.set('arming', '正在启动导航与切换步态，约需 10 秒，请保持页面前台')
+-        self.run_script('nav_session.sh', 'arm', '0.1', str(path))
++        self.speed = web_cfg()['speed']
++        climb = str(web_cfg()['climb_speed'] or '')
++        self.run_script('nav_session.sh', 'arm', self.speed, str(path), *([climb] if climb else []))
+         def armed():
+             ctl = self.ros.control
+             return (self.ros.control_fresh() and ctl.get('enable_motion') and not ctl.get('fault')
+@@ -256,7 +309,7 @@
+         self.run_since = time.monotonic()
+         self.ros.publish('/rl_nav/cmd', 'start')
+         self.wait(lambda: self.ros.nav_fresh() and self.ros.nav.get('running') is True, 3, '导航程序未确认开始')
+-        self.set('running', '路线导航中 · 0.1 m/s')
++        self.set('running', '路线导航中 · ' + self.speed + ' m/s')
+ 
+     def set_mode(self, target):
+         sent = time.monotonic()
+@@ -287,7 +340,7 @@
+         self.ros.publish('/s10_control/web_cmd', 'Nav continue')
+         self.run_since = time.monotonic()
+         self.ros.publish('/rl_nav/cmd', 'start')
+-        self.set('running', '路线导航中 · 0.1 m/s')
++        self.set('running', '路线导航中 · ' + self.speed + ' m/s')
+ 
+     def stop(self, reason='导航已结束 · 请重新接管遥控'):
+         self.set('stopping', '正在停止导航并交回遥控')
+@@ -419,11 +472,17 @@
+             self.set('stopped', '外部任务已结束 · 请重新接管遥控')
+ 
+     def snapshot(self):
++        if self.phase in ('idle', 'stopped') and time.monotonic() - self.routes_at > 5:
++            self.routes_at = time.monotonic()
++            try:
++                self.routes = route_catalog()
++            except Exception:
++                pass
+         return dict(kind='nav_state', phase=self.phase, message=self.message, accepted=self.accepted,
+                     routes=self.routes, route=self.route, pose=self.ros.pose if self.ros.pose_fresh() else None,
+                     nav=self.ros.nav if self.ros.nav_fresh() else {},
+                     control=self.ros.control if self.ros.control_fresh() else {},
+-                    return_verified=self.return_verified, speed=.1, last_error=self.last_error, join=self.join)
++                    return_verified=self.return_verified, speed=self.speed, last_error=self.last_error, join=self.join)
+ 
+ 
+ class ROS:
+@@ -439,7 +498,7 @@
+         self.lidar_at = self.imu_at = 0.
+         rospy.init_node('golai_web_navigation', anonymous=True, disable_signals=True)
+         self.pubs = {t: rospy.Publisher(t, String, queue_size=1) for t in
+-                     ('/node_cmd', '/rl_nav/cmd', '/s10_control/web_cmd')}
++                     ('/node_cmd', '/rl_nav/cmd', '/s10_control/web_cmd', '/s10_loc/cmd')}
+         self.initial = rospy.Publisher('/initialpose', PoseWithCovarianceStamped, queue_size=1)
+         rospy.Subscriber('/base_link/odom', Odometry, self.on_pose, queue_size=1)
+         rospy.Subscriber('/s10_control/state', String, lambda m: self.on_json(m, 'control'), queue_size=1)

@@ -32,7 +32,12 @@ export ROS_MASTER_URI="http://127.0.0.1:$PORT" ROS_IP=127.0.0.1
   exec setsid python3 -u "$ROOT/nav/s10_rl_nav_ros1.py" --config "$CONFIG" "${ARGS[@]}" \
 ) > "$LOGS/nav-$STAMP.log" 2>&1 < /dev/null &
 echo $! > "$RUN/nav.pid"
-sleep 3
+# ready = the node printed its route summary (was a fixed 3 s wait)
+for i in $(seq 1 60); do
+  sleep 0.25
+  kill -0 "$(cat "$RUN/nav.pid")" 2>/dev/null || break
+  grep -q "rl_nav ros1:" "$LOGS/nav-$STAMP.log" 2>/dev/null && break
+done
 if kill -0 "$(cat "$RUN/nav.pid")" 2>/dev/null; then
   echo "nav started (pid $(cat "$RUN/nav.pid"), log $LOGS/nav-$STAMP.log)"; tail -5 "$LOGS/nav-$STAMP.log"
 else
