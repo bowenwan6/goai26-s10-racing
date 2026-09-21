@@ -4,6 +4,7 @@
 
   python3 tools/asdu_mode.py status [--seconds 5]         # heartbeat, print BasicStatus (read-only)
   python3 tools/asdu_mode.py set-mode 1 --i-am-on-site     # switch use mode, verify from the report
+  python3 tools/asdu_mode.py remote-gait --i-am-on-site    # after navigation: give the robot its remote gait back (0x1001)
 
 Only the heartbeat (0x00100064/0x00000005) and the mode switch (0x00100002/0x00500002) are
 implemented; no axis, gait or motion-state commands. The robot reports BasicStatus
@@ -64,6 +65,10 @@ class Asdu:
     def set_mode(self, mode):
         self.send(0x00100002, 0x00500002, {"Mode": int(mode)})
 
+    def set_gait(self, gait):
+        """运动步态切换 (developer guide 1.2.4): Type 0x00100001, Command 0x00300002, Items.GaitParam."""
+        self.send(0x00100001, 0x00300002, {"GaitParam": int(gait)})
+
     def start(self):
         self.running = True
         threading.Thread(target=self._hb, daemon=True).start()
@@ -119,7 +124,7 @@ def fmt(bs):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=["status", "set-mode"])
+    ap.add_argument("cmd", choices=["status", "set-mode", "remote-gait"])
     ap.add_argument("mode", nargs="?", type=int, choices=[0, 1, 2])
     ap.add_argument("--host", default="10.21.33.103")
     ap.add_argument("--port", type=int, default=30004)
@@ -144,6 +149,26 @@ def main():
                 time.sleep(0.2)
             print(f"reports: {c.reports} in {a.seconds:.0f} s (~{c.reports / a.seconds:.1f} Hz)")
             return 0
+        if a.cmd == "remote-gait":
+            # A navigation run leaves the robot standing in 0x3002 / 0x3003 (or 0x1002). In use mode 0 the remote page only
+            # drives in 0x1001 / 0x1002 / 0x1003, so the hand-back is not complete until the gait is a remote one again.
+            if not a.i_am_on_site:
+                print("remote-gait refused: pass --i-am-on-site only when an operator holds the remote", file=sys.stderr)
+                return 2
+            bs = dict(c.status)
+            if bs.get("MotionState") != 17 or bs.get("Gait") in (0x1001, 0x1003):
+                print("gait left alone: " + fmt(bs))
+                return 0
+            for i in range(3):
+                c.set_gait(0x1001)
+                end = time.monotonic() + 2.5
+                while time.monotonic() < end:
+                    if c.status.get("Gait") == 0x1001:
+                        print("GAIT_OK 0x1001 after %d request(s): %s" % (i + 1, fmt(c.status)))
+                        return 0
+                    time.sleep(0.1)
+            print("GAIT_NOT_CONFIRMED: " + fmt(c.status), file=sys.stderr)
+            return 4
         if a.mode is None:
             ap.error("set-mode needs a mode (0 常规/遥控, 1 导航, 2 辅助)")
         if not a.i_am_on_site:

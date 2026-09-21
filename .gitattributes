@@ -36,7 +36,7 @@ reports/academic_assets/**/*.png filter=lfs diff=lfs merge=lfs -text
 data/deliverables/**/*.STL filter=lfs diff=lfs merge=lfs -text
 data/deliverables/**/*.npz filter=lfs diff=lfs merge=lfs -text
 data/deliverables/**/*.png filter=lfs diff=lfs merge=lfs -text
-evidence/**/*.png filter=lfs diff=lfs merge=lfs -text
+evidence/github-sync-20260918/**/*.png filter=lfs diff=lfs merge=lfs -text
 reports/poster_assets/**/*.pdf filter=lfs diff=lfs merge=lfs -text
 reports/poster_assets/**/*.png filter=lfs diff=lfs merge=lfs -text
 reports/posterly_rebuild/**/*.pdf filter=lfs diff=lfs merge=lfs -text

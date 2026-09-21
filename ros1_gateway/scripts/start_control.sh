@@ -22,6 +22,8 @@ set -eo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN="$ROOT/run"; LOGS="$ROOT/logs"
 mkdir -p "$RUN" "$LOGS"
+# all parameters live in config/s10_params.yaml; the file read below is regenerated from it first (tools/params.py)
+python3 "$ROOT/tools/params.py" sync --quiet || { echo "params sync failed: config/s10_params.yaml is broken"; exit 1; }
 FLAG=""
 STAGE=""
 CONFIG="$ROOT/config/control.yaml"

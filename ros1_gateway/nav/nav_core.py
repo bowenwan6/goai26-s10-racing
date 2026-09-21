@@ -39,8 +39,8 @@ from s10_auto_nav.route_follower import RouteFollowerConfig, RouteFollowerCore
 from s10_auto_nav.route_planner import FREE, LocalGrid, LocalGridConfig, RoutePlannerConfig
 from s10_auto_nav.route_v2 import CrossCheckConfig, RouteV2
 
-OWNER_TO_GAIT = {"official": "flat", "stairs_stable": "stairs", "stop": None}
-GAIT_TO_OWNER = {"flat": "official", "stairs": "stairs_stable"}
+OWNER_TO_GAIT = {"official": "flat", "stairs_stable": "stairs", "fast": "fast", "platform": "platform", "stop": None}
+GAIT_TO_OWNER = {"flat": "official", "stairs": "stairs_stable", "fast": "fast", "platform": "platform"}
 
 
 # ----------------------------------------------------------------------------- geometry
@@ -378,9 +378,54 @@ class NavCore:
             doc_t = json.loads(tj.read_text())
             self.steep = [(float(a_), float(b_)) for a_, b_ in doc_t.get("steep", [])]
             self.contact = [(float(q["xy"][0]), float(q["xy"][1]), float(q.get("radius", 1.0))) for q in doc_t.get("contact", [])]
+        # Ledges climbed in the platform gait (terrain.json "jumps": crossing point + direction in MAP coordinates, so a
+        # route cut for --from needs no shifting). 2026-09-21: the gap between the steel stools on the ledge at WP17 is
+        # about the dog's own width, so the dog arrives slowly on a straight lane and is CHECKED before it takes off.
+        self.jump_cfg = dict(enabled=True, approach_speed=0.35, check_at_m=0.7, tol_lateral=0.05, tol_yaw_deg=5.0, backup_m=0.5,
+                             backup_speed=0.2, retries=2, hold_beyond_m=0.25, pivot_timeout_s=8.0, track=True, track_lookahead=0.5, track_yaw_gain=2.0, track_max_yaw=0.6)
+        self.jump_cfg.update(c.get("jump") or {})
+        self.jumps, self._jump_override, self._jump_phase, self._track_override = [], False, None, False
+        if tj.exists() and self.jump_cfg["enabled"]:
+            for q in doc_t.get("jumps", []):
+                try:
+                    pr_ = self.follower.path.project(np.array([float(q["xy"][0]), float(q["xy"][1])]), None)
+                    s_j, d_j = float(pr_.s), abs(float(getattr(pr_, "d", 0.0)))
+                except Exception:                                  # noqa: BLE001  (a jump is an extra: never stop the start)
+                    continue
+                if d_j < 0.5 and 0.5 < s_j < self.follower.path.length - 0.5:     # not on this (shortened) route otherwise
+                    self.jumps.append(dict(s=s_j, xy=(float(q["xy"][0]), float(q["xy"][1])), yaw=float(q["yaw"]), before=float(q.get("before", 1.5)),
+                                           after=float(q.get("after", 1.0)), phase="approach", tries=0, cleared=False, t0=None, back_to=None))
+        self.jumps.sort(key=lambda j_: j_["s"])
+        for k_, j_ in enumerate(self.jumps):                      # slow, precisely tracked approach: from 1 m before the straight lane,
+            j_["s_from"] = j_["s"] - j_["before"] - 1.0           # or from the landing of a ledge less than 8 m back (S-bend WP24 -> WP26)
+            if k_ and j_["s"] - self.jumps[k_ - 1]["s"] < 8.0:
+                j_["s_from"] = self.jumps[k_ - 1]["s"] + self.jumps[k_ - 1]["after"]
         zs_ = c.get("zone_speed") or {}
         self.zone_v = (float(zs_.get("cruise", 0.0)), float(zs_.get("steep", 0.0)))
+        # Gait plan (terrain.json "gaits": [[s0, s1, "fast"|"stairs"|"platform"], ...]; everything else = "flat", the
+        # navigation walk). With a plan the walk is the SLOW gait (zone_speed.walk) and "fast" (0xF002) runs at the
+        # run's --speed; "platform" (0x1002) climbs a ledge at zone_speed.platform. Without a plan: two gaits as before.
+        self.gait_plan = []
+        if tj.exists():
+            self.gait_plan = [(float(a_), float(b_), str(n_)) for a_, b_, n_ in doc_t.get("gaits", []) if n_ in ("fast", "stairs", "platform")]
+        self.walk_v, self.platform_v = float(zs_.get("walk", 0.0)), float(zs_.get("platform", 0.4))   # walk 0 = no cap: the run's --speed
         self.gait_zones = [(float(m.s0), float(m.s1)) for m in mans] if self.zone_mode == "gait_only" else []
+        if self.zone_mode == "gait_only" and self.gait_plan:      # blind + zone speed wherever the plan says stairs / platform
+            self.gait_zones = [(a_, b_) for a_, b_, n_ in self.gait_plan if n_ in ("stairs", "platform")]
+        # Zone ENTRY (2026-09-21 15:51 / 15:54, --speed 1.67: the dog reached the first stairs zone at 1.5 m/s, ran 1.1 m
+        # past its start onto the steps in the walk gait, and the robot then never confirmed the stairs gait: latched
+        # stop). The first version did not have this because its stairs segments were limited to 0.30 m/s, a limit
+        # strategy1 removed without replacing the braking it gave. Now: every zone starts lead_m earlier, and the speed
+        # before it follows v^2 = entry_speed^2 + 2 * decel * distance, so the dog ARRIVES slowly whatever --speed is.
+        ze_ = c.get("zone_entry") or {}
+        self.entry_lead, self.entry_v, self.entry_decel = float(ze_.get("lead_m", 0.4)), float(ze_.get("entry_speed", 0.3)), float(ze_.get("decel", 0.8))
+        def _lead(zs):
+            out, prev_end = [], 0.0
+            for z_ in sorted(zs, key=lambda q: q[0]):
+                out.append((max(prev_end, z_[0] - self.entry_lead),) + tuple(z_[1:])); prev_end = z_[1]
+            return out
+        self.gait_plan = _lead(self.gait_plan)
+        self.gait_zones = _lead(self.gait_zones)
         # In a blind zone the local planner gets an all-free grid: what it fuses from the small 13 x 9 patch is
         # too little for its footprint sweep (any bend pushes the footprint into "unknown" = blocked).
         self._blind_now = False
@@ -414,6 +459,7 @@ class NavCore:
         self.follower.planner.plan = _plan_full_speed_on_line
         self.runner = RouteRunner(self.follower.path, [] if self.zone_mode == "gait_only" else mans, params, surface=surface,
                                   planner=MapPlanner(surface) if surface is not None else None)
+        self._install_readjust(c)
         self.route = route
         self.maneuvers = mans
         self.has_surface = surface is not None
@@ -424,6 +470,53 @@ class NavCore:
         self.warnings = [f"{m.id} (s {m.s0:.1f}-{m.s1:.1f}): {w}" for m in mans for w in m.warnings]
         if surface is None:
             self.warnings.append("no map_surface: no obstacle detection or planned detours; the runner holds where it would need one")
+
+    def _install_readjust(self, c):
+        """READJUST instead of HOLD (operator, 2026-09-21 18:40). The team runner (rl_nav/route_runner.py, _plan) holds
+        whenever a recovery needs a planning map: "0.8 m off the route", "no progress for 8 s", a gate it may not
+        approach. No route of ours has a map_surface.npz, so every such case ended the run. The team copy is not
+        edited; its instance is wrapped here:
+          * without a planner, a rejoin request puts the runner in TRACK (its own pursuit of the taught line) instead
+            of HOLD. A request about a NEW OBSTACLE still holds.
+          * TRACK used to command forward speed walk_floor = 0 with a 0.25 m/s side-step only, which the dog does not
+            do in the stairs gait on steps (18:31 run: 8 s, offset unchanged). Now it walks forward at readjust.speed
+            and STEERS back to a carrot on the line.
+          * safety stays: farther than readjust.hold_beyond_m from the line, or readjust.timeout_s in TRACK without
+            0.5 m of progress -> HOLD."""
+        import types
+        rj = dict(enabled=True, speed=0.5, lookahead=1.2, max_yaw=0.8, lateral=0.15, hold_beyond_m=1.5, timeout_s=20.0)
+        rj.update(c.get("readjust") or {})
+        self.readjust = rj
+        if not rj["enabled"]:
+            return
+        runner = self.runner
+        team_plan, team_pursue = runner._plan, runner._pursue
+        state = dict(t0=None, s0=0.0)
+        self._readjust_state = state
+
+        def plan(_self, inp, s_, why, kind="rejoin"):
+            if _self.planner is not None or kind == "obstacle":
+                return team_plan(inp, s_, why, kind)
+            if abs(getattr(_self, "d", 0.0)) > float(rj["hold_beyond_m"]):
+                _self._set(Mode.HOLD, inp.t, s_, f"{why}; more than {rj['hold_beyond_m']} m from the line")
+                return
+            if state["t0"] is not None and inp.t - state["t0"] > float(rj["timeout_s"]) and s_ < state["s0"] + 0.5:
+                _self._set(Mode.HOLD, inp.t, s_, f"{why}; readjusting for {rj['timeout_s']:.0f} s without progress")
+                return
+            _self.best_s_t = inp.t                          # the stall clock restarts: the dog is being driven back
+            if _self.mode != Mode.TRACK:
+                if state["t0"] is None or s_ > state["s0"] + 0.5:
+                    state["t0"], state["s0"] = inp.t, s_
+                _self._set(Mode.TRACK, inp.t, s_, f"readjust: {why}")
+
+        def pursue(_self, s_, inp, v, wmax, lookahead=0.8, lateral=0.0):
+            if _self.mode == Mode.TRACK:                     # steer back while walking, not a side-step on the spot
+                return team_pursue(s_, inp, max(v, float(rj["speed"])), max(wmax, float(rj["max_yaw"])),
+                                   max(lookahead, float(rj["lookahead"])), min(lateral, float(rj["lateral"])) if lateral else 0.0)
+            return team_pursue(s_, inp, v, wmax, lookahead, lateral)
+
+        runner._plan = types.MethodType(plan, runner)
+        runner._pursue = types.MethodType(pursue, runner)
 
     def _route_observation(self, x, y, z, yaw):
         """Perception replaced by the route's own height profile: every grid cell gets the height of the
@@ -498,6 +591,72 @@ class NavCore:
             wz_new = float(np.clip(float(L["heading_gain"]) * wrap(herr - delta), -float(L["heading_max_wz"]), float(L["heading_max_wz"])))
             return (vx, vy_new * float(L["steer_vy_share"]), wz_new), "steer"
         return (vx, vy_new, wz_new), "return"
+
+    def _jump_step(self, t, x, y, yaw, s_now, cmd):
+        """Before a ledge: slow straight approach, then ONE check of the body against the jump lane (sideways offset and
+        heading) check_at_m before the ledge. Heading off -> pivot on the spot. Sideways off -> back up backup_m along the
+        lane and come again (the lane steering has that distance to pull the body in), `retries` times; still off ->
+        HOLD, because going on means hitting what stands beside the gap. Returns (command, reason); the SAME command
+        object when it does not interfere."""
+        self._jump_override, self._jump_phase = False, None
+        if not self.jumps or s_now is None or self.runner.mode != Mode.WALK:
+            return cmd, None
+        J = next((j for j in self.jumps if j["s_from"] <= s_now <= j["s"] + 0.3 and not j["cleared"]), None)
+        if J is None:
+            return cmd, None
+        jp = self.jump_cfg
+        u = (math.cos(J["yaw"]), math.sin(J["yaw"]))
+        su = (x - J["xy"][0]) * u[0] + (y - J["xy"][1]) * u[1]            # along the lane, 0 = the ledge
+        sv = -(x - J["xy"][0]) * u[1] + (y - J["xy"][1]) * u[0]           # + = left of the lane
+        herr = math.atan2(math.sin(J["yaw"] - yaw), math.cos(J["yaw"] - yaw))
+        tol_d, tol_h, check = float(jp["tol_lateral"]), math.radians(float(jp["tol_yaw_deg"])), float(jp["check_at_m"])
+        self._jump_phase = J["phase"]
+        if hasattr(self.runner, "best_s_t") and J["phase"] != "approach":
+            self.runner.best_s_t = t                                       # standing / backing here is not "no progress"
+
+        def decide():
+            if abs(sv) <= tol_d and abs(herr) <= tol_h:
+                J["cleared"] = True; J["phase"] = "go"; return None
+            if abs(sv) <= tol_d:
+                J["phase"], J["t0"] = "pivot", t; return None
+            if J["tries"] < int(jp["retries"]):
+                J["tries"] += 1; J["phase"], J["t0"], J["back_to"] = "back", t, su - float(jp["backup_m"]); return None
+            if abs(sv) <= float(jp["hold_beyond_m"]):              # close enough: take off rather than end the run
+                J["cleared"] = True; J["phase"] = "go"; return None
+            return "jump lane: %.2f m beside the lane, heading %.0f deg off after %d tries (limits %.2f m / %.0f deg, hold beyond %.2f m)" % (
+                sv, math.degrees(herr), J["tries"], tol_d, math.degrees(tol_h), float(jp["hold_beyond_m"]))
+
+        hold = None
+        if J["phase"] == "approach":
+            if su > -check + 0.4:                                          # started past the check point (--from here): not ours
+                J["cleared"] = True
+                return cmd, None
+            if su >= -check:
+                hold = decide()
+            elif su < 0.0 and cmd[0] > float(jp["approach_speed"]):
+                k_ = float(jp["approach_speed"]) / cmd[0]
+                return (cmd[0] * k_, cmd[1] * k_, cmd[2]), None
+        if J["phase"] == "pivot":
+            if abs(herr) <= 0.6 * tol_h or t - J["t0"] > float(jp["pivot_timeout_s"]):
+                J["phase"] = "approach"; hold = decide()
+        elif J["phase"] == "back":
+            if su <= J["back_to"] or t - J["t0"] > 8.0:
+                J["phase"] = "approach"
+        self._jump_phase = J["phase"]
+        if hold:
+            self.runner._set(Mode.HOLD, t, s_now, hold)
+            self._jump_override = True
+            return (0.0, 0.0, 0.0), hold
+        if J["phase"] == "pivot":
+            self._jump_override = True
+            return (0.0, 0.0, float(np.clip(1.5 * herr, -0.5, 0.5))), "jump lane: turning square to the ledge (%.0f deg off)" % math.degrees(herr)
+        if J["phase"] == "back":
+            self._jump_override = True
+            return (-float(jp["backup_speed"]), 0.0, float(np.clip(1.5 * herr, -0.4, 0.4))), "jump lane: %.2f m beside the lane, backing up %.1f m to come again (try %d)" % (sv, float(jp["backup_m"]), J["tries"])
+        if J["phase"] == "go" and cmd[0] > float(jp["approach_speed"]) and su < 0.0:
+            k_ = float(jp["approach_speed"]) / cmd[0]
+            return (cmd[0] * k_, cmd[1] * k_, cmd[2]), None
+        return cmd, None
 
     def _smooth(self, t, command, moving=True):
         """Acceleration limits on all three axes plus a first-order low pass on lateral and yaw.
@@ -595,17 +754,78 @@ class NavCore:
         if self.zone_mode == "gait_only":
             want = "stairs_stable" if in_zone else "official"
             cmd = out.command
-            if in_zone and s_now is not None:
-                cap = self.zone_v[1] if any(a_ <= s_now <= b_ for a_, b_ in self.steep) else self.zone_v[0]
+            planned = None
+            if self.gait_plan and s_now is not None:
+                planned = next((n_ for a_, b_, n_ in self.gait_plan if a_ <= s_now <= b_), "flat")
+                if any(j_["tries"] > 0 and not j_["cleared"] for j_ in self.jumps):
+                    planned = "platform"                          # backing up 0.5 m leaves the short platform zone: no switch back and forth
+                want = GAIT_TO_OWNER[planned]
+            if s_now is not None and self.entry_decel > 0.0:       # brake BEFORE the next gait change (2026-09-21: also from
+                # INSIDE a zone: stairs -> platform would otherwise arrive at the climb speed, a metre before a ledge)
+                if self.gait_plan:
+                    ahead_ = [a_ - s_now for a_, _b, n_ in self.gait_plan if a_ > s_now and n_ != planned]
+                else:
+                    ahead_ = [] if in_zone else [a_ - s_now for a_, _b in self.gait_zones if a_ > s_now]
+                if ahead_:
+                    v_in = math.sqrt(self.entry_v ** 2 + 2.0 * self.entry_decel * min(ahead_))
+                    if cmd[0] > v_in:
+                        cmd = (v_in, cmd[1] * v_in / cmd[0], cmd[2])
+                        out = NavOutput(cmd, out.owner, out.mode, out.reason, out.info)
+            if planned in ("flat", "platform"):
+                cap = self.walk_v if planned == "flat" else self.platform_v
+                if cap > 0.0 and cmd[0] > cap:
+                    cmd = (cap, cmd[1] * cap / cmd[0], cmd[2])
+                    out = NavOutput(cmd, out.owner, out.mode, out.reason, out.info)
+            elif in_zone and s_now is not None:
+                cap = self.zone_v[1] if (self.zone_v[1] > 0.0 and any(a_ <= s_now <= b_ for a_, b_ in self.steep)) else self.zone_v[0]   # steep 0 = no separate cap
                 if cap > 0.0 and cmd[0] > cap:
                     k_ = cap / cmd[0]
                     cmd = (cap, cmd[1] * k_, cmd[2])
                     out = NavOutput(cmd, out.owner, out.mode, out.reason, out.info)
+            # Platform zones are walked at 0.4 m/s towards a gap the width of the body: there the carrot of the team
+            # follower (1.0 m + 0.8 s * v, yaw gain 1.0) is too lazy: in the simulation it cut the S-bend between the two
+            # ledges WP24 / WP26 by 0.6 m and reached the second lane 0.5 m off. Short carrot, firm yaw, no side-step.
+            self._track_override = False
+            jp_ = self.jump_cfg
+            near_jump_ = s_now is not None and any(j_["s_from"] <= s_now <= j_["s"] + j_["after"] for j_ in self.jumps)
+            if near_jump_ and cmd[0] > float(jp_["approach_speed"]) and planned != "platform":
+                k_ = float(jp_["approach_speed"]) / cmd[0]
+                cmd = (cmd[0] * k_, cmd[1] * k_, cmd[2])
+                out = NavOutput(cmd, out.owner, out.mode, out.reason, out.info)
+            if (planned == "platform" or near_jump_) and jp_.get("track", True) and out.mode == Mode.WALK and s_now is not None and cmd[0] > 0.05:
+                path_ = self.follower.path
+                P_ = np.asarray(path_.point_at(min(path_.length, s_now + float(jp_.get("track_lookahead", 0.5))))).ravel()
+                err_ = math.atan2(P_[1] - y, P_[0] - x) - yaw
+                err_ = math.atan2(math.sin(err_), math.cos(err_))
+                w_ = float(np.clip(float(jp_.get("track_yaw_gain", 2.0)) * err_, -float(jp_.get("track_max_yaw", 0.6)), float(jp_.get("track_max_yaw", 0.6))))
+                cmd = (cmd[0] * max(0.4, math.cos(err_)), 0.0, w_)
+                out = NavOutput(cmd, out.owner, out.mode, out.reason, out.info)
+                self._track_override = True
+            cmd_j, why_j = self._jump_step(t, x, y, yaw, s_now, cmd)
+            if cmd_j is not cmd:
+                cmd = cmd_j
+                out = NavOutput(cmd, out.owner, out.mode, why_j or out.reason, out.info)
             if owner_reported is not None and owner_reported != want:
                 cmd = (0.0, 0.0, 0.0)                 # stand still while s10_ros1_control switches the gait
             out = NavOutput(cmd, want, out.mode, out.reason if cmd is out.command else "waiting for the %s gait" % OWNER_TO_GAIT[want], out.info)
+        # Regulated speed for corners: above corner_v_ref the forward speed drops with the turn the line makes within
+        # the next ~1.5 s of travel (a 1.4 m/s dog cannot take a 90 deg corner the way a 0.5 m/s dog can).
+        cs_ = self.cfg.get("corner_speed") or {}
+        if cs_.get("enabled", True) and s_now is not None and out.command[0] > float(cs_.get("v_ref", 0.6)):
+            path_ = self.follower.path
+            wrap_ = lambda a_: math.atan2(math.sin(a_), math.cos(a_))
+            reach_ = max(1.0, 1.5 * float(out.command[0]))
+            th0_ = float(path_.tangent_yaw_at(s_now))
+            turn_ = max(abs(wrap_(float(path_.tangent_yaw_at(min(path_.length, s_now + q_ * reach_))) - th0_)) for q_ in (0.33, 0.66, 1.0))
+            herr_ = abs(wrap_(th0_ - yaw))                       # not yet pointing along the line (after a pivot / gait switch)
+            turn_ = max(turn_, 2.0 * herr_)
+            k_ = float(np.clip(1.0 - turn_ / math.radians(float(cs_.get("full_stop_deg", 90.0))), 0.0, 1.0))
+            v_cap = float(cs_.get("v_ref", 0.6)) + (out.command[0] - float(cs_.get("v_ref", 0.6))) * k_
+            if v_cap < out.command[0]:
+                c_ = out.command
+                out = NavOutput((v_cap, c_[1] * v_cap / c_[0], c_[2]), out.owner, out.mode, out.reason, out.info)
         self.owner_requested = out.owner
-        command, lane_state = self._lane(out, f, x, y, yaw)
+        command, lane_state = (tuple(out.command), "jump" if self._jump_override else "platform") if (self._jump_override or getattr(self, "_track_override", False)) else self._lane(out, f, x, y, yaw)
         command = self._smooth(t, command, moving=out.mode not in (Mode.HOLD, Mode.DONE, Mode.WAIT))
         out = NavOutput(command, out.owner, out.mode, out.reason, out.info) if hasattr(out, "info") else out
         log = self.runner.log[-1] if self.runner.log else {}
@@ -619,7 +839,7 @@ class NavCore:
             target=f.target_id, s=round(float(f.s), 2) if math.isfinite(f.s) else None, d=round(float(f.d), 2) if math.isfinite(f.d) else None,
             follower=f.status, follower_reason=f.reason, reached=self.reached, total=self.n_wp,
             progress=round(self.reached / self.n_wp, 3), info=out.info, why=log.get("why", "") if changed else "",
-            lane=lane_state, obs_fresh=fresh,
+            lane=lane_state, obs_fresh=fresh, jump=self._jump_phase,
             blocked=[f"{c.d_target:+.1f}:{c.reason}" for c in (f.plan.candidates if getattr(f, "plan", None) is not None else ())
                      if not c.valid][:5] if f.status == "BLOCKED" else None, speed_limit=getattr(f, "speed_limit", None),
             plan_scale=round(float(f.plan.speed_scale), 2) if getattr(f, "plan", None) is not None else None,
