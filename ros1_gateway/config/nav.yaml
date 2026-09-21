@@ -87,6 +87,8 @@ planner:
   min_horizon: 0.65                  # was 0.3. Closer than this to a waypoint the robot heads straight for it. Must be
                                      # > commit_length: below it the planner compares a quantised free length with the
                                      # remaining distance and wrongly reports BLOCKED (always, where detours are off)
+  inflation: 0.20                    # 09-21: was 0.3 (team default). Obstacle or unknown cells within this distance of the body
+                                     # slow the robot in proportion, to half speed at most
   full_speed_free_length: 0.8   # strategy1: was 1.0; the live grid reaches ~0.9 m, 1.0 kept the scale below 1 on open road
 
 # Bowling lane: inside +-half_width of the taught line (and within heading_deg of its direction) the
@@ -147,5 +149,6 @@ zone_speed:
 # Planner speed scale while the plan IS the taught line (TRACK, or DETOUR with zero target offset). The team planner
 # halves the speed near obstacle/unknown cells; our 0.9 m live grid has an unknown rim, so it slowed open road too.
 # Real detours, A* and BLOCKED are untouched. 0 = team behaviour (for comparison / rollback).
+# On the line the scale is planner_scale_on_line * (1 - 0.5 * proximity): only the 0.20 m proximity rule slows it.
 planner_scale_on_line: 1.0
 
