@@ -72,6 +72,8 @@ class Node:
         ext = cfg.get("lidar_extrinsics") or {}
         self.perception = core.Perception(core.transform_from_dict(ext), int(cfg.get("max_points", 60000)))
         self.perception.blind_radius = float(cfg.get("blind_radius", 0.0))
+        self.perception.self_box = tuple(float(v) for v in cfg.get("self_box", (0.0, 0.0, -0.30)))
+        self.perception.self_clear_radius = float(cfg.get("self_clear_radius", 0.0))
         self.lock = threading.Lock()
         self.pose = None
         self.pose_t = -1e9
@@ -278,9 +280,9 @@ class Node:
         self.publish(r.command, r.gait_request, st)
         if t - self.last_log >= 1.0:
             self.last_log = t
-            rospy.loginfo("run %s cmd %s s=%s d=%s follower=%s/%s seg_limit=%s plan_scale=%s gait=%s", r.mode, st.get("cmd"),
+            rospy.loginfo("run %s cmd %s s=%s d=%s follower=%s/%s seg_limit=%s plan_scale=%s gait=%s lane=%s%s", r.mode, st.get("cmd"),
                           st.get("s"), st.get("d"), st.get("follower"), st.get("follower_reason"), st.get("speed_limit"),
-                          st.get("plan_scale"), gait)
+                          st.get("plan_scale"), gait, st.get("lane"), " blocked=%s" % st.get("blocked") if st.get("blocked") else "")
         if r.reached:
             self.progress_pub.publish(Float32(self.core.reached / self.core.n_wp))
             rospy.loginfo("%s reached (%d/%d)", ", ".join(r.reached), self.core.reached, self.core.n_wp)
