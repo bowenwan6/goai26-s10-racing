@@ -36,7 +36,7 @@ def main():
              "--fast-turn-deg", str(tl["fast_turn_deg"]), "--fast-clearance", str(tl["fast_clearance"]), "--fast-min-run", str(tl["fast_min_run"]),
              "--strip-backward", ",".join(tl.get("strip_backward", [])), "--jump-lane", str(tl.get("jump_lane", 1)), "--jump-before", str(tl.get("jump_before", 2.0)),
              "--jump-after", str(tl.get("jump_after", 1.0)), "--jump-max-shift", str(tl.get("jump_max_shift", 1.5)), "--platform-absorb", str(tl.get("platform_absorb", 4.0)),
-             "--platform-before", str(tl.get("platform_before", 0.8)), "--platform-after", str(tl.get("platform_after", 1.2))]]
+             "--platform-before", str(tl.get("platform_before", 0.8)), "--platform-before-at", str(tl.get("platform_before_at", "") or ""), "--platform-after", str(tl.get("platform_after", 1.2))]]
     for kind, out in rb["routes"].items():
         c = [py, "tools/teach_to_route.py", os.path.join(p(rb["out"]), "derived_session"), "--map-id", rb["map_id"], "--out", p(out),
              "--tol-z", str(t2r["tol_z"]), "--step", str(t2r["step"]), "--flat-speed", str(t2r["flat_speed"]),

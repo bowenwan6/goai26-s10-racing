@@ -39,16 +39,27 @@
    "when": "2026-09-21 09:32",
    "sha256": "db5c3c4f",
    "note": "operator 2026-09-21 ~21:20 ('dont be so strict' / 'only use platform mode right before the platform, switch back right after'): teach_line.platform_absorb 4.0 -> 0, platform_before 0.8 / platform_after 1.2 (new); nav.jump.tol_lateral 0.05 -> 0.10, tol_yaw_deg 5 -> 10, hold_beyond_m 0.25 (new: after the retries go anyway unless farther off than this)"
+  },
+  {
+   "when": "2026-09-21 11:11",
+   "sha256": "c8c22d52",
+   "note": "run.platform_speed 0.35 (new, nav --platform-speed sets zone_speed.platform AND jump.approach_speed); zone_speed.platform 0.4 -> 0.35. Operator 2026-09-21 ~22:00: '高台速度做成argument, default 0.35'"
+  },
+  {
+   "when": "2026-09-21 13:16",
+   "sha256": "6dd99a0d",
+   "note": "s5 (operator 2026-09-22 ~01:20 '批准 快点'): new marks WP06-08/WP18-23, splice path_20260922_000756 (00:07 marking drive), touch 0.20->0.10, platform_before_at WP24:0.5,WP26:0.5 (WP17 stays 0.8), stairs gait from WP22, out/routes/installed_as -> s5; nav.jump approach_speed 0.35->0.40 (untied from --platform-speed), backup_m 0.5->0.3, blind_after_m 1.5 (new); run.climb_speed 1.67->1, run.platform_speed 0.35->0.7"
   }
  ],
- "sha256": "db5c3c4fe9a3624aa567c05a0737fdea8b89104f9d832670b6eadd760beaf2e7",
+ "sha256": "6dd99a0dfc6aa25c3c6c2b5c39f97d2e6af8fd6d75f84ed538d58f3f3ac53e07",
  "values": {
   "schema": "s10_params_v1",
   "run": {
    "route": "full",
    "speed": "1.67",
-   "climb_speed": "1.67",
+   "climb_speed": "1",
    "steep_speed": "",
+   "platform_speed": "0.7",
    "walk_speed": "",
    "at": "start",
    "start_radius_m": 1.2,
@@ -65,14 +76,14 @@
     "session": "field_data/20260920-v7_o/session_0921",
     "map_dir": "field_data/20260920-v7_o/map",
     "control_logs": "field_data/20260920-v7_o/logs_all",
-    "out": "field_data/20260920-v7_o/teach_line_s4",
+    "out": "field_data/20260920-v7_o/teach_line_s5",
     "routes": {
-     "full": "field_data/20260920-v7_o/routes/v7_o-s4-full",
-     "short": "field_data/20260920-v7_o/routes/v7_o-s4-short"
+     "full": "field_data/20260920-v7_o/routes/v7_o-s5-full",
+     "short": "field_data/20260920-v7_o/routes/v7_o-s5-short"
     },
     "installed_as": {
-     "full": "20260921e-v7_o-s4-full",
-     "short": "20260921e-v7_o-s4-short"
+     "full": "20260922a-v7_o-s5-full",
+     "short": "20260922a-v7_o-s5-short"
     },
     "short_last_wp": "WP03",
     "teach_line": {
@@ -95,7 +106,8 @@
       "path_20260921_193630",
       "path_20260921_194417",
       "path_20260921_194635",
-      "path_20260921_194927"
+      "path_20260921_194927",
+      "path_20260922_000756"
      ],
      "strip_backward": [
       "path_20260921_193500",
@@ -116,7 +128,7 @@
      "clearance": 0.1,
      "fillet": 1.2,
      "reach": 0.45,
-     "touch": 0.2,
+     "touch": 0.1,
      "body_touch": 0.05,
      "body_z_offset": 0.41,
      "terrain_zones": 1,
@@ -130,6 +142,7 @@
      "jump_after": 1.0,
      "jump_max_shift": 1.5,
      "platform_absorb": 0.0,
+     "platform_before_at": "WP24:0.5,WP26:0.5",
      "platform_before": 0.8,
      "platform_after": 1.2
     },
@@ -268,11 +281,12 @@
    },
    "jump": {
     "enabled": true,
-    "approach_speed": 0.35,
+    "approach_speed": 0.4,
+    "blind_after_m": 1.5,
     "check_at_m": 0.7,
     "tol_lateral": 0.1,
     "tol_yaw_deg": 10.0,
-    "backup_m": 0.5,
+    "backup_m": 0.3,
     "backup_speed": 0.2,
     "retries": 2,
     "hold_beyond_m": 0.25,
@@ -291,7 +305,7 @@
     "cruise": 0.7,
     "steep": 0.0,
     "walk": 0.0,
-    "platform": 0.4
+    "platform": 0.35
    },
    "planner_scale_on_line": 1.0,
    "corner_speed": {

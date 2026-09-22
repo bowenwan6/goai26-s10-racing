@@ -52,7 +52,9 @@ def load_pcd_xyz(path):
 class Grid:
     def __init__(self, xy_all, res=0.10, margin=4.0):
         self.res = res
-        self.x0, self.y0 = xy_all[:, 0].min() - margin, xy_all[:, 1].min() - margin
+        # origin snapped to the cell size: teach_line and verify_route_clearance bin the map identically whatever
+        # recordings each of them loads (2026-09-22: a 2-point obstacle was a cell in one grid and not in the other)
+        self.x0, self.y0 = math.floor((xy_all[:, 0].min() - margin) / res) * res, math.floor((xy_all[:, 1].min() - margin) / res) * res
         self.nx = int(math.ceil((xy_all[:, 0].max() + margin - self.x0) / res)) + 1
         self.ny = int(math.ceil((xy_all[:, 1].max() + margin - self.y0) / res)) + 1
 
@@ -406,6 +408,7 @@ def main():
     ap.add_argument("--jump-after", type=float, default=1.0, help="... and this far after it, m")
     ap.add_argument("--jump-max-shift", type=float, default=1.5, help="a lane may move the line sideways by at most this, m; every moved point must also lie inside the corridor of the recordings (one of them drove there) and pass the body sweep")
     ap.add_argument("--platform-before", type=float, default=0.8, help="platform gait from this far before a ledge (body centre; the switch is made standing) ...")
+    ap.add_argument("--platform-before-at", default="", help='other value at single ledges, by the nearest waypoint: "WP24:0.5,WP26:0.5" (0.5 = nose against the ledge: no run-up needed there, operator 2026-09-22)')
     ap.add_argument("--platform-after", type=float, default=1.2, help="... to this far after it (hind legs up), then straight back to the operator's gait. Operator 2026-09-21: platform gait ONLY for the jump itself")
     ap.add_argument("--platform-absorb", type=float, default=4.0, help="a stairs-gait stretch shorter than this that touches a platform zone is walked in the platform gait (saves two gait switches, ~2 s standing each); 0 = off")
     ap.add_argument("--free-at", default="", help='the operator says there is NO obstacle at these waypoints: "WP06:1.5,WP11" (radius m, default 1.5); map obstacle cells there are ignored')
@@ -449,6 +452,10 @@ def main():
     # the dog got to each mark. Only its stretches within 2.5 m of a mark are used.
     survey = [read_trail(f) for f in sorted(glob.glob(os.path.join(a.session, "survey_*.trail.csv")))]
     survey = [t[np.min(np.linalg.norm(t[:, None, 1:3] - W[None, :, :], axis=2), axis=1) < 2.5] for t in survey if len(t) > 10]
+    # the trimmed survey is PIECES round the marks: keep them separate tracks. As one track, the body sweep along the
+    # direction of travel bridged the gaps with straight chords and exempted whatever stood on them (2026-09-22: a thin
+    # object between WP21 and WP22 ended up under the line; verify_route_clearance caught it).
+    survey = [p_ for t in survey for p_ in np.split(t, np.where(np.linalg.norm(np.diff(t[:, 1:3], axis=0), axis=1) > 0.5)[0] + 1)]
     survey = [t for t in survey if len(t) > 10]
     # An obstacle is a map cell the robot BODY never overlapped in any demonstration (recorded yaw). What the body
     # did overlap (stair risers, kerbs, grass, the operator's ghost in the map) is not an obstacle for this robot.
@@ -610,38 +617,42 @@ def main():
 
     clear = distance_transform_edt(~real) * grid.res             # distance of every cell to a real obstacle
     repaired = []
-    for attempt in range(6):
-        bad = clr.bad_vertices(line)
-        if not bad.any():
-            break
-        idx = np.where(bad)[0]; groups = np.split(idx, np.where(np.diff(idx) > 5)[0] + 1)
-        if os.environ.get("TEACH_LINE_DEBUG"):
-            vi_, dn_, _ = clr.check(line)
-            for g in groups:
-                near_ = vi_[np.min(np.linalg.norm(clr.P[vi_][:, None, :] - line[g][None, :, :], axis=2), axis=1) < 0.8]
-                c_ = clr.P[near_].mean(axis=0) if len(near_) else line[g[0]]
-                kw = int(np.argmin(np.linalg.norm(W - c_, axis=1)))
-                print(f"   attempt {attempt}: s {g[0] * 0.1:.1f}-{g[-1] * 0.1:.1f} m, {len(near_)} obstacle points round {np.round(c_, 2)}, {np.linalg.norm(W[kw] - c_):.2f} m from {ids[kw]}, d_new min {dn_[near_].min() if len(near_) else 0:.2f}, d_op there {clr.d_op[near_].min() if len(near_) else 0:.2f}")
-        rmap = monotone_map(line)
-        pieces, cur = [], 0
-        for g in groups:
-            pad = 10 + 10 * attempt                                # 1 m each side, wider on every attempt
-            lo, hi = max(cur, g[0] - pad), min(len(line) - 1, g[-1] + pad)
 
-            def seamless(k):                                       # both lines coincide here, or there is room to cross over
-                ci, cj = grid.idx(line[k])
-                return np.linalg.norm(line[k] - ref_track[rmap[k]]) < 0.06 or clear[ci, cj] > 0.75
-            n_ = 0
-            while lo > cur and not seamless(lo) and n_ < 150: lo -= 1; n_ += 1
-            n_ = 0
-            while hi < len(line) - 1 and not seamless(hi) and n_ < 150: hi += 1; n_ += 1
-            if hi <= lo or rmap[hi] <= rmap[lo]:
-                print(f"   repair skipped at {[round(float(v), 2) for v in line[g[0]]]}: no monotone stretch of the reference (lo {lo} hi {hi} ref {rmap[lo]}..{rmap[hi]})")
-                continue
-            pieces.append(line[cur:lo]); pieces.append(ref_track[rmap[lo]:rmap[hi] + 1]); cur = hi + 1
-            repaired.append(dict(s=round(float(g[0] * 0.1), 1), length=round(float((hi - lo) * 0.1), 1), attempt=attempt))
-        pieces.append(line[cur:])
-        line = resample(np.vstack([p_ for p_ in pieces if len(p_)]), 0.10)
+    def repair(line, attempts=6):
+        for attempt in range(6):
+            bad = clr.bad_vertices(line)
+            if not bad.any():
+                break
+            idx = np.where(bad)[0]; groups = np.split(idx, np.where(np.diff(idx) > 5)[0] + 1)
+            if os.environ.get("TEACH_LINE_DEBUG"):
+                vi_, dn_, _ = clr.check(line)
+                for g in groups:
+                    near_ = vi_[np.min(np.linalg.norm(clr.P[vi_][:, None, :] - line[g][None, :, :], axis=2), axis=1) < 0.8]
+                    c_ = clr.P[near_].mean(axis=0) if len(near_) else line[g[0]]
+                    kw = int(np.argmin(np.linalg.norm(W - c_, axis=1)))
+                    print(f"   attempt {attempt}: s {g[0] * 0.1:.1f}-{g[-1] * 0.1:.1f} m, {len(near_)} obstacle points round {np.round(c_, 2)}, {np.linalg.norm(W[kw] - c_):.2f} m from {ids[kw]}, d_new min {dn_[near_].min() if len(near_) else 0:.2f}, d_op there {clr.d_op[near_].min() if len(near_) else 0:.2f}")
+            rmap = monotone_map(line)
+            pieces, cur = [], 0
+            for g in groups:
+                pad = 10 + 10 * attempt                                # 1 m each side, wider on every attempt
+                lo, hi = max(cur, g[0] - pad), min(len(line) - 1, g[-1] + pad)
+
+                def seamless(k):                                       # both lines coincide here, or there is room to cross over
+                    ci, cj = grid.idx(line[k])
+                    return np.linalg.norm(line[k] - ref_track[rmap[k]]) < 0.06 or clear[ci, cj] > 0.75
+                n_ = 0
+                while lo > cur and not seamless(lo) and n_ < 150: lo -= 1; n_ += 1
+                n_ = 0
+                while hi < len(line) - 1 and not seamless(hi) and n_ < 150: hi += 1; n_ += 1
+                if hi <= lo or rmap[hi] <= rmap[lo]:
+                    print(f"   repair skipped at {[round(float(v), 2) for v in line[g[0]]]}: no monotone stretch of the reference (lo {lo} hi {hi} ref {rmap[lo]}..{rmap[hi]})")
+                    continue
+                pieces.append(line[cur:lo]); pieces.append(ref_track[rmap[lo]:rmap[hi] + 1]); cur = hi + 1
+                repaired.append(dict(s=round(float(g[0] * 0.1), 1), length=round(float((hi - lo) * 0.1), 1), attempt=attempt))
+            pieces.append(line[cur:])
+            line = resample(np.vstack([p_ for p_ in pieces if len(p_)]), 0.10)
+        return line
+    line = repair(line)
     # Still not clean (narrow channels, stretches of the course that lie on top of each other): give the whole leg
     # between two waypoints back to the operator's own line. Leg by leg this cannot fail: the operator's line is
     # never closer to anything than the operator was.
@@ -721,6 +732,16 @@ def main():
                 line = cand; J["lane"] = dict(before=before, after=a.jump_after, blend=blend, moved=round(float(np.abs(wgt * sv).max()), 2)); break
         print("   jump lane at %s: %s" % (np.round(E_, 2), J["lane"] or "NOT APPLIED (no straight lane passes the body sweep and keeps the waypoints): the operator's own line stays"))
     line = resample(line, 0.10)
+    # LAST check of the finished line (2026-09-22: a thin object beside the WP21-WP22 marking drive ended up under the
+    # line after the steps above; verify_route_clearance refused the route). Repair again; a lane that gets cut is reported.
+    n_final = int(clr.bad_vertices(line).sum())
+    if os.environ.get("TEACH_LINE_DEBUG"):
+        vi_, dn_, _ = clr.check(line); c_ = np.array([-10.85, -22.55]); k_ = np.argsort(np.linalg.norm(clr.P - c_, axis=1))[:4]
+        print("DEBUG final: violations", len(vi_), [(np.round(clr.P[q], 2).tolist(), round(float(clr.d_op[q]), 2), round(float(dn_[q]), 2)) for q in k_], "line near:", round(float(np.linalg.norm(line - c_, axis=1).min()), 2))
+    if n_final:
+        line = resample(repair(line), 0.10)
+        print("final check: %d line points on an obstacle after the waypoint bends / jump lanes -> repaired, %d left" % (n_final, int(clr.bad_vertices(line).sum())))
+    bad = clr.bad_vertices(line)
 
     # pass-by point of every waypoint = its gate on the route (on walked ground), radius = reach - offset
     gates, cur = [], 0
@@ -777,9 +798,8 @@ def main():
         t = trails[sp["recording"]]; lo_, hi_ = gate_i[sp["k"][0]], gate_i[sp["k"][1]]
         dist, idx = cKDTree(t[:, 1:3]).query(line[lo_:hi_ + 1])
         if tl: stairs_line[lo_:hi_ + 1] = np.where(dist < 0.8, flags[sp["recording"]][idx], stairs_line[lo_:hi_ + 1])
-        if tl and pflags[sp["recording"]].any():                 # a platform-gait teaching: the operator's gait as driven, from 6 m before the first ledge
-            on_ = np.where((dist < 0.8) & pflags[sp["recording"]][idx])[0]
-            if len(on_): keep_op[max(lo_, lo_ + int(on_[0]) - 60):hi_ + 1] = True
+        if tl and pflags[sp["recording"]].any():                 # a platform-gait teaching: the operator's gait as driven, from its first
+            keep_op[lo_:hi_ + 1] = True                           # waypoint (2026-09-22: stairs gait from WP22, no switch between WP22 and WP23)
     # terrain: height of x_nav's ground cloud under the line; steep = steps or slope. The stairs gait is slow, so it is
     # only kept where the operator used it AND the ground needs it.
     gtree = cKDTree(ground_pts[:, :2]); zg = np.full(len(line), np.nan)
@@ -813,7 +833,9 @@ def main():
     plat_refs = [sp["recording"] for sp in spliced if pflags[sp["recording"]].any()]
     for J in jumps:                                               # only the jump itself; the switch is made standing
         sJ = sline[int(np.argmin(np.linalg.norm(line - J["xy"], axis=1)))]
-        platform_line |= (sline >= sJ - a.platform_before) & (sline <= sJ + a.platform_after)
+        pb_at = {q.split(":")[0].upper(): float(q.split(":")[1]) for q in a.platform_before_at.split(",") if ":" in q}
+        J["before_gait"] = pb_at.get(ids[int(np.argmin(np.linalg.norm(W - J["xy"], axis=1)))], a.platform_before)
+        platform_line |= (sline >= sJ - J["before_gait"]) & (sline <= sJ + a.platform_after)
     if not jumps:                                                 # no ledge found: wherever an operator used the gait
         for d in (plat_refs or demos + patches):
             if pflags[d].any():
