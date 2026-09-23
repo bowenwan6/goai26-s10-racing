@@ -1,15 +1,15 @@
 """Phone UI for the installed vendor SLAM. No motion publishers; no new SLAM algorithm."""
-import os
 import json
-from contextlib import redirect_stdout
 import math
-from pathlib import Path
+import os
 import re
 import struct
 import subprocess
 import sys
 import threading
 import time
+from contextlib import redirect_stdout
+from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SLAM = Path('/opt/robot/share/slam')
@@ -61,11 +61,11 @@ def sense():
         if '/usr/lib/python3/dist-packages' not in sys.path:
             sys.path.append('/usr/lib/python3/dist-packages')
         import rclpy
-        from rclpy.signals import SignalHandlerOptions
+        from nav_msgs.msg import Odometry
         from rclpy.qos import qos_profile_sensor_data
         from rclpy.serialization import deserialize_message
-        from sensor_msgs.msg import PointCloud2, Imu
-        from nav_msgs.msg import Odometry
+        from rclpy.signals import SignalHandlerOptions
+        from sensor_msgs.msg import Imu, PointCloud2
         rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
         node = rclpy.create_node('s10_phone_mapping_preview', enable_rosout=False,
                                 start_parameter_services=False)
@@ -269,8 +269,9 @@ def dispatch(request):
 
 def field_pending():
     """Legacy writes share the worker lock and respect its durable reservation."""
-    from field_core import DEFAULT_ROOT
     import sqlite3
+
+    from field_core import DEFAULT_ROOT
     path = DEFAULT_ROOT/'field.sqlite3'
     if not path.exists():
         return False  # Backward compatible before explicit field deployment.

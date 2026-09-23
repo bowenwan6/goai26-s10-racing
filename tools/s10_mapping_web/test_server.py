@@ -1,9 +1,9 @@
 """Offline parser and save-order checks; no robot or ROS imports."""
 import json
-from pathlib import Path
 import struct
 import sys
 import tempfile
+from pathlib import Path
 from types import SimpleNamespace as NS
 from unittest.mock import patch
 
@@ -93,9 +93,10 @@ def check():
     # Exercise the HTTP trust boundary without contacting or starting the robot.
     import hashlib
     import threading
-    from urllib.request import Request, build_opener, HTTPCookieProcessor, ProxyHandler
-    from urllib.error import HTTPError
     from http.server import ThreadingHTTPServer
+    from urllib.error import HTTPError
+    from urllib.request import HTTPCookieProcessor, ProxyHandler, Request, build_opener
+
     import server as web
     web.config = dict(login_hash=hashlib.sha256(b'golai:test').hexdigest())
     http = ThreadingHTTPServer(('127.0.0.1', 0), web.Handler)

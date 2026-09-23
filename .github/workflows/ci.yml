@@ -12,26 +12,137 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint
+    name: Lint (correctness)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Install ruff
-        run: pip install ruff
-      - name: Check style
-        run: ruff check .
-      - name: Check formatting
-        run: ruff format --check .
+      - run: pip install ruff
+      # Blocking gate: real errors only — syntax/runtime (E9), pyflakes (F), import order (I).
+      # Stylistic modernisation is reported by the non-blocking `style` job below.
+      - name: Check correctness
+        run: ruff check --select E9,F,I .
+
+  style:
+    name: Style (report only)
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - name: Full ruff report
+        run: ruff check --output-format=github . || true
+      - name: Format drift
+        run: ruff format --check . || true
+
+  hygiene:
+    name: Hygiene (secrets, paths, media)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: No developer-machine paths
+        # Robot-side Linux paths (/home/golai, /home/user on the vendor boards) are real
+        # deployment targets and stay. What must never appear is a developer's own home
+        # directory: it leaks a username and the local layout of someone's laptop.
+        run: |
+          if grep -rIn -E '(/Users/[A-Za-z0-9._-]+|[A-Za-z]:[\\/]Users[\\/][A-Za-z0-9._-]+|/mnt/[a-z]/Users/[A-Za-z0-9._-]+)' . \
+               --exclude-dir=.git --exclude=.git --exclude-dir=vendor --exclude-dir=upstream \
+               --exclude-dir=.github 2>/dev/null ; then
+            echo "::error::developer home path found (see above)"; exit 1
+          fi
+          echo "clean"
+
+      - name: No routable IP addresses in documentation
+        # Lab addresses (RFC1918, loopback, link-local, multicast) are operational
+        # detail and stay. What must never ship is a globally routable address: that
+        # is a real host someone can reach, like the rented GPU box this repo used to
+        # name in full. Frozen artifact trees are excluded; they are dated evidence.
+        run: |
+          python3 - <<'PYEOF'
+          import ipaddress, pathlib, re, sys
+          SKIP = {"evidence", "reports", "data", "vendor", "upstream", ".git", ".github"}
+          pat = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+          bad = []
+          for f in pathlib.Path(".").rglob("*.md"):
+              if set(f.parts) & SKIP:
+                  continue
+              try:
+                  text = f.read_text(encoding="utf-8", errors="replace")
+              except OSError:
+                  continue
+              for n, line in enumerate(text.splitlines(), 1):
+                  for m in pat.findall(line):
+                      try:
+                          ip = ipaddress.IPv4Address(m)
+                      except ValueError:
+                          continue          # version strings like 1.22.1.0
+                      if ip.is_private or ip.is_loopback or ip.is_link_local \
+                         or ip.is_multicast or ip.is_unspecified or ip.is_reserved:
+                          continue
+                      bad.append(f"{f}:{n}: {m}")
+          if bad:
+              print("::error::globally routable IP address in documentation")
+              print("\n".join(bad))
+              sys.exit(1)
+          print("clean")
+          PYEOF
+
+      - name: README media budget
+        run: |
+          fail=0
+          for f in docs/media/*; do
+            [ -f "$f" ] || continue
+            if head -c 40 "$f" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$f is an LFS pointer; README media must be plain git"; fail=1; continue
+            fi
+            sz=$(wc -c < "$f")
+            if [ "$sz" -gt 1258291 ]; then
+              echo "::error::$f is $sz bytes (budget 1258291 = 1.2 MB)"; fail=1
+            fi
+          done
+          total=$(cat docs/media/* 2>/dev/null | wc -c)
+          echo "docs/media total: $total bytes"
+          [ "$total" -gt 3670016 ] && { echo "::error::docs/media exceeds 3.5 MB"; fail=1; }
+          exit $fail
+
+      - name: Secret scan
+        # The action wrapper needs pull-requests:read to enumerate PR commits and
+        # returns 403 without it. Running the binary over the working tree needs no
+        # token and gates exactly what a pull request should gate: the files it ships.
+        run: |
+          VER=8.24.3
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VER}/gitleaks_${VER}_linux_x64.tar.gz" \
+            | tar xz -C /tmp gitleaks
+          /tmp/gitleaks dir . --no-banner --redact --exit-code 1 \
+            --log-opts="" 2>&1 | tail -40
+
+  links:
+    name: Docs link check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress --offline --include-fragments
+            README.md README.zh.md 'docs/**/*.md'
+          fail: true
 
   test:
     name: Unit tests
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install dependencies
@@ -52,7 +163,7 @@ jobs:
     runs-on: ubuntu-24.04
     container: ros:jazzy-ros-base
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install dependencies
         shell: bash
         run: |

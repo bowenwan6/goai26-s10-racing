@@ -1,7 +1,6 @@
 """Restart/client-loss tests of a separate local fake worker, not robot services."""
 import json
 import os
-from pathlib import Path
 import socket
 import subprocess
 import sys
@@ -10,10 +9,11 @@ import threading
 import time
 import unittest
 import uuid
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from field_worker import Engine, RPCServer, rpc_call
 from field_core import Store
+from field_worker import Engine, RPCServer, rpc_call
 from test_independent_worker import FakeEvidenceAdapter
 
 

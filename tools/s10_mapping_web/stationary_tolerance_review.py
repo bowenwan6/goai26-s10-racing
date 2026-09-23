@@ -9,10 +9,9 @@ import argparse
 import hashlib
 import json
 import math
-from pathlib import Path
 import statistics
 import zipfile
-
+from pathlib import Path
 
 LIMITS = dict(window_s=5., motion_xy_m_s=.02, motion_yaw_rad_s=.02,
               gyro_peak_rad_s=.08, gyro_mean_rad_s=.01, gyro_std_rad_s=.01,

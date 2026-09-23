@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import argparse
 import ctypes
-from ctypes import wintypes
 import os
 import re
 import socket
 import struct
 import time
+from ctypes import wintypes
 
 import mujoco
 import mujoco.viewer

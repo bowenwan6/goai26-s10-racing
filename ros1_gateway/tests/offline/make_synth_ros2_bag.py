@@ -14,7 +14,7 @@ import rosbag2_py
 from rclpy.serialization import serialize_message
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'e2e'))
-from synthetic_ros2_pub import cloud, imu, odom  # noqa: E402
+from synthetic_ros2_pub import cloud, imu, odom
 
 TYPES = {'/LIDAR/POINTS': 'sensor_msgs/msg/PointCloud2', '/IMU': 'sensor_msgs/msg/Imu',
          '/ODOM': 'nav_msgs/msg/Odometry'}

@@ -62,7 +62,7 @@ Android 遥控器 → 模式／摇杆指令 → 103 原生控制器 → 电机
 | 当前 base policy 输入 | 57D 本体感知，没有点云／高度图、真实线速度或绝对航向 |
 | SDK policy 频率 | agent_timestep = 0.02，即 50 Hz；代码 SetDecimation(4)，底层循环时序需实测核对 |
 
-机器人型号与配置参考：[048 安装记录](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/docs/S10_48_SETUP_ZH.md)、[048 SLAM 记录](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/docs/S10_48_SLAM_ZH.md)、[S10 产品手册](<<home>/Documents/ChatGPT/GOAI/s10-real-readiness/docs/reference/山猫S10 Pro产品手册 V1.0.1.pdf>)。
+机器人型号与配置参考：[048 安装记录](<workspace>/s10-real-readiness/docs/S10_48_SETUP_ZH.md)、[048 SLAM 记录](<workspace>/s10-real-readiness/docs/S10_48_SLAM_ZH.md)、[S10 产品手册](<<workspace>/s10-real-readiness/docs/reference/山猫S10 Pro产品手册 V1.0.1.pdf>)。
 
 ### 2.2 物理／控制参数：先作为建模基准，不当成安全认证
 
@@ -92,10 +92,10 @@ Android 遥控器 → 模式／摇杆指令 → 103 原生控制器 → 电机
 
 | 资料 | 当前本地地址 | 用途与限制 |
 |---|---|---|
-| 完整比赛仿真／部署工程 | [goai26-s10-racing](<home>/Documents/Projects/goai26/goai26-s10-racing) | 机器人资产、SDK、ONNX、ROS 部署、回归测试；其 training 目录不是完整 PPO trainer |
-| 完整旧训练工程的干净副本 | [goai-s10-gate16-policy-v1-5](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5) | 有 MuJoCo PPO、teacher warmstart、残差训练、DAgger；是高台任务参考，需改造成新平地 GPU task |
-| 论文／技术报告源码证据包 | [source_bundle](<home>/Documents/ChatGPT/GOAI/academic_assets/source_bundle) | 固定发布版本的代码选集、模型谱系、评测证据；不是完整可执行仓库 |
-| 真机准备／数据调查工程 | [s10-real-readiness](<home>/Documents/ChatGPT/GOAI/s10-real-readiness) | SSH、部署监控、安全试验、SLAM／数据文档；注意旧 050／051 号记录不等于当前 048 |
+| 完整比赛仿真／部署工程 | [goai26-s10-racing](<workspace-legacy>/goai26-s10-racing) | 机器人资产、SDK、ONNX、ROS 部署、回归测试；其 training 目录不是完整 PPO trainer |
+| 完整旧训练工程的干净副本 | [goai-s10-gate16-policy-v1-5](<workspace-legacy>/goai-s10-gate16-policy-v1-5) | 有 MuJoCo PPO、teacher warmstart、残差训练、DAgger；是高台任务参考，需改造成新平地 GPU task |
+| 论文／技术报告源码证据包 | [source_bundle](<workspace>/academic_assets/source_bundle) | 固定发布版本的代码选集、模型谱系、评测证据；不是完整可执行仓库 |
+| 真机准备／数据调查工程 | [s10-real-readiness](<workspace>/s10-real-readiness) | SSH、部署监控、安全试验、SLAM／数据文档；注意旧 050／051 号记录不等于当前 048 |
 
 Git 来源与本次版本：
 
@@ -109,41 +109,41 @@ Git 来源与本次版本：
 官方 SDK 根目录：
 
 ```text
-<home>/Documents/Projects/goai26/goai26-s10-racing/
+<workspace-legacy>/goai26-s10-racing/
   upstream/goai_embodied_future_material/src/S10_sdk_deploy/
 ```
 
 | 文件 | 本机地址 | 为什么要用 |
 |---|---|---|
-| S10 URDF | [S10.urdf](<home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/urdf/S10.urdf) | 转为 Isaac USD；关节、轴、惯量、限位 |
-| S10 MuJoCo 模型 | [S10.xml](<home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/mjcf/S10.xml) | 跨仿真器动态验证，参考 actuator／接触 |
-| 全部机器人资源 | [S10_description](<home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description) | URDF/XML 的 mesh 依赖；必须整目录保留相对结构 |
-| 真实 observation／action 规则 | [s10_policy_runner.hpp](<home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/run_policy/s10_policy_runner.hpp) | 网络名称、维数、关节顺序、缩放、PD 目标 |
-| Python 规则 | [observation.py](<home>/Documents/Projects/goai26/goai26-s10-racing/training/s10_rl/observation.py) | BASELINE 57D；PERCEPTIVE 174D，不可混用 |
-| DDS 接口 | [dds_interface.hpp](<home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/interface/robot/hardware/dds_interface.hpp) | 实机状态到 SDK 的适配 |
-| SDK 消息定义 | [drdds/msg](<home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/drdds/msg) | 离线解析参考；原生接口以机上实际安装定义为准 |
+| S10 URDF | [S10.urdf](<workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/urdf/S10.urdf) | 转为 Isaac USD；关节、轴、惯量、限位 |
+| S10 MuJoCo 模型 | [S10.xml](<workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/mjcf/S10.xml) | 跨仿真器动态验证，参考 actuator／接触 |
+| 全部机器人资源 | [S10_description](<workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description) | URDF/XML 的 mesh 依赖；必须整目录保留相对结构 |
+| 真实 observation／action 规则 | [s10_policy_runner.hpp](<workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/run_policy/s10_policy_runner.hpp) | 网络名称、维数、关节顺序、缩放、PD 目标 |
+| Python 规则 | [observation.py](<workspace-legacy>/goai26-s10-racing/training/s10_rl/observation.py) | BASELINE 57D；PERCEPTIVE 174D，不可混用 |
+| DDS 接口 | [dds_interface.hpp](<workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/interface/robot/hardware/dds_interface.hpp) | 实机状态到 SDK 的适配 |
+| SDK 消息定义 | [drdds/msg](<workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/drdds/msg) | 离线解析参考；原生接口以机上实际安装定义为准 |
 
 旧训练工程中可复用的实现：
 
-- [train.py](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/train.py)：PPO、ONNX teacher 数值核对、anchor／BC loss。
-- [network.py](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/network.py)：actor／critic 结构参考。
-- [env.py](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/env.py)：混合位置／速度控制、力矩裁剪和轮接触参考。
-- [official_policy_env.py](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_policy_env.py)、[official_residual_env.py](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_residual_env.py)：冻结 base＋residual 的实现思路；原来是 174D／障碍任务，不是新任务即插即用组件。
-- [distill_residual_dagger.py](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/distill_residual_dagger.py)：student rollout → teacher 标签 → dataset aggregation 参考。
-- [training/s10_rl](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl)：checkpoint／导出／输入规范工具。
+- [train.py](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/train.py)：PPO、ONNX teacher 数值核对、anchor／BC loss。
+- [network.py](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/network.py)：actor／critic 结构参考。
+- [env.py](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/env.py)：混合位置／速度控制、力矩裁剪和轮接触参考。
+- [official_policy_env.py](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_policy_env.py)、[official_residual_env.py](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_residual_env.py)：冻结 base＋residual 的实现思路；原来是 174D／障碍任务，不是新任务即插即用组件。
+- [distill_residual_dagger.py](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/distill_residual_dagger.py)：student rollout → teacher 标签 → dataset aggregation 参考。
+- [training/s10_rl](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl)：checkpoint／导出／输入规范工具。
 
-特别注意：[warmstart.py](<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl/warmstart.py) 明确要求 RSL-RL 5 的 actor_state_dict／mlp checkpoint 格式；本文固定 Isaac Lab v2.3.2 使用 RSL-RL 3.1.2。必须写 checkpoint adapter 或从 ONNX 恢复冻结 actor，不能直接互换，也不要为了旧脚本把新环境强行升级到 RSL-RL 5。
+特别注意：[warmstart.py](<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl/warmstart.py) 明确要求 RSL-RL 5 的 actor_state_dict／mlp checkpoint 格式；本文固定 Isaac Lab v2.3.2 使用 RSL-RL 3.1.2。必须写 checkpoint adapter 或从 ONNX 恢复冻结 actor，不能直接互换，也不要为了旧脚本把新环境强行升级到 RSL-RL 5。
 
 ### 3.3 当前模型：三种“官方／旧模型”不是一回事
 
 | 模型 | 位置与可用性 | 用途 |
 |---|---|---|
-| 本地公开 SDK 57D actor | [policy.onnx](<home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/policy/policy.onnx) | 现在就能离线验证；固定基线／冻结 base 候选 |
+| 本地公开 SDK 57D actor | [policy.onnx](<workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/policy/policy.onnx) | 现在就能离线验证；固定基线／冻结 base 候选 |
 | AGX 公开 SDK 57D actor | 机器人 /home/golai/goai_embodied_future_material/src/S10_sdk_deploy/policy/policy.onnx；2026-09-17 SSH 核实 | 更贴近当前机上 SDK 文件，但是否对应最佳实机表现仍要测试 |
 | 之前训练的 speedturn 57D actor | 机器人 /home/golai/provisioning/speedturn2000-20260912/s10_general_speedturn_57d_model2000.onnx；SSH 核实 | 强对照基线，先做回归；不是“已经比原生遥控更好”的证据 |
 | 103 原生遥控运控 | 日志加载 /opt/robot/share/motion_master/run_policy/lib/arm/CD1/libCD1RunPolicy.so | 黑盒实机专家；未取得可用于训练的独立权重 |
-| Gate16 感知策略／残差 | [policy/gate16](<home>/Documents/Projects/goai26/goai26-s10-racing/policy/gate16) | 障碍专项，不能当作 57D locomotion base |
-| Gate16 已有 checkpoint | [speed_core_best_checkpoint.pt](<home>/Documents/Projects/goai26/gate16_front_tuck_competition_v4_20260818/checkpoint/speed_core_best_checkpoint.pt) | 174D 模型谱系／训练工具参考，不是 speedturn model_2000.pt |
+| Gate16 感知策略／残差 | [policy/gate16](<workspace-legacy>/goai26-s10-racing/policy/gate16) | 障碍专项，不能当作 57D locomotion base |
+| Gate16 已有 checkpoint | [speed_core_best_checkpoint.pt](<workspace-legacy>/gate16_front_tuck_competition_v4_20260818/checkpoint/speed_core_best_checkpoint.pt) | 174D 模型谱系／训练工具参考，不是 speedturn model_2000.pt |
 
 已核对 SHA-256：
 
@@ -185,19 +185,19 @@ speedturn 的元数据在机上：
 
 | 资料 | 当前地址／状态 | 可以做什么 | 不能做什么 |
 |---|---|---|---|
-| 今日 048 LiDAR＋IMU＋ODOM | [slam_test_20260917_170443](<home>/Documents/ChatGPT/GOAI/recordings/slam_test_20260917_170443)；全量本地存在 | 时钟／IMU／定位接口分析；速度／路径指标辅助验证 | 没有 JOINTS_DATA／JOINTS_CMD／STEER，不能生成可靠 BC action labels |
-| 今日数据压缩包 | [S10_048_LiDAR_IMU_20260917_170443.zip](<home>/Documents/ChatGPT/GOAI/deliverables/S10_048_LiDAR_IMU_20260917_170443.zip) | 交接给 SLAM 开发者 | 首次平地 RL 不必上传大体积点云 |
-| v3 地图／MuJoCo 包 | [S10_v3_Map_MuJoCo_20260916](<home>/Documents/ChatGPT/GOAI/deliverables/S10_v3_Map_MuJoCo_20260916) | 后续跨仿真器／小地形留出测试 | 不是全场碰撞 mesh，也不带可直接行走的 controller |
-| 历史 9 段状态包／17 段遥控包 | [数据调查文档](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/docs/S10_DATA_RESEARCH_ZH.md) 中有清单；原始大包未在此 Mac 完整找到 | 取回后分析关节轨迹、侧倾、轮速、状态分布 | 缺动作与可靠定位时，不直接作 state-action BC；050 历史结果不能替代 048 |
-| 原生运控调查证据 | [native-navigation-audit-20260917](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/artifacts/native-navigation-audit-20260917) | 控制器位置／模式／接口／授权读取边界 | 发现接口不代表实际收到动态 action，更不代表已完成专家采集 |
+| 今日 048 LiDAR＋IMU＋ODOM | [slam_test_20260917_170443](<workspace>/recordings/slam_test_20260917_170443)；全量本地存在 | 时钟／IMU／定位接口分析；速度／路径指标辅助验证 | 没有 JOINTS_DATA／JOINTS_CMD／STEER，不能生成可靠 BC action labels |
+| 今日数据压缩包 | [S10_048_LiDAR_IMU_20260917_170443.zip](<workspace>/deliverables/S10_048_LiDAR_IMU_20260917_170443.zip) | 交接给 SLAM 开发者 | 首次平地 RL 不必上传大体积点云 |
+| v3 地图／MuJoCo 包 | [S10_v3_Map_MuJoCo_20260916](<workspace>/deliverables/S10_v3_Map_MuJoCo_20260916) | 后续跨仿真器／小地形留出测试 | 不是全场碰撞 mesh，也不带可直接行走的 controller |
+| 历史 9 段状态包／17 段遥控包 | [数据调查文档](<workspace>/s10-real-readiness/docs/S10_DATA_RESEARCH_ZH.md) 中有清单；原始大包未在此 Mac 完整找到 | 取回后分析关节轨迹、侧倾、轮速、状态分布 | 缺动作与可靠定位时，不直接作 state-action BC；050 历史结果不能替代 048 |
+| 原生运控调查证据 | [native-navigation-audit-20260917](<workspace>/s10-real-readiness/artifacts/native-navigation-audit-20260917) | 控制器位置／模式／接口／授权读取边界 | 发现接口不代表实际收到动态 action，更不代表已完成专家采集 |
 
-今日 bag 时长 177.824 s，共 39,121 条：点云 1,778 条约 10 Hz，IMU 35,566 条约 200 Hz，ODOM 1,777 条约 10 Hz。raw_bag/metadata.yaml 与 8 个 MCAP 分卷属于同一录制，必须一起保留。没有 TF，IMU frame_id 为空；用 ODOM 做监督前仍需核对 frame、外参和定位有效性。[完整说明](<home>/Documents/ChatGPT/GOAI/recordings/slam_test_20260917_170443/README_先读我.md)。
+今日 bag 时长 177.824 s，共 39,121 条：点云 1,778 条约 10 Hz，IMU 35,566 条约 200 Hz，ODOM 1,777 条约 10 Hz。raw_bag/metadata.yaml 与 8 个 MCAP 分卷属于同一录制，必须一起保留。没有 TF，IMU frame_id 为空；用 ODOM 做监督前仍需核对 frame、外参和定位有效性。[完整说明](<workspace>/recordings/slam_test_20260917_170443/README_先读我.md)。
 
 地图包有全场 3,346,032 点的 full_cloud.pcd，但可运行碰撞场景只覆盖 Start＋B＋B 后约 4.88 m：
 
-- [full_cloud.pcd](<home>/Documents/ChatGPT/GOAI/deliverables/S10_v3_Map_MuJoCo_20260916/maps/v3/full_cloud.pcd)
-- [terrain/scene_contact_v1.xml](<home>/Documents/ChatGPT/GOAI/deliverables/S10_v3_Map_MuJoCo_20260916/mujoco/terrain/scene_contact_v1.xml)
-- [robot_scene/scene.xml](<home>/Documents/ChatGPT/GOAI/deliverables/S10_v3_Map_MuJoCo_20260916/mujoco/robot_scene/scene.xml)
+- [full_cloud.pcd](<workspace>/deliverables/S10_v3_Map_MuJoCo_20260916/maps/v3/full_cloud.pcd)
+- [terrain/scene_contact_v1.xml](<workspace>/deliverables/S10_v3_Map_MuJoCo_20260916/mujoco/terrain/scene_contact_v1.xml)
+- [robot_scene/scene.xml](<workspace>/deliverables/S10_v3_Map_MuJoCo_20260916/mujoco/robot_scene/scene.xml)
 
 trajectory.csv 是优化关键帧，不是导航路点。优先在简单 plane 上训练；这些复杂场景放到后续鲁棒性测试。
 
@@ -313,8 +313,8 @@ ssh s10-48-remote
 
 配置位置：
 
-- Mac SSH 主配置：[config](<home>/.ssh/config)
-- 已包含的机器人配置：[s10-48-remote.conf](<home>/.ssh/s10-48-remote.conf)
+- Mac SSH 主配置：[config](~/.ssh/config)
+- 已包含的机器人配置：[s10-48-remote.conf](~/.ssh/s10-48-remote.conf)
 - 此别名使用当前本机配置的 userspace Tailscale ProxyCommand；不需要把机器人端口开放到公网。
 
 别名与后台连接服务只保证当前 Mac 的配置，不会自动同步到新电脑。本文不给出任何私钥内容，也不要把 .ssh 整目录上传 GPU 或公开仓库。Windows 历史资料中的 s10-48-golai 并不是当前 Mac 已配置的同名别名。
@@ -386,7 +386,7 @@ timeout 5 ros2 topic echo /MOTION_INFO --once
 
 最新只读日志证明：103 机身 motion_master 加载 libCD1RunPolicy.so，策略 CD1_policy，版本 CD1_Policy_v1.0.3、ABI 1、Build 2026-08-12。这不是 Mac 的公开 policy.onnx，也不是之前训练的 speedturn ONNX。
 
-Android 遥控器目前有证据支持的是“选模式、发指令”；没有证据表明真正的低层 locomotion 网络在 Android APK 内。当前 103 SSH 容器视图看不到日志所示库，有限读取没有找到独立权重。不能因此断言权重已加密；已确认的是正常控制通信使用 TLS／DTLS。[调查证据](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/artifacts/native-navigation-audit-20260917/README.md)。
+Android 遥控器目前有证据支持的是“选模式、发指令”；没有证据表明真正的低层 locomotion 网络在 Android APK 内。当前 103 SSH 容器视图看不到日志所示库，有限读取没有找到独立权重。不能因此断言权重已加密；已确认的是正常控制通信使用 TLS／DTLS。[调查证据](<workspace>/s10-real-readiness/artifacts/native-navigation-audit-20260917/README.md)。
 
 因此先用黑盒 teacher：人工通过正常遥控器让原生策略实际运动，只读收集 command、state、可见 motor target 和结果。不要绕过保护、root Android 或提取受限制文件作为训练前置条件；如果厂商明确授权提供可导出模型，再单独核对许可、接口和安全测试。
 
@@ -557,7 +557,7 @@ Host gpu-s10
     HostName GPU_HOST
     User GPU_USER
     Port 22
-    IdentityFile <home>/.ssh/id_ed25519
+    IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 ```
 
@@ -574,18 +574,18 @@ ssh gpu-s10
 下面是在 Mac 新建材料目录并下载，不会覆盖 SDK 原文件：
 
 ```bash
-mkdir -p <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/models
+mkdir -p <workspace>/training_materials/s10_048/models
 
 scp s10-48-remote:/home/golai/goai_embodied_future_material/src/S10_sdk_deploy/policy/policy.onnx \
-  <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/models/official_sdk_agx_92db62c.onnx
+  <workspace>/training_materials/s10_048/models/official_sdk_agx_92db62c.onnx
 
 scp s10-48-remote:/home/golai/provisioning/speedturn2000-20260912/s10_general_speedturn_57d_model2000.onnx \
-  <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/models/speedturn_57d_model2000.onnx
+  <workspace>/training_materials/s10_048/models/speedturn_57d_model2000.onnx
 
 scp s10-48-remote:/home/golai/provisioning/speedturn2000-20260912/model-metadata.json \
-  <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/models/speedturn_model-metadata.json
+  <workspace>/training_materials/s10_048/models/speedturn_model-metadata.json
 
-shasum -a 256 <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/models/*.onnx
+shasum -a 256 <workspace>/training_materials/s10_048/models/*.onnx
 ```
 
 按第 3.3 节逐个比对 SHA。此 training_materials 目录是**建议创建的新目录，本文编写时未执行这些复制命令**。
@@ -600,27 +600,27 @@ scp 的方向：“远程别名:/远程路径 本机路径”是下载；反过�
 ssh gpu-s10 'mkdir -p /home/GPU_USER/work/s10-rl/materials /home/GPU_USER/work/s10-rl/reference /home/GPU_USER/work/s10-rl/docs'
 
 rsync -av \
-  <home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/ \
+  <workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/ \
   gpu-s10:/home/GPU_USER/work/s10-rl/materials/S10_description/
 
 rsync -av --exclude .git --exclude .venv --exclude __pycache__ \
-  <home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/ \
+  <workspace-legacy>/goai-s10-gate16-policy-v1-5/ \
   gpu-s10:/home/GPU_USER/work/s10-rl/reference/gate16-training/
 
 rsync -av \
-  <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/models/ \
+  <workspace>/training_materials/s10_048/models/ \
   gpu-s10:/home/GPU_USER/work/s10-rl/materials/models/
 
-scp <home>/Documents/Projects/goai26/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/run_policy/s10_policy_runner.hpp \
+scp <workspace-legacy>/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/run_policy/s10_policy_runner.hpp \
   gpu-s10:/home/GPU_USER/work/s10-rl/reference/s10_policy_runner_mac.hpp
 
 scp s10-48-remote:/home/golai/goai_embodied_future_material/src/S10_sdk_deploy/run_policy/s10_policy_runner.hpp \
-  <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/s10_policy_runner_agx.hpp
+  <workspace>/training_materials/s10_048/s10_policy_runner_agx.hpp
 
-scp <home>/Documents/ChatGPT/GOAI/training_materials/s10_048/s10_policy_runner_agx.hpp \
+scp <workspace>/training_materials/s10_048/s10_policy_runner_agx.hpp \
   gpu-s10:/home/GPU_USER/work/s10-rl/reference/s10_policy_runner_agx.hpp
 
-scp <home>/Documents/ChatGPT/GOAI/S10_NVIDIA_RL_TRAINING_START_ZH.md \
+scp <workspace>/S10_NVIDIA_RL_TRAINING_START_ZH.md \
   gpu-s10:/home/GPU_USER/work/s10-rl/docs/
 ```
 
@@ -872,9 +872,9 @@ videos/                    留出代表案例及失败，不只选最佳一次
 
 可复用的本地基础：
 
-- [prepare_s10_sdk_copy.py](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/scripts/prepare_s10_sdk_copy.py)：隔离副本准备。
-- [run_s10_sdk_trial.py](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/scripts/run_s10_sdk_trial.py)、[s10_sdk_trial.py](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/scripts/s10_sdk_trial.py)：试验／监控基础，使用前读清模式与参数，不直接启动运动。
-- [真实机器人 quickstart](<home>/Documents/ChatGPT/GOAI/s10-real-readiness/docs/S10_REAL_ROBOT_QUICKSTART_ZH.md)：包含很多 050 历史内容，以 048 文档和当前实机为准。
+- [prepare_s10_sdk_copy.py](<workspace>/s10-real-readiness/scripts/prepare_s10_sdk_copy.py)：隔离副本准备。
+- [run_s10_sdk_trial.py](<workspace>/s10-real-readiness/scripts/run_s10_sdk_trial.py)、[s10_sdk_trial.py](<workspace>/s10-real-readiness/scripts/s10_sdk_trial.py)：试验／监控基础，使用前读清模式与参数，不直接启动运动。
+- [真实机器人 quickstart](<workspace>/s10-real-readiness/docs/S10_REAL_ROBOT_QUICKSTART_ZH.md)：包含很多 050 历史内容，以 048 文档和当前实机为准。
 
 本指南故意没有给出一键启动 SDK／起身／模式切换命令。训练环境搭建并不授权机器人运动。
 

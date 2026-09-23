@@ -8,12 +8,12 @@ import getpass
 import hashlib
 import io
 import json
-from pathlib import Path
 import time
-from urllib.request import Request, build_opener, ProxyHandler, HTTPCookieProcessor
+import zipfile
+from pathlib import Path
 from urllib.error import HTTPError
 from urllib.parse import urlsplit
-import zipfile
+from urllib.request import HTTPCookieProcessor, ProxyHandler, Request, build_opener
 
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--url',required=True)

@@ -3,11 +3,9 @@
 Uses the field worker's operation lock, a persistent request ledger, and a local
 runtime lease. The browser cannot edit engineering verification or ROS arguments.
 """
-import argparse
 import copy
 import json
 import os
-from pathlib import Path
 import re
 import signal
 import sqlite3
@@ -15,6 +13,7 @@ import subprocess
 import threading
 import time
 import uuid
+from pathlib import Path
 
 from field_core import DEFAULT_ROOT, FieldError, canonical, exclusive
 from field_worker import OPERATION_LOCK, RPCHandler, RPCServer, rpc_call

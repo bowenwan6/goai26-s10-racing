@@ -76,7 +76,7 @@ Native 那一轮从官方 actor 热启动，但用了 `init_noise_std = 1.0`、l
 在聊天里发出来的 root 密码应视为已泄露。我不会用密码登录。请在 Mac 终端执行下面这条命令，按提示输入一次密码，把现有公钥 `~/.ssh/id_ed25519.pub` 装到服务器上：
 
 ```bash
-ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 30567 root@<GPU_HOST>
+ssh-copy-id -i ~/.ssh/id_ed25519.pub -p <GPU_PORT> root@<GPU_HOST>
 ```
 
 然后在 `~/.ssh/config` 里加一个别名，并到云平台控制台修改 root 密码：
@@ -102,7 +102,7 @@ ssh gpu-s10 'nvidia-smi; cat /etc/os-release | head -3; ldd --version | head -1;
 |---|---|---|
 | GPU | 带 RT 核的 RTX 卡（4090、L40S、A6000、RTX 6000 Ada 等），显存 ≥ 16 GB | A100/H100 跑不了 Isaac Sim，只能做 PyTorch 蒸馏或导出 |
 | 驱动 | 满足 Isaac Sim 5.1 要求（朋友服务器用 580.173.02 跑通） | 找平台换镜像或驱动，不在容器里自己装 |
-| 容器 | 端口 30567 + root 看起来像容器云，通常没有 Docker | 走 pip 路线：conda + `isaacsim[all,extscache]==5.1.0` + Isaac Lab v2.3.2，再把 `rsl-rl-lib==5.0.1` 装进去 |
+| 容器 | 端口 <GPU_PORT> + root 看起来像容器云，通常没有 Docker | 走 pip 路线：conda + `isaacsim[all,extscache]==5.1.0` + Isaac Lab v2.3.2，再把 `rsl-rl-lib==5.0.1` 装进去 |
 | Vulkan | `create_empty.py --headless` 能正常退出 | 容器缺 `libnvidia-gl` 或 ICD 时 Isaac Sim 会报设备丢失，需要平台支持 |
 | 磁盘 | ≥ 150 GB | Isaac 缓存加日志很占空间，定期清理 `/tmp/IsaacLab/usd_*` |
 

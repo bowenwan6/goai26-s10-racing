@@ -2,21 +2,28 @@
 
 No publishers, navigation goals or replay. Missing calibration stays unverified.
 """
-from collections import deque
 import importlib.util
 import json
 import math
 import os
 import re
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 
-from field_core import FieldError, MAP_RE, binding, canonical, finite_list, localization_reasons, pose_summary
 import robot_backend as vendor
+from field_core import (
+    MAP_RE,
+    FieldError,
+    binding,
+    canonical,
+    finite_list,
+    localization_reasons,
+    pose_summary,
+)
 
 # Display decoding only; independent rosbag recording keeps original messages.
 # At ~0.13 s measured LiDAR source latency, a 0.5 s display interval could
@@ -176,11 +183,11 @@ class RobotAdapter:
     def sense(self):
         try:
             import rclpy
-            from rclpy.signals import SignalHandlerOptions
+            from nav_msgs.msg import Odometry
             from rclpy.qos import qos_profile_sensor_data
             from rclpy.serialization import deserialize_message
-            from sensor_msgs.msg import PointCloud2, Imu
-            from nav_msgs.msg import Odometry
+            from rclpy.signals import SignalHandlerOptions
+            from sensor_msgs.msg import Imu, PointCloud2
             rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
             self.node = rclpy.create_node('s10_field_evidence', enable_rosout=False, start_parameter_services=False)
 

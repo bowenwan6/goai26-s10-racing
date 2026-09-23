@@ -1,7 +1,7 @@
 // Homepage-entry regression: LOCAL DEMO ONLY, no robot/ROS/SSH connection.
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {chromium}=require(process.env.S10_QA_PLAYWRIGHT||'<home>/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require(process.env.S10_QA_PLAYWRIGHT||'<cache>/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const origin='http://s10-phone.invalid:18080';
 (async()=>{
  const browser=await chromium.launch({headless:true});

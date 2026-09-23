@@ -29,7 +29,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import urlsplit
 
 import teach_core as core
 
@@ -636,7 +636,7 @@ def main():
         if last is not None:
             worker.session_open(last.name)
             print('reopened session ' + last.name, flush=True)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         print('no session reopened: %s' % e, flush=True)
     server = ThreadingHTTPServer(('127.0.0.1', args.port), make_handler(worker))
 

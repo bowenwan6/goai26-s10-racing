@@ -3,10 +3,10 @@ import json
 import unittest
 import uuid
 
+import test_independent_robot as robot_fixture
 import test_independent_worker as fixture
 from field_core import FieldError
 from field_robot import parse_navigation
-import test_independent_robot as robot_fixture
 
 
 class GuidanceReportTests(unittest.TestCase):

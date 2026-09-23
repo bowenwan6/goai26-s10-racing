@@ -17,7 +17,7 @@
   "files": [
     {
       "path": "source/deployment/LICENSE",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/LICENSE",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/LICENSE",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "706d0b880d5170d11384b23807c134d03d57b03e4fefc523552abd201c1b449e",
       "bytes": 1542,
@@ -25,7 +25,7 @@
     },
     {
       "path": "source/deployment/compose.yaml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/compose.yaml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/compose.yaml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "cae38b765cfd1d72e0ad96f0370a68a9f6af53e9e36c76748fec468726126230",
       "bytes": 771,
@@ -33,7 +33,7 @@
     },
     {
       "path": "source/deployment/docker/Dockerfile",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/docker/Dockerfile",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/docker/Dockerfile",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "89203aa5b0383568700bfc9cc0ddf4833dced54eb163f2951be552df62ad2c19",
       "bytes": 2567,
@@ -41,7 +41,7 @@
     },
     {
       "path": "source/deployment/docker/requirements.lock",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/docker/requirements.lock",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/docker/requirements.lock",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "65af3c7970c48cba0caf45b1d531d86fb342c3fad82a0184e7dc443aa3f1bede",
       "bytes": 502,
@@ -49,7 +49,7 @@
     },
     {
       "path": "source/deployment/integration/gate16_perception_buffer.hpp",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_perception_buffer.hpp",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_perception_buffer.hpp",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "b73547fac1feaabf15b81917a2b1b88a35d02d28764463472bf6fdc367a960f8",
       "bytes": 1809,
@@ -57,7 +57,7 @@
     },
     {
       "path": "source/deployment/integration/gate16_policy_runner.hpp",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_policy_runner.hpp",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_policy_runner.hpp",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "1d55dcaceab71555ab9ce881386651ba4e7be0d0d5064ac44888e897545a1c0c",
       "bytes": 33207,
@@ -65,7 +65,7 @@
     },
     {
       "path": "source/deployment/integration/gate16_policy_symmetry.hpp",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_policy_symmetry.hpp",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_policy_symmetry.hpp",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "169ba0136dad52c1a0677edb48d2e2c69fe278b51a4e3f01cc6acec941bea8ce",
       "bytes": 3220,
@@ -73,7 +73,7 @@
     },
     {
       "path": "source/deployment/integration/gate16_skill_gate.hpp",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_skill_gate.hpp",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/gate16_skill_gate.hpp",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "1ae71b8e260914b1ddb718ab23a3e4ae5b07020453ff5acc7f6854084da96a2d",
       "bytes": 14224,
@@ -81,7 +81,7 @@
     },
     {
       "path": "source/deployment/integration/joint_command_owner.hpp",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/joint_command_owner.hpp",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/joint_command_owner.hpp",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "b406b6e5e4e10d1a1ba79bc41fbad54ca8e1f9bdca03abe9726f1df3cec71fe8",
       "bytes": 21752,
@@ -89,7 +89,7 @@
     },
     {
       "path": "source/deployment/integration/ros_cmd_interface.hpp",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/ros_cmd_interface.hpp",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/integration/ros_cmd_interface.hpp",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "af6dcca2db19512a47f07edd232177f80108d6a6e3e1976fbb492665601c2c0c",
       "bytes": 6789,
@@ -97,7 +97,7 @@
     },
     {
       "path": "source/deployment/scripts/build.sh",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/build.sh",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/build.sh",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "e38495c11404759da440c48ce0bfd30b1594685d33aba9f872511bcf6e757542",
       "bytes": 2465,
@@ -105,7 +105,7 @@
     },
     {
       "path": "source/deployment/scripts/run_race.sh",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/run_race.sh",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/run_race.sh",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "0af19e724753cdf42f88c2e252129406477ec170cd2b30445365355bc08c1b51",
       "bytes": 3420,
@@ -113,7 +113,7 @@
     },
     {
       "path": "source/deployment/scripts/setup_upstream.sh",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/setup_upstream.sh",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/setup_upstream.sh",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "8892cc48b67e0e3fd365a7186757f676a9a2659327a38262d8a6bbd200679e59",
       "bytes": 2886,
@@ -121,7 +121,7 @@
     },
     {
       "path": "source/deployment/scripts/verify_install.sh",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/verify_install.sh",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/scripts/verify_install.sh",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "3b54faebaeee622b0e8d072f20e3c88c75e5fc1a26d284fc040effc93942d23f",
       "bytes": 2251,
@@ -129,7 +129,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/package.xml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/package.xml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/package.xml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "515f9c3fbc3584e3d118618770f67613952c4592d95aff65c321f4d94691c642",
       "bytes": 1009,
@@ -137,7 +137,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/__init__.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/__init__.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/__init__.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "bytes": 0,
@@ -145,7 +145,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/follower_node.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/follower_node.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/follower_node.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "03b038d62b29eb3e7c40c166b10eee7923d3060c680a6a4ad3bd1ba52030987d",
       "bytes": 90039,
@@ -153,7 +153,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/local_planner.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/local_planner.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/local_planner.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "45aa0563f1217733c0f05e0b5f818019ee8b0406ef1d9854c9bba153055c2d9e",
       "bytes": 22391,
@@ -161,7 +161,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/pitfail_metrics.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/pitfail_metrics.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/pitfail_metrics.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "a6ddcd1d4da17bf48f415371d205b2d62705b96f560fdef6de461fbe976acca6",
       "bytes": 4626,
@@ -169,7 +169,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/pitfail_recorder.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/pitfail_recorder.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/pitfail_recorder.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "d66e82878921780819d8d7acc2cd51b2bf2933345164e9b0b62eda0456ce813a",
       "bytes": 18018,
@@ -177,7 +177,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/pure_pursuit.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/pure_pursuit.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/pure_pursuit.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "964a00b29454b3e57c15bfffdc64266b6ff7a7d0a7d2dbbb410a74bdc691e6a9",
       "bytes": 9646,
@@ -185,7 +185,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/segment_recorder.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/segment_recorder.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/segment_recorder.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "7ab92f8b87508e47f19b0d7f2698b713679acaaceab29e78b1c7d5d02a5211c8",
       "bytes": 23644,
@@ -193,7 +193,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/step_commit.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/step_commit.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/step_commit.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "bf2e021df77a5eba4a4e5b025d06713c6372f001d3427e545bf953c708b9318b",
       "bytes": 15471,
@@ -201,7 +201,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/__init__.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/__init__.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/__init__.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "4590307419ceafb3ae531a0167c30b27bc2490612e57a39ad0607eab83776a57",
       "bytes": 665,
@@ -209,7 +209,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/arbiter.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/arbiter.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/arbiter.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "d6b49daaa4fbb2c7ee365ca0f58112e0f4d70de68f5b4542d9106b9dce6caf92",
       "bytes": 3833,
@@ -217,7 +217,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/gate16_policy.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/gate16_policy.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/gate16_policy.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "d66f6791fbe8e6b00d8c22595b4ded6dd03105b815661754d5841e9312d4ede2",
       "bytes": 11401,
@@ -225,7 +225,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/gates.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/gates.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/gates.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "fbea91204dc4c77376ae319c1d6c6d87319429a5baf650b00a52b45fa85c5523",
       "bytes": 3747,
@@ -233,7 +233,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/mock_policy.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/mock_policy.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/mock_policy.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "b8c1177e96c26a1d89c8fc4910e25476406cbb5cb3fcfc3c449f2e478697ff1c",
       "bytes": 6992,
@@ -241,7 +241,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/policy.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/policy.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/policy.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "d1f977bcb945a357e0289c9a002a03b6d76b4134a9304b30b54a5b270f02711a",
       "bytes": 7977,
@@ -249,7 +249,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/router.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/router.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/router.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "984315ebc0ceba648847389441fb3f74408256c4147df971e88d9753038378ab",
       "bytes": 74281,
@@ -257,7 +257,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/scripted_policy.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/scripted_policy.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/scripted_policy.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "99877109e385fcb6bc87d4bb47ff9918c8eac6d42c5374bc845f6ac99e6a9226",
       "bytes": 10066,
@@ -265,7 +265,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy/stairs57_policy.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/stairs57_policy.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy/stairs57_policy.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "776cd10b442c14c87bfd4914b693eaec88e5cece4fbadd2de2cfbf3cced27c7f",
       "bytes": 10772,
@@ -273,7 +273,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/strategy_router_node.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy_router_node.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/strategy_router_node.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "ac17f85c25320ec0e61bcab5814d7fdc357751100d4e9f29cc6eb0fafc39853a",
       "bytes": 47056,
@@ -281,7 +281,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/terrain.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/terrain.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/terrain.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "bd909be6b7abf3b1d9245c633516c14677f3c5b273e356ad253498beadd2e911",
       "bytes": 25119,
@@ -289,7 +289,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/s10_auto_nav/waypoints.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/waypoints.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/s10_auto_nav/waypoints.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "d2c1a124e74c85973ddc4bc08c033e34c37dd268cd83da358322b886534c460b",
       "bytes": 7033,
@@ -297,7 +297,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/setup.cfg",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/setup.cfg",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/setup.cfg",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "a5f59c4bd7890bc657007b94b7f032b2dbc9a012badef954e742d821e799bf06",
       "bytes": 94,
@@ -305,7 +305,7 @@
     },
     {
       "path": "source/deployment/src/s10_auto_nav/setup.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/setup.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_auto_nav/setup.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "000c16a1fbd833d314b95cb43207134dbd25e780f79d475c7df2a436e20d02ee",
       "bytes": 940,
@@ -313,7 +313,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/CMakeLists.txt",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/CMakeLists.txt",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/CMakeLists.txt",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "533f31ada5aa1a6ea9e8d3b1992f45b63ad78dc38f04e106a143104295fa6095",
       "bytes": 426,
@@ -321,7 +321,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/config/course.yaml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/course.yaml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/course.yaml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "c4120b111caee273974c9005fd1cda454c01a801e45f9e3b3064bce48c9657ee",
       "bytes": 2961,
@@ -329,7 +329,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/config/nav.yaml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/nav.yaml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/nav.yaml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "7b218880d110043050f3b02fb35c544f7cbb224f969e302df2a8dbf393d28f07",
       "bytes": 18608,
@@ -337,7 +337,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/config/strategy.yaml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/strategy.yaml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/strategy.yaml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "3dd894181590bc8f68d952f508966f46ec2f387f3ffb5bd524297d7014969478",
       "bytes": 1988,
@@ -345,7 +345,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/config/strategy_gate16.yaml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/strategy_gate16.yaml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/config/strategy_gate16.yaml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "ec5c1ace6c9444dcc2d26a47bba99eb08f6382210c010435e6cb9fb37302c5c1",
       "bytes": 6090,
@@ -353,7 +353,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/launch/pitfail.launch.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/launch/pitfail.launch.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/launch/pitfail.launch.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "c450024e96e9c45484774b97bfeb9107ea3d4603b9ed7961abbcdf442fa0b89f",
       "bytes": 10450,
@@ -361,7 +361,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/launch/race.launch.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/launch/race.launch.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/launch/race.launch.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "d73bdb6e975b6edcdfde6831e0136e96b4a90dc41ff632bd162ed797de6c197d",
       "bytes": 5860,
@@ -369,7 +369,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/launch/segment.launch.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/launch/segment.launch.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/launch/segment.launch.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "f3a3271de619bea2d1dbee9960af0e99b8ce82699cbbecdc9aa7226ae1f3b077",
       "bytes": 4231,
@@ -377,7 +377,7 @@
     },
     {
       "path": "source/deployment/src/s10_bringup/package.xml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/package.xml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_bringup/package.xml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "40ff874b9668d70eed7e9c469541fe32eb101c09705c481eb33f2accf1e1ed55",
       "bytes": 820,
@@ -385,7 +385,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/package.xml",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/package.xml",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/package.xml",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "b1fe1c004e33c6d08712a44de770299672b21249cb25b16278f97d0925124b87",
       "bytes": 1101,
@@ -393,7 +393,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/__init__.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/__init__.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/__init__.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "bytes": 0,
@@ -401,7 +401,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/heightmap.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/heightmap.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/heightmap.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "10c5d0a9ec1122c3a8a982fbfc4537ce5e1d96c8460c45126f43338217e295b1",
       "bytes": 7603,
@@ -409,7 +409,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/lidar.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/lidar.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/lidar.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "3ba94b5c4e5116320d2b7ed20c98db9ed27b9969f53e54d718c8ceab2c8d25eb",
       "bytes": 6208,
@@ -417,7 +417,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/png.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/png.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/png.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "956680261492372f656e315c636641c14fc06dda775a6de97d94eee32f6e4f46",
       "bytes": 1682,
@@ -425,7 +425,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/segment_spawn.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/segment_spawn.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/segment_spawn.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "5abd469a522e06a25aa253dcd9d5138459137ead4cd9333183366e96fff32005",
       "bytes": 12466,
@@ -433,7 +433,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/sim_node.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/sim_node.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/sim_node.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "f27ceb562f541917f6e145c02189dd317287c62f6e2f995bc2fc7bf13c4e2cc2",
       "bytes": 18465,
@@ -441,7 +441,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/upstream.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/upstream.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/upstream.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "57484966737de5ac6d09cdd49535203a5ac8154278a7be8296d772f0635c2a29",
       "bytes": 2800,
@@ -449,7 +449,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/s10_perception/viz_node.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/viz_node.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/s10_perception/viz_node.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "4f049e90fbce0746ce5cd036dc116eb8828c00304f497397a04a5a82cbc047e0",
       "bytes": 7963,
@@ -457,7 +457,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/setup.cfg",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/setup.cfg",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/setup.cfg",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "454362f3f70a277dc8cc7ed6fbc3714bdadd56a3596fc14a46831684b4f7df3e",
       "bytes": 98,
@@ -465,7 +465,7 @@
     },
     {
       "path": "source/deployment/src/s10_perception/setup.py",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/setup.py",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/src/s10_perception/setup.py",
       "revision": "3660b81e8244dfa238633c161673596fe91650f6",
       "sha256": "cc58c841bdea4d3dcbc54806ae317482968aa9a992f5c5ced290728352f6a705",
       "bytes": 881,
@@ -473,7 +473,7 @@
     },
     {
       "path": "source/training/training/run_gate16_speed_first_pipeline.sh",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/run_gate16_speed_first_pipeline.sh",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/run_gate16_speed_first_pipeline.sh",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "68b7b08db55eb2eb140170fb21ee3ddd0a7f9c09c737058bc3ed1f49436733fb",
       "bytes": 7127,
@@ -482,7 +482,7 @@
     },
     {
       "path": "source/training/training/config/gate16_retention_generalization_v2.csv",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/config/gate16_retention_generalization_v2.csv",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/config/gate16_retention_generalization_v2.csv",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "39e4d1d560d242eef4bc5fdfd3e3f615224309245814c7e70dbdea205d535b97",
       "bytes": 3230,
@@ -491,7 +491,7 @@
     },
     {
       "path": "source/training/training/config/gate16_speed_boundary_v1.csv",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/config/gate16_speed_boundary_v1.csv",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/config/gate16_speed_boundary_v1.csv",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "09d54d498e3045a1b29f36b449a786f1ae2d744d02a3c4e7bd382e6b3e088e1f",
       "bytes": 1928,
@@ -500,7 +500,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/__init__.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/__init__.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/__init__.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "88406d8b3789d9a1783143c75a2b1a6c9e3da8372085bc647856b6369d584e5e",
       "bytes": 320,
@@ -509,7 +509,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/config.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/config.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/config.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "32b567dd5fa0c76cff285575e56085ca38206419b494b4ed438e65332a017eca",
       "bytes": 4175,
@@ -518,7 +518,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/env.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/env.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/env.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "cc6781fea0561022e6ddcef1e99c97a5695c5f0551645bf87d071999a3a26462",
       "bytes": 29415,
@@ -527,7 +527,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/network.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/network.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/network.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "dbb285e92a72855fd23a6cb1cce00b6b9e75d08ce8901af707796b19aa2d7dbb",
       "bytes": 2284,
@@ -536,7 +536,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/train.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/train.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/train.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "355e590e60cee70313513985aa01aad216cedfedb2087a2ade5416247f8b8aa0",
       "bytes": 50498,
@@ -545,7 +545,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/train_official_policy_residual.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/train_official_policy_residual.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/train_official_policy_residual.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "cabd4923ac6f05c3277e2e68eb92b31ce1e738276e048cb267490f84791f8a56",
       "bytes": 37482,
@@ -554,7 +554,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/official_policy_env.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_policy_env.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_policy_env.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "7ffcfc4c0645c14c5ce363e69a7d61e64da4e86104c7c19a6449950f461d2f48",
       "bytes": 19242,
@@ -563,7 +563,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/official_residual_env.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_residual_env.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/official_residual_env.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "08a45d41d7cae28d3b5e401811c00f5fe97d589e522b7c9f6b9e9ff490f28d5b",
       "bytes": 9125,
@@ -572,7 +572,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/evaluate_official_track_skill.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/evaluate_official_track_skill.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/evaluate_official_track_skill.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "09f68c0d08589eba4fa275787957aa626839ed5817bee72a819708c2737e5413",
       "bytes": 20316,
@@ -581,7 +581,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/collect_residual_demonstrations.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/collect_residual_demonstrations.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/collect_residual_demonstrations.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "b8394eb41c24ae88116cf90a36d1c522512e6f60a8f11a289f9d9b4470f2397d",
       "bytes": 13267,
@@ -590,7 +590,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/gate16_entry_cases.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/gate16_entry_cases.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/gate16_entry_cases.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "be21b1d7ece984711072eb11135fabac7eccd20404a83933329932c5f0cedc74",
       "bytes": 3135,
@@ -599,7 +599,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/speed_objective.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/speed_objective.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/speed_objective.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "87e7967c7b582d91401df7ff7587d22da97834650b295212181db9705a38d604",
       "bytes": 4402,
@@ -608,7 +608,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/front_retention.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/front_retention.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/front_retention.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "1515da87c9fd49baf020d46de710d5a2090924bd7cf9291d69aaa9f21a8ed127",
       "bytes": 6167,
@@ -617,7 +617,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/rear_push.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/rear_push.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/rear_push.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "96279f5aa50024e5761259c09dd67f3e165775decf7ed8989c03106f7bd2ebb8",
       "bytes": 11113,
@@ -626,7 +626,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/select_gate16_fastest.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/select_gate16_fastest.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/select_gate16_fastest.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "1937922ea26f69b2e39bd1fdbaad34e8f5fce73e6424442c902115a0284a1b0e",
       "bytes": 5423,
@@ -635,7 +635,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/select_gate16_phase.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/select_gate16_phase.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/select_gate16_phase.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "f01f6b59314d5d385e0aebec094764c3ced3904a4cf54fb5deea422348531f3a",
       "bytes": 6290,
@@ -644,7 +644,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/build_front_retention_dataset.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/build_front_retention_dataset.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/build_front_retention_dataset.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "5c27ee77b798a5328a8b6fe499ba580b5b47eade693dfc5bb78ac36ff9a81c82",
       "bytes": 11131,
@@ -653,7 +653,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/distill_official_residual.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/distill_official_residual.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/distill_official_residual.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "b2feef30d22ef342ae78dc3bcc213d05fbce3b21ca1f44c8019609befec5a7cd",
       "bytes": 7464,
@@ -662,7 +662,7 @@
     },
     {
       "path": "source/training/training/mujoco_s10/distill_residual_dagger.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/mujoco_s10/distill_residual_dagger.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/mujoco_s10/distill_residual_dagger.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "dbb8f41308f01dcb1cae22281f4a550972dbdb3b3aaa09853d19d131b4191cb8",
       "bytes": 18766,
@@ -671,7 +671,7 @@
     },
     {
       "path": "source/training/training/s10_rl/training_config.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl/training_config.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl/training_config.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "5c4a1a3c96c5aff844fe1afee9a824ae73a7de1214c5900d679d5afff8db440b",
       "bytes": 2190,
@@ -680,7 +680,7 @@
     },
     {
       "path": "source/training/training/s10_rl/skill_gate.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl/skill_gate.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl/skill_gate.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "157cab04cebf9612ed2b4552b4ba96fa50316111b14047a7e3305e124a2979b6",
       "bytes": 5543,
@@ -689,7 +689,7 @@
     },
     {
       "path": "source/training/training/s10_rl/export_climb_bundle.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl/export_climb_bundle.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl/export_climb_bundle.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "dffb9a986e7aac232403e3111deaec395b497ee8096a0b39a00702ab56903db8",
       "bytes": 3746,
@@ -698,7 +698,7 @@
     },
     {
       "path": "source/training/training/s10_rl/observation.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl/observation.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl/observation.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "0fd6e03fae24ae89af7d72bb2059c17be7549c73228498db740c0370b6150c82",
       "bytes": 6372,
@@ -707,7 +707,7 @@
     },
     {
       "path": "source/training/training/s10_rl/policy.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl/policy.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl/policy.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "887266577f719102205faae2ce8cf19441020936591c26d21994546513865af0",
       "bytes": 2670,
@@ -716,7 +716,7 @@
     },
     {
       "path": "source/training/training/s10_rl/checkpoint.py",
-      "original_path": "<home>/Documents/Projects/goai26/goai-s10-gate16-policy-v1-5/training/s10_rl/checkpoint.py",
+      "original_path": "<workspace-legacy>/goai-s10-gate16-policy-v1-5/training/s10_rl/checkpoint.py",
       "revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
       "sha256": "bb26d36312a96e02c0da402d570f32e24267d2d536b693ca69804fffa5e8f6aa",
       "bytes": 4182,
@@ -725,119 +725,119 @@
     },
     {
       "path": "evidence/implementation_detail_reference.md",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/report_assets/archive/before_six_page_review/PROJECT_TECHNICAL_ZH.md",
+      "original_path": "<workspace>/report_assets/archive/before_six_page_review/PROJECT_TECHNICAL_ZH.md",
       "revision": null,
       "sha256": "69f940d928a65f2fa51c0b275fbf93feb805a19dec88a6899143d0011b02a4e3",
       "bytes": 26152
     },
     {
       "path": "evidence/external_industry_consultation_brief.md",
-      "original_path": "<home>/Documents/Projects/goai26/resources/external_industry_consultation_brief.md",
+      "original_path": "<workspace-legacy>/resources/external_industry_consultation_brief.md",
       "revision": null,
       "sha256": "2acfe64daad816deb894c2bd875cccd5777b853f74ca51e617d9fec41459be38",
       "bytes": 39575
     },
     {
       "path": "evidence/previous_report.md",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/report_assets/archive/PROJECT_TECHNICAL_ZH_18pages.md",
+      "original_path": "<workspace>/report_assets/archive/PROJECT_TECHNICAL_ZH_18pages.md",
       "revision": null,
       "sha256": "4f9985e21e797c1b5067791b642aee0638109ad3bacc53d9a3f3ae46f124d831",
       "bytes": 45806
     },
     {
       "path": "evidence/model_audit.json",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/TECHNICAL_MODEL_AUDIT.json",
+      "original_path": "<workspace>/TECHNICAL_MODEL_AUDIT.json",
       "revision": null,
       "sha256": "49ad1591ea1b219d086a78e2cab8227cf6733e19c3deb6d392d472e6222b3c1a",
       "bytes": 4378
     },
     {
       "path": "evidence/formal_summary.json",
-      "original_path": "<home>/Documents/Projects/goai26/gate16_front_tuck_release_20260817/evaluation/formal_summary.json",
+      "original_path": "<workspace-legacy>/gate16_front_tuck_release_20260817/evaluation/formal_summary.json",
       "revision": null,
       "sha256": "7c3b3a32227ce4052ac5296b2ac77b5592ac91e128c5cd6f19f19be49d48c471",
       "bytes": 55519
     },
     {
       "path": "evidence/selection.json",
-      "original_path": "<home>/Documents/Projects/goai26/gate16_front_tuck_release_20260817/provenance/selection.json",
+      "original_path": "<workspace-legacy>/gate16_front_tuck_release_20260817/provenance/selection.json",
       "revision": null,
       "sha256": "c3e3f4ba59294d95ac114e41fcf3099f87201c088bb00dfb9507ba5326414e6e",
       "bytes": 5165
     },
     {
       "path": "evidence/climb_policy_manifest.json",
-      "original_path": "<home>/Documents/Projects/goai26/gate16_front_tuck_release_20260817/deploy_policy/climb_policy_manifest.json",
+      "original_path": "<workspace-legacy>/gate16_front_tuck_release_20260817/deploy_policy/climb_policy_manifest.json",
       "revision": null,
       "sha256": "df45e472695ee419795e5b7fe01001f049fef1f85dc74f46f6223681f3f96545",
       "bytes": 1400
     },
     {
       "path": "evidence/later_experiment/corrected_front_tuck_train.csv",
-      "original_path": "<home>/Documents/Projects/goai26/gate16_front_tuck_release_20260817/provenance/corrected_front_tuck_train.csv",
+      "original_path": "<workspace-legacy>/gate16_front_tuck_release_20260817/provenance/corrected_front_tuck_train.csv",
       "revision": null,
       "sha256": "70dfab49e03439156de7f1f1630820f0e59eb31e43a7eafdbe8699e153265567",
       "bytes": 13183
     },
     {
       "path": "evidence/later_experiment/corrected_front_tuck_training_summary.json",
-      "original_path": "<home>/Documents/Projects/goai26/gate16_front_tuck_release_20260817/provenance/corrected_front_tuck_training_summary.json",
+      "original_path": "<workspace-legacy>/gate16_front_tuck_release_20260817/provenance/corrected_front_tuck_training_summary.json",
       "revision": null,
       "sha256": "b15c4e4560fe5a6d44fe41d5cacf9d6e13e8ce639150c1ed46d19e7baf50dafb",
       "bytes": 598
     },
     {
       "path": "evidence/accepted_run/00_32_seed8.json",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/raw/00_32_seed8.json",
+      "original_path": "<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/raw/00_32_seed8.json",
       "revision": null,
       "sha256": "8565f5347a6b8a5b0ea53db0c35a0210e6f1241c41dfa63fc81710b2aa6d621d",
       "bytes": 6426
     },
     {
       "path": "evidence/accepted_run/00_32_seed8.log",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/raw/00_32_seed8.log",
+      "original_path": "<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/raw/00_32_seed8.log",
       "revision": null,
       "sha256": "75bbeb59e7154af88c9478d3b795f3bb0ae0696647fdf0238fa528f559d4feed",
       "bytes": 249393
     },
     {
       "path": "evidence/accepted_run/RUN_SUMMARY.md",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/RUN_SUMMARY.md",
+      "original_path": "<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/RUN_SUMMARY.md",
       "revision": null,
       "sha256": "7bb43f541c4944cbc27f4bf3c8dac7404e01bce98e027de23423934138a5bb1e",
       "bytes": 2310
     },
     {
       "path": "evidence/validation_report.md",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/validation_report.md",
+      "original_path": "<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/validation_report.md",
       "revision": null,
       "sha256": "5dd5857ca3a005ef1465b83245204dfc61bc6ecfc47230dcac793c47c0a1867f",
       "bytes": 2438
     },
     {
       "path": "evidence/TECHNICAL_DESIGN.md",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md",
+      "original_path": "<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md",
       "revision": null,
       "sha256": "801a8279c1429e5a071ceae83bd67ff3012572d17f19e44359fca23a937579d8",
       "bytes": 36250
     },
     {
       "path": "evidence/THIRD_PARTY.md",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/THIRD_PARTY.md",
+      "original_path": "<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/THIRD_PARTY.md",
       "revision": null,
       "sha256": "b953f485e23cd5f994e491a45e584974e863485000f18769d1a44fea6b4397bd",
       "bytes": 5016
     },
     {
       "path": "evidence/independent_failed_batch.md",
-      "original_path": "<home>/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/REPORT.md",
+      "original_path": "<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/REPORT.md",
       "revision": null,
       "sha256": "653aa7661462e8dc152b902df67796c1a4e49047ef289a8ef0d66e2d85ed0c5b",
       "bytes": 3931
     },
     {
       "path": "evidence/recomputed_metrics.json",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/academic_assets/build_source_bundle.py",
+      "original_path": "<workspace>/academic_assets/build_source_bundle.py",
       "revision": null,
       "sha256": "bf4dae6b4f8f09b9cdc8f25ec4b470a6204d3bf37d1de3ba6a881d77135b6217",
       "bytes": 1981,
@@ -845,7 +845,7 @@
     },
     {
       "path": "PROJECT_TECHNICAL_ZH.md",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/PROJECT_TECHNICAL_ZH.md",
+      "original_path": "<workspace>/PROJECT_TECHNICAL_ZH.md",
       "revision": null,
       "sha256": "72ca09f8d1d1d6f1b987e66d2207d942293950135b7c50f528c67139b42e038c",
       "bytes": 20682,
@@ -853,7 +853,7 @@
     },
     {
       "path": "PROJECT_TECHNICAL_ZH.pdf",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/PROJECT_TECHNICAL_ZH.pdf",
+      "original_path": "<workspace>/PROJECT_TECHNICAL_ZH.pdf",
       "revision": null,
       "sha256": "e953673d32c1b3f1bd757a4654c8b1a27163c87fe53181ef1ce0e9a1cdda33d1",
       "bytes": 490983,
@@ -861,7 +861,7 @@
     },
     {
       "path": "FACT_CHECK_ZH.md",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/FACT_CHECK_ZH.md",
+      "original_path": "<workspace>/FACT_CHECK_ZH.md",
       "revision": null,
       "sha256": "162bc50061f806ad33cd08b453f421a534ceebff6083e2b78febfd34a7c45227",
       "bytes": 24061,
@@ -869,7 +869,7 @@
     },
     {
       "path": "REPORT_PENDING_ITEMS_ZH.md",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/REPORT_PENDING_ITEMS_ZH.md",
+      "original_path": "<workspace>/REPORT_PENDING_ITEMS_ZH.md",
       "revision": null,
       "sha256": "add82fb86a4fbaf7b4146df66fb84537f5c46f427c88111ac1ca5ccff1f836e2",
       "bytes": 1879,
@@ -877,7 +877,7 @@
     },
     {
       "path": "ACADEMIC_REVIEW_ZH.md",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/ACADEMIC_REVIEW_ZH.md",
+      "original_path": "<workspace>/ACADEMIC_REVIEW_ZH.md",
       "revision": null,
       "sha256": "adc6f55a71fe89a6c1727bc28c560699568ba621eed0f0db015cfb0e28511c67",
       "bytes": 2656,
@@ -885,56 +885,56 @@
     },
     {
       "path": "academic_assets/header.tex",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/academic_assets/header.tex",
+      "original_path": "<workspace>/academic_assets/header.tex",
       "revision": null,
       "sha256": "36aafce9c8c5ca52b200a9baa1398600812a1520619db5921f37a1fac77ac946",
       "bytes": 2034
     },
     {
       "path": "academic_assets/layout.lua",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/academic_assets/layout.lua",
+      "original_path": "<workspace>/academic_assets/layout.lua",
       "revision": null,
       "sha256": "a4f28b2135eb0160df7466bbfd8f372b24674686000f3a5328db8a41cae704d3",
       "bytes": 1874
     },
     {
       "path": "academic_assets/build_pdf.sh",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/academic_assets/build_pdf.sh",
+      "original_path": "<workspace>/academic_assets/build_pdf.sh",
       "revision": null,
       "sha256": "0dd0fdb1ebf5cfe4eae9e20c93396754e041937d9425c46694642d6ebf838bd0",
       "bytes": 809
     },
     {
       "path": "academic_assets/check_pdf.py",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/academic_assets/check_pdf.py",
+      "original_path": "<workspace>/academic_assets/check_pdf.py",
       "revision": null,
       "sha256": "2d7881bed9a0fd2e5ae584a3419169b1c9ae85f27bad585b952c53365a91b533",
       "bytes": 3343
     },
     {
       "path": "academic_assets/pdf_check.json",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/academic_assets/pdf_check.json",
+      "original_path": "<workspace>/academic_assets/pdf_check.json",
       "revision": null,
       "sha256": "89a00a9b7448c47cf6cae0138d23f783402fca05f474fde4a32753156406b6b8",
       "bytes": 1088
     },
     {
       "path": "academic_assets/build_source_bundle.py",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/academic_assets/build_source_bundle.py",
+      "original_path": "<workspace>/academic_assets/build_source_bundle.py",
       "revision": null,
       "sha256": "1862f85d151708625ead1ba2035d003b88a6237b530875009aac37c3fc28d880",
       "bytes": 13727
     },
     {
       "path": "poster_assets/img/course_height_overview.png",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/poster_assets/img/course_height_overview.png",
+      "original_path": "<workspace>/poster_assets/img/course_height_overview.png",
       "revision": null,
       "sha256": "0e8dc79e40f2cd5344e640f1195ab228e42e4f98f69841a9147005177eee109a",
       "bytes": 102004
     },
     {
       "path": "poster_assets/generate_course_height_map.py",
-      "original_path": "<home>/Documents/ChatGPT/GOAI/poster_assets/generate_course_height_map.py",
+      "original_path": "<workspace>/poster_assets/generate_course_height_map.py",
       "revision": null,
       "sha256": "5fad9855864e790b7b88d1c29127ce3dd6b9471353a6ac1fb9282d82a987f144",
       "bytes": 7102

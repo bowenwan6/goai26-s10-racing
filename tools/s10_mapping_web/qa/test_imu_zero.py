@@ -1,19 +1,17 @@
 """Offline display-reference tests: no ROS or robot connection."""
 import copy
-import json
 import math
-from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 import uuid
+from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from field_core import FieldError
 from imu_diag import Diagnostic, atomic
 from imu_zero import ZeroReference
-from field_core import FieldError
-from field_robot import parse_navigation
 
 
 class ZeroTests(unittest.TestCase):
@@ -113,7 +111,7 @@ class RPC(unittest.TestCase):
             key=uuid.uuid4().hex;req=dict(action='zero_start',key=key,epoch=d.epoch,stationary=True,remote_ready=True)
             for bad in [dict(req,stationary=False),dict(req,epoch='old'),dict(req,threshold=999),dict(req,key='../config')]:
                 with self.assertRaises(FieldError):d.rpc(bad)
-            s=d.rpc(req);self.assertEqual(d.rpc(req)['id'],key)
+            _s=d.rpc(req);self.assertEqual(d.rpc(req)['id'],key)
             with self.assertRaises(FieldError):d.rpc(dict(action='zero_clear',id=uuid.uuid4().hex))
             with self.assertRaises(FieldError):d.rpc(dict(action='start',key=uuid.uuid4().hex,seconds=60,stationary=True,remote_ready=True))
             d.rpc(dict(action='zero_clear',id=key));self.assertEqual(d.rpc(dict(action='live'))['zero']['state'],'CLEARED')
