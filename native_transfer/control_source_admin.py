@@ -7,13 +7,14 @@ import argparse
 import json
 import math
 import time
+
 import rclpy
-from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
 from drdds.msg import MotionInfo, NodeCtlCmd, StdMsgInt32
 from drdds.srv import NodeCtlQuery
-from sensor_msgs.msg import PointCloud2
 from nav_msgs.msg import Odometry
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
+from sensor_msgs.msg import PointCloud2
 
 
 def main():

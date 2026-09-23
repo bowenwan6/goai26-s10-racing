@@ -1,23 +1,24 @@
 """Local only: real HTTP/auth and task ledger, synthetic telemetry, no robot I/O."""
 import hashlib
 import json
-from pathlib import Path
 import sys
 import tempfile
 import threading
 import time
 import unittest
-from unittest.mock import patch
-from urllib.request import Request, build_opener, HTTPCookieProcessor, ProxyHandler
-from urllib.error import HTTPError
 from http.server import ThreadingHTTPServer
+from pathlib import Path
+from unittest.mock import patch
+from urllib.error import HTTPError
+from urllib.request import HTTPCookieProcessor, ProxyHandler, Request, build_opener
 
 HERE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parents[1]))
 import native_nav as nav
-from native_transfer.app_control import AppControl
 import server as web
+
+from native_transfer.app_control import AppControl
 
 CODE = HERE.parents[1]
 

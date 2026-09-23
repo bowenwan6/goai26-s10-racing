@@ -26,7 +26,6 @@ import argparse
 import csv
 import json
 import math
-import os
 import sys
 from pathlib import Path
 
@@ -34,8 +33,9 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "nav"))
-from s10_auto_nav.rl_nav.maneuvers import Maneuver, save as save_maneuvers  # noqa: E402
-from s10_auto_nav.route_v2 import RoutePath, RouteV2  # noqa: E402
+from s10_auto_nav.rl_nav.maneuvers import Maneuver
+from s10_auto_nav.rl_nav.maneuvers import save as save_maneuvers
+from s10_auto_nav.route_v2 import RoutePath, RouteV2
 
 WP_IDS = ["WP%02d" % i for i in range(1, 31)]
 

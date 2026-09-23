@@ -3,12 +3,11 @@ import argparse
 import datetime as dt
 import json
 import math
-from pathlib import Path
 import socket
 import struct
 import subprocess
 import time
-
+from pathlib import Path
 
 SLAM_ROOT = Path('/opt/robot/share/slam')
 
@@ -74,8 +73,8 @@ def summary(samples, now):
 
 def sample(seconds):
     import rclpy
-    from rclpy.qos import qos_profile_sensor_data
     from nav_msgs.msg import Odometry
+    from rclpy.qos import qos_profile_sensor_data
     from sensor_msgs.msg import Imu, PointCloud2
 
     topics = {'/LIDAR/POINTS': PointCloud2, '/LIDAR/POINTS_MERGED': PointCloud2,
@@ -158,7 +157,7 @@ if __name__ == '__main__':
     else:
         if not math.isfinite(args.seconds) or not 1 <= args.seconds <= 60:
             parser.error('--seconds must be finite and between 1 and 60')
-        result = dict(host=socket.gethostname(), collected_at=dt.datetime.now(dt.timezone.utc).isoformat(),
+        result = dict(host=socket.gethostname(), collected_at=dt.datetime.now(dt.UTC).isoformat(),
                       data=inventory() if args.inventory else sample(args.seconds))
         text = json.dumps(result, ensure_ascii=False, indent=2)
         if args.output:

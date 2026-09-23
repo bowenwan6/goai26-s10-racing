@@ -2,7 +2,7 @@
 
 ## Tested delivery and clean-room setup
 
-- Submission source: `<home>/Documents/Projects/goai26/resources/submission_20260820_397s_main3660b81 3`
+- Submission source: `<workspace-legacy>/resources/submission_20260820_397s_main3660b81 3`
 - Team commit recorded by the delivery: `3660b81e8244dfa238633c161673596fe91650f6`
 - Upstream commit: `13dd084be6cb5e2514098bc87e586d00dfe580b2`
 - Submission archive SHA-256: `e5bf6be441128656aa86346ebad552b1efed4b603a6f1477b354129ab07abfec`

@@ -3,8 +3,15 @@
 Run only against an authorized robot app; --selfcheck creates one diagnostic job.
 Credentials and cookies stay in memory and never enter the report.
 """
-import argparse,getpass,hashlib,http.cookiejar,json,time,urllib.request
+import argparse
+import getpass
+import hashlib
+import http.cookiejar
+import json
+import time
+import urllib.request
 from pathlib import Path
+
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)

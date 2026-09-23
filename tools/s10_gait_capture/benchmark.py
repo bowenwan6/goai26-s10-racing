@@ -8,7 +8,6 @@ import cProfile
 import importlib.util
 import io
 import json
-from pathlib import Path
 import platform
 import pstats
 import statistics
@@ -16,8 +15,9 @@ import struct
 import tempfile
 import threading
 import time
-from types import SimpleNamespace as NS
 from importlib.metadata import version
+from pathlib import Path
+from types import SimpleNamespace as NS
 
 
 class TimedLock:

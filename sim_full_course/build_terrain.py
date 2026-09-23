@@ -215,14 +215,14 @@ def build(half_width=HALF_WIDTH, res=RES, out_dir=None, verbose=True):
     corridor = (dist_traj <= half_width).reshape(ny, nx)
     # Implausibly high lowest layer vs. local lower envelope: canopy/roof without ground.
     env = ndimage.minimum_filter(np.where(np.isfinite(G), G, np.inf), size=11)
-    high = np.isfinite(G) & np.isfinite(env) & (G > env + 1.5)
+    high = np.isfinite(G) & np.isfinite(env) & (env + 1.5 < G)
     G[high] = np.nan
     known = np.isfinite(G) & corridor
     G[~known] = np.nan
     # Isolated low spikes from the sub-surface smear: > DESPIKE below the 5x5 median of known
     # cells. Straight stair edges keep their majority side, so risers survive.
     med5 = _nanmedian5(G, known)
-    despiked = known & np.isfinite(med5) & (G < med5 - DESPIKE)
+    despiked = known & np.isfinite(med5) & (med5 - DESPIKE > G)
     G[despiked] = med5[despiked]
     interpolated, med = fill_small_holes(G, known)
     interpolated &= corridor

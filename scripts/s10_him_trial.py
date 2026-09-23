@@ -1,15 +1,15 @@
 """Bounded SDK stand/lateral trial; dry mode isolates every joint output from motors."""
-import json
 import copy
+import json
 import math
 import os
-from pathlib import Path
 import signal
 import subprocess
 import sys
 import threading
 import time
 from collections import deque
+from pathlib import Path
 
 MANUAL_MAX_INPUT = 1.
 # Extended fore/aft probe range: runner multiplies x by 1.5 m/s. Not a motor rating.
@@ -164,8 +164,16 @@ def legs_responded(before, after):
 
 def main(root, dry, direction=0, strength=.1, seconds=2, manual=False, handset=False, him=False):
     import rclpy
+    from drdds.msg import (
+        BatteryData,
+        ImuData,
+        JointsData,
+        JointsDataCmd,
+        MotionInfo,
+        StdMsgInt32,
+        Steer,
+    )
     from rclpy.qos import qos_profile_sensor_data
-    from drdds.msg import ImuData, JointsData, JointsDataCmd, BatteryData, StdMsgInt32, Steer, MotionInfo
     from std_msgs.msg import String
 
     output_dir = Path(os.environ.get('S10_TRIAL_OUTPUT_DIR', str(root)))

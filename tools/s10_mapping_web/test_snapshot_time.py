@@ -1,8 +1,8 @@
 """Snapshot clock regression: delayed vendor reads concurrent with new ROS data."""
 import hashlib
-from pathlib import Path
 import threading
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import field_robot

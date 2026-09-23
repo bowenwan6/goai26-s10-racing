@@ -6,7 +6,8 @@ Use prepare_s10_sdk_copy.py --him-model for hardware (DDS entry point).
 import argparse
 from pathlib import Path
 
-from patch_upstream import DEFAULT_UPSTREAM, SDK, EDITS as MAIN_EDITS, Edit, resolve_upstream
+from patch_upstream import DEFAULT_UPSTREAM, SDK, Edit, resolve_upstream
+from patch_upstream import EDITS as MAIN_EDITS
 
 ROOT = Path(__file__).resolve().parents[1]
 HEADERS = (

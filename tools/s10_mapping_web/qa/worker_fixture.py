@@ -1,8 +1,8 @@
 """LOCAL TEST ONLY: simulated evidence adapter, Unix socket, no robot/ROS/SSH."""
 import argparse
-from pathlib import Path
 import sys
 import time
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from field_worker import run

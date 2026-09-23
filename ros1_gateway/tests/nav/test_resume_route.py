@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """nav_run.start_here must give a route the team's validator accepts, wherever the dog stands (slopes included:
 the first waypoint has to take the height of the line under the dog).  python3 tests/nav/test_resume_route.py <route_dir>"""
-import json, math, os, shutil, sys, tempfile, types
+import json
+import math
+import os
+import shutil
+import sys
+import tempfile
+import types
+
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
 for m, names in (("rospy", []), ("geometry_msgs.msg", ["PoseWithCovarianceStamped"]), ("nav_msgs.msg", ["Odometry"]), ("std_msgs.msg", ["String"])):
     parts = m.split(".")
     for i in range(1, len(parts) + 1): sys.modules.setdefault(".".join(parts[:i]), types.ModuleType(".".join(parts[:i])))
     for n in names: setattr(sys.modules[m], n, object)
 sys.path.insert(0, os.path.join(ROOT, "scripts")); sys.path.insert(0, os.path.join(ROOT, "nav"))
-import nav_run, nav_core
+import nav_core
+import nav_run
+
 src = sys.argv[1].rstrip("/"); doc = json.load(open(os.path.join(src, "route_v2.json")))
 tmp = tempfile.mkdtemp(); work = os.path.join(tmp, "r"); shutil.copytree(src, work); bad = 0; n = 0
 for k, seg in enumerate(doc["segments"]):

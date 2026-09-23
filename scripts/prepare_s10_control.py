@@ -1,9 +1,8 @@
 """Prepare a persistent drdds overlay from this robot's SDK; never send commands."""
 import argparse
-from pathlib import Path
 import shutil
 import tempfile
-
+from pathlib import Path
 
 # Vendor interfaces: supplied drdds snapshot and S10 manual p.48 (MotionState).
 # Existing definitions on the selected robot take precedence only if identical.

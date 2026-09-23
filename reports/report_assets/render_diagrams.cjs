@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { chromium } = require('<home>/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('<cache>/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 (async () => {
  const source=fs.readFileSync('PROJECT_TECHNICAL_ZH.md','utf8');
  const blocks=[...source.matchAll(/```mermaid\n([\s\S]*?)\n```/g)];

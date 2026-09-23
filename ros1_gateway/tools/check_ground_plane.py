@@ -3,12 +3,17 @@
 plane height below the cloud origin and its tilt. On flat ground with the robot level, tilt
 should be ~0 deg (cloud frame = body frame) and the height is the body reference height
 (use it as body_z_offset if x_nav's pose is this same frame)."""
-import sys, os, math
+import math
+import os
+import sys
+
 import numpy as np
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'nav'))
 import nav_core as core
 import rospy
 from sensor_msgs.msg import PointCloud2
+
 
 def main():
     rospy.init_node('check_ground_plane', anonymous=True)

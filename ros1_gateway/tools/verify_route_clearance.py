@@ -17,13 +17,24 @@ clearance the demonstrations had at the same place.
   python3 tools/verify_route_clearance.py <route_dir> <session_dir> --map-dir <x_nav map dir> [--demos a,b,c]
         [--margin 0.05] [--out <dir>]          exit code 0 = no violation
 """
-import argparse, glob, json, math, os, sys
+import argparse
+import glob
+import json
+import os
+import sys
+
 import numpy as np
 from scipy.ndimage import distance_transform_edt, label
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from teach_line import Clearance, Grid, free_zones, load_pcd_xyz, obstacle_mask   # the criterion itself is shared; the generator's free-space logic is not
 from audit_teach_session import read_trail
+from teach_line import (  # the criterion itself is shared; the generator's free-space logic is not
+    Clearance,
+    Grid,
+    free_zones,
+    load_pcd_xyz,
+    obstacle_mask,
+)
 
 HL, HW = 0.45, 0.25                                                # body half length / half width (m)
 
@@ -53,7 +64,7 @@ def main():
     d = np.r_[0, np.cumsum(np.linalg.norm(np.diff(line, axis=0), axis=1))]
     s = np.r_[np.arange(0, d[-1], 0.05), d[-1]]                     # 5 cm steps
     line = np.c_[np.interp(s, d, line[:, 0]), np.interp(s, d, line[:, 1])]
-    tang = np.arctan2(np.gradient(line[:, 1]), np.gradient(line[:, 0]))
+    _tang = np.arctan2(np.gradient(line[:, 1]), np.gradient(line[:, 0]))
     names = [n for n in a.demos.split(",") if n] or [os.path.basename(f)[:-10] for f in sorted(glob.glob(os.path.join(a.session, "path_*.trail.csv")))]
     demos = {n: read_trail(os.path.join(a.session, n + ".trail.csv")) for n in names}
     demos = {n: t for n, t in demos.items() if len(t) > 10}
@@ -91,7 +102,7 @@ def main():
         c = np.array([grid.x0 + (ii.mean() + 0.5) * grid.res, grid.y0 + (jj.mean() + 0.5) * grid.res])
         near = int(np.argmin(np.linalg.norm(line - c, axis=1)))
         wid = min(wps, key=lambda w: np.linalg.norm(w[1] - c))[0]
-        clusters.append(dict(cells=int(len(ii)), xy=[round(float(v), 2) for v in c], s=round(float(s[near]), 1), near_wp=wid,
+        clusters.append(dict(cells=len(ii), xy=[round(float(v), 2) for v in c], s=round(float(s[near]), 1), near_wp=wid,
                              centre_distance=round(float(np.linalg.norm(line[near] - c)), 2)))
     closer = (clr_line < np.minimum(clr_demo, 0.60) - 0.10) & (clr_line < 0.45)   # clearly closer to a real obstacle than the operator ever was
     n_hard = int(hard.sum())
@@ -108,7 +119,8 @@ def main():
     for c in rep["clusters"][:12]: print("   ", c)
     print("centre clearance to real obstacles: route", rep["centre_clearance"], "| demonstrations", rep["demo_clearance"], "| route clearly closer than any demonstration for %.1f m" % rep["metres_closer_than_any_demo"])
     try:
-        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+        # noqa order matters: the Agg backend must be selected before pyplot is imported.
+        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt  # noqa: I001
         ext = [grid.x0, grid.x0 + grid.nx * grid.res, grid.y0, grid.y0 + grid.ny * grid.res]
         img = np.ones(occ.shape + (3,)); img[occ & demo_body] = (0.80, 0.86, 0.95); img[real] = (0.55, 0.55, 0.55); img[route_body & ~real] = (0.85, 0.95, 0.85); img[hit] = (1.0, 0.65, 0.0); img[hard] = (0.9, 0.1, 0.1)
         fig, ax = plt.subplots(figsize=(18, 11)); ax.imshow(np.transpose(img, (1, 0, 2)), origin="lower", extent=ext, interpolation="nearest")

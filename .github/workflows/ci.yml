@@ -12,26 +12,107 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint
+    name: Lint (correctness)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Install ruff
-        run: pip install ruff
-      - name: Check style
-        run: ruff check .
-      - name: Check formatting
-        run: ruff format --check .
+      - run: pip install ruff
+      # Blocking gate: real errors only — syntax/runtime (E9), pyflakes (F), import order (I).
+      # Stylistic modernisation is reported by the non-blocking `style` job below.
+      - name: Check correctness
+        run: ruff check --select E9,F,I .
+
+  style:
+    name: Style (report only)
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - name: Full ruff report
+        run: ruff check --output-format=github . || true
+      - name: Format drift
+        run: ruff format --check . || true
+
+  hygiene:
+    name: Hygiene (secrets, paths, media)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: No developer-machine paths
+        # Robot-side Linux paths (/home/golai, /home/user on the vendor boards) are real
+        # deployment targets and stay. What must never appear is a developer's own home
+        # directory: it leaks a username and the local layout of someone's laptop.
+        run: |
+          if grep -rIn -E '(/Users/[A-Za-z0-9._-]+|[A-Za-z]:[\\/]Users[\\/][A-Za-z0-9._-]+|/mnt/[a-z]/Users/[A-Za-z0-9._-]+)' . \
+               --exclude-dir=.git --exclude=.git --exclude-dir=vendor --exclude-dir=upstream \
+               --exclude-dir=.github 2>/dev/null ; then
+            echo "::error::developer home path found (see above)"; exit 1
+          fi
+          echo "clean"
+
+      - name: No private network identifiers
+        run: |
+          pat='([0-9]{1,3}\.){3}[0-9]{1,3}'
+          if grep -rIn -E "$pat" --include='*.md' . \
+               --exclude-dir=.git --exclude-dir=vendor --exclude-dir=upstream 2>/dev/null \
+             | grep -vE '(127\.0\.0\.1|0\.0\.0\.0|10\.21\.(33|41)\.|<[A-Z_]+>|239\.|224\.|192\.168\.55\.)' \
+             | grep -vE '^\./(evidence|reports|data)/' ; then
+            echo "::error::unexpected IP literal in documentation"; exit 1
+          fi
+          echo "clean"
+
+      - name: README media budget
+        run: |
+          fail=0
+          for f in docs/media/*; do
+            [ -f "$f" ] || continue
+            if head -c 40 "$f" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$f is an LFS pointer; README media must be plain git"; fail=1; continue
+            fi
+            sz=$(wc -c < "$f")
+            if [ "$sz" -gt 1258291 ]; then
+              echo "::error::$f is $sz bytes (budget 1258291 = 1.2 MB)"; fail=1
+            fi
+          done
+          total=$(cat docs/media/* 2>/dev/null | wc -c)
+          echo "docs/media total: $total bytes"
+          [ "$total" -gt 3670016 ] && { echo "::error::docs/media exceeds 3.5 MB"; fail=1; }
+          exit $fail
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  links:
+    name: Docs link check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress --offline --include-fragments
+            README.md README.zh.md 'docs/**/*.md'
+          fail: true
 
   test:
     name: Unit tests
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install dependencies
@@ -52,7 +133,7 @@ jobs:
     runs-on: ubuntu-24.04
     container: ros:jazzy-ros-base
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install dependencies
         shell: bash
         run: |

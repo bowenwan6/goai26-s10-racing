@@ -3,13 +3,13 @@
 No ROS initialization, filesystem identity reads, SSH, or robot connections.
 """
 import copy
-from contextlib import ExitStack
 import hashlib
-from pathlib import Path
 import sys
 import threading
-from types import SimpleNamespace
 import unittest
+from contextlib import ExitStack
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
