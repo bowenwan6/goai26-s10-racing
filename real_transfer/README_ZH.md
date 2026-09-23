@@ -43,7 +43,7 @@ PYTHONPATH=.:src/s10_auto_nav:src/s10_perception python -m pytest -q tests_real
 ### 重跑命令
 
 ```sh
-cd <home>/Documents/ChatGPT/GOAI/s10-real-readiness
+cd <workspace>/s10-real-readiness
 .venv/bin/python scripts/real_transfer_verify.py --output-dir real_transfer/results/my-check-01
 ```
 

@@ -19,7 +19,7 @@
 ## 运行
 
 ```bash
-V=<home>/Documents/ChatGPT/GOAI/wt-nav-sim-artifacts/.venv/bin/python   # Python 3.12, mujoco 3.13.0, numpy 2.5.3
+V=<workspace>/wt-nav-sim-artifacts/.venv/bin/python   # Python 3.12, mujoco 3.13.0, numpy 2.5.3
 cd <worktree>
 $V -m sim_full_course.build_terrain          # ~15 s → artifacts/terrain/*.npz, *.png
 $V -m sim_full_course.build_mujoco_scene     # → artifacts/mujoco/scene_full_course*.xml

@@ -1,15 +1,16 @@
 """Map-load gate tests. Vendor activation is always mocked; no ROS/network."""
 import copy
 import math
-from pathlib import Path
 import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from field_core import FieldError
 import field_robot
+from field_core import FieldError
 from test_independent_core import healthy
+
 
 class MockActivation(Exception):pass
 

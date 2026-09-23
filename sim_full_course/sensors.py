@@ -33,7 +33,7 @@ for _p in (str(REPO), str(REPO / "src" / "s10_auto_nav")):
         sys.path.append(_p)
 
 try:  # real contracts
-    from real_transfer.geometry import height_grid, points_in_yaw_frame  # noqa: F401
+    from real_transfer.geometry import height_grid, points_in_yaw_frame
 
     try:
         from native_transfer.contracts import conservative_scan
@@ -41,7 +41,7 @@ try:  # real contracts
         from sim_full_course._contract_copies import conservative_scan
     REAL_CONTRACTS = True
 except Exception:  # pragma: no cover
-    from sim_full_course._contract_copies import (  # noqa: F401
+    from sim_full_course._contract_copies import (
         conservative_scan,
         height_grid,
         points_in_yaw_frame,

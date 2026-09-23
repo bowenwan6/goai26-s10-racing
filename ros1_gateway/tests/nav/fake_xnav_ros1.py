@@ -9,7 +9,6 @@ at 10 Hz (lidar frame, using the same extrinsics as nav.yaml), /s10_control/gait
 import argparse
 import json
 import math
-import struct
 import sys
 import threading
 import time

@@ -167,7 +167,7 @@ def test_injected_box_shortens_scan_and_raises_grid():
     t.clear_injected()
     t.inject(Box(1.0, 0.0, 0.3, size_x=0.3, size_y=0.3))
     obs = s.observe((0.0, 0.0, 0.43, 0.0, 0.0, 0.0))
-    row = int(round((1.05 + 0.6) / 0.15))
+    row = round((1.05 + 0.6) / 0.15)
     assert obs["grid"][row, 4] == pytest.approx(0.3 - 0.43, abs=0.03)
 
 

@@ -2,7 +2,6 @@
 import argparse
 import json
 import os
-from pathlib import Path, PurePosixPath
 import re
 import shlex
 import subprocess
@@ -10,8 +9,9 @@ import sys
 import threading
 import time
 from collections import deque
+from pathlib import Path, PurePosixPath
 
-from s10_him_trial import manual_request, handset_request
+from s10_him_trial import handset_request, manual_request
 
 
 def paths(root, source_install):

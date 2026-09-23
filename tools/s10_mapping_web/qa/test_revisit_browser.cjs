@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const fs=require('node:fs');
-const {chromium}=require(process.env.S10_QA_PLAYWRIGHT||'<home>/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require(process.env.S10_QA_PLAYWRIGHT||'<cache>/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const port=Number(process.argv[2]);assert(port>0&&port<65536);
 const local=`http://127.0.0.1:${port}`,origin='http://s10-phone.invalid';
 const lost=process.argv[3]==='lost';

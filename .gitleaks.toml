@@ -1,0 +1,28 @@
+# Gitleaks configuration for goai26-s10-racing.
+#
+# Start from the packaged rules and narrow only where a rule misfires on this
+# repository's data. Every exception below names the file shape it covers and why
+# the value is not a credential, so a future reader can re-check the claim rather
+# than trust the exception.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+  [[rules.allowlists]]
+  description = """
+  Navigation task records captured as field evidence. Each record is
+  {created, ended, id, key, kind, label, message, snapshot, state} — `key` is the
+  task's idempotency key, generated per request so a retried command cannot run
+  twice. It authenticates nothing and grants nothing; the web app's own login is
+  separate and is never written to these captures. Verified 2026-09-23: no code
+  path treats `key` as a credential.
+  """
+  paths = [
+    '''evidence/artifacts/native-control-handoff-\d{8}/.*\.json''',
+    '''tools/s10_mapping_web/qa/native-nav-evidence/.*\.json''',
+  ]
+  regexTarget = "line"
+  regexes = ['''"key":\s*"[0-9a-f]{32}"''']

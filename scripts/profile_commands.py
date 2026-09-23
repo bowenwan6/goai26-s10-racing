@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Publish the fixed turn/stop/straight velocity profile without ROS CLI startup gaps."""
 
-import time
 import os
+import time
 
 import rclpy
 from geometry_msgs.msg import Twist

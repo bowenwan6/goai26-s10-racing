@@ -7,11 +7,16 @@ Left: whole course (map, taught trails, new line coloured by gait, waypoints wit
 simulated robot). Right: a 12 m window that follows the robot, where the difference between the zig-zag the
 operator drove and the line the robot follows is visible. The run is the kinematic simulation of
 tests/nav/sim_full_route.py (real NavCore, synthetic perception): it shows the PLAN, not a field result."""
-import argparse, glob, json, math, os, sys
+import argparse  # noqa: I001  (matplotlib Agg must be selected before pyplot imports)
+import json
+import math
+import os
+import sys
 import numpy as np
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "nav")); sys.path.insert(0, HERE)
 import nav_core as core

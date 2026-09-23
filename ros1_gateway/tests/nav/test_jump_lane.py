@@ -5,9 +5,14 @@
   3. pushed 0.20 m sideways just before the check point, it backs up 0.5 m, comes again and crosses inside the tolerance;
   4. pushed 0.35 m (beyond hold_beyond_m) with retries = 0: it does NOT take off: HOLD, reason "jump lane".
 python3 tests/nav/test_jump_lane.py <route_dir> [speed]"""
-import json, math, os, sys
+import json
+import math
+import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "nav"))
 import nav_core as core
+
 route = sys.argv[1]; v = float(sys.argv[2]) if len(sys.argv) > 2 else 1.67
 jumps = json.load(open(os.path.join(route, "terrain.json"))).get("jumps", [])
 if not jumps: print("JUMP_LANE_SKIPPED: no jumps in this route"); sys.exit(0)

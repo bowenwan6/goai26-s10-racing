@@ -89,7 +89,7 @@ class Asdu:
         while self.running:
             try:
                 data, _ = self.sock.recvfrom(65535)
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except OSError:
                 break
