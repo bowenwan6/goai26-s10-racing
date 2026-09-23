@@ -45,6 +45,9 @@ results/
 !/evidence/artifacts/native-navigation-audit-20260917/
 !/evidence/artifacts/native-start-b-implementation-20260917/
 !/evidence/artifacts/ros1-gateway-20260918/
+!/evidence/artifacts/ros1-gateway-newdog-20260919/
+# ...including its gateway health output, which *.log above would otherwise exclude.
+!/evidence/artifacts/ros1-gateway-newdog-20260919/**/*.log
 
 # ros1_gateway/nav/s10_auto_nav is generated from src/s10_auto_nav by
 # ros1_gateway/nav/sync_auto_nav.sh at the commit recorded in ros1_gateway/nav/COMMIT.

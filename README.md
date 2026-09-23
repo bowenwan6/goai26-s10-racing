@@ -550,7 +550,17 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 
 **Many-seed simulation** — on the team GPU server. Full course, 32 seeds per stack: the current runner completes 19/32 (23/32 at the previous commit) against 4/24 for the first version. With 5 cm / 2° localisation noise over seeds 0–11: the B staircase 9/12 (three falls at 60–63° of tilt), the terrace 11/12, the whole course 8/12. Outcomes reshuffle whenever the command stream changes, so we judge over 32+ seeds rather than a handful.
 
-**Sensor gateway, 2026-09-19** — 10 minutes continuous: gateway at ~30 % of one core and 67 MiB flat, tap 13 621/13 621 frames with zero drops, vendor lidar driver load unchanged.
+**Sensor gateway, 2026-09-19** — the byte-equality audit above, plus 10 minutes continuous. Full artifacts and caveats: [`evidence/artifacts/ros1-gateway-newdog-20260919/`](evidence/artifacts/ros1-gateway-newdog-20260919/README.md).
+
+| Where | Process | CPU (of one core) | RSS |
+|---|---|---|---|
+| AGX (102) | gateway | mean 30.3 %, p95 34.9 % | 67 MiB |
+| Perception board (106) | read-only tap | mean 8.4 %, p95 9.0 % | 185 MiB |
+| Perception board (106) | **vendor lidar driver** | **13.4 % with the tap attached, against 14.1–14.6 % before it** | 175 MiB |
+
+That last row is the one that matters: attaching the tap did not measurably load the vendor's own driver. Over the same window the gateway forwarded **13 621 / 13 621 frames, 0 dropped, 0 errors**, 19.3 GB on one connection, holding 9.96–10.00 Hz lidar and 199.79–199.99 Hz IMU with no backwards stamps. The 106 figures are transcribed from the sampler rather than raw — the raw file was deleted by a session restart before it was copied.
+
+**The conversion in the field** — the same tap and gateway ran underneath every session on 2026-09-20, 09-21 and 09-22 on dog 048: roughly 20+ navigation runs, including the full 272 m course at 29/29 waypoints. No run failed on sensor data. This is an operational record, not a measurement: the per-session health logs stayed on the AGX and were never copied off, so there are no frame counts for those runs.
 
 ## Status
 
