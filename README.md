@@ -6,6 +6,8 @@
 
 GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 
+**English** · [中文](README.zh.md)
+
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 [![ROS 2](https://img.shields.io/badge/ROS%202-Jazzy-22314E.svg?logo=ros&logoColor=white)](https://docs.ros.org/en/jazzy/)
 [![ROS 1](https://img.shields.io/badge/ROS%201-Noetic%20(ROS--O)-22314E.svg?logo=ros&logoColor=white)](https://www.ros.org/)
@@ -26,6 +28,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 
 - [What is in here](#what-is-in-here)
 - [What we built](#what-we-built)
+- [Hardware](#hardware)
 - [System overview](#system-overview)
 - [From map to robot](#from-map-to-robot)
 - [Quick start](#quick-start)
@@ -88,6 +91,64 @@ On the full course the straight share rose from 35–50 % to 86 % and total turn
 </div>
 
 **Where it actually runs.** On the robot: the flat 5 m room route (2026-09-20) and a real run from WP10 to WP29 on the course (2026-09-21, 569 s, the morning version of the stack). The midday improvements — steering-based lane return, faster acceleration, terrain-aware stairs zones, splice/drop/contact editing of the line, resume from any waypoint, the web-page e-stop — passed 29/29 in simulation — 413 s at the time of that route build, against about 470 s for the morning version — and have not yet run on the robot. Work since then (braking before every gait change, a take-off check and dedicated lanes for platform jumps, one locked parameter file for the whole stack) is offline only.
+
+## Hardware
+
+Three onboard computers, two lidars and one IMU. We own exactly one board; the other two are vendor boards on a robot shared with another team.
+
+| Part | What it is | Who owns it |
+|---|---|---|
+| **DEEP Robotics Lynx S10** | wheel-legged quadruped: 4 legs × 3 joints + 4 wheels = 16 actuators | vendor |
+| **106 · perception board** | `rslidar_sdk` + `dual_airy_merger`, vendor SLAM (`drmap`), publishes host-locally | vendor — we add a read-only tap |
+| **102 · AGX Orin** | our compute: gateway, x_nav SLAM, route runner, control node, field web app | **ours** |
+| **103 · motion board** | native gaits, joint servo, accepts `/NAV_CMD` only in navigation use mode | vendor — mode switched and restored per run |
+| **2 × RS Airy lidar** | merged into `/LIDAR/POINTS` at 10 Hz | vendor |
+| **yesense IMU** | `/IMU` at 200 Hz — the attitude the follower trusts | vendor |
+
+```mermaid
+flowchart TB
+  subgraph SENS["Sensors"]
+    LID["2 x RS Airy lidar"]
+    IMU["yesense IMU"]
+  end
+
+  subgraph B106["106 - vendor perception board"]
+    RSD["rslidar_sdk + dual_airy_merger<br/>/LIDAR/POINTS - 10 Hz"]
+    DRMAP["vendor SLAM - drmap<br/>the v3 course map"]
+    TAP["s10_lidar_tap<br/>read-only subscriber, removable"]
+  end
+
+  subgraph B102["102 - AGX Orin - OURS"]
+    GW["s10_ros1_gateway<br/>ROS 2 to ROS 1, bytes unchanged"]
+    XNAV["x_nav SLAM container<br/>/base_link/odom - 10 Hz"]
+    NAV["rl_nav route runner"]
+    CTL["s10_ros1_control<br/>single owner, watchdogs"]
+    WEB["field web app :8080<br/>/teach - /field - e-stop"]
+  end
+
+  subgraph B103["103 - vendor motion board"]
+    MC["native gaits - joint servo"]
+  end
+
+  LID --> RSD
+  IMU -- "DDS" --> GW
+  RSD -- "host-local shared memory" --> TAP
+  RSD --> DRMAP
+  TAP -- "TCP 47631" --> GW
+  GW --> XNAV
+  XNAV -- "pose" --> NAV
+  NAV -- "body velocity + gait request" --> CTL
+  CTL -- "/NAV_CMD - navigation use mode only" --> MC
+  WEB -. "e-stop, taught paths" .-> NAV
+
+  classDef ours fill:#dff0d8,stroke:#3c763d,color:#1b3d20
+  classDef vend fill:#f2f2f2,stroke:#888,color:#333
+  class GW,XNAV,NAV,CTL,WEB ours
+  class RSD,DRMAP,MC,LID,IMU vend
+  class TAP ours
+```
+
+Green is ours. Everything we place on a vendor board is read-only or removed by one command — see [module 6](#6--real-robot-deployment-and-safety).
 
 ## System overview
 
@@ -227,6 +288,32 @@ stateDiagram-v2
   RECOVER --> WALK: re-acquired
 ```
 
+How a demonstration becomes a route the runner will accept:
+
+```mermaid
+flowchart TD
+  D["Operator drives the course<br/>3 demonstrations, gait recorded"] --> CORR["Walked corridor<br/>ground that was actually driven"]
+  MAP["SLAM map - v3 cloud"] --> OCC["Obstacle grid<br/>+ 0.35 m centre keep-out"]
+  OCC --> CORR
+  CORR --> STR["Straighten inside the corridor<br/>fillets at the corners"]
+  STR --> WP["Waypoints as touch discs<br/>gates on walked ground"]
+  WP --> HAIR["Dead ends to keep-right hairpins"]
+  HAIR --> GAIT{"Stairs gait for this zone?"}
+  GAIT -- "operator used it AND map shows step or slope" --> ST["Stairs zone"]
+  GAIT -- "otherwise" --> FL["Flat zone"]
+  ST --> CLR
+  FL --> CLR{{"Independent body-sweep<br/>clearance check"}}
+  CLR -- "pass" --> OK["route accepted by rl_nav"]
+  CLR -- "fail" --> REJ["rejected - never reaches the robot"]
+
+  classDef bad fill:#f8d7da,stroke:#a94442,color:#4a1417
+  classDef good fill:#dff0d8,stroke:#3c763d,color:#1b3d20
+  class REJ bad
+  class OK good
+```
+
+On the full course this raised the straight share from 35–50 % to 86 % and cut total turning from 9 390–14 313° to 2 209°, over a 279.7 m line with 29 waypoints.
+
 Details: [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) (ZH).
 
 ### 2 · Simulation
@@ -267,6 +354,39 @@ On the robot the joints still belong to the vendor's controller: running J3100 o
 
 Two findings shape the next training round (details in [`docs/POLICIES_AND_APPS_ZH.md`](docs/POLICIES_AND_APPS_ZH.md) §1.2, sources in the sprint repo). The deployed actors take **59 inputs** — this repo's 57-D observation plus the sine and cosine of the runner's gait phase — so any replacement has to match that contract. And the stairs actor **cannot be fine-tuned**: dropped into Isaac Lab on flat ground with clean observations it collapses within a few seconds, while the vendor's model stands, so a better climber has to be trained from a model that survives there. Training on stair patches cut from the course reconstruction is in progress and does not beat the current stairs actor yet.
 
+**The training loop.** Isaac Lab on an L40S produces a candidate actor; MuJoCo on the real course map decides whether it is better than what we have; only then does it become a deployment candidate. The two arrows that are *missing* from this diagram are the findings that cost us the most time.
+
+```mermaid
+flowchart LR
+  subgraph TRAIN["Isaac Lab - L40S GPU"]
+    TERR["Stair patches cut from<br/>the course reconstruction"] --> ENV["deeprobotics_s10<br/>course_stairs task"]
+    SEED["Warm start"] --> ENV
+    ENV --> PPO["PPO - rsl-rl"]
+    PPO --> ACT["actor checkpoint"]
+  end
+
+  ACT --> EXP["Export ONNX<br/>pad to the 59-D contract"]
+
+  subgraph VAL["Validation - MuJoCo, real map"]
+    EXP --> SIM["Full course or section run<br/>32+ seeds, sensor noise"]
+    SIM --> JUDGE{"Beats the incumbent<br/>over 32 seeds?"}
+  end
+
+  JUDGE -- "yes" --> CAND["deployment candidate"]
+  JUDGE -- "no" --> PPO
+  CAND -.-> ROBOT["robot<br/>blocked: needs joint-level<br/>control inside the motion board"]
+
+  MODEL0["vendor model0 - 57-D"] --> SEED
+  S1150["stairs_1150"] -. "cannot warm-start:<br/>collapses on flat ground" .-> SEED
+
+  classDef blocked fill:#f8d7da,stroke:#a94442,color:#4a1417
+  class ROBOT,S1150 blocked
+```
+
+**Two hard constraints.** The actors the robot runs are **59-D**: this repo's 57-D observation plus the sine and cosine of the runner's gait phase, so any replacement has to match that contract exactly. And `stairs_1150` **cannot be fine-tuned** — warm-started into Isaac Lab it cannot even stand on a plane (base sinks to 0.37 m, 69 % of episodes end on base contact) although gains, action scale and joint order all match, while the vendor's `model0` stands cleanly at 0.454 m with no falls. So a better climber has to be trained *from* `model0`. The reverse direction does work: `model0` padded to 59-D walked WP21→WP24 in the MuJoCo course in 105 s against J3100's 110 s.
+
+**Evaluation is statistical, not anecdotal.** MuJoCo on x86 and on ARM disagree, and the outcomes are chaotic: any change to the command stream reshuffles which seeds fail. Completion is judged over **32+ seeds**, never 4. Section runs barely depend on the seed unless `--loc_noise` is on, because sensor noise only matters in follower-driven modes.
+
 Training, evaluation harnesses and the acceptance criteria live in the sprint repo; this repo holds the exported ONNX models, the deployment glue in [`integration/`](integration/), and the August training code in [`training/`](training/).
 
 ### 4 · Mapping and localisation
@@ -286,6 +406,49 @@ Training, evaluation harnesses and the acceptance criteria live in the sprint re
 - **New third-party SLAM (x_nav)** runs in a container on our AGX and publishes `/base_link/odom` at 10 Hz. It needs ROS 1 sensor topics, which is what the gateway provides. Indoor maps are built, saved and re-localised into; localisation is initialised by publishing `/initialpose`, which the run script does automatically.
 - **ROS 2 → ROS 1 gateway** — [`ros1_gateway/`](ros1_gateway/README_ZH.md) (ZH). It forwards point cloud fields, timestamps and frame ids byte for byte and invents no TF. The 106 lidar publishes host-locally, so a read-only tap there relays CDR frames over TCP. Checked against an independent ROS 2 reference on the new robot: **592/592 clouds and 11 845/11 845 IMU messages identical over 60 s**.
 - **Map alignment** to the v3 frame, waypoint re-survey and the route rebuild are planned in [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) §3 (ZH).
+
+**From a field recording to a pose the follower can use:**
+
+```mermaid
+flowchart LR
+  REC["Field recording<br/>lidar + IMU, loop closed"] --> DR["vendor SLAM - drmap<br/>on 106"]
+  DR --> V3["v3 course map<br/>0914_fr_v3-20260914-142008"]
+  V3 --> REF["Reference frame for<br/>every route artefact"]
+  V3 --> MJ["MuJoCo collision scene"]
+  V3 --> TERR["course_terrain.npz<br/>2.5-D height grid"]
+
+  REC2["Live lidar + IMU"] --> TAPGW["tap + gateway<br/>ROS 2 to ROS 1"]
+  TAPGW --> XN["x_nav SLAM<br/>on our AGX"]
+  XN --> POSE["/base_link/odom - 10 Hz"]
+  INIT["/initialpose<br/>published by the run script"] --> XN
+  POSE --> FOL["route follower"]
+  IMUD["robot IMU attitude"] --> FOL
+  RTZ["route height, not SLAM z"] --> FOL
+```
+
+The follower deliberately does **not** trust everything SLAM offers: it takes the robot's own IMU instead of the SLAM attitude, and the route's height instead of the SLAM `z`.
+
+**The gateway interface contract.** This is the part that has to be exactly right, because x_nav is a third-party SLAM that never sees the vendor's ROS 2 graph:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant D as rslidar_sdk (106)
+  participant T as s10_lidar_tap (106, read-only)
+  participant G as s10_ros1_gateway (102)
+  participant X as x_nav SLAM (102, ROS 1)
+
+  D->>T: /LIDAR/POINTS via host-local shared memory
+  Note over T: subscribes only<br/>publishes nothing, changes nothing
+  T->>G: raw CDR frame over TCP 47631
+  Note over G: republish with fields, timestamps<br/>and frame ids untouched - no TF invented
+  G->>X: sensor_msgs/PointCloud2 (ROS 1)
+  G->>X: sensor_msgs/Imu (ROS 1, 200 Hz)
+  X-->>G: /base_link/odom at 10 Hz
+  Note over T,G: verified against an independent ROS 2 reference over 60 s:<br/>592/592 clouds and 11 845/11 845 IMU messages identical
+```
+
+One command (`robot_session.sh down`) removes the tap and every file it placed on 106.
 
 ### 5 · Field tools on the phone
 
@@ -317,6 +480,31 @@ A small standard-library web server on the AGX serves the field pages over the r
 - **Sharing the robot.** `robot_session.sh up` deploys what we need; `down` removes every file and process we created on 106 and leaves the vendor services running, and `unkeys` removes our SSH keys. Any change to a vendor board — including the plaintext control ports that `/NAV_CMD` needs — is recorded and restored before handover. Before a motion test we agree with the other team first, because the robot already carries two native publishers on `/NAV_CMD`.
 - **Arming is explicit.** The robot ignores `/NAV_CMD` until it is switched into navigation use mode; our scripts switch it, run, and always switch back to remote-control mode on exit, fault or Ctrl-C. `--shadow` runs the whole stack without sending a single command.
 - **One command per run**, because a field operator should hold the remote, not a keyboard: `robot_session.sh nav --speed <m/s> [--route short|full] [--shadow]` selects the map, sets the initial pose, waits for the robot to stand, arms, runs, prints one status line per second, and restores the mode at the end. Procedure and thresholds: [`ROOM_NAV_RUNBOOK_ZH.md`](ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md) (ZH), field log: [`EXPERIMENT_048_ZH.md`](ros1_gateway/docs/EXPERIMENT_048_ZH.md) (ZH).
+
+
+**Who is allowed to move the robot, and what stops it:**
+
+```mermaid
+stateDiagram-v2
+  direction TB
+  [*] --> RemoteControl: robot powered on
+  RemoteControl --> Armed: script switches to navigation use mode
+  Armed --> Running: single owner acquired, watchdogs live
+  Running --> Armed: route finished
+  Armed --> RemoteControl: exit, fault or Ctrl-C (always)
+  Running --> Fault: foreign publisher on the command topic
+  Running --> Fault: command or feedback watchdog stale
+  Running --> Fault: diagnostic limit crossed, robot drops to damping
+  Running --> Stopped: e-stop from the web page
+  Fault --> RemoteControl: latched, mode restored
+  Stopped --> RemoteControl: latched, mode restored
+  RemoteControl --> [*]
+  note right of RemoteControl
+    Default state. The robot ignores
+    /NAV_CMD here. --shadow runs the
+    whole stack and creates no publishers.
+  end note
+```
 
 ## Results
 
@@ -384,7 +572,7 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 | [`sim_full_course/`](sim_full_course/) | Kinematic whole-course simulator |
 | [`native_transfer/`](native_transfer/), [`real_transfer/`](real_transfer/), [`tests_real/`](tests_real/) | Real-robot transfer, shadow computation, replay and their tests |
 | [`policy/`](policy/), [`policies/`](policies/), [`training/`](training/) | Deployed policy bundles, exported ONNX models, August training code |
-| [`tools/`](tools/) | Phone web app, waypoint matching, remote access, capture tools |
+| [`tools/`](tools/) | Phone web app, waypoint matching, capture tools |
 | [`data/`](data/) | Map and MuJoCo bundle, map reviews, course photos, recording notes (Git LFS) |
 | [`docs/`](docs/) | Documentation, media, references |
 | [`evidence/`](evidence/) | Field evidence, sync records, snapshots of deployed software |
@@ -424,9 +612,10 @@ git show docs-archive-20260920:docs/S10_REAL_ROBOT_QUICKSTART_ZH.md
 ## Development
 
 - **Branches.** `main` is the single integrated line; everything else arrives through a pull request. Prefixes: `nav/`, `rl/`, `ros1/`, `codex/`, `docs/`, `integration/`.
-- **CI** (`.github/workflows/ci.yml`) runs ruff, the unit tests and a colcon build on every push. Unit tests and the build are green; the style job still reports a large backlog inherited from August.
-- **Large files** use Git LFS: point clouds, meshes, media, PDFs, archives. Run `git lfs pull` after cloning.
-- **Never in Git**: raw recordings, vendor licence files, credentials of any kind, virtualenvs and build trees. Scan diffs before pushing — see [`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md) §4.
+- **CI** (`.github/workflows/ci.yml`) runs on every push. The correctness gate (ruff `E9,F,I`), the unit tests and the colcon build are green and blocking; style is a separate, non-blocking report. Hygiene jobs guard developer paths, IP literals in documentation, the README media budget, secrets and links.
+- **Large files** use Git LFS: point clouds, meshes, PDFs, archives. Run `git lfs pull` after cloning.
+- **README and documentation media are plain Git, never LFS.** A public README render would otherwise spend LFS bandwidth on every view and break every image once the quota is reached. CI enforces the budget: 1.2 MB per file, 3.5 MB for `docs/media`.
+- **Never in Git**: raw recordings, vendor licence files, credentials of any kind, virtualenvs and build trees, and any absolute path from a developer's machine. Scan diffs before pushing — see [`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md) §4.
 
 ## History
 
