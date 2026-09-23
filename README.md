@@ -389,7 +389,7 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 | [`docs/`](docs/) | Documentation, media, references |
 | [`evidence/`](evidence/) | Field evidence, sync records, snapshots of deployed software |
 | [`reports/`](reports/) | Reports, posters and their build assets (August–September deliverables) |
-| `vendor/contest_material/` | Organiser material, unmodified |
+| `upstream/` | Organiser SDK, fetched by [`scripts/setup_upstream.sh`](scripts/setup_upstream.sh) at pinned revision `13dd084b` — not tracked here |
 | `scripts/`, `docker/`, `.github/` | Build and run scripts, dev container, CI |
 
 A per-directory description, branch rules and what never enters Git: [`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md) (ZH).
@@ -443,4 +443,4 @@ The README that shipped with that release, with the contest run instructions and
 
 Released under [BSD-3-Clause](LICENSE), matching upstream. Dependency, data and model provenance, including the one unresolved model-licence item, are summarised in [`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md) §4; the full records are archived at `git show docs-archive-20260920:docs/THIRD_PARTY.md` and `…:docs/OPEN_SOURCE_PLAN.md`.
 
-The Lynx S10 platform, its SDK, native gaits and the vendor SLAM are DEEP Robotics'. Contest material is the organisers' and sits unmodified in `vendor/contest_material/`. Everything in `src/`, `ros1_gateway/`, `sim_full_course/`, `tools/`, `integration/` and `docs/` is ours unless a file says otherwise.
+The Lynx S10 platform, its SDK, native gaits and the vendor SLAM are DEEP Robotics'. Contest material is the organisers'; `scripts/setup_upstream.sh` fetches it unmodified into `upstream/` at a pinned revision and this repository never tracks a copy. Everything in `src/`, `ros1_gateway/`, `sim_full_course/`, `tools/`, `integration/` and `docs/` is ours unless a file says otherwise.

@@ -16,7 +16,6 @@ from pathlib import Path
 import mujoco
 import numpy as np
 
-
 WAYPOINT_RE = re.compile(r"position:\s*\[\s*([^,]+),\s*([^,]+),\s*([^\]]+)\]")
 
 

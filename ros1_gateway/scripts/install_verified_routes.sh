@@ -3,7 +3,7 @@
 # The three earlier v7_o routes fail that check (robot body on map obstacles) and are moved out of ~/routes.
 set -eo pipefail
 AGX="${S10_AGX_SSH:-s10-48-remote}"
-SRC="<home>/Documents/ChatGPT/GOAI/s10-real-readiness/field_data/20260920-v7_o/routes"
+SRC="<workspace>/s10-real-readiness/field_data/20260920-v7_o/routes"
 for r in v7_o-teachline v7_o-line-short; do grep -q '"hard_violating_cells": 0' "$SRC/$r/clearance.json" || { echo "$r has no clean clearance.json: not installing"; exit 1; }; done
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 rsync -a "$HERE/nav" "$HERE/tools" "$HERE/tests" "$HERE/docs" "$HERE/scripts" "$AGX:ros1_gateway/"

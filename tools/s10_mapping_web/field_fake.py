@@ -1,6 +1,6 @@
 """Explicit local-only demonstration adapter. Never selected by production."""
-import copy
 import time
+
 from field_core import binding
 
 

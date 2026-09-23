@@ -1,10 +1,18 @@
 """Explicit LOCAL SYNTHETIC UI harness. Cannot access ROS or robot SSH."""
-import hashlib,json,math,sys,tempfile,threading,time
-from pathlib import Path
+import hashlib
+import json
+import math
+import sys
+import tempfile
+import threading
+import time
 from http.server import ThreadingHTTPServer
+from pathlib import Path
+
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import server as web
 from imu_diag import Diagnostic
+
 
 def main():
     tmp=tempfile.TemporaryDirectory(prefix='s10-imu-synthetic-')

@@ -17,7 +17,7 @@ import time
 
 import rclpy
 from drdds.msg import Gait, MotionInfo, MotionState, NavCmd
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 
 def main():

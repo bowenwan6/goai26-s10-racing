@@ -1,12 +1,12 @@
 """Local guardian processes and mocked bag auditing; never starts ROS."""
 import json
 import os
-from pathlib import Path
 import signal
 import sys
 import tempfile
-from types import SimpleNamespace as NS
 import unittest
+from pathlib import Path
+from types import SimpleNamespace as NS
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))

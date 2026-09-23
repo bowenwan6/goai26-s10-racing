@@ -1,15 +1,14 @@
 """Offline arrival-ordered S10 heightmap replay. All writes stay beside this file/output."""
 import argparse
 import ast
-from collections import defaultdict, deque
 import csv
 import json
-from pathlib import Path
 import sqlite3
-import struct
 import sys
 import time
 import xml.etree.ElementTree as ET
+from collections import defaultdict, deque
+from pathlib import Path
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -52,7 +51,7 @@ def pure_functions(path, names, namespace):
 def decoder(repo):
     # Existing offline installation; append after NumPy/SciPy to avoid replacing their ABI.
     sys.path.append(str(repo/'tmp/s10-analysis-deps'))
-    from rosbags.typesys import Stores, get_typestore, get_types_from_msg
+    from rosbags.typesys import Stores, get_types_from_msg, get_typestore
     store = get_typestore(Stores.ROS2_JAZZY)
     definitions = {}
     for p in (repo/'tools/s10_gait_capture/vendor_ws/src/drdds/msg').glob('*.msg'):
@@ -368,7 +367,7 @@ def process(d,out,repo):
             last_raw[code]=dict(raw=raw[::max(1,len(raw)//5500)],rot=rot.as_matrix(),src=src,rx=effective)
             single[code]=dict(map=localmap,pose=None,rot=rot,yaw=yaw,src=src,rx=effective,frame=frame)
             accepted=False;reason='';q=dict(p90=np.nan,median=np.nan,matched=np.nan,condition=np.nan,pairs=0)
-            old_pose=pose.copy();old_src=latest_src;guess=pose.copy()
+            old_pose=pose.copy();_old_src=latest_src;guess=pose.copy()
             if len(history)>=2:
                 dt=(history[-1][0]-history[0][0])/NS
                 if dt>.05:
@@ -567,7 +566,7 @@ def stage_a(d,out,repo):
             axes[0,col].axhline(0,color='k',lw=.5)
             axes[1,col].scatter(pr[:,0],pr[:,1],c=pr[:,2],s=.35,cmap='coolwarm',vmin=-.65,vmax=.25)
             axes[1,col].set(xlim=(-.8,1.8),ylim=(-.9,.9),xlabel='X',ylabel='Y left',aspect='equal',title='Raw top view')
-            im=grid_image(axes[2,col],q['H'],q['V'],f'{name} H: V={q["V"].mean():.0%}')
+            _im=grid_image(axes[2,col],q['H'],q['V'],f'{name} H: V={q["V"].mean():.0%}')
             result[name]=float(q['V'].mean())
             for k in ('H','V','age'):saved[f'{wanted}_{name}_{k}']=q[k]
         fig.suptitle(f'{d["recording_id"]} | src {t:.3f}s, arrival {(arr-anchor)/NS:.3f}s\n'
@@ -582,6 +581,7 @@ def stage_a(d,out,repo):
 def render(a,out,repo,windows):
     import shutil
     import subprocess
+
     from matplotlib.animation import FFMpegWriter
     plt=plotting();kin=Kinematics(repo);frames=np.load(out/'single_frames.npz')
     times=(a['time_ns']-a['anchor_ns'])/NS
