@@ -1,15 +1,15 @@
 """Independent Engine contract tests, fake adapter only; no subprocess/ROS/SSH."""
 import copy
 import math
-from pathlib import Path
 import sys
 import tempfile
 import time
 import unittest
 import uuid
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from field_core import Store, binding, exclusive
+from field_core import Store, exclusive
 from field_worker import Engine
 from test_independent_core import healthy
 

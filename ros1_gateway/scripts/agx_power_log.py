@@ -2,7 +2,9 @@
 """Black-box logger for the AGX's unexplained resets: input voltage/current of every INA3221
 rail, temperatures, load and memory, twice a second, each line fsync'ed so the last samples
 before a power loss survive. One CSV per boot in ~/ros1_gateway/logs/power/ (kept 30 files)."""
-import glob, os, time
+import glob
+import os
+import time
 
 OUT = os.path.expanduser('~/ros1_gateway/logs/power')
 os.makedirs(OUT, exist_ok=True)

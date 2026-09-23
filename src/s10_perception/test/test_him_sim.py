@@ -1,8 +1,10 @@
 import json
 from types import SimpleNamespace
 from unittest.mock import Mock
+
 import mujoco
 import numpy as np
+
 from s10_perception.sim_node import PerceptionSimulationNode, _check_him_actuators
 from s10_perception.upstream import default_track_xml
 

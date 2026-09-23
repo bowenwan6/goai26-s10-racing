@@ -20,7 +20,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import teach_core as core  # noqa: E402
+import teach_core as core
 
 failures = []
 

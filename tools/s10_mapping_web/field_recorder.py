@@ -2,12 +2,12 @@
 import argparse
 import json
 import os
-from pathlib import Path
 import select
 import shutil
 import signal
 import subprocess
 import time
+from pathlib import Path
 
 
 def supervise(argv, root, seconds, parent_fd, max_bytes=512*1024**2, reserve=2*1024**3):

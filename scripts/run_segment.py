@@ -37,7 +37,6 @@ import time
 from pathlib import Path
 
 import yaml
-
 from runtime_fingerprint import check_fingerprint
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

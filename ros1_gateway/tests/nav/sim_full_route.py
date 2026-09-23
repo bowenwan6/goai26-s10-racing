@@ -2,9 +2,13 @@
 """Kinematic run of a whole route with gait switching emulated (s10_ros1_control: still >= 1 s, then the gait
 changes). Flat synthetic perception: checks the route, the zones and the follower, not the terrain.
   python3 tests/nav/sim_full_route.py <route_dir> [speed] [stairs speed]"""
-import math, os, sys
+import math
+import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "nav"))
 import nav_core as core
+
 route = sys.argv[1]; v = float(sys.argv[2]) if len(sys.argv) > 2 else 0.8; vs = float(sys.argv[3]) if len(sys.argv) > 3 else 0.5
 cfg = core.load_yaml(os.environ.get("NAV_CONFIG") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "config", "nav.yaml"))
 cfg.update(flat_speed_override=v, stairs_speed_override=vs); cfg["runner_params"]["walk_v"] = v; cfg["gains"]["max_forward"] = max(v, cfg["gains"]["max_forward"])

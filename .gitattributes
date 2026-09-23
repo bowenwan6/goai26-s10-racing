@@ -21,9 +21,10 @@ data/waypoint-photos-20260914/**/*.HEIC filter=lfs diff=lfs merge=lfs -text
 data/waypoint-photos-20260914/**/*.jpg filter=lfs diff=lfs merge=lfs -text
 data/waypoint-photos-20260914/**/*.JPG filter=lfs diff=lfs merge=lfs -text
 
-docs/media/*.gif filter=lfs diff=lfs merge=lfs -text
-docs/media/*.png filter=lfs diff=lfs merge=lfs -text
-docs/media/*.jpg filter=lfs diff=lfs merge=lfs -text
+# README and documentation media are PLAIN GIT, never LFS: a public README render
+# would otherwise spend LFS bandwidth on every view and break every image once the
+# quota is reached. Budget enforced in CI: 1.2 MB per file, 3.5 MB for docs/media.
+docs/media/** -filter -diff -merge text=auto
 # Binary scene data and report media use the same LFS handoff.
 reports/GOAI_ENTERPRISE_POSTER_PRO_ZH.pdf filter=lfs diff=lfs merge=lfs -text
 reports/GOAI_ENTERPRISE_POSTER_ZH.pdf filter=lfs diff=lfs merge=lfs -text

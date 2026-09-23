@@ -23,8 +23,8 @@
 | 本地源码 | `D:/Desktop/Code/goai26-s10-racing/tools/s10_gait_capture/` |
 | **AGX 独立副本／待清理目录** | **`/home/ysc/s10_capture_session`** |
 | 真实录制 | `/home/ysc/s10_capture_session/data/gait_*/` |
-| 网页口令 | AGX `data/.access-token`；本机 `C:/Users/Lenovo/AppData/Local/S10GaitCapture/real-050-8091.access-token` |
-| Wi-Fi 口令 | AGX `hotspot-access.json`；本机 `C:/Users/Lenovo/AppData/Local/S10GaitCapture/hotspot-050.json` |
+| 网页口令 | AGX `data/.access-token`；本机 `<workstation-appdata>/S10GaitCapture/real-050-8091.access-token` |
+| Wi-Fi 口令 | AGX `hotspot-access.json`；本机 `<workstation-appdata>/S10GaitCapture/hotspot-050.json` |
 | 原版源码提交 | `bee3595`（B 风格改版前的采集工具快照） |
 | 本地演示 | `http://127.0.0.1:8090/`，运行 `run-demo-local.py`；合成数据，不能训练 |
 

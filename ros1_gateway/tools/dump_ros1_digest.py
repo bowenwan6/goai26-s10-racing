@@ -15,7 +15,7 @@ import rosbag
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import msg_digest  # noqa: E402
+import msg_digest
 
 
 def _text(v):

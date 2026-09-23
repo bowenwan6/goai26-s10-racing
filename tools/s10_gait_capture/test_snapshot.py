@@ -1,7 +1,7 @@
 """Run with python tools/s10_gait_capture/test_snapshot.py; no ROS needed."""
-from pathlib import Path
 import tempfile
 import threading
+from pathlib import Path
 from unittest.mock import patch
 
 from server import Recorder, atomic_json, create_app

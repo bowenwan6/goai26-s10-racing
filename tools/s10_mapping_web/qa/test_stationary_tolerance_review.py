@@ -1,9 +1,9 @@
 """Local candidate tests; no ROS, network, robot activation or production imports."""
 import copy
 import math
-from pathlib import Path
 import sys
 import unittest
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from stationary_tolerance_review import evaluate

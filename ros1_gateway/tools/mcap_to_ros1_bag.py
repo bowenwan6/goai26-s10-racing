@@ -19,7 +19,6 @@ import argparse
 import datetime as dt
 import hashlib
 import json
-import os
 import platform
 import sys
 import time
@@ -176,7 +175,7 @@ def main() -> int:
         s['count_matches_ros2_metadata'] = s['messages'] == ros2_meta_counts[topic]
     report = dict(
         tool='s10 ros1_gateway tools/mcap_to_ros1_bag.py',
-        created_at=dt.datetime.now(dt.timezone.utc).isoformat(),
+        created_at=dt.datetime.now(dt.UTC).isoformat(),
         command=[sys.executable, *sys.argv],
         host=dict(platform=platform.platform(), python=platform.python_version()),
         versions=dict(rosbags=version('rosbags'), numpy=version('numpy')),

@@ -1,13 +1,12 @@
 """Implementation self-tests, separate from the independent reviewer's qa suite."""
-import json
 import math
-from pathlib import Path
 import struct
 import tempfile
 import time
 import unittest
+from pathlib import Path
 
-from field_core import FieldError, Store, binding, localization_reasons
+from field_core import FieldError, Store, localization_reasons
 from field_preview import read_pcd_preview
 from field_robot import PREVIEW_INTERVALS_S, parse_navigation
 

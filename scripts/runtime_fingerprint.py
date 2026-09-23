@@ -8,7 +8,6 @@ import hashlib
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 FINGERPRINT_NAME = ".s10_runtime_fingerprint.json"
 CONTRACT_FILES = (

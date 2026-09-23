@@ -1,11 +1,24 @@
 """python -s -B tools/s10/_heightmap/_replay/selfcheck.py"""
+import struct
 from collections import deque
 from types import SimpleNamespace as Obj
-import struct
+
 import numpy as np
+from replay import (
+    CFG,
+    DEFAULT_REPO,
+    GRID,
+    NS,
+    HeightMap,
+    eligible,
+    pure_functions,
+    surfaces,
+    translation_icp,
+    voxel,
+    xyz_points,
+)
 from scipy.spatial import cKDTree
 from scipy.spatial.transform import Rotation
-from replay import CFG,GRID,HeightMap,NS,DEFAULT_REPO,eligible,surfaces,xyz_points,voxel,pure_functions,translation_icp
 
 
 def main():

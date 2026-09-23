@@ -1,6 +1,7 @@
 """Read-only waypoint repeatability metrics, never a navigation authorization."""
 import html
 import math
+
 from field_core import FieldError, finite_list
 
 REVISIT_SECONDS = 5

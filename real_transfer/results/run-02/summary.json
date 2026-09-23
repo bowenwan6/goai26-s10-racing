@@ -28,7 +28,7 @@
       "exit_code": 0,
       "elapsed_s": 5.448,
       "command": [
-        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "<workspace>/s10-real-readiness/.venv/bin/python",
         "-m",
         "pytest",
         "-q",
@@ -38,7 +38,7 @@
         "--ignore=src/s10_auto_nav/test/test_runtime_contract.py",
         "--ignore=src/s10_perception/test/test_viewer_node.py",
         "--deselect=src/s10_auto_nav/test/test_segment_recorder.py::test_ordered_evidence_accepts_exactly_018_and_only_one_gate_per_tick",
-        "--junitxml=<home>/Documents/ChatGPT/GOAI/s10-real-readiness/real_transfer/results/run-02/baseline.xml"
+        "--junitxml=<workspace>/s10-real-readiness/real_transfer/results/run-02/baseline.xml"
       ],
       "tests": 359,
       "failures": 0,
@@ -49,12 +49,12 @@
       "exit_code": 0,
       "elapsed_s": 2.571,
       "command": [
-        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "<workspace>/s10-real-readiness/.venv/bin/python",
         "-m",
         "pytest",
         "-q",
         "tests_real",
-        "--junitxml=<home>/Documents/ChatGPT/GOAI/s10-real-readiness/real_transfer/results/run-02/transfer.xml"
+        "--junitxml=<workspace>/s10-real-readiness/real_transfer/results/run-02/transfer.xml"
       ],
       "tests": 128,
       "failures": 0,
@@ -65,7 +65,7 @@
       "exit_code": 1,
       "elapsed_s": 0.04,
       "command": [
-        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "<workspace>/s10-real-readiness/.venv/bin/python",
         "-m",
         "ruff",
         "check",

@@ -31,13 +31,25 @@ teach_line.png (before / after).
   python3 tools/teach_line.py <session_dir> --map-dir <x_nav map dir> --control-logs <dir> --out <dir>
         [--demos path_a,path_b] [--gait-demos path_b,path_c] [--corridor 0.5] [--corridor-stairs 0.25]
 """
-import argparse, csv, glob, json, math, os, sys
+import argparse
+import glob
+import json
+import math
+import os
+import sys
+
 import numpy as np
-from scipy.ndimage import distance_transform_edt, binary_dilation
+from scipy.ndimage import binary_dilation, distance_transform_edt
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from scipy.spatial import cKDTree as cKDTree_  # noqa: E402
-from audit_teach_session import read_marks, read_trail, gait_timeline, gait_at, turn_stats  # noqa: E402
+from audit_teach_session import (
+    gait_at,
+    gait_timeline,
+    read_marks,
+    read_trail,
+    turn_stats,
+)
+from scipy.spatial import cKDTree as cKDTree_
 
 STAIRS_GAITS = (0x1003, 0x3003)
 
@@ -326,7 +338,7 @@ def hairpins(line, grid, free, e0=0.20, taper=2.5, step=0.10):
     pursuit aim at the robot's own position at the tip (it spins both ways) and make the projection ambiguous.
     Keep right in both directions (offset tapering from 0 to e over `taper` m) and join the two sides with a
     half circle through the tip: the way in and the way out are e*2 apart and the turn has one direction."""
-    out, notes, i, n, k3 = line.copy(), [], 3, len(line), 3
+    _out, notes, i, n, k3 = line.copy(), [], 3, len(line), 3
     tips = []
     while i < n - k3:
         d1, d2 = line[i] - line[i - k3], line[i + k3] - line[i]
@@ -567,13 +579,13 @@ def main():
     discs = [(b_anchor[k], W[k], 0.08 if ids[k] in contact else a.touch) for k in range(len(W))]
 
     # per-point stairs flag (corridor width) and the free mask
-    stairs_base = np.zeros(len(base), bool)
+    _stairs_base = np.zeros(len(base), bool)
     if gait_demos:
         v = np.zeros(len(base))
         for d in gait_demos:
             from scipy.spatial import cKDTree as _T
             idx = _T(trails[d][:, 1:3]).query(base)[1]; v += flags[d][idx]
-        stairs_base = v / len(gait_demos) >= 0.5
+        _stairs_base = v / len(gait_demos) >= 0.5
     corridor = np.zeros((grid.nx, grid.ny), bool)
     for d in demos + patches:
         t = trails[d]; f = flags[d] if tl else np.zeros(len(t), bool)
@@ -790,7 +802,8 @@ def main():
     slope = np.abs(np.r_[np.zeros(n_), zg[2 * n_:] - zg[:-2 * n_], np.zeros(n_)]) / (2 * n_ * 0.1)
     step = np.array([np.ptp(zg[max(0, i_ - 5):i_ + 6]) for i_ in range(len(line))])
     steep = (slope > 0.15) | (step > 0.15)
-    from scipy.ndimage import binary_dilation as _dil, binary_closing as _close
+    from scipy.ndimage import binary_closing as _close
+    from scipy.ndimage import binary_dilation as _dil
     if a.terrain_zones and steep.any():
         need = _dil(steep, iterations=15)                         # 1.5 m before and after
         stairs_line = (stairs_line & need) | (stairs_line & keep_op)
@@ -901,7 +914,7 @@ def main():
     print("worst WP distance %.3f m; stairs zones (s0-s1 m): %s" % (rep["worst_wp_distance"], [(z_["s0"], z_["s1"]) for z_ in rep["zones"]]))
 
     try:
-        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt  # noqa: I001  (Agg must be selected before pyplot imports)
     except ImportError:
         return
     ext = [grid.x0, grid.x0 + grid.nx * grid.res, grid.y0, grid.y0 + grid.ny * grid.res]

@@ -3,12 +3,13 @@
 Consumes published data only. Never exports corrected values to ROS, navigation,
 SLAM, waypoint checks or the controller. Original samples are never changed.
 """
-from collections import deque
 import json
 import math
-from pathlib import Path
 import statistics
 import time
+from collections import deque
+from pathlib import Path
+
 from field_core import FieldError
 
 
@@ -69,7 +70,7 @@ class ZeroReference:
             return 'IMU 角速度、加速度或姿态无效，不能建立参考'
         if any(imu.get(k,[0])[0] == -1 for k in ('orientation_covariance','angular_velocity_covariance','linear_acceleration_covariance')):
             return '驱动标记 IMU 分量不可用，不能建立参考'
-        if not type(imu.get('stamp')) in (int,float) or not -.1 <= imu.get('received_wall',0)-imu['stamp'] <= .5:
+        if type(imu.get('stamp')) not in (int,float) or not -.1 <= imu.get('received_wall',0)-imu['stamp'] <= .5:
             return 'IMU 源时间异常／延迟过大，不能复零'
         motion=latest.get('motion',{}); nav=motion.get('navigation',{})
         if not -.05 <= now-motion.get('received',-999) <= 2.5 or not nav.get('fresh'):

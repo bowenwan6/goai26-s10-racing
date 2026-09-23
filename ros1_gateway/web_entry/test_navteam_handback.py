@@ -1,6 +1,7 @@
 """Our additions to the adapter: stop must finish the hand-back when the robot was LEFT in a navigation gait / mode
 by a run that is already gone (2026-09-21 15:17: MotionState 17, Gait 0x3003, Mode 0 -> every stop was refused)."""
 import unittest
+
 from test_asdu_navigation import AgentTest as _Base
 
 

@@ -1,14 +1,13 @@
 """Durable field jobs and evidence gates. No ROS or motion interfaces here."""
-from contextlib import contextmanager
 import hashlib
 import json
 import math
-import os
-from pathlib import Path
 import re
 import sqlite3
 import time
 import uuid
+from contextlib import contextmanager
+from pathlib import Path
 
 ACTIVE = ('QUEUED', 'RUNNING')
 ACTIONS = {'selfcheck', 'load_map', 'localization_check', 'confirm_overlay',

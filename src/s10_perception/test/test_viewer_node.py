@@ -1,9 +1,9 @@
-import numpy as np
 import mujoco
+import numpy as np
 
-from scripts.windows_viewer import _add_waypoint_labels, _control_key, _waypoint_labels
 from s10_perception.upstream import default_track_xml
 from s10_perception.viewer_node import _QPOS_FRAME, _raw_joint_positions, _upstream
+from scripts.windows_viewer import _add_waypoint_labels, _control_key, _waypoint_labels
 
 
 def test_published_joint_positions_are_converted_for_mujoco():

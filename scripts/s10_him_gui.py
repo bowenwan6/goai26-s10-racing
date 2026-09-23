@@ -1,5 +1,4 @@
 """Manual ONNX controls: stand once, hold directions, lie down explicitly."""
-from argparse import Namespace
 import json
 import math
 import os
@@ -8,9 +7,11 @@ import sys
 import threading
 import time
 import tkinter as tk
+from argparse import Namespace
 from tkinter import ttk
 
 from run_s10_him_trial import run
+
 ACTIONS = {
     'forward': ('前进 ↑', 'x', 1), 'back': ('后退 ↓', 'x', -1),
     'left': ('左移 ←', 'y', 1), 'right': ('右移 →', 'y', -1),

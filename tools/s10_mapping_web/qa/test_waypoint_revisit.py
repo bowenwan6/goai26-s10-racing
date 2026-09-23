@@ -2,15 +2,12 @@
 import copy
 import json
 import math
-from pathlib import Path
-import tempfile
 import unittest
 import uuid
 
 import test_independent_worker as fixture
-from field_core import FieldError, Store, validate_request
+from field_core import FieldError, Store
 from field_worker import Engine
-from waypoint_review import compare, comparison_svg
 
 
 class RevisitTests(unittest.TestCase):
@@ -93,7 +90,7 @@ class RevisitTests(unittest.TestCase):
         self.assertTrue(any('尚未核实' in w for w in job['result']['warnings']))
 
     def test_source_is_resolved_by_id_not_name_or_other_session(self):
-        second=self.h.perform('waypoint',dict(name='WP0',floor='2',draft=True,stationary=True))
+        _second=self.h.perform('waypoint',dict(name='WP0',floor='2',draft=True,stationary=True))
         job=self.revisit();self.assertEqual(job['result']['source_waypoint_id'],self.point['id'])
         other=self.h.store.submit(dict(action='selfcheck',key=uuid.uuid4().hex,params=dict(target_map='test_map')))
         self.h.engine.execute(other['id']);self.h.session_id=other['session_id'];self.h.approve()
