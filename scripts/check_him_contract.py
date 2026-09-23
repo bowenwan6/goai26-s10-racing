@@ -11,10 +11,10 @@ import argparse
 import copy
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import onnx

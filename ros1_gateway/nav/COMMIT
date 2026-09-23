@@ -1,4 +1,4 @@
-source=/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/wt-rl-nav
+source=<workspace>/wt-rl-nav
 commit=e1aaf73a1ab8c4c69cbada17efc9914133996e33
 branch=rl/maneuver-router
 synced=2026-09-19T13:57:29Z

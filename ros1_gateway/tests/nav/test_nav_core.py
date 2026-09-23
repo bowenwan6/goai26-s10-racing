@@ -16,13 +16,13 @@ import os
 import sys
 import time
 
-import numpy as np
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "..", "nav"))
-import nav_core as core  # noqa: E402
-from s10_auto_nav.rl_nav.maneuvers import Maneuver, save as save_maneuvers  # noqa: E402
-from s10_auto_nav.route_v2 import RouteV2  # noqa: E402
+import nav_core as core
+
+from s10_auto_nav.rl_nav.maneuvers import Maneuver
+from s10_auto_nav.rl_nav.maneuvers import save as save_maneuvers
+from s10_auto_nav.route_v2 import RouteV2
 
 
 def stairs_zones(route, path, pre=0.7, post=0.7):
@@ -143,7 +143,7 @@ def main():
     print("modes (s): " + ", ".join(f"{k} {v:.0f}" for k, v in sorted(modes.items(), key=lambda kv: -kv[1])))
     print("reached: " + ", ".join(f"{ids[0]}@{tt}" for ids, tt in reached_t))
     print(f"max |cmd| vx {max_cmd[0]:.2f} vy {max_cmd[1]:.2f} wz {max_cmd[2]:.2f}")
-    rp = nav.runner.p if hasattr(nav.runner, "p") else None
+    _rp = nav.runner.p if hasattr(nav.runner, "p") else None
     if nav.reached != nav.n_wp:
         failures.append(f"reached {nav.reached}/{nav.n_wp}")
     if max_cmd[0] > 0.3 + 1e-6:

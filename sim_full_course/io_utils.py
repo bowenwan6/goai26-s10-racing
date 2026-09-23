@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 MAP_ID = "0914_fr_v3-20260914-142008"
-GOAI = Path(os.environ.get("GOAI_ROOT", "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI"))
+GOAI = Path(os.environ.get("GOAI_ROOT", "<workspace>"))
 RAW = GOAI / "map-reviews" / MAP_ID / "raw" / MAP_ID
 PCD_PATH = RAW / "full_cloud.pcd"
 POSES_PATH = RAW / ".sessions" / "session_0" / "poses.txt"

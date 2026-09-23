@@ -44,12 +44,12 @@ def decode_grid(msg):
 
 def stream():
     import rclpy
-    from rclpy.qos import qos_profile_sensor_data
-    from rclpy.serialization import deserialize_message
     from grid_map_msgs.msg import GridMap
     from nav_msgs.msg import Odometry
+    from rclpy.qos import qos_profile_sensor_data
+    from rclpy.serialization import deserialize_message
+    from robot_backend import localization_status, measurement_time, service
     from std_msgs.msg import String
-    from robot_backend import measurement_time, service, localization_status
 
     rclpy.init()
     node = rclpy.create_node('s10_heightmap_preview', enable_rosout=False, start_parameter_services=False)

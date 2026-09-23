@@ -1,14 +1,14 @@
 """Independent failure-injection tests. Local temporary files only; no ROS/SSH."""
 import copy
-from concurrent.futures import ThreadPoolExecutor
 import math
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from field_core import Store, FieldError, binding, localization_reasons, pose_summary
+from field_core import FieldError, Store, binding, localization_reasons, pose_summary
 
 
 def healthy(stamp=100.0):

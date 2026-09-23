@@ -1,4 +1,9 @@
-import sys, types, json, math, time
+import json
+import math
+import sys
+import time
+import types
+
 pub_log = []
 class Pub:
     def __init__(self, name, *a, **k): self.name = name
@@ -22,6 +27,7 @@ for mod, names in {"geometry_msgs.msg": {"Twist": Tw}, "sensor_msgs.msg": {"Poin
     sys.modules[mod.split(".")[0]] = types.ModuleType(mod.split(".")[0])
 sys.path.insert(0, "nav")
 import s10_rl_nav_ros1 as n
+
 route = sys.argv[1]
 def mk(shadow):
     a = types.SimpleNamespace(config="config/nav.yaml", route_dir=route, transform="", shadow=shadow, autostart=True)

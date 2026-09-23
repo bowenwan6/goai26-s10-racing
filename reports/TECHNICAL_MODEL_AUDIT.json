@@ -211,7 +211,7 @@
     }
   },
   "audit_method": "Restricted checkpoint metadata reader with whitelisted tensor-shape reconstruction; ONNX protobuf structure parsed without executing model inference.",
-  "source_checkpoint": "/Users/xxxwbwxxx/Documents/Projects/goai26/gate16_front_tuck_release_20260817/checkpoint/speed_core_best_checkpoint.pt",
+  "source_checkpoint": "<workspace-legacy>/gate16_front_tuck_release_20260817/checkpoint/speed_core_best_checkpoint.pt",
   "deployment_git_revision": "3660b81e8244dfa238633c161673596fe91650f6",
   "training_release_source_revision": "5ef14fadd313559e39b60ce6666122a8e9615c07",
   "training_checkout_revision": "0832f7bcd93eec6e51976c7c7e07913e92479f8c",

@@ -7,7 +7,7 @@
     Autonomous waypoint following for the S10 perception racing course. Turns a robot pose
     and an ordered course into the velocity command consumed by the locomotion policy.
   </description>
-  <maintainer email="wang.bowen@icloud.com">s10-perception-racing contributors</maintainer>
+  <maintainer email="89072276+bowenwan6@users.noreply.github.com">s10-perception-racing contributors</maintainer>
   <license>BSD-3-Clause</license>
 
   <depend>rclpy</depend>

@@ -10,7 +10,7 @@
     accepted by the robot in the 2026-09-08 stand test. Built only inside the
     ros1_gateway workspace; it does not replace any other drdds installation.
   </description>
-  <maintainer email="s2434350@ed.ac.uk">GOAI S10 team</maintainer>
+  <maintainer email="89072276+bowenwan6@users.noreply.github.com">GOAI S10 team</maintainer>
   <license>Proprietary-interface-copy</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

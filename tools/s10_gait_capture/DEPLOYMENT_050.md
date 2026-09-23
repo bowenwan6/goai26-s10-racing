@@ -6,7 +6,7 @@
 
 ## 现场使用
 
-1. 机器人正常开机后，手机连接 **S10-Capture-050**。
+1. 机器人正常开机后，手机连接 **<CAPTURE_WIFI_SSID>**。
 2. 打开 **http://10.42.50.1:8091/**，输入采集站访问口令。
 3. 查看真实数据连接，选择地形、填写说明。JOINTS_CMD 缺失时勾选“关键话题缺失时，仅录制诊断数据”。
 4. 点击开始录制，确认计时开始后，用原遥控器操作机器人；结束时点击“停止并保存”。
@@ -23,8 +23,8 @@
 | 本地源码 | `D:/Desktop/Code/goai26-s10-racing/tools/s10_gait_capture/` |
 | **AGX 独立副本／待清理目录** | **`/home/ysc/s10_capture_session`** |
 | 真实录制 | `/home/ysc/s10_capture_session/data/gait_*/` |
-| 网页口令 | AGX `data/.access-token`；本机 `C:/Users/Lenovo/AppData/Local/S10GaitCapture/real-050-8091.access-token` |
-| Wi-Fi 口令 | AGX `hotspot-access.json`；本机 `C:/Users/Lenovo/AppData/Local/S10GaitCapture/hotspot-050.json` |
+| 网页口令 | AGX `data/.access-token`；本机 `<workstation-appdata>/S10GaitCapture/real-050-8091.access-token` |
+| Wi-Fi 口令 | AGX `hotspot-access.json`；本机 `<workstation-appdata>/S10GaitCapture/hotspot-050.json` |
 | 原版源码提交 | `bee3595`（B 风格改版前的采集工具快照） |
 | 本地演示 | `http://127.0.0.1:8090/`，运行 `run-demo-local.py`；合成数据，不能训练 |
 
@@ -37,7 +37,7 @@
 
 - NetworkManager 配置：`s10-capture-hotspot`。
 - UUID：`38ee2234-935d-4daa-86e0-101e4c1b9e13`。
-- 网卡：`wlP1p1s0`；SSID：`S10-Capture-050`。
+- 网卡：`wlP1p1s0`；SSID：`<CAPTURE_WIFI_SSID>`。
 - AP 模式，2.4 GHz，信道 6，WPA-PSK。
 - IPv4：共享模式 `10.42.50.1/24`，`ipv4.never-default=yes`；IPv6 disabled。
 - `connection.autoconnect=yes`，优先级 `100`。

@@ -2,9 +2,18 @@
 """READJUST instead of HOLD. The dog is put beside the taught line (as it ended up in the 2026-09-21 field runs) and must
 walk back onto it by itself; only far from the line it must HOLD.  python3 tests/nav/test_readjust.py <route_dir>
 The simulated dog IGNORES side-step commands (what the real one did in the stairs gait on steps)."""
-import json, math, os, sys
+import json
+import math
+import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "nav"))
-import numpy as np, shutil, tempfile, types
+import shutil
+import tempfile
+import types
+
+import numpy as np
+
 for m_, names_ in (("rospy", []), ("geometry_msgs.msg", ["PoseWithCovarianceStamped"]), ("nav_msgs.msg", ["Odometry"]), ("std_msgs.msg", ["String"])):
     parts_ = m_.split(".")
     for i_ in range(1, len(parts_) + 1): sys.modules.setdefault(".".join(parts_[:i_]), types.ModuleType(".".join(parts_[:i_])))
@@ -12,6 +21,7 @@ for m_, names_ in (("rospy", []), ("geometry_msgs.msg", ["PoseWithCovarianceStam
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts"))
 import nav_core as core
 import nav_run
+
 route = sys.argv[1]
 base = core.load_yaml(os.environ.get("NAV_CONFIG") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "config", "nav.yaml"))
 doc = json.load(open(os.path.join(route, "route_v2.json")))

@@ -1,1518 +1,1518 @@
 [
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/0.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/0.pcd",
     "sha256": "8f972dc8550248d339969a1be8f859353ebda23afa8225f7def5f8a63a97e867",
     "frame": 0,
     "source_points": 12815,
     "retained_points": 6986
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1.pcd",
     "sha256": "e8a136ef52deadf8dab4201129c3b1245c11c2d3c5860863b512a2392713920e",
     "frame": 1,
     "source_points": 12752,
     "retained_points": 6850
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/2.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/2.pcd",
     "sha256": "c9c78a85d92c585a1fffa89374f4a6f608f0b476367464c3ec37054fe9f39130",
     "frame": 2,
     "source_points": 12333,
     "retained_points": 6707
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/3.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/3.pcd",
     "sha256": "b212ac846d907c58ece67212069b7d4d37c8391cd018e822b00b4b49e7961d71",
     "frame": 3,
     "source_points": 12298,
     "retained_points": 6607
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/4.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/4.pcd",
     "sha256": "3a61f6436f7b739aeafe8d10b20dac314272963d409ab5a2f179ebbde2bb12b6",
     "frame": 4,
     "source_points": 12355,
     "retained_points": 6800
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/5.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/5.pcd",
     "sha256": "b37dc55c1bf44b55ed1424196b53c5b77dac56690f8c96244292c73c3c32b793",
     "frame": 5,
     "source_points": 12553,
     "retained_points": 7707
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/6.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/6.pcd",
     "sha256": "bda6fae7c84e9f1de6d24cff6cdecdc7b18ba105f14410ca2c847c690a9168ca",
     "frame": 6,
     "source_points": 12779,
     "retained_points": 7335
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/7.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/7.pcd",
     "sha256": "b8ebf3e2ab5ea408ae4361ebeb202b7ebb1bb7f07b7d769683a9b6cfb555ed49",
     "frame": 7,
     "source_points": 12769,
     "retained_points": 7200
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/8.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/8.pcd",
     "sha256": "f1d65b126ddbeb1ca565ead3a256570cdfbb8e37319e9720599f3c005b9a2901",
     "frame": 8,
     "source_points": 12868,
     "retained_points": 7101
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/9.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/9.pcd",
     "sha256": "aecaf39dc5fef7bbd9f65bec5a1c511cff58235daf3cae9d052e24abc0d47ae4",
     "frame": 9,
     "source_points": 12987,
     "retained_points": 7320
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/10.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/10.pcd",
     "sha256": "0f2fe82bd825c8fc1218a196a0e34959ad8d39f9d02050a9b063390a5ff799d1",
     "frame": 10,
     "source_points": 13220,
     "retained_points": 7935
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/11.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/11.pcd",
     "sha256": "58bfd12b9129ee6c92bac79ea55302a373ec2fc7864b11a22e97f45301fead48",
     "frame": 11,
     "source_points": 13273,
     "retained_points": 8499
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/12.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/12.pcd",
     "sha256": "e0929b2170db85c2d36837ad5c0d81f29f5d0c7ec637731eb188deb314136fac",
     "frame": 12,
     "source_points": 13340,
     "retained_points": 8629
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/13.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/13.pcd",
     "sha256": "e997cef6b16d171557ebabc74c2437f677761def375a7d3aa2006fe6f5be82bb",
     "frame": 13,
     "source_points": 13427,
     "retained_points": 8811
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/14.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/14.pcd",
     "sha256": "79afac91bc79a3fb1df474e2d3d2a4e2eca7599083cb2dc7619c23bbec228e77",
     "frame": 14,
     "source_points": 13660,
     "retained_points": 9134
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/15.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/15.pcd",
     "sha256": "47775ec1c50551b891ef71a1b1fef60a75931bc9ae715d036f875a1f91b5a220",
     "frame": 15,
     "source_points": 13442,
     "retained_points": 8933
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/16.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/16.pcd",
     "sha256": "75bf53b282ddab1be51caa3f36a6359aa691befa7b431af3076fad848b9b7c9e",
     "frame": 16,
     "source_points": 12874,
     "retained_points": 8408
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/17.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/17.pcd",
     "sha256": "7722f61f584ef8b419b4006d1d82eea0daad786e7552986e4f4ea9ef4bf701c4",
     "frame": 17,
     "source_points": 12049,
     "retained_points": 7276
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/18.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/18.pcd",
     "sha256": "41914c32c29489219dfb466becadd178fdf6e13e8e8cec77e9fe19fba76b3849",
     "frame": 18,
     "source_points": 12610,
     "retained_points": 7030
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/19.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/19.pcd",
     "sha256": "50fc931657a2e42e6ff458a6075a06ae8baaf4d71961a06c20b153f1908d7303",
     "frame": 19,
     "source_points": 12717,
     "retained_points": 6292
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/20.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/20.pcd",
     "sha256": "7a6f137557fc60aa23c62a1637ccdaaf16ff90abcb14678f7886386d24bf2590",
     "frame": 20,
     "source_points": 12065,
     "retained_points": 4595
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/21.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/21.pcd",
     "sha256": "df0cce97262147dd5ec1e50fc6e966de2aa5e3dc54376eb30a745d6d59c6ebdb",
     "frame": 21,
     "source_points": 12250,
     "retained_points": 4082
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/22.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/22.pcd",
     "sha256": "baf57cd280671d96bcff8322132d52193a6835553db5d04cb0480cb7eed9f6fa",
     "frame": 22,
     "source_points": 12411,
     "retained_points": 4290
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/23.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/23.pcd",
     "sha256": "fb9c6593d2e5e849b2e3c6d24814b2eb0a8a3903dc2d1d2ea18b5ac6f2fef9c3",
     "frame": 23,
     "source_points": 12950,
     "retained_points": 2498
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/87.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/87.pcd",
     "sha256": "5b34708151493da0693d5a9911b618aa6ac0d1f1d30c31bb3507d0da1c9645b2",
     "frame": 87,
     "source_points": 12025,
     "retained_points": 2240
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/88.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/88.pcd",
     "sha256": "2c49eda2b75e3912d4437e5980d2b317ec9fcafe83976b3c03a0e9ac7ee66007",
     "frame": 88,
     "source_points": 11992,
     "retained_points": 4038
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/89.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/89.pcd",
     "sha256": "93e8427377de1c55d4f09d6c0d6eef769e6193b1aa3c5fe333b4030d81a1d82b",
     "frame": 89,
     "source_points": 11942,
     "retained_points": 4727
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/90.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/90.pcd",
     "sha256": "d948f89ca7f7244ddc4965f52f406de679265562edeec4a5c9583b7d5f47a75a",
     "frame": 90,
     "source_points": 12678,
     "retained_points": 6087
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/91.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/91.pcd",
     "sha256": "b1467b0d96fd8f3f3212ebbb571ace49185e39613ac0851290abc0ea1cf55f94",
     "frame": 91,
     "source_points": 12016,
     "retained_points": 6918
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/92.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/92.pcd",
     "sha256": "b730aad87bfcaea9dafbc56f6c639cc7cc1c586136f955cf94a4f9fae5e02a07",
     "frame": 92,
     "source_points": 11791,
     "retained_points": 7368
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/93.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/93.pcd",
     "sha256": "e1a493c4eab11e7757e2984099676441e50bbb3825451cf0405605aa750ec729",
     "frame": 93,
     "source_points": 11709,
     "retained_points": 7552
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/94.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/94.pcd",
     "sha256": "9eac131f20d95738b0008213ddf2bb80ae014167ffbd965f9d74e305b388ff66",
     "frame": 94,
     "source_points": 12674,
     "retained_points": 8066
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/95.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/95.pcd",
     "sha256": "bcf0eca973bbb2b4181d140bba5d19de42d5a5ba92a6c69dd2bf5c87483cd9bf",
     "frame": 95,
     "source_points": 12594,
     "retained_points": 8074
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/96.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/96.pcd",
     "sha256": "64b4316d5df90f3b43295817ab65ac4e58196e933272ad2f115d9ed224aa2d0f",
     "frame": 96,
     "source_points": 13117,
     "retained_points": 9571
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/97.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/97.pcd",
     "sha256": "a8e8583e1c48551e96957dc5ef4e1ae1560d3dffbabdd7ed445f3e5a921d7f7e",
     "frame": 97,
     "source_points": 12712,
     "retained_points": 8899
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/98.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/98.pcd",
     "sha256": "faa1428d39958b54c1ac03a338abac81123aa2092dfd7057e8a08f8c571e8b65",
     "frame": 98,
     "source_points": 12588,
     "retained_points": 8765
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/99.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/99.pcd",
     "sha256": "3a6998ab97a5e0fde64af6d41649d7d5d6bdfdd4ffcd65acebf5ab774328cdf3",
     "frame": 99,
     "source_points": 12360,
     "retained_points": 8157
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/100.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/100.pcd",
     "sha256": "0080bd905fdb18c3fa4867122ca09e6107d450335d5299314736bed6b104055b",
     "frame": 100,
     "source_points": 12072,
     "retained_points": 7841
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/101.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/101.pcd",
     "sha256": "479c6b9a4b74964e7f75d8c41d193fbb2a6b22e49272a03f805fc929e10fb7c8",
     "frame": 101,
     "source_points": 11677,
     "retained_points": 7405
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/102.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/102.pcd",
     "sha256": "cf78e78a131e1c3d605b0df5afbfef97f19ea8b5f47cf70f3bc612e53874dbec",
     "frame": 102,
     "source_points": 12053,
     "retained_points": 7200
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/103.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/103.pcd",
     "sha256": "4fd87d1ceefe9f3a1f2be2859e800cbbdeabec26e638f052435fc98ee53bc147",
     "frame": 103,
     "source_points": 12315,
     "retained_points": 6692
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/104.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/104.pcd",
     "sha256": "9f90c91356ea4d57c49c3f4dc3c2c486ed093e6f98c06a0e7c2d6ed7c48b3ddf",
     "frame": 104,
     "source_points": 12394,
     "retained_points": 6605
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/105.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/105.pcd",
     "sha256": "1c15d15afb3599c04dee86a8c88d02cec7e2637e7d08c1c7753dc06958a492d8",
     "frame": 105,
     "source_points": 12777,
     "retained_points": 6604
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/106.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/106.pcd",
     "sha256": "05e20bff66725fc45bea8f03a84af35816083db8e456ec971b00a1481cc67801",
     "frame": 106,
     "source_points": 12640,
     "retained_points": 7073
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/107.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/107.pcd",
     "sha256": "09374123342e215e97f4485be470c0242c9060e4b2f58d7a9bd0fd3ce8d3b56b",
     "frame": 107,
     "source_points": 12660,
     "retained_points": 7295
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/108.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/108.pcd",
     "sha256": "07498b665c5b5c2c14c870dc64cac09f1c6e0cd1991a8b9ffcf9a60a7ce1435a",
     "frame": 108,
     "source_points": 12665,
     "retained_points": 6802
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/109.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/109.pcd",
     "sha256": "e983631f71db110e7e394b4c4a36bf34e8514a58a0e3daf9618b14f1e7754935",
     "frame": 109,
     "source_points": 12876,
     "retained_points": 6607
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/110.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/110.pcd",
     "sha256": "528e00a5e6bd15e32ae85a7b4dd30ae3ac32c0891e05eba2b678704c2de70f6c",
     "frame": 110,
     "source_points": 13103,
     "retained_points": 6488
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/111.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/111.pcd",
     "sha256": "84584a8307252038155b00eb5454a9b0fd7d8facedc0efc465ea8a788ef2a2b4",
     "frame": 111,
     "source_points": 13013,
     "retained_points": 6275
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/112.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/112.pcd",
     "sha256": "4416d6d1894fcd3fe628217ea9fb6a1b85f1aa20fdfb69703185ad7e94806ea5",
     "frame": 112,
     "source_points": 13035,
     "retained_points": 6250
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/113.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/113.pcd",
     "sha256": "d1d57240c60c951dd845f64c6c98ebf7b253051747f0bc8c09cce6781f95367a",
     "frame": 113,
     "source_points": 12693,
     "retained_points": 6838
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/114.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/114.pcd",
     "sha256": "a45d7379da87a890e4aef44e6865526398f865c6d44bf5dd15a3034621314c73",
     "frame": 114,
     "source_points": 11817,
     "retained_points": 6394
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/115.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/115.pcd",
     "sha256": "b6c5d3e9f821034b9fe5f2f323c2971c6212afe2744664f83dc137bc68535496",
     "frame": 115,
     "source_points": 11785,
     "retained_points": 6426
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/116.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/116.pcd",
     "sha256": "2b8253404c1eb0187d446e29e28713c211cb0acef74ff57c906664506316171e",
     "frame": 116,
     "source_points": 11898,
     "retained_points": 6291
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/117.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/117.pcd",
     "sha256": "4a4aa694305b50526cf2effbd40b1849631bea4812ba1a42f007960852ed4ec8",
     "frame": 117,
     "source_points": 11216,
     "retained_points": 6166
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/118.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/118.pcd",
     "sha256": "efd2c86f98069ec3249798f9ebe1238bd611c50b081bb06f713a93c9cb35541a",
     "frame": 118,
     "source_points": 11999,
     "retained_points": 5990
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/119.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/119.pcd",
     "sha256": "825bff34543ab155560391b9be386841f4f2146923cf47173344b43ce0ee16b7",
     "frame": 119,
     "source_points": 12584,
     "retained_points": 6542
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/120.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/120.pcd",
     "sha256": "b1bcef720673aaf9829e03d7660d109170123c6c0bef33a8f928d68166dcbfa6",
     "frame": 120,
     "source_points": 12472,
     "retained_points": 6622
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/121.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/121.pcd",
     "sha256": "e73a0f37861748e4a88e652ebca99e5ba1fa491cc2db3185fb724ffd2ab886da",
     "frame": 121,
     "source_points": 12513,
     "retained_points": 6672
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/122.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/122.pcd",
     "sha256": "53de4577c9f1e06b6a3912565d7c367711d829f089347c731416902cc5fa649a",
     "frame": 122,
     "source_points": 12453,
     "retained_points": 6670
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/123.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/123.pcd",
     "sha256": "d7f996d74f98a4c6457d18d37630c741a7c36bb713f2f653f2c9f92a22c7ffe2",
     "frame": 123,
     "source_points": 12496,
     "retained_points": 6679
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/124.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/124.pcd",
     "sha256": "3142f791df7be0f793c988588991ed308d04f92bdc431f5947d1863e74493b46",
     "frame": 124,
     "source_points": 11953,
     "retained_points": 7172
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/125.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/125.pcd",
     "sha256": "f80ee2be80116611fe56d7d122262c98d93513cd4d59e9e63f2dc29b99d6d3a2",
     "frame": 125,
     "source_points": 12647,
     "retained_points": 8809
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/126.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/126.pcd",
     "sha256": "449bf81c36be061403e4d0bbdead32ce4fe3abf741cabaad24d9a81cf76e53bb",
     "frame": 126,
     "source_points": 12803,
     "retained_points": 7536
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/127.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/127.pcd",
     "sha256": "0aff18d86d0fdc4ea70f5a66e84c63552c1b1c05a3b08c0229c8bd429db4d036",
     "frame": 127,
     "source_points": 13045,
     "retained_points": 7736
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/128.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/128.pcd",
     "sha256": "a8fa0d64c67443a7028cabd3570e673563b1dd36abbf09d0b4d44c8b38d05727",
     "frame": 128,
     "source_points": 12996,
     "retained_points": 7448
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/129.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/129.pcd",
     "sha256": "4b4bb3a6c9b974331b162c1799b099c702334f40c112ea6d995e7ca8f8135cc1",
     "frame": 129,
     "source_points": 13099,
     "retained_points": 8009
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/130.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/130.pcd",
     "sha256": "86c3781f5c1c1a0ee4dc20d2cbc9ab9253055dfc10cb21a1de2732f85db3310b",
     "frame": 130,
     "source_points": 12961,
     "retained_points": 8322
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/131.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/131.pcd",
     "sha256": "375f65826360b4f2afff271bbef690bc179d5917142d3bd1ace12834afb77ad4",
     "frame": 131,
     "source_points": 13129,
     "retained_points": 8524
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/132.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/132.pcd",
     "sha256": "396bb7c41067dbb960610afc190ef5745a1b121e145def7519c63b9fcef995b8",
     "frame": 132,
     "source_points": 13348,
     "retained_points": 8664
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/133.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/133.pcd",
     "sha256": "26dcef2d5b8845731d9b5ff7de0db058ad4d278b2fb66dfcefeeb75a53684a28",
     "frame": 133,
     "source_points": 12936,
     "retained_points": 8718
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/134.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/134.pcd",
     "sha256": "af9235dce34917c31bc31ef3c039aa2f433ae7b7f7ade9e8042b3f740ab242ce",
     "frame": 134,
     "source_points": 13414,
     "retained_points": 8925
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/135.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/135.pcd",
     "sha256": "714ae3561c4dd803a6d8b2714b999a3b0aef2580bb9e15163d1481e996a30272",
     "frame": 135,
     "source_points": 12649,
     "retained_points": 8268
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/136.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/136.pcd",
     "sha256": "12d442bf344a44b99c5e630ba67bbd0035000a0cfcdf252bf8f997658420af37",
     "frame": 136,
     "source_points": 11899,
     "retained_points": 7185
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/137.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/137.pcd",
     "sha256": "f5444fa768eff4b6484a5c4189f36e3cbe46cd3c43ec5420129e71d130aa60b2",
     "frame": 137,
     "source_points": 12341,
     "retained_points": 6359
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/138.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/138.pcd",
     "sha256": "9f011718836403e37e513b544dc7e00d52646e234587ad95380d421dab09bf9a",
     "frame": 138,
     "source_points": 12936,
     "retained_points": 6402
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/139.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/139.pcd",
     "sha256": "4c39de9176f9788f1fcad5ca07066cfa2498b0f6790cf7dc0b079454a74cff39",
     "frame": 139,
     "source_points": 12544,
     "retained_points": 4979
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/140.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/140.pcd",
     "sha256": "82ede22bddcc544443609fe81a85e25dd6cf124c77422ad1d03069a94064a4c0",
     "frame": 140,
     "source_points": 11888,
     "retained_points": 4205
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/141.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/141.pcd",
     "sha256": "2548ca914bb6969d1716c388ee007281d9d3d87db580390f53ea3684c0eba5ee",
     "frame": 141,
     "source_points": 13317,
     "retained_points": 4371
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/142.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/142.pcd",
     "sha256": "4f92ebf21300acfa089a573f909d80240bfe4fdf7cf2c28d34c491fcd9bfe58b",
     "frame": 142,
     "source_points": 11425,
     "retained_points": 1691
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1401.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1401.pcd",
     "sha256": "4f6aa304fdabe08fa7dce781b52b6c9573f25a54603df96a14e816d763dcd40b",
     "frame": 1401,
     "source_points": 11997,
     "retained_points": 2818
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1402.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1402.pcd",
     "sha256": "c018e1dff1c3be12bc40341723884422e71df0f4476b0486f9527186945705a6",
     "frame": 1402,
     "source_points": 12529,
     "retained_points": 3570
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1403.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1403.pcd",
     "sha256": "a7d670c8dc996ab04fa4bf708cadc869d1f6305e3abeea457492614ca12b3b19",
     "frame": 1403,
     "source_points": 12181,
     "retained_points": 4389
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1404.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1404.pcd",
     "sha256": "cdc0aa1fb7c30af4ce872e2340c6dd127c7982dd08d8c504ddf06f46d7ef5e5e",
     "frame": 1404,
     "source_points": 12304,
     "retained_points": 5704
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1405.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1405.pcd",
     "sha256": "871c613e9726a5989a7689b15a85673ea5ceade234bfb77c1025aee6e1bfd413",
     "frame": 1405,
     "source_points": 12104,
     "retained_points": 7029
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1406.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1406.pcd",
     "sha256": "6f0aea279f254df08ef1e05d13c70eb4f02307bc5fcef873fece79bf14dd403a",
     "frame": 1406,
     "source_points": 11613,
     "retained_points": 7229
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1407.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1407.pcd",
     "sha256": "d3a4f0fbd7b5648a39e888c9c322a757c38ed38696a22b17ca4d7c8e8ba8e169",
     "frame": 1407,
     "source_points": 10904,
     "retained_points": 6897
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1408.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1408.pcd",
     "sha256": "07cbd5ced41f9927519ae3423347b31430f8bb2a6399702f0fd4c8d9cbc72f27",
     "frame": 1408,
     "source_points": 10947,
     "retained_points": 7299
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1409.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1409.pcd",
     "sha256": "f01b79fea2fa30984cbf8e891234755d8b5bb29dd61c901a3f5b513b33981c86",
     "frame": 1409,
     "source_points": 12210,
     "retained_points": 7701
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1410.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1410.pcd",
     "sha256": "a5e7e031e4099d7c8e0d1ad86028f632bf65dea4f888e14afc7a2204682a7fa0",
     "frame": 1410,
     "source_points": 12681,
     "retained_points": 8213
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1411.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1411.pcd",
     "sha256": "8cd38e80c36f4b740766219377c9ea96763fc28dd852a46b69a4906fde029801",
     "frame": 1411,
     "source_points": 12965,
     "retained_points": 9820
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1412.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1412.pcd",
     "sha256": "3b0087f3d564f1b81d8f7d73bc313d81ac98ec8cd9d162db5f8bb7581df54df3",
     "frame": 1412,
     "source_points": 12226,
     "retained_points": 9042
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1413.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1413.pcd",
     "sha256": "332b8e3bd46eb8e42ce1bcf83c59485ca6b300036328d3f5360bf0376fe9c449",
     "frame": 1413,
     "source_points": 12210,
     "retained_points": 8400
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1414.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1414.pcd",
     "sha256": "4f0d743e6728ddb3d24915615816ccb618c7b3cba19848c95d19816ba706bf22",
     "frame": 1414,
     "source_points": 12193,
     "retained_points": 8265
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1415.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1415.pcd",
     "sha256": "f1c45d3fb294cb0a8725127a2e22f507a83ffefc9297a13045367e900feedcb8",
     "frame": 1415,
     "source_points": 11954,
     "retained_points": 8066
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1416.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1416.pcd",
     "sha256": "c9323300f7bd1d62cda81ec736a7a91e4cd9e298af93bac70e18d0dc9147bccd",
     "frame": 1416,
     "source_points": 11987,
     "retained_points": 7626
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1417.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1417.pcd",
     "sha256": "656a7f96b4a5039971fc4dfe00fefd263ef4b7e3b90b8718354440374e56cd9f",
     "frame": 1417,
     "source_points": 11944,
     "retained_points": 7366
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1418.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1418.pcd",
     "sha256": "1cf4e3bb0e1d3697b4315026fb44c36a0b9dbbfce4792337d25680ed1e476a3f",
     "frame": 1418,
     "source_points": 11916,
     "retained_points": 6923
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1419.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1419.pcd",
     "sha256": "7ae0b79d3ea3c57d38ea24476d0d6a2d433146abb1956d905e1db7fabb19046c",
     "frame": 1419,
     "source_points": 11870,
     "retained_points": 6713
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1420.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1420.pcd",
     "sha256": "dcee0a4871db0b1c7dc2c6332366e63e340efb3f9e5c6050ba64d82ddfb3ca0f",
     "frame": 1420,
     "source_points": 11966,
     "retained_points": 6608
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1421.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1421.pcd",
     "sha256": "5985d59912d6d73db1bce9fe83ac4462ea24c2eaed9c1ef3d01af9a377516c93",
     "frame": 1421,
     "source_points": 12274,
     "retained_points": 6919
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1422.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1422.pcd",
     "sha256": "1d8725f738c694fb0d762dd5f8759d4a7ddcf84cd1f23e116d401385689b966d",
     "frame": 1422,
     "source_points": 12265,
     "retained_points": 6731
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1423.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1423.pcd",
     "sha256": "bd357381b8e5cf9bf3c9db0e22c2ab05e0653463e365e9a5d6d49efa708563e7",
     "frame": 1423,
     "source_points": 12365,
     "retained_points": 6800
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1424.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1424.pcd",
     "sha256": "d48c2b69f9225692d117656eed2ee4356ac217ebc36a8c5b84bd4486fea68392",
     "frame": 1424,
     "source_points": 12303,
     "retained_points": 6596
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1425.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1425.pcd",
     "sha256": "ed1ed09a9a8ef019cc843331bc45e2bb3ded411f5e98b03860b997fe6636a473",
     "frame": 1425,
     "source_points": 12599,
     "retained_points": 6366
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1426.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1426.pcd",
     "sha256": "29e19e360b2230900510d648fc31f9fa0bbef9fca11235e6bb604ebd2a37d808",
     "frame": 1426,
     "source_points": 12648,
     "retained_points": 6340
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1427.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1427.pcd",
     "sha256": "ea72c0336830e370b7e1b9eb0817342cc2a2c509037f1d1d692855d4732f9ca0",
     "frame": 1427,
     "source_points": 12654,
     "retained_points": 6246
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1428.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1428.pcd",
     "sha256": "8c174812ffa08d3dfceae4f1ab8817a521698602645180268bcc634ca30ebdcc",
     "frame": 1428,
     "source_points": 12136,
     "retained_points": 6764
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1429.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1429.pcd",
     "sha256": "11f9f2c110837be076faf05f1376d00d2385c7a25f555a9e7934d81f9118ad29",
     "frame": 1429,
     "source_points": 11620,
     "retained_points": 6434
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1430.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1430.pcd",
     "sha256": "bfd1beae018f13d0e63d1c327171320955ad50feba18f6438656cb5f0eb62f20",
     "frame": 1430,
     "source_points": 11572,
     "retained_points": 7294
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1431.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1431.pcd",
     "sha256": "eea10aef6024d3cfdb01ebad55ee7ade202bbf5b10fc5c7f64f94a36ee48f789",
     "frame": 1431,
     "source_points": 11882,
     "retained_points": 6742
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1432.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1432.pcd",
     "sha256": "47e8167302424dd36a3e417a9b03649fe7d57dcfeb8084111b20b88fb952174c",
     "frame": 1432,
     "source_points": 11230,
     "retained_points": 6256
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1433.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1433.pcd",
     "sha256": "f71cc81b4564f34a3aba437300a85bdc0b4130c928a21f207c0af53b008912a4",
     "frame": 1433,
     "source_points": 11403,
     "retained_points": 5902
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1434.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1434.pcd",
     "sha256": "9104112404a8948f83214e8f9c715f1943afb02ebed12ee7ca036a2404c4b7de",
     "frame": 1434,
     "source_points": 11999,
     "retained_points": 6444
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/poses.txt",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/poses.txt",
     "sha256": "e662ee1a879481496fb57dcab5b429e188ee7e4102c5acc747b448bb60842c16"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/full_cloud.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/full_cloud.pcd",
     "sha256": "87a80cf2a88c4d8ab782772ff5b437e6df1c74c277364ae000ef90028dde81ea"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/geometry.npz",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/geometry.npz",
     "sha256": "095fffcc2bd1d48bdaba4db2c1986cc5261b5c701134738942e293e5bb60b7c7"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/assets/B_structured_map.obj",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/assets/B_structured_map.obj",
     "sha256": "68b2b6d1a90ece2f0f5a8d8d06ca38c77bf8238325d6563e71c02b218312f0fc"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/repair_report.json",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/repair_report.json",
     "sha256": "5c486a6f915ff2d16d75e1043685e977d086b6994f9a66bb1d54a146d9d1e530"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/B_structured_collision.xml",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/B_structured_collision.xml",
     "sha256": "39c35e50332e396bdc122f5fa5a6a6cf7d97c21dcff37e7fa56b14da37db56bf"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/42.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/42.pcd",
     "sha256": "6966c1a1665b7f94a33b3cd982dea03e4e93e066e6c76594ae5199011023fa06",
     "frame": 42,
     "retained_points": 24
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/43.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/43.pcd",
     "sha256": "291aa5433c656b3d3c04fc63742b0b393babbfc0af605784459bd8ef2acd0f13",
     "frame": 43,
     "retained_points": 51
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/44.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/44.pcd",
     "sha256": "84569e1b586aa453df865fa254e37d7aa58d453e29ec376bf846e2ee3f47e140",
     "frame": 44,
     "retained_points": 100
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/45.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/45.pcd",
     "sha256": "9190f001428841a95d068b98cd13eca1f41f564cdc99261c7bb64a4d7dae9254",
     "frame": 45,
     "retained_points": 258
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/46.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/46.pcd",
     "sha256": "6c3eee8a0df902e891b61c7c8af4bd6bdaa6bac63be913b4c0befecde4c85052",
     "frame": 46,
     "retained_points": 409
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/47.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/47.pcd",
     "sha256": "b2a5cb56a32f5ba8c6969f41ee782ad3c502f20082854cce7e3d14efd15fae1f",
     "frame": 47,
     "retained_points": 973
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/48.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/48.pcd",
     "sha256": "643d183dc39815aa05b822ea9cdfd797bb35474746ea20816474091345086a5d",
     "frame": 48,
     "retained_points": 2434
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/49.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/49.pcd",
     "sha256": "18bd7fad54f4fa16537885eb4bfab0f07a6f434db23272da1876b23b2dc18c05",
     "frame": 49,
     "retained_points": 4025
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/50.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/50.pcd",
     "sha256": "125822780115558dd779232bb46e3be9a98c70f53ad2e717ee1a5d09139f6ab1",
     "frame": 50,
     "retained_points": 3650
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/51.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/51.pcd",
     "sha256": "299a2e848564aabb3baa1b82239acbf18b119e82b26267d1dc65769daf0b8a99",
     "frame": 51,
     "retained_points": 5128
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/52.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/52.pcd",
     "sha256": "d3b3559c4671e2fdf9fca82cb3251969a0f751a05f604a012f1ef97802369617",
     "frame": 52,
     "retained_points": 5882
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/53.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/53.pcd",
     "sha256": "227946936513ff26967e77ec911b434297bf5a1458c297823c2d856c8688d545",
     "frame": 53,
     "retained_points": 5549
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/54.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/54.pcd",
     "sha256": "b71a24947a4a381413f81061711b334434868c613e7c92d412197ad3ee04dcb8",
     "frame": 54,
     "retained_points": 4944
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/55.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/55.pcd",
     "sha256": "c0bb4f9f7af94934eacc76164ccd354059872a2851331ca99ed4fd51c85413c0",
     "frame": 55,
     "retained_points": 5342
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/56.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/56.pcd",
     "sha256": "f9e71ca3306dfdcff88fd20523a1bd23ffcefd6f093b4195e213cd33b581a5ff",
     "frame": 56,
     "retained_points": 6205
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/57.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/57.pcd",
     "sha256": "b78a60ab593030cbe2ad4087ed92eeb6f454f2988c3b1f712a2b49e34a406c78",
     "frame": 57,
     "retained_points": 5047
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/58.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/58.pcd",
     "sha256": "b1bcc3688c05c6f1012c6ba1370e1df69d8a575e048904670ae03cddefce8ca8",
     "frame": 58,
     "retained_points": 3464
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/59.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/59.pcd",
     "sha256": "0391cdaf8be1c66b3ccf75f98f54ebcdcf53302e1a39522ecae48dbf0d977ca2",
     "frame": 59,
     "retained_points": 3252
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/60.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/60.pcd",
     "sha256": "57e9a782ae9244a4aa111993cf07568587e2ed93de481f0558063dcbd66694e3",
     "frame": 60,
     "retained_points": 1482
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/61.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/61.pcd",
     "sha256": "401024028beb9975d6397e724db724815cc56d59005052256fd34b500ff16177",
     "frame": 61,
     "retained_points": 492
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/62.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/62.pcd",
     "sha256": "01d107edcd17e9928239f915c1e7ba1141b82d091ade0e189357f69d12d1cf28",
     "frame": 62,
     "retained_points": 298
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/63.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/63.pcd",
     "sha256": "98f4521e30a25f0304dc0cefec1cde165da7426f6b5b0f5c52e5ce0dbac62a29",
     "frame": 63,
     "retained_points": 336
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/64.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/64.pcd",
     "sha256": "43a3687163e8f6c9e9009271760a8c78868ddd03cf230f31431321434b77f41d",
     "frame": 64,
     "retained_points": 342
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/65.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/65.pcd",
     "sha256": "2f9aeedbd298e0f58d1bd23ad814f98ffaeebd762e751d729dee6f1976b83430",
     "frame": 65,
     "retained_points": 169
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/66.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/66.pcd",
     "sha256": "bfad2d79dcc662f82610e7e54b7eeeabe100b5bd1290cd7a11aa2134af5a643c",
     "frame": 66,
     "retained_points": 103
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/67.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/67.pcd",
     "sha256": "1f9b27e7b43c23d6051c15d92cfb71e32a9eb51caa8a4b2a88a62c62f559675b",
     "frame": 67,
     "retained_points": 49
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/68.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/68.pcd",
     "sha256": "0215ecb2fd3324c5a53d01d438bd171ede6414dc6ee07dbba5cc506e38c37c44",
     "frame": 68,
     "retained_points": 39
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/163.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/163.pcd",
     "sha256": "c9d91ab2aa903c0e8f59d9062031750335b1895cb3b5dd2b85235b9eb153df66",
     "frame": 163,
     "retained_points": 44
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/164.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/164.pcd",
     "sha256": "4ebe21c8362f4f6d2bfaef8f46ed8e3ad0c6039eef0e72fb7779f6d9ddacec3f",
     "frame": 164,
     "retained_points": 49
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/165.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/165.pcd",
     "sha256": "8d8c1cc7622fa9670e6a74f098abe73d2cf9e7619be19d3b0422b336357a5044",
     "frame": 165,
     "retained_points": 93
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/166.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/166.pcd",
     "sha256": "ee5a9484f1f7f09bbd5012b817b33a1ae1d2bb11f4aa652371d4ded7e1805f9a",
     "frame": 166,
     "retained_points": 173
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/167.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/167.pcd",
     "sha256": "1a417ffe7e5a75b50d4d075fec30acf46c1bb3a93aa36431b3fa9a0717f3cea2",
     "frame": 167,
     "retained_points": 255
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/168.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/168.pcd",
     "sha256": "5e02e250c6e6693a8517f64419bfd3067483479b58cd92eccd300ef96ce45156",
     "frame": 168,
     "retained_points": 499
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/169.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/169.pcd",
     "sha256": "66536b9c0ae5112ed1dece2f52d173af429c26806e43977adbcdffc3040a1517",
     "frame": 169,
     "retained_points": 1878
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/170.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/170.pcd",
     "sha256": "919477070c8e6857cdc7e6930c81fdc8219205f6ad3c50e47e8ea098981a4b52",
     "frame": 170,
     "retained_points": 3520
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/171.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/171.pcd",
     "sha256": "66935e8b898fb4e5e393e7db13a88270123fde82141200bc28edb1537a188a2d",
     "frame": 171,
     "retained_points": 3625
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/172.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/172.pcd",
     "sha256": "bcae8fd8b10ffdd30f1f5483f701fc918d61f9163188ee0b4949b6c749c2d27f",
     "frame": 172,
     "retained_points": 4703
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/173.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/173.pcd",
     "sha256": "03b941595f1a2990ac5439e9ce087432a11d40452644ff270b6218d6657a4f7b",
     "frame": 173,
     "retained_points": 5604
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/174.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/174.pcd",
     "sha256": "fd307ad0edd33276ba4ecc46f912198f73750442865339d7a19fcfcf78c783ef",
     "frame": 174,
     "retained_points": 5743
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/175.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/175.pcd",
     "sha256": "6e3101c8e3a941daa92df8ec18ce83f4f5d978c1ff8fec5b04d2c1d1ba54f724",
     "frame": 175,
     "retained_points": 5739
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/176.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/176.pcd",
     "sha256": "35188da5794f25b8cac9ad36b6ab7c46684d968bb29bad0370cc6003338e6cdf",
     "frame": 176,
     "retained_points": 5518
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/177.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/177.pcd",
     "sha256": "da63b7be42759aa43c31784e75aeda8c3097fc7aed96921ba7f935d9d682a08c",
     "frame": 177,
     "retained_points": 5016
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/178.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/178.pcd",
     "sha256": "28756e7651d588db8aab1ced0f385563d59aa7eaddd9a674681ae04f4ad1240c",
     "frame": 178,
     "retained_points": 4551
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/179.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/179.pcd",
     "sha256": "da315ab7fce9de835a7797f8056b29fbb9165249b8fc9d3407fcb2f538909955",
     "frame": 179,
     "retained_points": 3610
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/180.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/180.pcd",
     "sha256": "87c1f687662283b67c443429e8724d850a2b08f0aabacb98c2df9be3a302570f",
     "frame": 180,
     "retained_points": 3524
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/181.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/181.pcd",
     "sha256": "0cf6a8d9a4f89acfe2857c7a6fa6f4acb3926bf4568dd2ce4a3e7eb1840fb1ab",
     "frame": 181,
     "retained_points": 2349
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/182.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/182.pcd",
     "sha256": "032ac6dcb55d0690bc9bdf8d6b0cf5247c4e9174cef9a5e94ec72804ecb77067",
     "frame": 182,
     "retained_points": 1455
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/183.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/183.pcd",
     "sha256": "92e05b803b78ae3ef911ce6ba25e145771e255e867501797348bea34d54ba081",
     "frame": 183,
     "retained_points": 153
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/184.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/184.pcd",
     "sha256": "78cba8ee20d39b861833ae8a555df0aff63836b6479f111bda5f338a243b86c8",
     "frame": 184,
     "retained_points": 982
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/185.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/185.pcd",
     "sha256": "05013e783f97c54a383fed713881d44cba0f7c6d85e36ba0321983fee1010393",
     "frame": 185,
     "retained_points": 721
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/186.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/186.pcd",
     "sha256": "26d327561efc9929aca376aca57cfc248c12b059f27be2a4241c3d08a1d4039e",
     "frame": 186,
     "retained_points": 549
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/225.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/225.pcd",
     "sha256": "8aa2c5dd54bba1f0012d90e2ea04c17329aac430f707e71fd3903f68b67e214a",
     "frame": 225,
     "retained_points": 431
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/226.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/226.pcd",
     "sha256": "54a66072cc3edad17b348b688f39e2c283e9796eb2a34ab407b492262db7f46b",
     "frame": 226,
     "retained_points": 651
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/227.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/227.pcd",
     "sha256": "7b1149a7c9ba3c941508bf1af09df74d74ebda61f406c25b7a3dde08ae912a94",
     "frame": 227,
     "retained_points": 853
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/228.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/228.pcd",
     "sha256": "f588c099d63d073e871a3d4da72f5c536e790f504b3f3bed5ec2085536c6f0af",
     "frame": 228,
     "retained_points": 820
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/229.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/229.pcd",
     "sha256": "2b0f735542d1d1bb3dfcdad97a7a273fb20c1116d8c34b1e4116c142a40bb12b",
     "frame": 229,
     "retained_points": 1222
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/230.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/230.pcd",
     "sha256": "0486f2b853d385ca0dddc6741364e1c27961026b2b3df0317eac90588195288f",
     "frame": 230,
     "retained_points": 2690
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/231.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/231.pcd",
     "sha256": "1cc20523b555968b25fbc4aa62ea79f1331b03e89e07f714b2e1c54a1203c216",
     "frame": 231,
     "retained_points": 3325
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/232.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/232.pcd",
     "sha256": "f0d859f6d709cbaac99476ba62a299e7c9bb01379050b79feb62130cbe1563b9",
     "frame": 232,
     "retained_points": 3598
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/233.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/233.pcd",
     "sha256": "2a5f6f12890ba42cee606151d4358457f0d07b44af2611473d5cf7f1245b7597",
     "frame": 233,
     "retained_points": 4367
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/234.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/234.pcd",
     "sha256": "8ce3e32eede84c41fd2b625f885282a9701aef7e377244a855d17382db3733a7",
     "frame": 234,
     "retained_points": 5165
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/235.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/235.pcd",
     "sha256": "94b088966c46b1f2f9600dcfa1a60b5aadff037ba85ede5bb9525584b3e8dc9c",
     "frame": 235,
     "retained_points": 5563
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/236.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/236.pcd",
     "sha256": "90231d3701bad69fc65556c5d33915b870cdec865c2f37235660053fd3dc3e9b",
     "frame": 236,
     "retained_points": 5661
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/237.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/237.pcd",
     "sha256": "b2699e7468718799735eed45601fb788913e5fbfff85002420af8b951f1485f9",
     "frame": 237,
     "retained_points": 5771
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/238.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/238.pcd",
     "sha256": "a7232a46b8df8fa4d3631972b8c75800ee2240b4a6078a5002ed1ac1040b9238",
     "frame": 238,
     "retained_points": 5637
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/239.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/239.pcd",
     "sha256": "bf276cbbad05469473481f18bcfbc3117aedf8def2171463e2a9f6e58c18aa5b",
     "frame": 239,
     "retained_points": 5383
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/240.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/240.pcd",
     "sha256": "3775cda345a88d5ebf4c85464de3251a1ec024ed86588e40ec97e665ba7ec984",
     "frame": 240,
     "retained_points": 4659
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/241.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/241.pcd",
     "sha256": "314c63e808adacbf8cb675c2cbe6a76e2f18753f16e4c5437d5e3c1aa8c2622a",
     "frame": 241,
     "retained_points": 4177
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/242.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/242.pcd",
     "sha256": "78da7658e794a29e8274f6fa6169d7ec3afd0ad0f40081b92b5309edc05e227b",
     "frame": 242,
     "retained_points": 5359
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/243.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/243.pcd",
     "sha256": "8ceddd8e3b173c337496994ed45082b9d658a57869b4145f7ca0cda9e4b155d2",
     "frame": 243,
     "retained_points": 6819
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/244.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/244.pcd",
     "sha256": "6a90cb227ef4cff5f5847414dd23f8b291be546c6d85d233dc2f2f64a5f09d46",
     "frame": 244,
     "retained_points": 6204
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/245.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/245.pcd",
     "sha256": "5f1cd5a0312c4da572c4a35a0f8945c129b81a40546241c54d1bfbac47af6413",
     "frame": 245,
     "retained_points": 5094
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/246.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/246.pcd",
     "sha256": "71b2d9b548a38ff487d9349fe400ad14b70838c17547905ccdb718d4c268c8b0",
     "frame": 246,
     "retained_points": 5551
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/247.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/247.pcd",
     "sha256": "fa08686e2581e44177f6c285873d98d0ec9e410201ce09e1a20d787f72abc01e",
     "frame": 247,
     "retained_points": 5851
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/248.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/248.pcd",
     "sha256": "5f1fb743ccc6fd5297e5044916bf1cb76b8d585303061fad5e247027aaf3293f",
     "frame": 248,
     "retained_points": 6099
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/249.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/249.pcd",
     "sha256": "84ff68928d5a2a4efc827adb2dbe499d04fca39cf0fa00a923a3ee188c7406b2",
     "frame": 249,
     "retained_points": 5674
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/250.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/250.pcd",
     "sha256": "e7e050299e029fd5a5f930c81ca1bf436a18cbd7cd091fae77a5640921922025",
     "frame": 250,
     "retained_points": 5486
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/251.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/251.pcd",
     "sha256": "179ed1352a8e67585b78b5c52bf53e682f90290fb6d1e338e62485257710ef87",
     "frame": 251,
     "retained_points": 5042
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/252.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/252.pcd",
     "sha256": "02dd4e7b685ee79a86ab89920549a6f6d3da4f37e483a67224b688414ae0dac8",
     "frame": 252,
     "retained_points": 3970
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/253.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/253.pcd",
     "sha256": "820e0d997f5e302a4a97ffb498826173668b81adafb22782e5d4e0a603a79086",
     "frame": 253,
     "retained_points": 3649
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/254.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/254.pcd",
     "sha256": "9eb21e2a5f96d474e5b4ef07dfdde4d994e682ef07fe7030c4bfe10e0bd75829",
     "frame": 254,
     "retained_points": 3567
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/255.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/255.pcd",
     "sha256": "779a9593df9b95668eef18f1bca310313a57901b84dcd50975546cadf0c68a2e",
     "frame": 255,
     "retained_points": 2134
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/256.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/256.pcd",
     "sha256": "d8ba01d4d1732184306e8d906195e9f21e5e06333c8d8178e0e3eb8e288fd5c7",
     "frame": 256,
     "retained_points": 901
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/257.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/257.pcd",
     "sha256": "6887a897115868c16c5922c4f19879dbc1637f911959e03da877161dc912142e",
     "frame": 257,
     "retained_points": 254
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/258.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/258.pcd",
     "sha256": "f695e3bdf1567525d3a06d4798e4cff1534d4d4527124ee9fa5006036dd95efd",
     "frame": 258,
     "retained_points": 726
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/259.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/259.pcd",
     "sha256": "211374bf719e32e1d57d1474acbcaca26ed352ff798ff4b8d7f5f7920049847a",
     "frame": 259,
     "retained_points": 535
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/260.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/260.pcd",
     "sha256": "18727f2c50bc3b6694d3fdf9ad433354b0a82f72c9ca7235119e3ba071a60020",
     "frame": 260,
     "retained_points": 257
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1350.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1350.pcd",
     "sha256": "83810fdf98489011ec503d12319dd9eafb69586e87d921e9966d1aa5b88ee0f6",
     "frame": 1350,
     "retained_points": 367
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1351.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1351.pcd",
     "sha256": "169c037b1c7ea5296248236d7d24b00c9d87af06f5814427d32793cfe1c26a2d",
     "frame": 1351,
     "retained_points": 674
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1352.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1352.pcd",
     "sha256": "5a3986183b625bc027f48ce7094e639cccea5e58e9c7b44a9ec2b4ee6c5e425d",
     "frame": 1352,
     "retained_points": 690
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1353.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1353.pcd",
     "sha256": "f8f550d200d56c4f73229737603227ea91291b3ebc5c9b6c3f35ed482357e92b",
     "frame": 1353,
     "retained_points": 1055
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1354.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1354.pcd",
     "sha256": "40d23a5096a3407008ebcb799c6751764f3a13ac2f751188915d9aff4755a232",
     "frame": 1354,
     "retained_points": 907
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1355.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1355.pcd",
     "sha256": "84f99ae5b469f25d6265755d00b38510143ba902108184f562badb6b8c4336df",
     "frame": 1355,
     "retained_points": 1973
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1356.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1356.pcd",
     "sha256": "01d7025e834f2f02f30691872e253d4f2724f8c1da015adda643ab14a5e707cd",
     "frame": 1356,
     "retained_points": 2981
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1357.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1357.pcd",
     "sha256": "2928140181f9e27da99013c82600be2b1f494a8f77e992ffb4fd714410b530fe",
     "frame": 1357,
     "retained_points": 3898
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1358.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1358.pcd",
     "sha256": "64b110ddc9de757592e14dcf79c4cfaec4f2dfa57d79becd368292def5909b87",
     "frame": 1358,
     "retained_points": 3678
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1359.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1359.pcd",
     "sha256": "eba0db53942860a34175107885616feb35fd82cb2f4240c4fef45700e7063d36",
     "frame": 1359,
     "retained_points": 4757
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1360.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1360.pcd",
     "sha256": "5452027b4d6bb26e1b6120e786e535fa53f744330d4b39a2c70fc4a5d39b499e",
     "frame": 1360,
     "retained_points": 5365
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1361.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1361.pcd",
     "sha256": "f8478f98926d14dc5de93db3bbccb851c4fd831f3e8219af5dbabd33808f4f8a",
     "frame": 1361,
     "retained_points": 5732
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1362.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1362.pcd",
     "sha256": "ec93ee6b5e433f9e2e584965530a638f749b061c19df943a75a27465061a558b",
     "frame": 1362,
     "retained_points": 6020
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1363.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1363.pcd",
     "sha256": "f4e8b745372d5663602f2fbd29505367c19bd86343d1dd042df05daad146a6d7",
     "frame": 1363,
     "retained_points": 5909
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1364.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1364.pcd",
     "sha256": "edca8e8486726d1d39e58421f9ab6286df8bb5fc5a7bbee3a74d0a1be588c117",
     "frame": 1364,
     "retained_points": 6064
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1365.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1365.pcd",
     "sha256": "fee0e13efade8497bd43c638a12daa7abb0237a5a99757cdaa127ec74f138f68",
     "frame": 1365,
     "retained_points": 5871
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1366.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1366.pcd",
     "sha256": "1df8c3dccb3f7b1686e37c27c7b70e79696a87b732ccb9353d3840f4f7d67b34",
     "frame": 1366,
     "retained_points": 4389
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1367.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1367.pcd",
     "sha256": "867942db57a80294ef432b962d808b4e4a10508a8dea09be843ea4fefc737acc",
     "frame": 1367,
     "retained_points": 3580
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1368.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1368.pcd",
     "sha256": "7340fc2ecb4ad7189c7680fbd7bacf1d6ff5dc807177e431934e355084a03c19",
     "frame": 1368,
     "retained_points": 3523
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1369.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1369.pcd",
     "sha256": "45ebfbdb440b382914bc51c5dccc18b5d81ce40137fd6d71efda72b927835ee6",
     "frame": 1369,
     "retained_points": 1121
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1370.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1370.pcd",
     "sha256": "297e2ea3fd1720b567ea35be759b8c7585a7dea436778dbb8f984d29de1022fe",
     "frame": 1370,
     "retained_points": 314
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1371.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1371.pcd",
     "sha256": "8749ad45e713de3a86a3569fb96a8584453b54f06302168b278d50f1abcdad89",
     "frame": 1371,
     "retained_points": 163
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1372.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1372.pcd",
     "sha256": "caa801c6d32f557b15fa66a2afa37c9812f2fd62333d2e15a06a8af3a2933843",
     "frame": 1372,
     "retained_points": 95
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1373.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1373.pcd",
     "sha256": "dc03ea0c225b6acfe55daf971a5ea4d6095532a837d85726543531d5d9aba928",
     "frame": 1373,
     "retained_points": 68
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1374.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1374.pcd",
     "sha256": "00d92b30ebfcd38a0595fe31746e252d6875133a7118fd978cc57b49d3d4fe04",
     "frame": 1374,
     "retained_points": 43
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1375.pcd",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/0914_fr_v3-20260914-142008/.sessions/session_0/lidar_cloud/1375.pcd",
     "sha256": "c61e68d39eef73e9250cf7b5103813e38b07841bfee94d002068996c83224095",
     "frame": 1375,
     "retained_points": 43
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/geometry.npz",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/geometry.npz",
     "sha256": "6dd560b459622f779a6e4ace94681a263a583dae9b05090e2215835dc38577fe"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.ply",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.ply",
     "sha256": "9d7201c915c178cc57a9fa724b59161aadc79c0b394fcfadffe33746ed6335c5"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/geometry.npz",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/geometry.npz",
     "sha256": "095fffcc2bd1d48bdaba4db2c1986cc5261b5c701134738942e293e5bb60b7c7"
   },
   {
-    "path": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/B_structured_collision.xml",
+    "path": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/B_structured_repair_v1/candidate_05/B_structured_collision.xml",
     "sha256": "39c35e50332e396bdc122f5fa5a6a6cf7d97c21dcff37e7fa56b14da37db56bf"
   }
 ]

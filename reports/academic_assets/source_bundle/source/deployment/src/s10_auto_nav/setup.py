@@ -13,7 +13,7 @@ setup(
     install_requires=["setuptools"],
     zip_safe=True,
     maintainer="s10-perception-racing contributors",
-    maintainer_email="wang.bowen@icloud.com",
+    maintainer_email="89072276+bowenwan6@users.noreply.github.com",
     description="Pure-pursuit waypoint following for the S10 racing course.",
     license="BSD-3-Clause",
     entry_points={

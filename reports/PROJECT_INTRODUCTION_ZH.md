@@ -35,7 +35,7 @@
 
 仿真阶段在计算机里的机器人和赛道上测试。仿真器根据机器人模型计算重力、碰撞、轮子转动和关节运动，让我们反复检查控制方法。
 
-现场决赛则需要将软件接到真实机器人上，处理真实传感器、实际地面接触和设备运行中的误差。根据本地保存的参赛手册，现场巡逻任务包含多种地形和 30 个需要顺序经过的航点；本文所报告的初赛仿真版本则包含 33 个航点，两者属于不同阶段。[本地参赛手册](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/handbook_EN.md)
+现场决赛则需要将软件接到真实机器人上，处理真实传感器、实际地面接触和设备运行中的误差。根据本地保存的参赛手册，现场巡逻任务包含多种地形和 30 个需要顺序经过的航点；本文所报告的初赛仿真版本则包含 33 个航点，两者属于不同阶段。[本地参赛手册](<workspace-legacy>/resources/handbook_EN.md)
 
 同一份手册给出的决赛计分方式是“完成时间 ÷ 模式系数”：遥控为 1.0，自主跟随为 1.3，自主导航为 1.4，完成规定任务后数值越小越好。例如，若均用时 420 秒，自主导航的折算值为 300。这个机制体现了比赛对自主能力的鼓励；具体执行仍以现场最终规则为准。
 
@@ -131,7 +131,7 @@ flowchart TD
 
 机器人运动时会晃动，瞬间读数可能发生变化。因此，系统会参考连续观测，避免刚判断为台阶、下一瞬间又改成平地，造成控制指令反复切换。
 
-这里的“理解”主要指几何层面的通行判断。目前这套实现并不包含识别人、车辆、设备故障等完整视觉语义能力。仿真里的位置来自仿真器提供的准确状态，实机定位则需要后续接入真实的估计模块。[感知实现与边界](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md)
+这里的“理解”主要指几何层面的通行判断。目前这套实现并不包含识别人、车辆、设备故障等完整视觉语义能力。仿真里的位置来自仿真器提供的准确状态，实机定位则需要后续接入真实的估计模块。[感知实现与边界](<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md)
 
 ## 6. 细分 approach 二：既准确到点，也找到身体能通过的路线
 
@@ -183,7 +183,7 @@ flowchart TD
 
 可以想象人爬上一处较高的平台：双手搭上边缘只是第一步，接下来还需要移动重心、抬升身体，并把双脚带上来。机器人也需要处理类似的连续支撑变化。
 
-这个问题要求控制器同时考虑前后轮位置、腿部姿态、身体平衡和持续推进。[Gate 16 实验背景](/Users/xxxwbwxxx/Documents/Projects/goai26/goai-s10-gate16-policy/docs/STATUS.md)
+这个问题要求控制器同时考虑前后轮位置、腿部姿态、身体平衡和持续推进。[Gate 16 实验背景](<workspace-legacy>/goai-s10-gate16-policy/docs/STATUS.md)
 
 ### 7.3 将身体信息和地形信息一起交给越障模型
 
@@ -299,13 +299,13 @@ flowchart TD
 | 停滞记录 | 2 次 |
 | 漏点、跌倒、超时或协调器中止 | 均未发生 |
 
-原始日志逐项记录了航点通过事件，并在最后一个航点给出总用时；专用越障部分也保留了进入、四轮通过验证和返回普通控制器的记录。[完整运行记录](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/RUN_SUMMARY.md)
+原始日志逐项记录了航点通过事件，并在最后一个航点给出总用时；专用越障部分也保留了进入、四轮通过验证和返回普通控制器的记录。[完整运行记录](<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/RUN_SUMMARY.md)
 
 这里的 392.257 秒是**仿真世界中的时间**。电脑实际运行这次实验的墙钟时间约为 674 秒，因为仿真运行速度受计算负载影响。两者含义不同，项目成绩采用前者。
 
 这次结果支持一个具体结论：我们的感知、导航、专用越障和控制交接能够在同一次仿真中连续配合，完成完整路线。
 
-它也有清楚的适用范围：这是一次有日志支持的成功自测，不能单凭它推算所有条件下的成功率，更不能据此认定真实机器人的整场任务已经完成。项目保存的其他测试中仍有倾倒、感知更新中断和越障交接失败等记录，持续提高重复成功率仍是重要工作。[验证报告与结果边界](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md)
+它也有清楚的适用范围：这是一次有日志支持的成功自测，不能单凭它推算所有条件下的成功率，更不能据此认定真实机器人的整场任务已经完成。项目保存的其他测试中仍有倾倒、感知更新中断和越障交接失败等记录，持续提高重复成功率仍是重要工作。[验证报告与结果边界](<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md)
 
 ## 12. 工程实现：让方案能够运行、重现和检查
 
@@ -369,11 +369,11 @@ ROS 2 负责让感知、导航和控制模块交换信息；Docker 用来准备�
 ## 资料依据
 
 - [GOAI 官方“具身未来”赛道](https://www.goaihz.com/en/tracks?track=embodied)：比赛方向、任务定位与公开要求。
-- [本地参赛手册](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/handbook_EN.md)：保存的赛制、现场任务和计分信息。
-- [392 秒提交包技术设计](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md)：实际系统结构、控制条件和已知边界。
-- [392 秒完整运行摘要](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/RUN_SUMMARY.md)：用时、航点、轨迹与录像信息。
-- [392 秒自测原始日志](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/raw/00_32_seed8.log)：逐航点事件与最终计时。
-- [第三方依赖与模型来源](/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/THIRD_PARTY.md)：官方资源、团队模型和部署依赖的职责划分。
-- [Gate 16 策略说明](/Users/xxxwbwxxx/Documents/Projects/goai26/goai-s10-gate16-policy/docs/S10_POLICY.md)：训练与模型设计思路；其历史配置以完整运行所用提交包为准。
+- [本地参赛手册](<workspace-legacy>/resources/handbook_EN.md)：保存的赛制、现场任务和计分信息。
+- [392 秒提交包技术设计](<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/TECHNICAL_DESIGN.md)：实际系统结构、控制条件和已知边界。
+- [392 秒完整运行摘要](<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/RUN_SUMMARY.md)：用时、航点、轨迹与录像信息。
+- [392 秒自测原始日志](<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/04_evidence/raw/00_32_seed8.log)：逐航点事件与最终计时。
+- [第三方依赖与模型来源](<workspace-legacy>/resources/submission_update_20260820_392s/submission_20260820_392s_main3660b81/03_documents/THIRD_PARTY.md)：官方资源、团队模型和部署依赖的职责划分。
+- [Gate 16 策略说明](<workspace-legacy>/goai-s10-gate16-policy/docs/S10_POLICY.md)：训练与模型设计思路；其历史配置以完整运行所用提交包为准。
 
 团队成员背景与入围情况依据团队此前提供的信息；本文没有从自测成绩推导官方排名。

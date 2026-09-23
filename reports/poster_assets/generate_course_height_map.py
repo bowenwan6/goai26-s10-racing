@@ -5,9 +5,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-MJCF = Path('/Users/xxxwbwxxx/Documents/Projects/goai26/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/mjcf')
+MJCF = Path('<workspace-legacy>/resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing/upstream/goai_embodied_future_material/src/S10_sdk_deploy/S10_description/s10_mjcf/mjcf')
 SCENE = MJCF / 'scene.xml'
-COURSE = Path('/Users/xxxwbwxxx/Documents/Projects/goai26/goai26-s10-racing/src/s10_bringup/config/course.yaml')
+COURSE = Path('<workspace-legacy>/goai26-s10-racing/src/s10_bringup/config/course.yaml')
 OUT = ROOT / 'poster_assets/img/course_height_overview.png'
 
 W, H = 2100, 1450

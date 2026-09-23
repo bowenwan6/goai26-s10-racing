@@ -28,7 +28,7 @@ from scipy.spatial.transform import Rotation, Slerp
 HERE = Path(__file__).resolve().parent
 MAP_ID = "0914_fr_v3-20260914-142008"
 DEFAULT_RAW = Path(
-    "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/raw/"
+    "<workspace>/map-reviews/0914_fr_v3-20260914-142008/raw/"
     "0914_fr_v3-20260914-142008"
 )
 

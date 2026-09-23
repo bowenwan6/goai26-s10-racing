@@ -1,7 +1,8 @@
 """Check real ARM inference traces against the selected ONNX and its contract."""
+import argparse
 import json
 from pathlib import Path
-import argparse
+
 import numpy as np
 import onnxruntime as ort
 

@@ -2,12 +2,12 @@
 import json
 import math
 import os
-from pathlib import Path
 import signal
 import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 
 
 def validate_feedback(data, now):
@@ -45,8 +45,8 @@ def lateral_input(phase, now, deadline, direction, strength=.1):
 
 def main(root, dry, direction=0, strength=.1, seconds=2):
     import rclpy
+    from drdds.msg import BatteryData, ImuData, JointsData, StdMsgInt32, Steer
     from rclpy.qos import qos_profile_sensor_data
-    from drdds.msg import ImuData, JointsData, BatteryData, StdMsgInt32, Steer
     from std_msgs.msg import String
 
     output_dir = Path(os.environ.get('S10_TRIAL_OUTPUT_DIR', str(root)))
@@ -103,7 +103,7 @@ def main(root, dry, direction=0, strength=.1, seconds=2):
                 level=min(d.battery_level for d in msg.data),
                 protected=max(d.protected_state for d in msg.data))
 
-    subscriptions = [node.create_subscription(ImuData, '/IMU_DATA', imu, qos_profile_sensor_data),
+    _subscriptions = [node.create_subscription(ImuData, '/IMU_DATA', imu, qos_profile_sensor_data),
         node.create_subscription(JointsData, '/JOINTS_DATA', joints, qos_profile_sensor_data),
         node.create_subscription(BatteryData, '/BATTERY_DATA', battery, qos_profile_sensor_data),
         node.create_subscription(StdMsgInt32, '/HES_STATUS',

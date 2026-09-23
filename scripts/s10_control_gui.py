@@ -2,13 +2,12 @@
 import json
 import math
 import os
-from pathlib import Path
 import queue
 import shlex
 import sys
 import threading
 import time
-
+from pathlib import Path
 
 ACTIONS = {
     'forward': ('前进 ↑', 'x', 1), 'back': ('后退 ↓', 'x', -1),
@@ -48,9 +47,10 @@ def worker(action, strength, duration):
     """Bounded ROS operation. EOF, missing GUI heartbeat, and STOP all cancel it."""
     import fcntl
     import signal
+
     import rclpy
-    from rclpy.qos import qos_profile_sensor_data
     from drdds.msg import BatteryData, MotionInfo, MotionState, StdMsgInt32, Steer
+    from rclpy.qos import qos_profile_sensor_data
 
     validate(action, strength, duration)
     lock = open('/tmp/s10-gui-control.lock', 'a')

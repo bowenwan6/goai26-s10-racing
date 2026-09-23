@@ -2,7 +2,7 @@
   "schema_version": 1,
   "skill": "posterly",
   "timestamp": "2026-09-03T19:12:22Z",
-  "poster_html": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html",
+  "poster_html": "<workspace>/posterly_rebuild/poster_page2.html",
   "canvas": {
     "source": "page-rule",
     "width_cm": 29.7,
@@ -20,14 +20,14 @@
       "severity": "hard",
       "status": "PASS",
       "command": [
-        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
-        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/poster_check.py",
+        "<skills>/posterly/.venv/bin/python",
+        "<skills>/posterly/tools/poster_check.py",
         "preflight",
-        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html"
+        "<workspace>/posterly_rebuild/poster_page2.html"
       ],
       "summary": {
         "exit_code": 0,
-        "tail": "[preflight] /Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html\n  problems: 0   warnings: 0\n[preflight] PASS"
+        "tail": "[preflight] <workspace>/posterly_rebuild/poster_page2.html\n  problems: 0   warnings: 0\n[preflight] PASS"
       },
       "artifacts": []
     },
@@ -36,15 +36,15 @@
       "severity": "hard",
       "status": "PASS",
       "command": [
-        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
-        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/style_check.py",
-        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html",
+        "<skills>/posterly/.venv/bin/python",
+        "<skills>/posterly/tools/style_check.py",
+        "<workspace>/posterly_rebuild/poster_page2.html",
         "--tokens",
-        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/design_tokens.json",
+        "<workspace>/posterly_rebuild/design_tokens.json",
         "--disable",
         "4,5",
         "--json",
-        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/style_check.json"
+        "<workspace>/posterly_rebuild/style_check.json"
       ],
       "summary": {
         "gate": "style",
@@ -137,7 +137,7 @@
         ]
       },
       "artifacts": [
-        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/style_check.json"
+        "<workspace>/posterly_rebuild/style_check.json"
       ]
     },
     {
@@ -155,10 +155,10 @@
       "severity": "hard",
       "status": "PASS",
       "command": [
-        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
-        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/poster_check.py",
+        "<skills>/posterly/.venv/bin/python",
+        "<skills>/posterly/tools/poster_check.py",
         "measure",
-        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html"
+        "<workspace>/posterly_rebuild/poster_page2.html"
       ],
       "summary": {
         "exit_code": 0,
@@ -171,10 +171,10 @@
       "severity": "soft",
       "status": "PASS",
       "command": [
-        "/Users/xxxwbwxxx/.agents/skills/posterly/.venv/bin/python",
-        "/Users/xxxwbwxxx/.agents/skills/posterly/tools/poster_check.py",
+        "<skills>/posterly/.venv/bin/python",
+        "<skills>/posterly/tools/poster_check.py",
         "polish",
-        "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/posterly_rebuild/poster_page2.html"
+        "<workspace>/posterly_rebuild/poster_page2.html"
       ],
       "summary": {
         "exit_code": 0,

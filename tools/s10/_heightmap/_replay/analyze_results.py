@@ -3,9 +3,20 @@ import argparse
 import csv
 import json
 from pathlib import Path
+
 import numpy as np
+from replay import (
+    DEFAULT_REPO,
+    HERE,
+    NS,
+    REGIONS,
+    Kinematics,
+    dump,
+    metrics,
+    plotting,
+    stats,
+)
 from scipy.spatial.transform import Rotation
-from replay import HERE,DEFAULT_REPO,CFG,GRID,REGIONS,NS,Kinematics,dump,stats,plotting,metrics
 
 
 def runs(t,mask):

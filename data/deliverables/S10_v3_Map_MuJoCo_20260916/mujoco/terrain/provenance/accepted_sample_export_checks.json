@@ -2,7 +2,7 @@
   "status": "GEOMETRY_EXPORT_CHECKS_PASS_NOT_FIELD_ACCEPTANCE",
   "exports": [
     {
-      "file": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.obj",
+      "file": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.obj",
       "vertices": 1625,
       "triangles": 2669,
       "max_vertex_roundtrip_error_m": 2.6333776375827995e-07,
@@ -14,7 +14,7 @@
       "native_predicate_note": "OBJ float32 loader warning retained; all-pairs XY audit finds no area overlap. PLY preserves doubles."
     },
     {
-      "file": "/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.ply",
+      "file": "<workspace>/map-reviews/0914_fr_v3-20260914-142008/reconstruction/start_B_short_fine_v1/sample_05/assets/Start_sample.ply",
       "vertices": 1625,
       "triangles": 2669,
       "max_vertex_roundtrip_error_m": 0.0,

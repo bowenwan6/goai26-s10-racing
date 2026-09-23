@@ -6,7 +6,6 @@ import hmac
 import json
 import math
 import os
-from pathlib import Path
 import re
 import secrets
 import shutil
@@ -16,8 +15,9 @@ import threading
 import time
 import zipfile
 from collections import deque
+from pathlib import Path
 
-from flask import Flask, jsonify, request, session, send_file
+from flask import Flask, jsonify, request, send_file, session
 from werkzeug.security import check_password_hash
 
 TOPICS = {
@@ -149,11 +149,11 @@ class Recorder:
         try:
             import rclpy
             import rosbag2_py
+            from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
             from rclpy.serialization import serialize_message
             from rclpy.signals import SignalHandlerOptions
-            from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
-            from rosidl_runtime_py.utilities import get_message
             from rosidl_runtime_py.convert import message_to_ordereddict
+            from rosidl_runtime_py.utilities import get_message
             rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
             node = rclpy.create_node('s10_gait_readonly_capture')
             self.rosbag = rosbag2_py

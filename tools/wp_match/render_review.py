@@ -13,13 +13,12 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+import match_wps as m
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle
 from PIL import Image
 from scipy.spatial import cKDTree
-
-import match_wps as m
 
 HERE = Path(__file__).resolve().parent
 PHOTO_DIR = HERE.parents[1] / "waypoint-photos-20260914" / "preview-jpg"

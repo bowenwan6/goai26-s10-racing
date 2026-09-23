@@ -1,7 +1,7 @@
 // LOCAL ONLY. Real static pages/login, explicitly synthetic navigation responses.
 const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {spawn}=require('node:child_process');
-const {chromium}=require(process.env.S10_QA_PLAYWRIGHT||'/Users/xxxwbwxxx/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require(process.env.S10_QA_PLAYWRIGHT||'<cache>/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const here=path.resolve(__dirname,'..'),output=process.env.S10_QA_OUTPUT||path.join(__dirname,'native-nav-evidence');fs.mkdirSync(output,{recursive:true});
 const code=path.resolve(here,'../..');
 const py=spawn(process.env.S10_QA_PYTHON||'python3',['-u','-c',`import hashlib,server as w

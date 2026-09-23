@@ -2,11 +2,11 @@
 import argparse
 import hashlib
 import multiprocessing
-from pathlib import Path
 import secrets
 import tempfile
 import time
 from http.server import ThreadingHTTPServer
+from pathlib import Path
 
 
 def fake_worker(root, socket_path):

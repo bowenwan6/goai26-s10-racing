@@ -1,17 +1,18 @@
 """Loopback-only E2E fixture. No production config, robot adapter or SSH."""
-import hashlib
 import argparse
-from http.server import ThreadingHTTPServer
+import hashlib
 import json
 import multiprocessing
-from pathlib import Path
 import sys
 import tempfile
 import time
+from http.server import ThreadingHTTPServer
+from pathlib import Path
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from field_fake import FakeAdapter
-from field_worker import run, rpc_call
+from field_worker import rpc_call, run
+
 
 class LostAdapter(FakeAdapter):
     def snapshot(self):

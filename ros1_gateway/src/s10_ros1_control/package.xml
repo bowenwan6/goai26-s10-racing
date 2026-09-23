@@ -9,7 +9,7 @@
     robot's native ROS 2 /NAV_CMD, /MOTION_STATE and /GAIT with feedback from
     /MOTION_INFO. Dry run unless explicitly enabled.
   </description>
-  <maintainer email="s2434350@ed.ac.uk">GOAI S10 team</maintainer>
+  <maintainer email="89072276+bowenwan6@users.noreply.github.com">GOAI S10 team</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

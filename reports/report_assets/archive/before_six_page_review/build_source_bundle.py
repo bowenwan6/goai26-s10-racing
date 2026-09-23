@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
-BASE = Path('/Users/xxxwbwxxx/Documents/Projects/goai26')
+BASE = Path('<workspace-legacy>')
 DEPLOY = BASE / 'resources/submission_mac_retest_20260820/20260820_215224_main3660b81/source/goai26-s10-racing'
 DEPLOY_GIT = BASE / 'goai26-s10-racing'
 TRAIN = BASE / 'goai-s10-gate16-policy-v1-5'

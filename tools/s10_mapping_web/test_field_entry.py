@@ -1,9 +1,9 @@
 """Homepage entry/auth regression, local HTTP only; no robot/backend calls."""
 import hashlib
-from http.server import ThreadingHTTPServer
 import json
 import threading
 import unittest
+from http.server import ThreadingHTTPServer
 from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import HTTPCookieProcessor, ProxyHandler, Request, build_opener

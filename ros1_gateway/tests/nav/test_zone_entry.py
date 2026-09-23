@@ -2,9 +2,14 @@
 """The dog must ARRIVE slowly at every stairs / platform zone and stop for the gait switch BEFORE the recorded zone
 start, whatever the run speed (2026-09-21: at 1.67 m/s it ran 1.1 m past the start onto the steps and the robot never
 confirmed the stairs gait).  python3 tests/nav/test_zone_entry.py <route_dir> [speed]"""
-import json, math, os, sys
+import json
+import math
+import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "nav"))
 import nav_core as core
+
 route = sys.argv[1]; v = float(sys.argv[2]) if len(sys.argv) > 2 else 1.67
 cfg = core.load_yaml(os.environ.get("NAV_CONFIG") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "config", "nav.yaml"))
 cfg.update(flat_speed_override=v, stairs_speed_override=v); cfg["runner_params"]["walk_v"] = v; cfg["gains"]["max_forward"] = max(v, cfg["gains"]["max_forward"])

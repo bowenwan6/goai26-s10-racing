@@ -7,7 +7,7 @@
     Launch files and tuned configuration for a full S10 racing run: simulator with
     perception, locomotion policy, and autonomous waypoint following.
   </description>
-  <maintainer email="wang.bowen@icloud.com">s10-perception-racing contributors</maintainer>
+  <maintainer email="89072276+bowenwan6@users.noreply.github.com">s10-perception-racing contributors</maintainer>
   <license>BSD-3-Clause</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

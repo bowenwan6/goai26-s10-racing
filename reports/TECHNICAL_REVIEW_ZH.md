@@ -1,6 +1,6 @@
 # 专家版技术文档审阅记录
 
-**交付正文：** [PROJECT_TECHNICAL_ZH.md](/Users/xxxwbwxxx/Documents/ChatGPT/GOAI/PROJECT_TECHNICAL_ZH.md)
+**交付正文：** [PROJECT_TECHNICAL_ZH.md](<workspace>/PROJECT_TECHNICAL_ZH.md)
 
 审阅依据为部署源码、模型文件、训练代码、发布选择记录和原始运行日志。本轮没有重新训练模型、运行机器人仿真或重新执行历史测试。
 

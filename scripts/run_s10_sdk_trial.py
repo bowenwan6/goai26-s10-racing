@@ -2,12 +2,12 @@
 import argparse
 import getpass
 import json
-from pathlib import Path, PurePosixPath
 import re
 import shlex
 import sys
 import threading
 import time
+from pathlib import Path, PurePosixPath
 
 
 def paths(root, source_install):

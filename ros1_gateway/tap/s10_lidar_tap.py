@@ -51,7 +51,7 @@ def recv_exact(sock: socket.socket, n: int) -> bytes:
 class Tap:
     def __init__(self, args):
         import rclpy
-        from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+        from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 
         self.args = args
         self.rclpy = rclpy
