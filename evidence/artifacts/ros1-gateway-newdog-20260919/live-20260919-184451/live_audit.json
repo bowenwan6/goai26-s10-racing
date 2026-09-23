@@ -1,0 +1,113 @@
+{
+  "mode": "live",
+  "ros2": "<artifact-dir>/ros2_ref.jsonl",
+  "ros1": "<artifact-dir>/ros1.jsonl",
+  "topics": {
+    "/IMU": {
+      "ros2": {
+        "count": 15002,
+        "first_stamp_ns": 1789814728758000000,
+        "last_stamp_ns": 1789814803768000000,
+        "span_s": 75.01,
+        "rate_hz_from_stamps": 199.98666844420742,
+        "backwards": 0,
+        "duplicates": 0,
+        "max_gap_s": 0.01,
+        "median_gap_s": 0.005,
+        "frames": [
+          ""
+        ]
+      },
+      "ros1": {
+        "count": 11845,
+        "first_stamp_ns": 1789814732138000000,
+        "last_stamp_ns": 1789814791368000000,
+        "span_s": 59.23,
+        "rate_hz_from_stamps": 199.96623332770557,
+        "backwards": 0,
+        "duplicates": 0,
+        "max_gap_s": 0.01,
+        "median_gap_s": 0.005,
+        "frames": [
+          ""
+        ]
+      },
+      "matched": 11845,
+      "field_mismatches": 0,
+      "mismatch_examples": [],
+      "in_ros1_not_ros2": 0,
+      "shared_window_s": 59.23,
+      "ros2_in_window": 11847,
+      "coverage": 0.9998311808896767,
+      "ros1_arrival_minus_stamp_s": {
+        "min": -34.291732595,
+        "median": -34.290030514,
+        "p95": -34.287340007,
+        "max": -34.279634687
+      },
+      "ok": true
+    },
+    "/LIDAR/POINTS": {
+      "ros2": {
+        "count": 753,
+        "first_stamp_ns": 1789814728450006962,
+        "last_stamp_ns": 1789814803650005102,
+        "span_s": 75.19999814,
+        "rate_hz_from_stamps": 10.00000024734043,
+        "backwards": 0,
+        "duplicates": 0,
+        "max_gap_s": 0.100013017,
+        "median_gap_s": 0.100000143,
+        "frames": [
+          "lidar_link"
+        ]
+      },
+      "ros1": {
+        "count": 592,
+        "first_stamp_ns": 1789814732050008059,
+        "last_stamp_ns": 1789814791150009871,
+        "span_s": 59.100001812,
+        "rate_hz_from_stamps": 9.999999693401024,
+        "backwards": 0,
+        "duplicates": 0,
+        "max_gap_s": 0.100013017,
+        "median_gap_s": 0.100000143,
+        "frames": [
+          "lidar_link"
+        ]
+      },
+      "matched": 592,
+      "field_mismatches": 0,
+      "mismatch_examples": [],
+      "in_ros1_not_ros2": 0,
+      "shared_window_s": 59.100001812,
+      "ros2_in_window": 592,
+      "coverage": 1.0,
+      "ros1_arrival_minus_stamp_s": {
+        "min": -34.162515403,
+        "median": -34.152745447,
+        "p95": -34.147429761,
+        "max": -34.06370976
+      },
+      "ok": true
+    }
+  },
+  "connections": [
+    {
+      "topic": "/IMU",
+      "datatype": "sensor_msgs/Imu",
+      "md5sum": "6a62c6daae103f4ff57a132d6f95cec2",
+      "callerid": "/s10_ros1_gateway",
+      "md5_matches_noetic": true
+    },
+    {
+      "topic": "/LIDAR/POINTS",
+      "datatype": "sensor_msgs/PointCloud2",
+      "md5sum": "1158d486dd51d683ce2f1be655c3c181",
+      "callerid": "/s10_ros1_gateway",
+      "md5_matches_noetic": true
+    }
+  ],
+  "problems": [],
+  "ok": true
+}

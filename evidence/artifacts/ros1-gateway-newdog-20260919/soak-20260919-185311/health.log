@@ -1,0 +1,55 @@
+2026-09-19T18:53:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published     7615  errors 0  backwards 0  stamp-localclock +34.160s  subs 0  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.62 Hz  published   272579  errors 0  backwards 0  stamp-localclock +34.285s  subs 0  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 8337 errors 0 rejected 0 reported {'received': 7605, 'sent': 7605, 'dropped': 0, 'bytes_sent': 10808470855, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815224581859464}
+2026-09-19T18:54:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published     8217  errors 0  backwards 0  stamp-localclock +34.162s  subs 0  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.60 Hz  published   284617  errors 0  backwards 0  stamp-localclock +34.283s  subs 0  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 8996 errors 0 rejected 0 reported {'received': 8214, 'sent': 8214, 'dropped': 0, 'bytes_sent': 11670671008, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815285479382942}
+2026-09-19T18:55:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published     8820  errors 0  backwards 0  stamp-localclock +34.160s  subs 0  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.76 Hz  published   296661  errors 0  backwards 0  stamp-localclock +34.282s  subs 0  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 9656 errors 0 rejected 0 reported {'received': 8817, 'sent': 8817, 'dropped': 0, 'bytes_sent': 12522405005, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815345777324939}
+2026-09-19T18:56:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published     9422  errors 0  backwards 0  stamp-localclock +34.158s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.60 Hz  published   308693  errors 0  backwards 0  stamp-localclock +34.282s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 10314 errors 0 rejected 0 reported {'received': 9414, 'sent': 9414, 'dropped': 0, 'bytes_sent': 13362707908, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815405480296328}
+2026-09-19T18:57:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published    10024  errors 0  backwards 0  stamp-localclock +34.159s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.78 Hz  published   320728  errors 0  backwards 0  stamp-localclock +34.281s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 10973 errors 0 rejected 0 reported {'received': 10023, 'sent': 10023, 'dropped': 0, 'bytes_sent': 14219661885, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815466381143962}
+2026-09-19T18:58:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS      9.99 Hz  published    10626  errors 0  backwards 0  stamp-localclock +34.156s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             200.09 Hz  published   332761  errors 0  backwards 0  stamp-localclock +34.281s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 11632 errors 0 rejected 0 reported {'received': 10625, 'sent': 10625, 'dropped': 0, 'bytes_sent': 15066136899, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815526579993201}
+2026-09-19T18:59:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published    11229  errors 0  backwards 0  stamp-localclock +34.157s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.80 Hz  published   344805  errors 0  backwards 0  stamp-localclock +34.280s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 12291 errors 0 rejected 0 reported {'received': 11224, 'sent': 11224, 'dropped': 0, 'bytes_sent': 15909869596, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815586477513152}
+2026-09-19T19:00:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published    11821  errors 0  backwards 0  stamp-localclock +34.157s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.99 Hz  published   356644  errors 0  backwards 0  stamp-localclock +34.279s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 12939 errors 0 rejected 0 reported {'received': 11819, 'sent': 11819, 'dropped': 0, 'bytes_sent': 16751243565, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815645979357860}
+2026-09-19T19:01:12+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS      9.99 Hz  published    12423  errors 0  backwards 0  stamp-localclock +34.153s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.99 Hz  published   368687  errors 0  backwards 0  stamp-localclock +34.278s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 13597 errors 0 rejected 0 reported {'received': 12415, 'sent': 12415, 'dropped': 0, 'bytes_sent': 17594151107, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815705580296360}
+2026-09-19T19:02:13+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS      9.96 Hz  published    13026  errors 0  backwards 0  stamp-localclock +34.136s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.99 Hz  published   380729  errors 0  backwards 0  stamp-localclock +34.277s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 14258 errors 0 rejected 0 reported {'received': 13026, 'sent': 13026, 'dropped': 0, 'bytes_sent': 18457766418, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815766680538636}
+2026-09-19T19:03:13+08:00
+  tap /LIDAR/POINTS   -> /LIDAR/POINTS     10.00 Hz  published    13628  errors 0  backwards 0  stamp-localclock +34.154s  subs 1  frame 'lidar_link'
+  dds /IMU            -> /IMU             199.79 Hz  published   392770  errors 0  backwards 0  stamp-localclock +34.276s  subs 1  frame ''
+  dds /ODOM           -> /ODOM              0.00 Hz  published        0  errors 0  backwards 0  stamp-localclock +nans  subs 0  frame ''
+  tap: connected peer <PERCEPTION_BOARD> frames 14916 errors 0 rejected 0 reported {'received': 13621, 'sent': 13621, 'dropped': 0, 'bytes_sent': 19298176151, 'connections': 1, 'last_error': '', 'subscribed': True, 'queue': 0, 'wall_ns': 1789815826179653189}
