@@ -35,7 +35,7 @@
 
 | 名称 | 维度 | 用途 | 状态 | 文件 |
 |---|---|---|---|---|
-| 官方 57D（AGX SDK 版） | 57→16 | 通用行走 | ✅ 机上默认 | `vendor/contest_material/…/S10_sdk_deploy/policy/policy.onnx` |
+| 官方 57D（AGX SDK 版） | 57→16 | 通用行走 | ✅ 机上默认 | `upstream/goai_embodied_future_material/src/S10_sdk_deploy/policy/policy.onnx`（运行 `scripts/setup_upstream.sh` 后可见） |
 | 官方 57D（本地 SDK 版 model0） | 57→16 | 通用行走；训练热启动起点 | 🧪 基线 | s10-rl-sprint `pretrained/s10/policy.onnx` |
 | speedturn2000 | 57→16 | 高速 + 转向 | ✅ 48 号实机试过 | `policies/s10_general_speedturn_57d_model2000.onnx` |
 | HIM 1500 | 342→16（57 维 × 6 帧） | 通用 | ✅ 实机试过，上台阶失败 | 不在仓库，在 AGX 的独立 SDK 副本里 |
@@ -206,7 +206,6 @@
 
 | 名称 | 用途 | 状态 |
 |---|---|---|
-| [`tools/s10_remote_access`](../tools/s10_remote_access/) | Tailscale 用户态 + OpenSSH，`ssh s10-48-remote` | ✅ |
 | systemd 单元 | 102 网页；103 热点转发；106 field worker、native-nav | ✅（48 号） |
 | 106 PTP 时间门禁 | 给 5 个原厂服务加 drop-in | ✅（改动了厂商板） |
 | SDK 副本和台架 GUI | `prepare_s10_sdk_copy.py`、`start_s10_gui.cmd` | ✅ |
@@ -243,5 +242,5 @@
    - “stairs_stable”一名多用：Ver1.0 的 model_599、另一个模型 stable499、9 月 `rl_nav` 里装 1150 的槽名。
    - 两个“官方 57D”是不同文件。
    - 手工修过的路线段数有 8 段、9 段两种说法。
-6. **s10-rl-sprint 的工具写死了本机路径**（`/Users/…/GOAI/wt-*`），换机器要改。
+6. **s10-rl-sprint 的工具写死了本机路径**（`<workspace>/wt-*`），换机器要改。
 7. **J3100 缺训练记录**；横坡数字只写在 README 里，没有原始 JSON。

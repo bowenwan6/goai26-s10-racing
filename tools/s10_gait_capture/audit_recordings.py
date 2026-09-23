@@ -1,11 +1,12 @@
 """Read closed rosbag SQLite files without publishing or modifying recordings."""
 import json
-from pathlib import Path
 import sqlite3
+from pathlib import Path
+
 import numpy as np
 from rclpy.serialization import deserialize_message
-from rosidl_runtime_py.utilities import get_message
 from rosidl_runtime_py.convert import message_to_ordereddict
+from rosidl_runtime_py.utilities import get_message
 
 
 def distribution(values):

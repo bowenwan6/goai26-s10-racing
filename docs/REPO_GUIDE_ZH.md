@@ -4,7 +4,7 @@
 
 ## 1. 目录
 
-2026-09-20 整理过一次：文档收敛成 3 份，资料按用途归到 `data/`、`evidence/`、`reports/`、`vendor/`。代码目录没有动，避免破坏脚本、测试和其他会话的同步。
+2026-09-20 整理过一次：文档收敛成 3 份，资料按用途归到 `data/`、`evidence/`、`reports/`；主办方 SDK 不入库，由脚本按锁定版本拉取到 `upstream/`。代码目录没有动，避免破坏脚本、测试和其他会话的同步。
 
 **代码**
 
@@ -15,7 +15,7 @@
 | `integration/` | C++ SDK 接入：joint owner、Gate16 / HIM policy runner、起身状态机 |
 | `sim_full_course/` | 运动学全程仿真 |
 | `native_transfer/`、`real_transfer/`、`tests_real/` | 原生步态导航、真机适配（只读采集、影子计算、回放）及测试 |
-| `tools/` | `s10_mapping_web`（手机页面）、`wp_match`、`s10_remote_access`、`s10_gait_capture`、`s10/` |
+| `tools/` | `s10_mapping_web`（手机页面）、`wp_match`、`s10_gait_capture`、`s10/` |
 | `scripts/`、`docker/`、`compose.yaml`、`.github/` | 构建 / 运行 / SDK 脚本、开发容器、CI |
 | `policy/`、`policies/`、`training/` | Ver1.0 部署用的 policy 包、8 月的 ONNX 模型集合、8 月训练代码。两个目录名字相近：`policy/` 是**部署包**（含 manifest 和校验），`policies/` 是**模型文件集合**；比赛配置和测试按这两个路径写死，暂不重命名 |
 
@@ -27,7 +27,7 @@
 | `data/` | `deliverables/`（v3 地图与 MuJoCo 包）、`map-reviews/`、`waypoint-photos-20260914/`、`recordings/`（说明，原始数据不入库） |
 | `evidence/` | `artifacts/`（现场证据）、`backups/`（已部署程序快照）、`output/`（页面截图）、`github-sync-20260918/`（推送核验） |
 | `reports/` | 报告与海报：`academic_assets/`、`report_assets/`、`poster_assets/`、`posterly_rebuild/`、`submission/`，以及根目录搬来的报告 MD / PDF / ZIP。里面的构建脚本按 2026-09-20 之前的根目录路径写的，作为记录保留，不保证可直接重跑 |
-| `vendor/contest_material/` | 主办方资料，原样不改 |
+| `upstream/`（不入库） | 主办方资料：由 [`scripts/setup_upstream.sh`](../scripts/setup_upstream.sh) 按锁定版本 `13dd084b` 拉取，仓库不保存副本 |
 
 **文档只留 3 份**（2026-09-20 决定）：
 
@@ -111,7 +111,7 @@ git show docs-archive-20260920:docs/S10_REAL_ROBOT_QUICKSTART_ZH.md
 
 | 来源 | 内容 | 边界 |
 |---|---|---|
-| 主办方 | `DeepRoboticsLab/goai_embodied_future_material`（锁定 `13dd084b`）：S10 SDK、机器人模型、MuJoCo 赛道与航点 | BSD-3-Clause，访问权由主办方授予；副本在 `vendor/contest_material/`，不随提交包分发 |
+| 主办方 | `DeepRoboticsLab/goai_embodied_future_material`（锁定 `13dd084b`）：S10 SDK、机器人模型、MuJoCo 赛道与航点 | BSD-3-Clause，访问权由主办方授予；不入库：由 `scripts/setup_upstream.sh` 拉取到 `upstream/`（已 gitignore），也不随提交包分发 |
 | 队友资产 | `policy/gate16/`（来自 `belsun/goai-s10-gate16-policy`）、`policy/stairs_stable/`（队友的 collision-ablation model599） | **集成时没有独立许可文件**，记为队内竞赛资产。对注册队伍和评委之外分发前，必须先拿到书面授权或补上许可与署名——这是目前唯一未解决的模型许可项 |
 | 厂商 | S10 本体、SDK、原生步态、官方 SLAM、x_nav 容器 | Deep Robotics 所有；授权文件不入库 |
 | 运行依赖 | Ubuntu 24.04、ROS 2 Jazzy、ROS-O（Noetic 系）、Python 3.12、NumPy、SciPy、MuJoCo、ONNX Runtime、rosbags | 各自上游许可；运行时不调用任何商业 API 或在线推理服务 |

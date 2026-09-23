@@ -1,16 +1,16 @@
 """HTTP auth/CSRF/download tests with local fake Engine; production SSH forbidden."""
 import hashlib
-from http.server import ThreadingHTTPServer
 import json
-from pathlib import Path
 import sys
 import tempfile
 import threading
 import unittest
+import uuid
+from http.server import ThreadingHTTPServer
+from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
-from urllib.request import Request, build_opener, HTTPCookieProcessor, ProxyHandler
-import uuid
+from urllib.request import HTTPCookieProcessor, ProxyHandler, Request, build_opener
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import server as web

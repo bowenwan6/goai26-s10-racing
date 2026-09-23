@@ -14,7 +14,7 @@
   "rear_push_action_delta_json": null,
   "rear_push_action_delta_scale": 0.0,
   "rear_push_action_delta_statistic": "median",
-  "entry_cases_csv": "/mnt/c/Users/brainco/Documents/Codex/2026-08-17/files-mentioned-by-the-user-goai/work/goai-s10-gate16-policy-git/training/config/gate16_retention_generalization_v2.csv",
+  "entry_cases_csv": "<workspace-legacy>/goai-s10-gate16-policy-git/training/config/gate16_retention_generalization_v2.csv",
   "trajectories": [
     "/home/bella/goai/goai26-s10-racing/training/runs/gate16_rear_push_final_20260817/evaluation/front_tuck_formal/demo_0002.npz",
     "/home/bella/goai/goai26-s10-racing/training/runs/gate16_rear_push_final_20260817/evaluation/front_tuck_formal/demo_0003.npz",

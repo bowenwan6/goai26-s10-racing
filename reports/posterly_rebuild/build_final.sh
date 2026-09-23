@@ -2,7 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
-POSTERLY_SKILL="${POSTERLY_SKILL:-<home>/.agents/skills/posterly}"
+POSTERLY_SKILL="${POSTERLY_SKILL:-<skills>/posterly}"
 PYTHON="$POSTERLY_SKILL/.venv/bin/python"
 
 python3 build_posterly_pages.py

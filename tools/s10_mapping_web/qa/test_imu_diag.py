@@ -1,25 +1,27 @@
 """Offline IMU integration checks; no network to a robot is permitted."""
 import base64
 import hashlib
-from http.server import ThreadingHTTPServer
 import json
-from pathlib import Path
 import sys
 import tempfile
 import threading
 import time
 import unittest
-from unittest.mock import patch
-from urllib.request import Request,build_opener,ProxyHandler,HTTPCookieProcessor
-from urllib.error import HTTPError
 import uuid
 import zipfile
+from http.server import ThreadingHTTPServer
+from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
+from urllib.error import HTTPError
+from urllib.request import HTTPCookieProcessor, ProxyHandler, Request, build_opener
+
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from imu_diag import Diagnostic
-from field_core import FieldError
 import server as web
+from field_core import FieldError
 from field_robot import RobotAdapter
+from imu_diag import Diagnostic
+
 
 class Isolation(unittest.TestCase):
     def test_diagnostic_constructor_failure_keeps_original_adapter(self):

@@ -6,7 +6,7 @@ import mujoco
 import match as m
 
 OUT=m.OUT/'distance_search'
-VIS=m.Path('C:/Users/Lenovo/.codex/visualizations/2026/09/09/01a0866b-8e1f-7b92-a609-67ff3511337f/ledge-motion.html')
+VIS=m.Path('<workstation>/visualizations/2026-09-09/ledge-motion.html')
 ref=dict(np.load(m.OUT/'expert_reference.npz'));fk=dict(np.load(OUT/'recorded_kinematics.npz'))
 cloud=dict(np.load(m.OUT/'full_clouds.npz'));a=json.loads((m.OUT/'alignment.json').read_text())
 r=[x for x in json.loads((m.OUT/'fits.json').read_text()) if x['accepted_track']]

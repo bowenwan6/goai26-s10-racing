@@ -27,8 +27,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
-
 from geometry import height_grid, points_in_yaw_frame
+
 from s10_auto_nav.pure_pursuit import PurePursuitController, PursuitGains
 from s10_auto_nav.rl_nav import maneuvers as maneuver_io
 from s10_auto_nav.rl_nav.capability import PolicyProfile
@@ -390,7 +390,7 @@ class NavCore:
                 try:
                     pr_ = self.follower.path.project(np.array([float(q["xy"][0]), float(q["xy"][1])]), None)
                     s_j, d_j = float(pr_.s), abs(float(getattr(pr_, "d", 0.0)))
-                except Exception:                                  # noqa: BLE001  (a jump is an extra: never stop the start)
+                except Exception:
                     continue
                 if d_j < 0.5 and 0.5 < s_j < self.follower.path.length - 0.5:     # not on this (shortened) route otherwise
                     self.jumps.append(dict(s=s_j, xy=(float(q["xy"][0]), float(q["xy"][1])), yaw=float(q["yaw"]), before=float(q.get("before", 1.5)),

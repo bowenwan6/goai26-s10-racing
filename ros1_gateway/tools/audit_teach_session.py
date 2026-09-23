@@ -8,7 +8,13 @@ Prints one block per WP/switch mark and per path recording, writes audit.json an
 audit.png: the map from above, WPs, switch marks, every taught path coloured by gait.
 The gait comes from s10_ros1_control's event log (gait_change from /MOTION_INFO), matched by wall time.
 """
-import argparse, csv, glob, json, math, os, sys
+import argparse
+import csv
+import glob
+import json
+import math
+import os
+
 import numpy as np
 
 GAIT = {0x1001: "basic", 0x1003: "stairs", 0x3002: "nav_flat", 0x3003: "nav_stairs", 0: "none"}
@@ -115,7 +121,7 @@ def main():
         print(f"-- {n}: {p['duration_s']} s, {p['length']} m, WPs {p['wps_passed'][0] if p['wps_passed'] else '-'}..{p['wps_passed'][-1] if p['wps_passed'] else '-'} ({len(p['wps_passed'])}), in order {p['wps_in_order']}, "
               f"kinks>15deg {p['kinks_over_15deg']}, >30deg {p['kinks_over_30deg']}, straight {p['straight_fraction']}, jumps {p['pose_jumps_over_0p5m']}, fell/damped {p['robot_fell_or_damped']}, gait changes {max(0, len(p['gait_segments']) - 1)}")
     try:
-        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt  # noqa: I001  (Agg must be selected before pyplot imports)
     except ImportError:
         return
     fig, ax = plt.subplots(figsize=(16, 11))

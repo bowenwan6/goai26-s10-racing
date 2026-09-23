@@ -83,3 +83,7 @@ MUJOCO_LOG.TXT
 # The repo keeps web_entry/README.md and our patch (navteam_*.patch) against it.
 /ros1_gateway/web_entry/s10_web_navigation.py*
 /ros1_gateway/web_entry/page_103/*.navteam
+
+# The organiser SDK is fetched by scripts/setup_upstream.sh into upstream/ at a pinned
+# revision; it is never vendored into this repository.
+/vendor/

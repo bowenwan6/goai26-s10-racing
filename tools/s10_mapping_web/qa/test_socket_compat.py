@@ -4,20 +4,20 @@ import inspect
 import io
 import json
 import os
-from pathlib import Path
 import socket
 import subprocess
 import sys
 import tempfile
 import time
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import field_worker
-from field_core import DEFAULT_ROOT
 import robot_backend
 import server as web
+from field_core import DEFAULT_ROOT
 
 
 class SocketDefaultTests(unittest.TestCase):

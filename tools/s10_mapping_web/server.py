@@ -1,19 +1,20 @@
 """48 phone mapping server on AGX; 103 relays HTTP, 106 runs vendor SLAM."""
 import argparse
 import base64
-from collections import deque, OrderedDict
 import hashlib
 import hmac
-from http import cookies
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
-from pathlib import Path
 import secrets
 import threading
 import time
-from urllib.parse import urlsplit, parse_qs, quote
-from field_core import FieldError, ident
+from collections import OrderedDict, deque
+from http import cookies
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import parse_qs, quote, urlsplit
+
 import teach_core
+from field_core import FieldError, ident
 
 HERE = Path(__file__).resolve().parent
 CONFIG = Path.home()/'.config/s10-mapping-web/config.json'

@@ -34,15 +34,12 @@ import sys
 import threading
 import time
 
-import numpy as np
-
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import nav_core as core  # noqa: E402
-
-import rospy  # noqa: E402
-from geometry_msgs.msg import Twist  # noqa: E402
-from sensor_msgs.msg import Imu, PointCloud2  # noqa: E402
-from std_msgs.msg import Bool, Float32, String  # noqa: E402
+import nav_core as core
+import rospy
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import Imu, PointCloud2
+from std_msgs.msg import Bool, Float32, String
 
 POSE_TYPES = {
     "nav_msgs/Odometry": ("nav_msgs.msg", "Odometry"),

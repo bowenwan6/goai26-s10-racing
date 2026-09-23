@@ -5,16 +5,33 @@ import hashlib
 import json
 import math
 import os
-from pathlib import Path
 import socket
 import socketserver
 import stat
 import threading
 import time
+from pathlib import Path
 
-from field_core import (DEFAULT_ROOT, FieldError, Store, binding, canonical, exclusive,
-                        finite_list, ident, localization_reasons, localization_start_reasons, pose_summary)
-from waypoint_review import REVISIT_SECONDS, REFERENCE_LIMITS, source_compatible, strict_stationary, compare, comparison_svg
+from field_core import (
+    DEFAULT_ROOT,
+    FieldError,
+    Store,
+    binding,
+    canonical,
+    exclusive,
+    finite_list,
+    localization_reasons,
+    localization_start_reasons,
+    pose_summary,
+)
+from waypoint_review import (
+    REFERENCE_LIMITS,
+    REVISIT_SECONDS,
+    compare,
+    comparison_svg,
+    source_compatible,
+    strict_stationary,
+)
 
 # The robot's overlay environment cannot reliably create systemd RuntimeDirectory.
 # Use the existing private data root, with the same default for server and RPC.

@@ -4,14 +4,12 @@ Owned by the durable field worker, NOT an HTTP request/SSH connection. Only
 already-published messages are accepted; source CDR is retained during captures.
 """
 import base64
-from collections import deque
 import csv
 import hashlib
 import html
 import json
 import math
 import os
-from pathlib import Path
 import queue
 import re
 import shutil
@@ -19,7 +17,11 @@ import threading
 import time
 import uuid
 import zipfile
+from collections import deque
+from pathlib import Path
+
 from field_core import FieldError
+
 
 def finite(v):
     if isinstance(v, float): return v if math.isfinite(v) else None

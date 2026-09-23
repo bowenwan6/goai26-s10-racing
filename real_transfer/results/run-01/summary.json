@@ -25,7 +25,7 @@
       "exit_code": 1,
       "elapsed_s": 4.364,
       "command": [
-        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "<workspace>/s10-real-readiness/.venv/bin/python",
         "-m",
         "pytest",
         "-q",
@@ -34,7 +34,7 @@
         "--ignore=src/s10_auto_nav/test/test_stairs_stable_policy.py",
         "--ignore=src/s10_auto_nav/test/test_runtime_contract.py",
         "--ignore=src/s10_perception/test/test_viewer_node.py",
-        "--junitxml=<home>/Documents/ChatGPT/GOAI/s10-real-readiness/real_transfer/results/run-01/baseline.xml"
+        "--junitxml=<workspace>/s10-real-readiness/real_transfer/results/run-01/baseline.xml"
       ],
       "tests": 360,
       "failures": 1,
@@ -45,12 +45,12 @@
       "exit_code": 0,
       "elapsed_s": 2.588,
       "command": [
-        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "<workspace>/s10-real-readiness/.venv/bin/python",
         "-m",
         "pytest",
         "-q",
         "tests_real",
-        "--junitxml=<home>/Documents/ChatGPT/GOAI/s10-real-readiness/real_transfer/results/run-01/transfer.xml"
+        "--junitxml=<workspace>/s10-real-readiness/real_transfer/results/run-01/transfer.xml"
       ],
       "tests": 123,
       "failures": 0,
@@ -61,7 +61,7 @@
       "exit_code": 0,
       "elapsed_s": 0.041,
       "command": [
-        "<home>/Documents/ChatGPT/GOAI/s10-real-readiness/.venv/bin/python",
+        "<workspace>/s10-real-readiness/.venv/bin/python",
         "-m",
         "ruff",
         "check",

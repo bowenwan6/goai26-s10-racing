@@ -5,8 +5,9 @@ Only the dependency closure needed by capture is copied, never firmware binaries
 """
 import hashlib
 import json
-from pathlib import Path
 import re
+from pathlib import Path
+
 import paramiko
 
 
