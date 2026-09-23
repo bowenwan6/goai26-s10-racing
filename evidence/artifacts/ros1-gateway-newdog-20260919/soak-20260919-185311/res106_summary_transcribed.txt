@@ -1,0 +1,8 @@
+106 soak summary (10 min, 600 samples, 2026-09-19 18:53-19:03), transcribed from the
+sampler output read at 19:09. The raw res106.csv lived in /home/user/ros1_gateway_tap
+and was deleted by the robot_session.sh down/up test at 19:35 before it was copied.
+pid 91466 (s10_lidar_tap): cpu mean 8.4% p95 9.0% max 10.0% (100% = one core), rss max 185 MiB
+pid 3232 (vendor rslidar):  cpu mean 13.4% p95 14.0% max 16.0%, rss max 175 MiB   (before tap: 14.1-14.6%)
+pid 3103 (vendor yesense):  cpu mean 4.0% p95 5.0% max 6.0%, rss max 151 MiB     (before tap: 3.7%)
+eth0: rx mean 48.9 Mbit/s, tx mean 117.1 Mbit/s
+loadavg at end: 1.14 1.05 0.96; rsdriver/hsLidar/yesense active

@@ -1,0 +1,13 @@
+path:        logs/live-20260919-184451/live_ros1.bag
+version:     2.0
+duration:    59.2s
+start:       Sep 19 2026 18:44:57.85 (1789814697.85)
+end:         Sep 19 2026 18:45:57.08 (1789814757.08)
+size:        809.2 MB
+messages:    12437
+compression: none [593/593 chunks]
+types:       sensor_msgs/Imu         [6a62c6daae103f4ff57a132d6f95cec2]
+             sensor_msgs/PointCloud2 [1158d486dd51d683ce2f1be655c3c181]
+topics:      /IMU            11845 msgs    : sensor_msgs/Imu        
+             /LIDAR/POINTS     592 msgs    : sensor_msgs/PointCloud2
+DIGEST_DONE 12437 messages -> logs/live-20260919-184451/ros1.jsonl
