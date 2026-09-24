@@ -6,7 +6,7 @@
 2. [rl_nav 路线跟随器与鲁棒性方案（v3）](#2-rl_nav-路线跟随器与鲁棒性方案v3)：第一版为名义行为，恢复只在测到偏离时触发；含 GPU 服务器多种子评估。
 3. [新 SLAM（x_nav）接入与现场采集计划](#3-新-slamx_nav接入与现场采集计划)：WP 重测、切换点、示教路径、地图配准。
 
-现状与每个部件的状态见 [POLICIES_AND_APPS_ZH.md](POLICIES_AND_APPS_ZH.md)；真机运行手册在 [`ros1_gateway/docs/`](../ros1_gateway/docs/)。
+现状与每个部件的状态见 [POLICIES_AND_APPS_ZH.md](POLICIES_AND_APPS_ZH.md)；真机运行手册在 [`ros1_gateway/docs/`](../robot/ros1_gateway/docs/)。
 2026-09-20 之前被合并 / 删除的单独文档，可以从标签取回，例如：
 
 ```bash

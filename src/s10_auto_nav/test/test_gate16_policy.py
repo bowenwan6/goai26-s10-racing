@@ -25,7 +25,7 @@ from s10_auto_nav.strategy.router import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-BUNDLE = ROOT / "policy/gate16"
+BUNDLE = ROOT / "models/deployed/gate16"
 
 
 def test_frozen_gate16_assets_match_manifest_and_graph_contract():
@@ -471,7 +471,7 @@ def test_v15_competition_default_does_not_admit_fast_adapter():
 
 
 def test_v15_runner_preserves_owner_safety_and_confidence_fallback():
-    source = (ROOT / "integration/gate16_policy_runner.hpp").read_text()
+    source = (ROOT / "robot/integration/gate16_policy_runner.hpp").read_text()
     assert "BeginClimb(gate, uc, ro.base_rpy(2))" in source
     assert "heightmap_yaw=" in source
     assert "const float base_heading_deg = base_yaw_rad" in source

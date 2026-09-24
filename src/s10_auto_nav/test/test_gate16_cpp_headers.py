@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
-INTEGRATION = ROOT / "integration"
+INTEGRATION = ROOT / "robot" / "integration"
 
 
 def _compile_and_run(source: str) -> None:
