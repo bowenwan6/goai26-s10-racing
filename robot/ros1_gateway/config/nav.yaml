@@ -160,11 +160,12 @@ readjust:
 # back up and come again, HOLD only if still off (see nav_core._jump_step).
 jump:
   enabled: true
-  approach_speed: 0.35             # m/s over the straight before the ledge (operator: 0.33-0.37 there)
+  approach_speed: 0.40             # m/s on the approach to a ledge; NOT tied to --platform-speed any more (at 0.63 the yaw limit saturated in the S-bend)
+  blind_after_m: 1.5               # m after the platform zone without live obstacles (the ledge / stools behind blocked the dog 3 s at WP17)
   check_at_m: 0.7                  # body centre this far before the ledge when it is checked (nose 0.25 m before it)
   tol_lateral: 0.10                # m beside the lane. Was 0.05; operator 21:20: "don't be so strict"
   tol_yaw_deg: 10.0                # deg off square (was 5)
-  backup_m: 0.5                    # m backed up along the lane before coming again (operator: 1 m is too much)
+  backup_m: 0.3                    # m backed up along the lane before coming again (operator 2026-09-22; was 0.5)
   backup_speed: 0.2                # m/s
   retries: 2                       # then: go anyway, unless more than hold_beyond_m beside the lane
   hold_beyond_m: 0.25              # m: only this far off after the retries is a HOLD (the body would hit what stands beside the gap)
@@ -186,7 +187,7 @@ zone_speed:
   cruise: 0.7
   steep: 0.0                         # 0 = no separate cap on real steps: the whole stairs zone runs at --climb-speed (was 0.45, my own guess)
   walk: 0.0                          # 0 = no extra cap: the walk gait 0x3002 runs at the run's --speed (as in the room test)
-  platform: 0.4                      # 0x1002 高台: climbing a ledge
+  platform: 0.35                     # 0x1002 高台: climbing a ledge (was 0.4; = run.platform_speed, which nav --platform-speed overrides)
 
 # Planner speed scale while the plan IS the taught line (TRACK, or DETOUR with zero target offset). The team planner
 # halves the speed near obstacle/unknown cells; our 0.9 m live grid has an unknown rim, so it slowed open road too.

@@ -226,6 +226,7 @@ def main():
     ap.add_argument("--map", default="", help="x_nav map name (default: the route's map_id)")
     ap.add_argument("--at", choices=["start", "end"], default=str(P.get("at", "start")),
                     help="only used when localisation has to be initialised: which end of the route the dog stands on")
+    ap.add_argument("--platform-speed", default=str(P.get("platform_speed", "") or ""), help="speed IN the platform gait 0x1002 (the push up a ledge), m/s (default: run.platform_speed 0.7); the approach uses nav.jump.approach_speed")
     ap.add_argument("--walk-speed", default=str(P.get("walk_speed", "") or ""), help="speed of the slow walk 0x3002 on routes with a gait plan, m/s (default: nav.yaml zone_speed.walk 0.6)")
     ap.add_argument("--flat-gait", default=str(P.get("flat_gait", "") or ""), help="EXPERIMENT: gait code used instead of the navigation flat gait 0x3002 (0xF002 踏步移动, 0x1002 高台, 0x1001 基础)")
     ap.add_argument("--shadow", action="store_true", help="no motion: status only, drive with the remote")
@@ -233,7 +234,7 @@ def main():
     rc_, out_ = sh("python3", os.path.join(ROOT, "tools", "params.py"), "sync", "--quiet", quiet=True)
     rc_, out_ = sh("python3", os.path.join(ROOT, "tools", "params.py"), "check", quiet=True)
     say("params: " + (out_.strip().splitlines() or ["?"])[-1])
-    say(f"run: route {a.route} | speed {a.speed} | climb {a.climb_speed} | steep {a.steep_speed or 'file'} | walk cap {a.walk_speed or 'file'}"
+    say(f"run: route {a.route} | speed {a.speed} | climb {a.climb_speed} | steep {a.steep_speed or 'file'} | walk cap {a.walk_speed or 'file'} | platform {a.platform_speed or 'file'}"
         + (f" | from {a.frm}" if a.frm else "") + (f" | FLAT GAIT {a.flat_gait}" if a.flat_gait else ""))
 
     # one run at a time: a second start would stop the first one's nodes in the middle of arming
@@ -357,6 +358,10 @@ def main():
             say(f"    EXPERIMENT: flat gait = {a.flat_gait} instead of 0x3002 (not in the developer guide for /GAIT; a refusal latches a stop)")
         if a.walk_speed:
             os.environ["S10_WALK_V"] = str(float(a.walk_speed))
+        if a.platform_speed:
+            pv = float(a.platform_speed)
+            if not 0.1 <= pv <= 1.67: sys.exit("--platform-speed must be 0.1 .. 1.67 m/s")
+            os.environ["S10_PLATFORM_V"] = str(pv)
         if a.steep_speed:
             os.environ["S10_STEEP_V"] = str(float(a.steep_speed))
         rc, out = sh("bash", NAV, "arm", a.speed, route, a.climb_speed, quiet=True)

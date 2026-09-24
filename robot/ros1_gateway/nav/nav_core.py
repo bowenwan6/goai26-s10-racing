@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -382,9 +383,18 @@ class NavCore:
         # route cut for --from needs no shifting). 2026-09-21: the gap between the steel stools on the ledge at WP17 is
         # about the dog's own width, so the dog arrives slowly on a straight lane and is CHECKED before it takes off.
         self.jump_cfg = dict(enabled=True, approach_speed=0.35, check_at_m=0.7, tol_lateral=0.05, tol_yaw_deg=5.0, backup_m=0.5,
-                             backup_speed=0.2, retries=2, hold_beyond_m=0.25, pivot_timeout_s=8.0, track=True, track_lookahead=0.5, track_yaw_gain=2.0, track_max_yaw=0.6)
+                             backup_speed=0.2, retries=2, hold_beyond_m=0.25, blind_after_m=1.5, pivot_timeout_s=8.0, track=True, track_lookahead=0.5, track_yaw_gain=2.0, track_max_yaw=0.6)
         self.jump_cfg.update(c.get("jump") or {})
         self.jumps, self._jump_override, self._jump_phase, self._track_override = [], False, None, False
+        self._plan_k, self._left_k = None, None
+        self._pose_log, self._pose_n = None, 0
+        if os.environ.get("S10_POSE_LOG_DIR"):                    # set by scripts/start_nav.sh; tests and simulations write nothing
+            try:
+                import time as _time
+                self._pose_log = open(os.path.join(os.environ["S10_POSE_LOG_DIR"], "navpose-%s.csv" % _time.strftime("%Y%m%d-%H%M%S")), "w")
+                self._pose_log.write("t,x,y,yaw,s,d,cmd_vx,cmd_vy,cmd_wz,v_fwd,gait,mode\n")
+            except OSError:
+                self._pose_log = None
         if tj.exists() and self.jump_cfg["enabled"]:
             for q in doc_t.get("jumps", []):
                 try:
@@ -736,7 +746,8 @@ class NavCore:
         s_now = getattr(self, "_last_s", None)
         on_stairs_segment = self.zone_mode == "gait_only" and s_now is not None and self.follower.path.gait_at(s_now) == "stairs"
         at_contact = any(math.hypot(x - cx, y - cy) < cr for cx, cy, cr in self.contact)   # the wall there is the target
-        self._blind_now = bool((self.zone_blind and (in_zone or on_stairs_segment)) or at_contact)
+        after_jump = s_now is not None and any(j_["s"] - 0.5 <= s_now <= j_["s"] + j_["after"] + float(self.jump_cfg.get("blind_after_m", 1.5)) + 1.2 for j_ in self.jumps)
+        self._blind_now = bool((self.zone_blind and (in_zone or on_stairs_segment)) or at_contact or after_jump)
         if self._blind_now:
             # Stairs / rough ground: risers and slopes look like obstacles to the flat-ground height grid and
             # to the body-height scan. The taught line was walked by the operator, so follow it as taught.
@@ -756,7 +767,18 @@ class NavCore:
             cmd = out.command
             planned = None
             if self.gait_plan and s_now is not None:
-                planned = next((n_ for a_, b_, n_ in self.gait_plan if a_ <= s_now <= b_), "flat")
+                # The plan only moves FORWARD (2026-09-21 23:57: standing for the switch on a zone boundary, s rocked back
+                # over it: 7 switches stairs <-> platform in 17 s after the WP26 ledge). Back only if s really went back 2 m.
+                k_now = next((k_ for k_, (a_, b_, n_) in enumerate(self.gait_plan) if a_ <= s_now <= b_), None)
+                k_prev, k_left = self._plan_k, self._left_k
+                if k_prev is not None and (k_now is None or k_now < k_prev) and self.gait_plan[k_prev][0] - 2.0 < s_now <= self.gait_plan[k_prev][1]:
+                    k_now = k_prev                                # rocked back over the START of the current zone: stay in it
+                elif k_prev is not None and k_now is None and s_now > self.gait_plan[k_prev][1]:
+                    k_left = k_prev                               # left the zone at its far end
+                if k_now is not None and k_now == k_left and s_now > self.gait_plan[k_left][1] - 2.0 and k_prev is None:
+                    k_now = None                                  # rocked back over the END of the zone just left: stay out
+                self._plan_k, self._left_k = k_now, k_left
+                planned = self.gait_plan[k_now][2] if k_now is not None else "flat"
                 if any(j_["tries"] > 0 and not j_["cleared"] for j_ in self.jumps):
                     planned = "platform"                          # backing up 0.5 m leaves the short platform zone: no switch back and forth
                 want = GAIT_TO_OWNER[planned]
@@ -844,6 +866,15 @@ class NavCore:
                      if not c.valid][:5] if f.status == "BLOCKED" else None, speed_limit=getattr(f, "speed_limit", None),
             plan_scale=round(float(f.plan.speed_scale), 2) if getattr(f, "plan", None) is not None else None,
         )
+        if self._pose_log is not None:                           # 10 Hz: what the dog DID against what it was told (yaw response)
+            self._pose_n += 1
+            if self._pose_n % 2 == 0:
+                try:
+                    self._pose_log.write("%.2f,%.3f,%.3f,%.4f,%s,%s,%.3f,%.3f,%.3f,%.3f,%s,%s\n" % (
+                        t, x, y, yaw, status["s"], status["d"], out.command[0], out.command[1], out.command[2], float(v_fwd or 0.0), gait_reported, out.mode.value))
+                    if self._pose_n % 40 == 0: self._pose_log.flush()
+                except Exception:                                  # noqa: BLE001  (a log must never stop a run)
+                    self._pose_log = None
         return StepResult(tuple(float(v) for v in out.command), out.owner, OWNER_TO_GAIT.get(out.owner), out.mode.value,
                           out.reason, status, reached, out.mode == Mode.DONE)
 

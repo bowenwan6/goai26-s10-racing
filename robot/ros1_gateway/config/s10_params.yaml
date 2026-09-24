@@ -24,8 +24,9 @@ run:
   route: full                        # full | short | a route directory.  full/short = the newest route of that kind in ~/routes
   speed: "1.67"                       # walk gait 0x3002 forward limit, m/s (robot maximum 1.67) or "0.7x" = 0.7 of the maximum.
                                      # The lateral limit follows: min(0.40, speed / 2); yaw limit 1.0 rad/s
-  climb_speed: "1.67"                 # stairs-gait zone, gentle ground, m/s
+  climb_speed: "1"                    # stairs-gait zone, gentle ground, m/s
   steep_speed: ""                    # stairs-gait zone on real steps / slopes, m/s.  "" = nav.zone_speed.steep (0.45)
+  platform_speed: "0.7"              # nav --platform-speed: speed IN the platform gait 0x1002 (the push up the ledge), m/s. 0.4 did not get up WP17 (23:18), 0.7 did (operator 2026-09-21: make it an argument)
   walk_speed: ""                     # extra cap on the walk gait, m/s.  "" = nav.zone_speed.walk (0 = none, runs at `speed`)
   at: start                          # without a pose: initial pose = the route's first (start) or last (end) waypoint
   start_radius_m: 1.2                # the dog must stand this close to the start waypoint / to the line when resuming
@@ -48,16 +49,17 @@ route_build:
     session: field_data/20260920-v7_o/session_0921            # relative to s10-real-readiness/
     map_dir: field_data/20260920-v7_o/map
     control_logs: field_data/20260920-v7_o/logs_all
-    out: field_data/20260920-v7_o/teach_line_s4
-    routes: {full: field_data/20260920-v7_o/routes/v7_o-s4-full, short: field_data/20260920-v7_o/routes/v7_o-s4-short}
-    installed_as: {full: 20260921e-v7_o-s4-full, short: 20260921e-v7_o-s4-short}   # s3 (20260921d-...) stays on the AGX as the fallback
+    out: field_data/20260920-v7_o/teach_line_s5
+    routes: {full: field_data/20260920-v7_o/routes/v7_o-s5-full, short: field_data/20260920-v7_o/routes/v7_o-s5-short}
+    installed_as: {full: 20260922a-v7_o-s5-full, short: 20260922a-v7_o-s5-short}   # s4 (20260921e-...) stays on the AGX as the fallback
     short_last_wp: WP03
     teach_line:
       demos: [path_20260921_003133, path_20260921_004546, path_20260921_005347]      # full demonstrations
       gait_demos: [path_20260921_004546, path_20260921_005347]                       # operator gait is taken from these
       splice: [path_20260921_102232, path_20260921_111817, path_20260921_112020, path_20260921_112444, path_20260921_112657,
                path_20260921_193500, path_20260921_193630,                           # WP14-WP18 over the WP17 ledge in the platform gait (runs 4, 5; 1-3 ignored)
-               path_20260921_194417, path_20260921_194635, path_20260921_194927]     # WP22-WP30 over the two ledges WP24 / before WP26 (runs 3-5; 1-2 ignored)
+               path_20260921_194417, path_20260921_194635, path_20260921_194927,     # WP22-WP30 over the two ledges WP24 / before WP26 (runs 3-5; 1-2 ignored)
+               path_20260922_000756]                                                 # WP18-WP23: the 00:07 marking drive (good localisation; the four 00:21-00:27 recordings drifted: NOT used)
       strip_backward: [path_20260921_193500, path_20260921_193630, path_20260921_194417, path_20260921_194635, path_20260921_194927]   # backward slips cut out
       drop: [WP25]                   # cancelled waypoints
       contact: []                    # waypoints the dog drives INTO (wall / platform edge). Was [WP17, WP24] up to s3: they are JUMPED now
@@ -69,7 +71,7 @@ route_build:
       clearance: 0.10                # m kept between the body side and obstacles when straightening
       fillet: 1.2                    # m largest corner radius
       reach: 0.45                    # m body centre this close to a mark = touched whatever the heading
-      touch: 0.20                    # m the line passes every mark within this
+      touch: 0.10                    # m the line passes every mark within this (was 0.20: gates of 0.25 m, missed at speed -> the dog turned round at the waypoint)
       body_touch: 0.05               # m the body sweep must come this close to the mark
       body_z_offset: 0.41
       terrain_zones: 1               # stairs gait only where the operator used it AND the ground map shows steps / slope
@@ -83,6 +85,7 @@ route_build:
       jump_after: 1.0                # m straight after it
       jump_max_shift: 1.5            # m a lane may move the line sideways (always inside the recordings' corridor)
       platform_absorb: 0.0           # 0 = off (operator 21:20: platform gait ONLY for the jump). Was 4.0: short stairs stretches next to a platform zone joined it
+      platform_before_at: "WP24:0.5,WP26:0.5"   # last two ledges: switch with the nose against the ledge, no run-up (operator 2026-09-22)
       platform_before: 0.8           # m before the ledge the platform gait starts (operator switched 0.5-0.6 m before it, standing)
       platform_after: 1.2            # m after the ledge it ends (hind legs up), then straight back to the operator's gait (stairs / walk)
     teach_to_route: {tol_z: 5, step: 0.10, flat_speed: 1.0, stairs_speed: 0.30, body_z_offset: 0.41}
@@ -253,11 +256,12 @@ nav:
   # back up and come again, HOLD only if still off (see nav_core._jump_step).
   jump:
     enabled: true
-    approach_speed: 0.35             # m/s over the straight before the ledge (operator: 0.33-0.37 there)
+    approach_speed: 0.40             # m/s on the approach to a ledge; NOT tied to --platform-speed any more (at 0.63 the yaw limit saturated in the S-bend)
+    blind_after_m: 1.5               # m after the platform zone without live obstacles (the ledge / stools behind blocked the dog 3 s at WP17)
     check_at_m: 0.7                  # body centre this far before the ledge when it is checked (nose 0.25 m before it)
     tol_lateral: 0.10                # m beside the lane. Was 0.05; operator 21:20: "don't be so strict"
     tol_yaw_deg: 10.0                # deg off square (was 5)
-    backup_m: 0.5                    # m backed up along the lane before coming again (operator: 1 m is too much)
+    backup_m: 0.3                    # m backed up along the lane before coming again (operator 2026-09-22; was 0.5)
     backup_speed: 0.2                # m/s
     retries: 2                       # then: go anyway, unless more than hold_beyond_m beside the lane
     hold_beyond_m: 0.25              # m: only this far off after the retries is a HOLD (the body would hit what stands beside the gap)
@@ -279,7 +283,7 @@ nav:
     cruise: 0.7
     steep: 0.0                         # 0 = no separate cap on real steps: the whole stairs zone runs at --climb-speed (was 0.45, my own guess)
     walk: 0.0                          # 0 = no extra cap: the walk gait 0x3002 runs at the run's --speed (as in the room test)
-    platform: 0.4                      # 0x1002 高台: climbing a ledge
+    platform: 0.35                     # 0x1002 高台: climbing a ledge (was 0.4; = run.platform_speed, which nav --platform-speed overrides)
 
   # Planner speed scale while the plan IS the taught line (TRACK, or DETOUR with zero target offset). The team planner
   # halves the speed near obstacle/unknown cells; our 0.9 m live grid has an unknown rim, so it slowed open road too.
