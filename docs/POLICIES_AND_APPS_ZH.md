@@ -41,9 +41,9 @@
 | HIM 1500 | 342→16（57 维 × 6 帧） | 通用 | ✅ 实机试过，上台阶失败 | 不在仓库，在 AGX 的独立 SDK 副本里 |
 | **J3100** | 59→16，自由相位 0.6 s | 步行，`rl_nav` 的 `official` 槽 | 🧪 | 复现包 `policies/J3100_walk.onnx` |
 | **1150** | 59→16，命令门控相位 1.5 Hz | 台阶、陡坡、横坡，`rl_nav` 的 `stairs_stable` 槽 | 🧪 不能在 Isaac Lab 里微调，见 1.2 | 复现包 `policies/1150_stairs.onnx` |
-| Gate16 v1.5（base + residual） | 174→16 | 0.377 m 高台（WP15→16） | 🗄 Ver1.0 | [`policy/gate16/`](../policy/gate16/) |
-| stairs_stable（model_599） | 57→16 | 上楼 | 🗄 Ver1.0 提交配置 | [`policy/stairs_stable/`](../policy/stairs_stable/) |
-| stairs57（model1800）及其他 8 月模型 | 57→16 | 上楼、下楼、通用 | 🗄 | [`policies/`](../policies/README.md) |
+| Gate16 v1.5（base + residual） | 174→16 | 0.377 m 高台（WP15→16） | 🗄 Ver1.0 | [`policy/gate16/`](../models/deployed/gate16/) |
+| stairs_stable（model_599） | 57→16 | 上楼 | 🗄 Ver1.0 提交配置 | [`policy/stairs_stable/`](../models/deployed/stairs_stable/) |
+| stairs57（model1800）及其他 8 月模型 | 57→16 | 上楼、下楼、通用 | 🗄 | [`policies/`](../models/candidates/README.md) |
 | Sprint A18@50 等 | 57→16 | 全向移动 + 停车 | 🧪 候选，未过验收 | s10-rl-sprint `sprint_results/releases/` |
 | Phase 族 A500…E2100 | 59→16 | 平地 | 🧪 实验 | `Jackdev` 分支 `policies/phase_*/` |
 | 决赛重训候选（Native1000、楼梯 750、高台 BC01） | 57→16 | 平地、楼梯、高台 | 🧪 实验 | s10-rl-sprint `docs/finals/` |
@@ -84,7 +84,7 @@
   - 低层矩阵 39/45，其中摔倒 2/45。
   - 比赛时用稳定 fallback：交接窗口 d = 0.62–0.70 m，指令 0.18 m/s。
   - 全程：seed 6 通过；seed 8 两次失败（Gate16 处、WP27→28）；seed 10 卡在 WP29 前。
-- **stairs_stable（model_599）：** 只验证过三段（[`policy_manifest.json`](../policy/stairs_stable/policy_manifest.json)）。
+- **stairs_stable（model_599）：** 只验证过三段（[`policy_manifest.json`](../models/deployed/stairs_stable/policy_manifest.json)）。
   - WP6→7 通过；单独跑 WP17→19 通过。
   - 从 WP16 连续跑到 WP32 时，在 WP18 差 0.32 m。
 - **stairs57（model1800）：** 规则楼梯 33/33；但接入 SDK 全栈后倾倒到 61–68°，已停用。
@@ -117,7 +117,7 @@
 2. **SDK 模式：** 按本机 SoC SN 申请授权码，重启后生效。
 3. **换模型：** 在 AGX 上用 `scripts/prepare_s10_sdk_copy.py` 做一份独立 SDK 副本，再用 Windows GUI 起身、遥控。
 4. **诊断停止线：** 腿 / 轮速度 25.76 / 30 rad/s，腿 / 轮力矩 45 / 12 N·m。越线即 R2 阻尼。
-5. **多个 policy 共用：** [`integration/joint_command_owner.hpp`](../integration/joint_command_owner.hpp) 保证 `/JOINTS_CMD` 同一时刻只有一个控制源。切换要经过 SafeHold（0.25 s）。
+5. **多个 policy 共用：** [`integration/joint_command_owner.hpp`](../robot/integration/joint_command_owner.hpp) 保证 `/JOINTS_CMD` 同一时刻只有一个控制源。切换要经过 SafeHold（0.25 s）。
 6. **runner 支持的观测维度：** 44dd04d 版支持 57 / 174 / 342；`Jackdev` 版支持 57 / 59 / 174。
 7. **`rl_nav` 上机的前提（未完成）：**
    - SDK runner 两个槽都要支持 59 维观测和各自的相位时钟。
@@ -128,17 +128,17 @@
 
 ### 2.1 手机页面
 
-由 AGX 上的 [`tools/s10_mapping_web/server.py`](../tools/s10_mapping_web/server.py) 提供，端口 8080。
+由 AGX 上的 [`tools/s10_mapping_web/server.py`](../robot/tools/s10_mapping_web/server.py) 提供，端口 8080。
 
 | 页面 | 用途 | 依赖 | 状态 | 说明 |
 |---|---|---|---|---|
-| `/` 建图首页 | 官方 drmap 建图启停、保存、点云预览 | 106 后端（SSH） | ✅ 48 号 | [README](../tools/s10_mapping_web/README.md) |
+| `/` 建图首页 | 官方 drmap 建图启停、保存、点云预览 | 106 后端（SSH） | ✅ 48 号 | [README](../robot/tools/s10_mapping_web/README.md) |
 | `/localization` | 在点云底图上显示位置和朝向 | 106 `/ODOM` | ✅，但底图还是旧图 `indoor_loop_01` | 同上 |
 | `/heightmap` | 显示 `/elevation_map_raw` | 106 `heightmap.py` | ✅ 已部署，交互未验收 | `evidence/backups/s10-mapping-web/2026-09-13/README.md` |
-| `/field` 现场助手 | 自检、切图、静止检查、限时录包、标点草稿、航点复测 | 106 field worker | ✅ 48 号；v3 现场未验收 | [FIELD_GUIDE_ZH.md](../tools/s10_mapping_web/FIELD_GUIDE_ZH.md) |
-| `/imu-check` | IMU 曲线、静止采样、复零 | 106 | ✅ 09-15 | [IMU_DIAGNOSTIC_GUIDE_ZH.md](../tools/s10_mapping_web/IMU_DIAGNOSTIC_GUIDE_ZH.md) |
-| `/native-nav` | 原生步态导航测试：只读检查、切步态、Start/B 任务、停止 | 106 native-nav 服务 | ✅ 已部署，**没实际走过** | [NATIVE_NAV_GUIDE_ZH.md](../tools/s10_mapping_web/NATIVE_NAV_GUIDE_ZH.md) |
-| **`/teach` 采集助手（新）** | 新 SLAM 用：建图采集（带回环）、标 WP01–30 和切换点、录示教路径。只记录，不控制机器人 | AGX ROS 1（不连 103 / 106） | ✅ 真机上运行；手机经 103 上的用户态转发访问（交还前删除） | [TEACH_GUIDE_ZH.md](../tools/s10_mapping_web/TEACH_GUIDE_ZH.md) |
+| `/field` 现场助手 | 自检、切图、静止检查、限时录包、标点草稿、航点复测 | 106 field worker | ✅ 48 号；v3 现场未验收 | [FIELD_GUIDE_ZH.md](../robot/tools/s10_mapping_web/FIELD_GUIDE_ZH.md) |
+| `/imu-check` | IMU 曲线、静止采样、复零 | 106 | ✅ 09-15 | [IMU_DIAGNOSTIC_GUIDE_ZH.md](../robot/tools/s10_mapping_web/IMU_DIAGNOSTIC_GUIDE_ZH.md) |
+| `/native-nav` | 原生步态导航测试：只读检查、切步态、Start/B 任务、停止 | 106 native-nav 服务 | ✅ 已部署，**没实际走过** | [NATIVE_NAV_GUIDE_ZH.md](../robot/tools/s10_mapping_web/NATIVE_NAV_GUIDE_ZH.md) |
+| **`/teach` 采集助手（新）** | 新 SLAM 用：建图采集（带回环）、标 WP01–30 和切换点、录示教路径。只记录，不控制机器人 | AGX ROS 1（不连 103 / 106） | ✅ 真机上运行；手机经 103 上的用户态转发访问（交还前删除） | [TEACH_GUIDE_ZH.md](../robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md) |
 
 - **新狗和共用的狗上只能用 `/teach`。**
   - 其余几个页面要通过 SSH 调 106 上的后台。这个后台只装在 48 号的 106 上，AGX 用的专用密钥 `backend_key` 也只加到了 48 号。
@@ -153,11 +153,11 @@
 | `rl_nav` 节点（ROS 2 版） | 第一版控制器作为名义行为，测到偏离才做恢复。输出 `/cmd_vel` 和 joint owner（`official` 槽 = J3100，`stairs_stable` 槽 = 1150） | 🧪 只在 MuJoCo。真机上跑的是同一份逻辑的 ROS 1 版，见 2.3 | [NAVIGATION_DESIGN_ZH.md §2](NAVIGATION_DESIGN_ZH.md) |
 | `rl_nav_prepare` | 离线：route_v2 + 地图 → `route_rl.json`、`maneuvers.json`、`map_surface.npz` | 🧪 有单测 | `rl_nav/prepare.py` |
 | route_v2 跟线 + Frenet 局部规划 | 沿示教中心线走，A* 兜底 | 🧪 | [NAVIGATION_DESIGN_ZH.md §1](NAVIGATION_DESIGN_ZH.md) |
-| `native_transfer` | 原厂 flat / stairs 步态 + 我们的 follower，发 `/NAV_CMD`、`/GAIT` | ✅ 已部署 106 / 102，只读观测通过；📝 没发过真实指令 | [README](../native_transfer/README_ZH.md) |
+| `native_transfer` | 原厂 flat / stairs 步态 + 我们的 follower，发 `/NAV_CMD`、`/GAIT` | ✅ 已部署 106 / 102，只读观测通过；📝 没发过真实指令 | [README](../robot/native_transfer/README_ZH.md) |
 | HIM SDK 部署 | 独立 SDK 副本 + HIM 1500 + Windows GUI | ✅ 09-16 实测 | `S10_HIM_DEPLOYMENT.md`（已归档） |
-| `real_transfer` + `tests_real` | 只读采集、影子计算、离线回放 | 🗄 09-12；测试 164 项通过 | [README](../real_transfer/README_ZH.md) |
+| `real_transfer` + `tests_real` | 只读采集、影子计算、离线回放 | 🗄 09-12；测试 164 项通过 | [README](../robot/real_transfer/README_ZH.md) |
 
-### 2.3 新狗 / 新 SLAM（ROS 1，[`ros1_gateway/`](../ros1_gateway/README_ZH.md)）
+### 2.3 新狗 / 新 SLAM（ROS 1，[`ros1_gateway/`](../robot/ros1_gateway/README_ZH.md)）
 
 | 名称 | 用途 | 运行在 | 状态 |
 |---|---|---|---|
@@ -180,13 +180,13 @@
 | `/teach` 采集助手 | 见 2.1 | AGX | 见 2.1 |
 
 - **`/ODOM`：** 新狗上 106 的官方定位按决定不开，定位用 x_nav 自己的 SLAM。
-- 整体计划见 [NAVIGATION_DESIGN_ZH.md §3](NAVIGATION_DESIGN_ZH.md)；新狗验收记录见 [ros1_gateway/README_ZH.md](../ros1_gateway/README_ZH.md)。
+- 整体计划见 [NAVIGATION_DESIGN_ZH.md §3](NAVIGATION_DESIGN_ZH.md)；新狗验收记录见 [ros1_gateway/README_ZH.md](../robot/ros1_gateway/README_ZH.md)。
 
 ### 2.4 仿真与评估
 
 | 名称 | 用途 | 在哪 | 状态 |
 |---|---|---|---|
-| [`sim_full_course`](../sim_full_course/README_ZH.md) | v3 点云 → 2.5D 地形；运动学机器人；与真机共用感知合同；可加障碍 | 本仓库 | 🧪 纯追踪 30/30；route_v2 规划器 24/30 |
+| [`sim_full_course`](../sim/sim_full_course/README_ZH.md) | v3 点云 → 2.5D 地形；运动学机器人；与真机共用感知合同；可加障碍 | 本仓库 | 🧪 纯追踪 30/30；route_v2 规划器 24/30 |
 | `route_follow_mujoco`（第一版） | 跟线 + ClimbRouter + J3100 / 1150 跑完 30 个 WP | s10-rl-sprint `scripts/tools/` | 🧪 30/30，713 s |
 | 复现包 full_v3 | 上一项的冻结副本（代码、policy、地图、结果） | 本地 `GOAI/S10_Nav_FullV3_Repro_20260919/`，未上传 | 🧪 复跑结果逐 tick 一致 |
 | `route_rl_real_stack` / `route_rl_matrix` | 用 `rl_nav` 驱动 MuJoCo，加定位偏置、推离路线、障碍，多种子对比 | s10-rl-sprint | 🧪 在跑 |
@@ -197,8 +197,8 @@
 
 | 名称 | 用途 | 状态 |
 |---|---|---|
-| [`tools/wp_match`](../tools/wp_match/README_ZH.md) | 照片时间戳 → v3 关键帧位姿 → 30 个 WP 和中心线 → `route_v2.json` | 草稿，误差半径 1.5–3 m，要现场重测 |
-| [`data/deliverables/S10_v3_Map_MuJoCo_20260916/`](../data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md) | v3 全场点云、Start/B 精细 MuJoCo 场景、离线预览 | ✅（Git LFS） |
+| [`tools/wp_match`](../robot/tools/wp_match/README_ZH.md) | 照片时间戳 → v3 关键帧位姿 → 30 个 WP 和中心线 → `route_v2.json` | 草稿，误差半径 1.5–3 m，要现场重测 |
+| [`data/deliverables/S10_v3_Map_MuJoCo_20260916/`](../artifacts/data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md) | v3 全场点云、Start/B 精细 MuJoCo 场景、离线预览 | ✅（Git LFS） |
 | `data/map-reviews/0914_fr_v3-20260914-142008/` | v3 地图的审阅、重建和 policy 试验 | 资料 |
 | `data/waypoint-photos-20260914/` | 30 张 WP 照片。**正式顺序与照片顺序相反**：WP01 是最后一张 | 资料（LFS） |
 

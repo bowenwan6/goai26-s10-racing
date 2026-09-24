@@ -59,7 +59,7 @@ GOAI 2026 · 赛道 4 *具身未来* · 挑战 2 —— S10 感知竞速
 
 ## 我们做了什么
 
-这套系统里有五处是我们自己做的，而不是厂商提供的。每一处的存在，都是因为挡在前面的问题无法靠配置解决。完整技术参考 —— 链路、规划策略、参数、测试、尚未验证的部分、回滚方式 —— 见 [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md)。
+这套系统里有五处是我们自己做的，而不是厂商提供的。每一处的存在，都是因为挡在前面的问题无法靠配置解决。完整技术参考 —— 链路、规划策略、参数、测试、尚未验证的部分、回滚方式 —— 见 [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](robot/ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md)。
 
 **1 · 一个只读的取数点和一座逐字节一致的桥。** 厂商只在自己的板子上发布激光雷达，而我们要接入的 SLAM 说的是 ROS 1。板子上一个只读订阅者把原始帧转发到我们的算力，在那里由一座单向桥重新发布，字段、时间戳和 frame id 一概不动 —— 在 60 s 内与一个独立参考实现比对，592/592 帧点云、11 845/11 845 条 IMU 消息完全一致。厂商侧没有任何改动，一条命令即可清除全部痕迹。
 
@@ -180,7 +180,7 @@ flowchart TD
   SIM -- "平顺度、停顿、与第一版的用时对比" --> BOT
 ```
 
-当前的 `route_v2.json` 来自把 30 张航点照片与建图关键帧做匹配（[`tools/wp_match`](tools/wp_match/README_ZH.md)）；它的不确定半径是 1.5–3 m，这正是 [`/teach`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) 勘测存在的理由。背后的设计见 [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md)。
+当前的 `route_v2.json` 来自把 30 张航点照片与建图关键帧做匹配（[`tools/wp_match`](robot/tools/wp_match/README_ZH.md)）；它的不确定半径是 1.5–3 m，这正是 [`/teach`](robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md) 勘测存在的理由。背后的设计见 [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md)。
 
 ## 快速开始
 
@@ -234,8 +234,8 @@ bash ros1_gateway/scripts/robot_session.sh down --agx
 | [`rl_nav/route_runner.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/route_runner.py) | 在示教路线上的模式机；输出机体速度和关节主人请求 | ✅ 首次自主运行 |
 | [`rl_nav/prepare.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/prepare.py) | 离线路线落地、攀爬动作、地图曲面、报告 | 🧪 |
 | [`route_v2.py`](src/s10_auto_nav/s10_auto_nav/route_v2.py)、[`route_planner.py`](src/s10_auto_nav/s10_auto_nav/route_planner.py) | 中心线跟踪 + Frenet 局部规划，先验地图上的 A\* 兜底 | 🧪 |
-| [`native_transfer/`](native_transfer/README_ZH.md) | 同一跟踪器驱动厂商原生步态（ROS 2 路线） | ✅ 已部署；仅观测，不下发命令 |
-| [`ros1_gateway/nav/`](ros1_gateway/docs/HANDOFF_S10_AUTONOMY_STACK.md) | 同一执行器在 AGX 上的 ROS 1 版本，外加一键运行脚本 | ✅ 通过 `s10_ros1_control` 驱动机器人 |
+| [`native_transfer/`](robot/native_transfer/README_ZH.md) | 同一跟踪器驱动厂商原生步态（ROS 2 路线） | ✅ 已部署；仅观测，不下发命令 |
+| [`ros1_gateway/nav/`](robot/ros1_gateway/docs/HANDOFF_S10_AUTONOMY_STACK.md) | 同一执行器在 AGX 上的 ROS 1 版本，外加一键运行脚本 | ✅ 通过 `s10_ros1_control` 驱动机器人 |
 
 ```mermaid
 stateDiagram-v2
@@ -285,7 +285,7 @@ flowchart TD
 
 两个层级，都由同一批路线产物驱动。
 
-**运动学全赛道试验台** —— [`sim_full_course/`](sim_full_course/README_ZH.md)。从 v3 点云构建 2.5 维地形，移动一个运动学机器人，按弧长注入障碍，并与真实节点共用同一套感知契约。快到可以每次改动都跑一遍。
+**运动学全赛道试验台** —— [`sim_full_course/`](sim/sim_full_course/README_ZH.md)。从 v3 点云构建 2.5 维地形，移动一个运动学机器人，按弧长注入障碍，并与真实节点共用同一套感知契约。快到可以每次改动都跑一遍。
 
 **用真实策略跑的 MuJoCo 全赛道** —— 试验台在 [`s10-rl-sprint`](https://github.com/bowenwan6/s10-rl-sprint) 仓库，场景由同一张地图生成。下面的头条结果就出自这次运行。
 
@@ -350,7 +350,7 @@ flowchart LR
 
 **评估靠统计，不靠个例。** MuJoCo 在 x86 和 ARM 上结果并不一致，而且过程是混沌的：命令流的任何改动都会重新洗牌哪些种子会失败。完成率按 **32 个以上种子**判断，绝不用 4 个。分段运行几乎不依赖种子，除非打开 `--loc_noise`，因为传感噪声只在跟踪器主导的模式下才起作用。
 
-训练、评估试验台和验收标准都在 sprint 仓库；本仓库保存导出的 ONNX 模型、[`integration/`](integration/) 里的部署胶水，以及 [`training/`](training/) 里八月的训练代码。
+训练、评估试验台和验收标准都在 sprint 仓库；本仓库保存导出的 ONNX 模型、[`integration/`](robot/integration/) 里的部署胶水，以及 [`training/`](sim/training/) 里八月的训练代码。
 
 ### 4 · 建图与定位
 
@@ -365,9 +365,9 @@ flowchart LR
 </tr>
 </table>
 
-- **106 上的厂商 SLAM** 产出了 v3 地图，以及八月到九月一直在用的定位。地图、MuJoCo 场景和一个离线查看器在 [`data/deliverables/`](data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md)。
+- **106 上的厂商 SLAM** 产出了 v3 地图，以及八月到九月一直在用的定位。地图、MuJoCo 场景和一个离线查看器在 [`data/deliverables/`](artifacts/data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md)。
 - **新的第三方 SLAM（x_nav）** 跑在我们 AGX 上的容器里，以 10 Hz 发布 `/base_link/odom`。它需要 ROS 1 的传感器话题，这正是网关提供的。室内地图已完成建图、保存和重定位；定位通过发布 `/initialpose` 初始化，运行脚本会自动完成。
-- **ROS 2 → ROS 1 网关** —— [`ros1_gateway/`](ros1_gateway/README_ZH.md)。它逐字节转发点云字段、时间戳和 frame id，不凭空造 TF。106 的雷达只在本机发布，因此那里的一个只读取数点通过 TCP 转发 CDR 帧。在新机器人上与独立的 ROS 2 参考比对：**60 s 内 592/592 帧点云、11 845/11 845 条 IMU 消息完全一致**。
+- **ROS 2 → ROS 1 网关** —— [`ros1_gateway/`](robot/ros1_gateway/README_ZH.md)。它逐字节转发点云字段、时间戳和 frame id，不凭空造 TF。106 的雷达只在本机发布，因此那里的一个只读取数点通过 TCP 转发 CDR 帧。在新机器人上与独立的 ROS 2 参考比对：**60 s 内 592/592 帧点云、11 845/11 845 条 IMU 消息完全一致**。
 - **地图对齐**到 v3 坐标系、航点重新勘测和路线重建，规划见 [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) 第 3 节。
 
 **从一次现场录制，到跟踪器能用的位姿：**
@@ -415,10 +415,10 @@ sequenceDiagram
 
 ### 5 · 手机现场工具
 
-AGX 上一个只用标准库的小网页服务器，通过机器人的 Wi-Fi 提供现场页面（[`tools/s10_mapping_web/`](tools/s10_mapping_web/README.md)）：
+AGX 上一个只用标准库的小网页服务器，通过机器人的 Wi-Fi 提供现场页面（[`tools/s10_mapping_web/`](robot/tools/s10_mapping_web/README.md)）：
 
-- **`/teach` —— 采集助手**（当前版本）：带闭环辅助的建图采集、带 3 s 静止检查的航点勘测（位置散布 ≤2 cm、朝向 ≤1° 才算通过）、用于策略交接的切换点对，以及示教路径录制。只记录 —— 它从不下发运动命令，也从不切换地图。指南：[`TEACH_GUIDE_ZH.md`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md)。
-- 一次示教会话通过 [`ros1_gateway/tools/teach_to_route.py`](ros1_gateway/tools/teach_to_route.py) 变成路线：航点和示教中心线变成 `route_v2.json`，切换点变成执行器消费的攀爬动作。
+- **`/teach` —— 采集助手**（当前版本）：带闭环辅助的建图采集、带 3 s 静止检查的航点勘测（位置散布 ≤2 cm、朝向 ≤1° 才算通过）、用于策略交接的切换点对，以及示教路径录制。只记录 —— 它从不下发运动命令，也从不切换地图。指南：[`TEACH_GUIDE_ZH.md`](robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md)。
+- 一次示教会话通过 [`ros1_gateway/tools/teach_to_route.py`](robot/ros1_gateway/tools/teach_to_route.py) 变成路线：航点和示教中心线变成 `route_v2.json`，切换点变成执行器消费的攀爬动作。
 - 手机通过厂商板上一个用户级转发器访问页面；应用本身仍在我们的 AGX 上。交接时会移除该转发器。
 - **`/`、`/localization`、`/heightmap`、`/field`、`/imu-check`、`/native-nav`**：建图控制、实时位姿、高程图、现场检查表和原生步态测试。它们绑定在 48 号机器人上；不要在共享机器人上打开 —— 原因见 [`docs/POLICIES_AND_APPS_ZH.md`](docs/POLICIES_AND_APPS_ZH.md) 第 2.1 节。
 
@@ -437,12 +437,12 @@ AGX 上一个只用标准库的小网页服务器，通过机器人的 Wi-Fi 提
 
 ### 6 · 真机部署与安全
 
-- **单一关节主人。** [`integration/joint_command_owner.hpp`](integration/joint_command_owner.hpp) 保证 `/JOINTS_CMD` 只有一个来源；切换主人要经过 0.25 s 的 SafeHold，所以策略交接绝不会重叠。
+- **单一关节主人。** [`integration/joint_command_owner.hpp`](robot/integration/joint_command_owner.hpp) 保证 `/JOINTS_CMD` 只有一个来源；切换主人要经过 0.25 s 的 SafeHold，所以策略交接绝不会重叠。
 - **诊断上限**是机器人的，不是我们的：腿速/轮速 25.76 / 30 rad/s，力矩 45 / 12 N·m。越限会让机器人掉进阻尼模式 —— HIM 1500 就是这样在台阶上停下的，1150 今天也会撞上这条线。
-- **速度桥** [`ros1_gateway/src/s10_ros1_control`](ros1_gateway/README_ZH.md) 把 ROS 1 的 `/cmd_vel` 和网页命令转成原生运动命令，带限幅、超时、锁存停止和排他故障。它**默认空跑**；要真正运动需要 `--enable-motion` 且现场有人。
+- **速度桥** [`ros1_gateway/src/s10_ros1_control`](robot/ros1_gateway/README_ZH.md) 把 ROS 1 的 `/cmd_vel` 和网页命令转成原生运动命令，带限幅、超时、锁存停止和排他故障。它**默认空跑**；要真正运动需要 `--enable-motion` 且现场有人。
 - **共用机器人。** `robot_session.sh up` 部署我们需要的东西；`down` 移除我们在 106 上创建的每个文件和进程，并保持厂商服务运行；`unkeys` 移除我们的 SSH 公钥。对厂商板的任何改动 —— 包括 `/NAV_CMD` 需要的明文控制端口 —— 都会记录，并在交接前恢复。运动测试前先和另一支队伍打招呼，因为机器人上已经有两个原生发布者在 `/NAV_CMD` 上。
 - **使能是显式的。** 机器人在切到导航使用模式之前会忽略 `/NAV_CMD`；我们的脚本切过去、运行，并在退出、故障或 Ctrl-C 时总是切回遥控模式。`--shadow` 会跑完整个栈而不发出任何一条命令。
-- **一次运行一条命令**，因为现场操作员手里该拿的是遥控器而不是键盘：`robot_session.sh nav --speed <m/s> [--route short|full] [--shadow]` 会选地图、设初始位姿、等机器人站起、使能、运行、每秒打印一行状态，并在结束时恢复模式。流程和阈值见 [`ROOM_NAV_RUNBOOK_ZH.md`](ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md)，现场记录见 [`EXPERIMENT_048_ZH.md`](ros1_gateway/docs/EXPERIMENT_048_ZH.md)。
+- **一次运行一条命令**，因为现场操作员手里该拿的是遥控器而不是键盘：`robot_session.sh nav --speed <m/s> [--route short|full] [--shadow]` 会选地图、设初始位姿、等机器人站起、使能、运行、每秒打印一行状态，并在结束时恢复模式。流程和阈值见 [`ROOM_NAV_RUNBOOK_ZH.md`](robot/ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md)，现场记录见 [`EXPERIMENT_048_ZH.md`](robot/ros1_gateway/docs/EXPERIMENT_048_ZH.md)。
 
 **谁被允许让机器人动，以及什么能停下它：**
 
@@ -512,7 +512,7 @@ stateDiagram-v2
 
 **多种子仿真** —— 在队内 GPU 服务器上。全赛道、每个栈 32 个种子：当前执行器完成 19/32（上一个提交是 23/32），对比第一版的 4/24。在 5 cm / 2° 定位噪声下、种子 0–11：B 楼梯 9/12（三次在 60–63° 倾角下跌倒）、露台 11/12、全赛道 8/12。命令流一变，结果就重新洗牌，所以我们按 32 个以上种子判断，而不是看少数几次。
 
-**传感网关，2026-09-19** —— 上面的逐字节一致性审计，外加连续 10 分钟。完整原始件与注意事项见 [`evidence/artifacts/ros1-gateway-newdog-20260919/`](evidence/artifacts/ros1-gateway-newdog-20260919/README.md)。
+**传感网关，2026-09-19** —— 上面的逐字节一致性审计，外加连续 10 分钟。完整原始件与注意事项见 [`evidence/artifacts/ros1-gateway-newdog-20260919/`](artifacts/evidence/runs/ros1-gateway-newdog-20260919/README.md)。
 
 | 位置 | 进程 | CPU（单核占比） | 内存 |
 |---|---|---|---|
@@ -539,17 +539,17 @@ stateDiagram-v2
 | 路径 | 内容 |
 |---|---|
 | [`src/`](src/) | ROS 2 包：`s10_auto_nav`（导航）、`s10_perception`、`s10_bringup` |
-| [`integration/`](integration/) | C++ SDK 胶水：关节主人、策略执行器、起立状态机 |
-| [`ros1_gateway/`](ros1_gateway/) | ROS 2 → ROS 1 网关、106 雷达取数点、运动桥、ROS 1 导航运行时与运行脚本、MCAP 转换器、x_nav 部署 |
-| [`sim_full_course/`](sim_full_course/) | 运动学全赛道仿真器 |
-| [`native_transfer/`](native_transfer/)、[`real_transfer/`](real_transfer/)、[`tests_real/`](tests_real/) | 真机迁移、影子计算、回放及其测试 |
-| [`policy/`](policy/)、[`policies/`](policies/)、[`training/`](training/) | 部署策略包、导出的 ONNX 模型、八月训练代码 |
-| [`tools/`](tools/) | 手机网页、航点匹配、采集工具 |
-| [`data/`](data/) | 地图与 MuJoCo 包、地图评审、赛道照片、录制说明（Git LFS） |
+| [`integration/`](robot/integration/) | C++ SDK 胶水：关节主人、策略执行器、起立状态机 |
+| [`ros1_gateway/`](robot/ros1_gateway/) | ROS 2 → ROS 1 网关、106 雷达取数点、运动桥、ROS 1 导航运行时与运行脚本、MCAP 转换器、x_nav 部署 |
+| [`sim_full_course/`](sim/sim_full_course/) | 运动学全赛道仿真器 |
+| [`native_transfer/`](robot/native_transfer/)、[`real_transfer/`](robot/real_transfer/)、[`tests_real/`](robot/tests_real/) | 真机迁移、影子计算、回放及其测试 |
+| [`policy/`](models/deployed/)、[`policies/`](models/candidates/)、[`training/`](sim/training/) | 部署策略包、导出的 ONNX 模型、八月训练代码 |
+| [`tools/`](robot/tools/) | 手机网页、航点匹配、采集工具 |
+| [`data/`](artifacts/data/) | 地图与 MuJoCo 包、地图评审、赛道照片、录制说明（Git LFS） |
 | [`docs/`](docs/) | 文档、图片、参考资料 |
-| [`evidence/`](evidence/) | 现场证据、同步记录、已部署软件快照 |
-| [`reports/`](reports/) | 报告、海报及其构建素材（八月至九月交付物） |
-| `upstream/`（不入库） | 主办方 SDK，由 [`scripts/setup_upstream.sh`](scripts/setup_upstream.sh) 按锁定版本 `13dd084b` 拉取 |
+| [`evidence/`](artifacts/evidence/) | 现场证据、同步记录、已部署软件快照 |
+| [`reports/`](artifacts/reports/) | 报告、海报及其构建素材（八月至九月交付物） |
+| `upstream/`（不入库） | 主办方 SDK，由 [`scripts/setup_upstream.sh`](robot/scripts/setup_upstream.sh) 按锁定版本 `13dd084b` 拉取 |
 | `scripts/`、`docker/`、`.github/` | 构建与运行脚本、开发容器、CI |
 
 逐目录说明、分支规则以及绝不入库的内容：[`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md)。
@@ -568,11 +568,11 @@ stateDiagram-v2
 
 | 位置 | 内容 |
 |---|---|
-| [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) | **机器人栈的技术参考**：完整链路、规划策略、参数、测试、尚未验证的部分、回滚 |
-| [`ros1_gateway/README_ZH.md`](ros1_gateway/README_ZH.md) | ROS 1 网关与运动桥：设计、证据、验收 |
-| [`ros1_gateway/docs/`](ros1_gateway/docs/) | 英文接口交接（其规划章节早于 pipeline 文档）、现场运行手册、首次运行记录、测试计划、应用 API |
-| [`tools/s10_mapping_web/TEACH_GUIDE_ZH.md`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) | `/teach` 的现场操作流程 |
-| [`sim_full_course/README_ZH.md`](sim_full_course/README_ZH.md) · [`tools/wp_match/README_ZH.md`](tools/wp_match/README_ZH.md) | 仿真器与航点匹配 |
+| [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](robot/ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) | **机器人栈的技术参考**：完整链路、规划策略、参数、测试、尚未验证的部分、回滚 |
+| [`ros1_gateway/README_ZH.md`](robot/ros1_gateway/README_ZH.md) | ROS 1 网关与运动桥：设计、证据、验收 |
+| [`ros1_gateway/docs/`](robot/ros1_gateway/docs/) | 英文接口交接（其规划章节早于 pipeline 文档）、现场运行手册、首次运行记录、测试计划、应用 API |
+| [`tools/s10_mapping_web/TEACH_GUIDE_ZH.md`](robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md) | `/teach` 的现场操作流程 |
+| [`sim_full_course/README_ZH.md`](sim/sim_full_course/README_ZH.md) · [`tools/wp_match/README_ZH.md`](robot/tools/wp_match/README_ZH.md) | 仿真器与航点匹配 |
 
 2026-09-20 之前写的文档 —— 八月竞赛技术设计、提交与第三方记录、较早的机器人搭建、建图、匹配与研究笔记，以及上一版 README —— 已并入上述三份或退役。它们仍可在 `docs-archive-20260920` 标签下找到：
 

@@ -29,7 +29,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-INTEGRATION = REPO_ROOT / "integration"
+INTEGRATION = REPO_ROOT / "robot" / "integration"
 SOURCE = INTEGRATION / "test/joint_command_owner_test.cpp"
 SDK = REPO_ROOT / "upstream/goai_embodied_future_material/src/S10_sdk_deploy"
 ROS = Path("/opt/ros/jazzy")

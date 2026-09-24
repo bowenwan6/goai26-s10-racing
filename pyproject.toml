@@ -5,10 +5,7 @@ target-version = "py312"
 # report sources. They are archives, not live code, and are never edited in place.
 exclude = [
     "build", "install", "log", "upstream",
-    "vendor",
-    "evidence",
-    "data",
-    "reports",
+    "artifacts",
 ]
 
 [tool.ruff.lint]
@@ -21,21 +18,25 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["s10_perception", "s10_auto_nav", "s10_bringup", "s10_rl"]
+known-first-party = [
+    "s10_perception", "s10_auto_nav", "s10_bringup", "s10_rl",
+    "sim_full_course", "training",
+    "native_transfer", "real_transfer",
+]
 
 [tool.ruff.lint.per-file-ignores]
 # These are exact multiline C++ anchors applied to the private SDK. Wrapping their source
 # lines would change the bytes patch_upstream.py must match.
-"scripts/patch_upstream.py" = ["E501"]
+"robot/scripts/patch_upstream.py" = ["E501"]
 # The field web app and its QA harness are written in a deliberately compact style
 # (compound statements, long single-line assertions) so a whole check fits on a phone
 # screen during a field session. Style is relaxed here; correctness rules still apply.
-"tools/**" = ["E501", "E701", "E702", "E731", "E402", "SIM115"]
-"scripts/**" = ["E501", "E701", "E702", "E402"]
-"ros1_gateway/**" = ["E501", "E701", "E702", "E402", "SIM115"]
+"robot/tools/**" = ["E501", "E701", "E702", "E731", "E402", "SIM115"]
+"robot/scripts/**" = ["E501", "E701", "E702", "E402"]
+"robot/ros1_gateway/**" = ["E501", "E701", "E702", "E402", "SIM115"]
 
 [tool.pytest.ini_options]
-testpaths = ["src", "training"]
+testpaths = ["src", "sim"]
 python_files = ["test_*.py"]
 markers = [
     "params: ROS parameter overrides for the node a test constructs",

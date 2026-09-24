@@ -37,7 +37,7 @@ LAUNCH_FILE = REPO / "src" / "s10_bringup" / "launch" / "race.launch.py"
 STRATEGY_YAML = REPO / "src" / "s10_bringup" / "config" / "strategy.yaml"
 FOLLOWER = REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "follower_node.py"
 ROUTER_NODE = REPO / "src" / "s10_auto_nav" / "s10_auto_nav" / "strategy_router_node.py"
-RUN_RACE = REPO / "scripts" / "run_race.sh"
+RUN_RACE = REPO / "robot" / "scripts" / "run_race.sh"
 SIM_NODE = REPO / "src" / "s10_perception" / "s10_perception" / "sim_node.py"
 SEGMENT_LAUNCH = REPO / "src" / "s10_bringup" / "launch" / "segment.launch.py"
 

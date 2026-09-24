@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "robot" / "scripts"))
 
 from patch_upstream import validate_gate16_manifest  # noqa: E402
 from runtime_fingerprint import (  # noqa: E402
@@ -44,7 +44,7 @@ def test_him_build_cannot_run_through_the_default_gate16_launcher(tmp_path):
 
 
 def test_gate16_deployment_contract_rejects_the_old_adaptive_manifest():
-    manifest = json.loads((ROOT / "policy/gate16/climb_policy_manifest.json").read_text())
+    manifest = json.loads((ROOT / "models/deployed/gate16/climb_policy_manifest.json").read_text())
     validate_gate16_manifest(manifest)
 
     adaptive = copy.deepcopy(manifest)
@@ -85,9 +85,9 @@ def test_build_preserves_output_paths_with_both_colcon_launchers(tmp_path, use_v
     if bash is None:
         pytest.skip("bash is required")
     root = tmp_path / "workspace with spaces"
-    (root / "scripts").mkdir(parents=True)
+    (root / "robot" / "scripts").mkdir(parents=True)
     (root / "upstream/goai_embodied_future_material/src").mkdir(parents=True)
-    shutil.copyfile(ROOT / "scripts/build.sh", root / "scripts/build.sh")
+    shutil.copyfile(ROOT / "robot/scripts/build.sh", root / "robot/scripts/build.sh")
     setup = tmp_path / "ros-setup.bash"
     setup.write_text("")
     bindir = tmp_path / "bin"
@@ -113,7 +113,7 @@ def test_build_preserves_output_paths_with_both_colcon_launchers(tmp_path, use_v
         "FINGERPRINT_ARGS": str(fingerprint_file),
     }
     subprocess.run(
-        [bash, str(root / "scripts/build.sh"), "--packages-up-to", "s10_perception"],
+        [bash, str(root / "robot/scripts/build.sh"), "--packages-up-to", "s10_perception"],
         env=env,
         check=True,
         capture_output=True,
@@ -138,7 +138,7 @@ def test_build_preserves_output_paths_with_both_colcon_launchers(tmp_path, use_v
         "s10_perception",
     ]
     assert fingerprint_file.read_text().splitlines() == [
-        str(root / "scripts/runtime_fingerprint.py"),
+        str(root / "robot/scripts/runtime_fingerprint.py"),
         "write",
         "--install-base",
         env["S10_INSTALL_BASE"],

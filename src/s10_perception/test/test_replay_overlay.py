@@ -10,7 +10,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 SPEC = importlib.util.spec_from_file_location(
-    "render_replay_3d", ROOT / "scripts" / "render_replay_3d.py"
+    "render_replay_3d", ROOT / "robot" / "scripts" / "render_replay_3d.py"
 )
 RENDER = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None

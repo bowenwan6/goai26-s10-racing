@@ -21,7 +21,7 @@ from s10_auto_nav.strategy.router import (
 from s10_auto_nav.strategy.stairs_stable_policy import StairsStableConfig, StairsStablePolicy
 
 ROOT = Path(__file__).resolve().parents[3]
-BUNDLE = ROOT / "policy/stairs_stable"
+BUNDLE = ROOT / "models/deployed/stairs_stable"
 STAIRS_SEGMENT = (18, 19)
 
 
