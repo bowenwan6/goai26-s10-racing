@@ -27,7 +27,7 @@
 | `data/` | `deliverables/`（v3 地图与 MuJoCo 包）、`map-reviews/`、`waypoint-photos-20260914/`、`recordings/`（说明，原始数据不入库） |
 | `evidence/` | `artifacts/`（现场证据）、`backups/`（已部署程序快照）、`output/`（页面截图）、`github-sync-20260918/`（推送核验） |
 | `reports/` | 报告与海报：`academic_assets/`、`report_assets/`、`poster_assets/`、`posterly_rebuild/`、`submission/`，以及根目录搬来的报告 MD / PDF / ZIP。里面的构建脚本按 2026-09-20 之前的根目录路径写的，作为记录保留，不保证可直接重跑 |
-| `upstream/`（不入库） | 主办方资料：由 [`scripts/setup_upstream.sh`](../scripts/setup_upstream.sh) 按锁定版本 `13dd084b` 拉取，仓库不保存副本 |
+| `upstream/`（不入库） | 主办方资料：由 [`scripts/setup_upstream.sh`](../robot/scripts/setup_upstream.sh) 按锁定版本 `13dd084b` 拉取，仓库不保存副本 |
 
 **文档只留 3 份**（2026-09-20 决定）：
 
