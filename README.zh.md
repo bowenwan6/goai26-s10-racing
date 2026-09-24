@@ -30,7 +30,7 @@ GOAI 2026 · 赛道 4 *具身未来* · 挑战 2 —— S10 感知竞速
 - [我们做了什么](#我们做了什么)
 - [硬件](#硬件)
 - [系统总览](#系统总览)
-- [从地图到机器人](#从地图到机器人)
+- [这个闭环](#这个闭环)
 - [快速开始](#快速开始)
 - [模块](#模块)
   - [1 · 路径规划与导航](#1--路径规划与导航)
@@ -164,21 +164,57 @@ flowchart LR
   GW -- "ROS 1 点云 + IMU" --> XNAV
 ```
 
-## 从地图到机器人
+## 这个闭环
+
+这里没有任何一段是单向流水线。赛道只示教一次，之后每一级都喂给下一级 **并且回传**：MuJoCo 在机器人看到路线之前先把它改对，而机器人在现场测到的东西又会再一次改这条路线。
 
 ```mermaid
-flowchart TD
-  REC["现场录制<br/>雷达 + IMU，闭环"] --> MAP["SLAM 地图<br/>厂商 drmap · x_nav"]
-  MAP --> SURVEY["航点勘测 + 示教路径<br/>/teach 网页 · 静止 3 s · ≤2 cm / 1°"]
-  MAP --> TERR["course_terrain.npz<br/>2.5 维高度栅格"]
-  SURVEY --> ROUTE["route_v2.json<br/>30 航点 · 中心线 · 逐段步态"]
-  ROUTE --> PREP["rl_nav_prepare"]
-  TERR --> PREP
-  PREP --> ART["route_rl.json · maneuvers.json<br/>map_surface.npz · prepare_report.json"]
-  ART --> SIM["MuJoCo 全赛道<br/>J3100 + 1150，多种子与扰动"]
-  ART --> BOT["机器人上的 rl_nav"]
-  SIM -- "平顺度、停顿、与第一版的用时对比" --> BOT
+flowchart LR
+  subgraph OFFLINE["1 - 离线示教"]
+    DEMO["操作员开完赛道<br/>3 次示教，记录步态"]
+    MAP["SLAM 地图 - v3 点云"]
+    DEMO --> LINE["示教中心线<br/>在走过的走廊内拉直"]
+    MAP --> LINE
+  end
+
+  subgraph MUJOCO["2 - 三维 MuJoCo 地图仿真"]
+    SCENE["由同一份点云生成<br/>碰撞场景 + 2.5 维高度栅格"]
+    RUN["全赛道运行<br/>真实 ONNX 策略，32+ 种子"]
+    SCENE --> RUN
+  end
+
+  subgraph FIX["3 - 依据 MuJoCo 修路线"]
+    EDIT["拼接、剔除、改闸门、改步态区<br/>必须通过机身扫掠净空检查"]
+  end
+
+  subgraph FIELD["4 - 在机器人上"]
+    OFF["离线路线<br/>route_rl.json + maneuvers.json"]
+    SHORT["短期调整<br/>在实时高度栅格上的改进 A*<br/>滚动车道 - Stanley 回线 - 步态区"]
+    OFF --> SHORT --> DRIVE["实际走出来的线"]
+  end
+
+  LINE --> RUN
+  RUN --> EDIT
+  EDIT -- "接受的路线" --> OFF
+  DRIVE -- "实测偏差、卡顿、步态时机" --> EDIT
+  DRIVE -- "模型错在哪" --> SCENE
+
+  classDef s fill:#e8f0fe,stroke:#1a73e8,color:#10305e
+  classDef f fill:#fef7e0,stroke:#e8710a,color:#5c3c00
+  class OFFLINE,MUJOCO,FIX s
+  class FIELD f
 ```
+
+**1 · 离线示教。** 操作员先把赛道开几遍。工具把这些示教转成由 SLAM 地图得到的障碍栅格，以及一条确实走过的地面走廊，然后在走廊内把线拉直。
+
+**2 · 三维 MuJoCo 地图仿真。** 同一份点云变成碰撞场景和 2.5 维高度栅格。候选路线带着真实 ONNX 策略在那里跑 32 个以上种子 —— 目的不是证明它能跑通，而是找出它在哪里跑不通。
+
+**3 · 修路线。** MuJoCo 找到的问题回到线上：拼进一段重新示教的路径、剔除一个航点、挪一个闸门、改一个步态区、缩短一条起跳直线。每条候选线在执行器愿意加载之前，都必须通过一次独立的机身扫掠净空检查。
+
+**4 · 在机器人上：离线路线 + 短期调整。** 路线在开跑前就固定了；**不**固定的是机器人前方的那一米：改进的 A* 在实时高度栅格上做局部重规划，滚动车道用转向把车拉回线上而不是横着怼过去，步态区则由沿路线的距离和地图显示的轮下地形共同决定。恢复动作只在测到偏差时才触发。
+
+**再传回去。** 每次现场运行都会逐拍记录沿路线距离、横向偏差、跟踪器状态和步态。这才是闭环真正闭上的地方 —— 台阶限速吃掉 66 % 运行时间就是这样查出来的，下一版路线也是照着它改的。
+
 
 当前的 `route_v2.json` 来自把 30 张航点照片与建图关键帧做匹配（[`tools/wp_match`](robot/tools/wp_match/README_ZH.md)）；它的不确定半径是 1.5–3 m，这正是 [`/teach`](robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md) 勘测存在的理由。背后的设计见 [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md)。
 
@@ -193,16 +229,16 @@ git lfs pull            # 点云、MuJoCo 场景、交付物
 **跑运动学全赛道仿真**（不需要 ROS，不需要 GPU，笔记本上几分钟）：
 
 ```bash
-python -m pip install -r sim_full_course/requirements.txt
-python -m sim_full_course.harness                      # 在 route_v2 上的标称运行
-python -m sim_full_course.harness --scenario detour_box --s0 160 --s1 185 --obstacle-s 172
+python -m pip install -r sim/sim_full_course/requirements.txt
+PYTHONPATH=sim python -m sim_full_course.harness       # 在 route_v2 上的标称运行
+PYTHONPATH=sim python -m sim_full_course.harness --scenario detour_box --s0 160 --s1 185 --obstacle-s 172
 ```
 
 **跑测试**（不需要机器人）：
 
 ```bash
-PYTHONPATH=.:src/s10_auto_nav:src/s10_perception \
-  python -m pytest -q src/s10_auto_nav/test sim_full_course/tests tests_real
+PYTHONPATH=.:sim:robot:src/s10_auto_nav:src/s10_perception \
+  python -m pytest -q src/s10_auto_nav/test sim/sim_full_course/tests robot/tests_real
 ```
 
 **为机器人准备一条路线** —— 把 `route_v2` 和高度栅格变成 `rl_nav` 能消费的产物：
@@ -216,9 +252,9 @@ ros2 run s10_auto_nav rl_nav_prepare \
 **在机器人上拉起传感链路** —— 从笔记本运行；`up` 部署 106 取数点并启动网关，`down` 清除全部痕迹：
 
 ```bash
-bash ros1_gateway/scripts/robot_session.sh up
-bash ros1_gateway/scripts/health_check.sh --hz 10
-bash ros1_gateway/scripts/robot_session.sh down --agx
+bash robot/ros1_gateway/scripts/robot_session.sh up
+bash robot/ros1_gateway/scripts/health_check.sh --hz 10
+bash robot/ros1_gateway/scripts/robot_session.sh down --agx
 ```
 
 八月仿真赛的竞赛栈跑在自己的容器里 —— 见[历史](#历史)。
@@ -536,21 +572,18 @@ stateDiagram-v2
 
 ## 仓库结构
 
-| 路径 | 内容 |
-|---|---|
-| [`src/`](src/) | ROS 2 包：`s10_auto_nav`（导航）、`s10_perception`、`s10_bringup` |
-| [`integration/`](robot/integration/) | C++ SDK 胶水：关节主人、策略执行器、起立状态机 |
-| [`ros1_gateway/`](robot/ros1_gateway/) | ROS 2 → ROS 1 网关、106 雷达取数点、运动桥、ROS 1 导航运行时与运行脚本、MCAP 转换器、x_nav 部署 |
-| [`sim_full_course/`](sim/sim_full_course/) | 运动学全赛道仿真器 |
-| [`native_transfer/`](robot/native_transfer/)、[`real_transfer/`](robot/real_transfer/)、[`tests_real/`](robot/tests_real/) | 真机迁移、影子计算、回放及其测试 |
-| [`policy/`](models/deployed/)、[`policies/`](models/candidates/)、[`training/`](sim/training/) | 部署策略包、导出的 ONNX 模型、八月训练代码 |
-| [`tools/`](robot/tools/) | 手机网页、航点匹配、采集工具 |
-| [`data/`](artifacts/data/) | 地图与 MuJoCo 包、地图评审、赛道照片、录制说明（Git LFS） |
-| [`docs/`](docs/) | 文档、图片、参考资料 |
-| [`evidence/`](artifacts/evidence/) | 现场证据、同步记录、已部署软件快照 |
-| [`reports/`](artifacts/reports/) | 报告、海报及其构建素材（八月至九月交付物） |
-| `upstream/`（不入库） | 主办方 SDK，由 [`scripts/setup_upstream.sh`](robot/scripts/setup_upstream.sh) 按锁定版本 `13dd084b` 拉取 |
-| `scripts/`、`docker/`、`.github/` | 构建与运行脚本、开发容器、CI |
+六个目录，各自回答一个问题。
+
+| 路径 | 回答什么问题 | 内容 |
+|---|---|---|
+| [`docs/`](docs/) | *它是怎么工作的？* | 设计文档、图、媒体与厂商参考资料 |
+| [`src/`](src/) | *ROS 2 下跑什么？* | `s10_auto_nav`（导航）、`s10_perception`、`s10_bringup` |
+| [`robot/`](robot/) | *什么会碰到机器人？* | ROS 1 网关与 106 取数点、C++ SDK 胶水、迁移栈、现场网页、运行脚本、docker |
+| [`sim/`](sim/) | *上场前是怎么验的？* | `sim_full_course` 运动学试验台、`training` |
+| [`models/`](models/) | *实际跑的是什么？* | `deployed/` —— 机器人加载的包；`candidates/` —— 训练扫描 |
+| [`artifacts/`](artifacts/) | *发生过什么？* | `data/`（地图、路线、照片）、`evidence/`（带日期的现场记录）、`reports/` |
+
+`upstream/` 不入库：[`robot/scripts/setup_upstream.sh`](robot/scripts/setup_upstream.sh) 按锁定版本 `13dd084b` 拉取主办方 SDK。工具生成的输出放在 `out/`，同样不入库。
 
 逐目录说明、分支规则以及绝不入库的内容：[`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md)。
 
