@@ -30,6 +30,7 @@ fi
 (exec 3<>"/dev/tcp/127.0.0.1/$PORT") 2>/dev/null || { echo "no ROS 1 master on port $PORT; run start_gateway.sh first"; exit 1; }
 STAMP="$(date +%Y%m%d-%H%M%S)"
 export ROS_MASTER_URI="http://127.0.0.1:$PORT" ROS_IP=127.0.0.1
+export S10_POSE_LOG_DIR="$LOGS"      # nav_core: 10 Hz navpose-*.csv (pose, yaw, command) next to the nav log
 ( source "$ROOT/ros1/ros1_env.sh"
   exec setsid python3 -u "$ROOT/nav/s10_rl_nav_ros1.py" --config "$CONFIG" "${ARGS[@]}" \
 ) > "$LOGS/nav-$STAMP.log" 2>&1 < /dev/null &

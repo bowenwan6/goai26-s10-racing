@@ -79,6 +79,8 @@ if climb > 0.0:                              # stairs: climb speed, also ONE num
 import os as _os
 if _os.environ.get("S10_WALK_V"):
     c.setdefault("zone_speed", {})["walk"] = float(_os.environ["S10_WALK_V"])
+if _os.environ.get("S10_PLATFORM_V"):                          # nav --platform-speed: IN the platform gait only (the approach = nav.jump.approach_speed)
+    c.setdefault("zone_speed", {})["platform"] = float(_os.environ["S10_PLATFORM_V"])
 yaml.safe_dump(c, open(dst, "w"), sort_keys=False)
 PY
         ;;
