@@ -20,6 +20,17 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 
 <sub><b>The whole course in simulation.</b> The <code>route_v2</code> follower drives two RL policies — J3100 for walking, 1150 for stairs — through all 30 waypoints in 713 s of simulated time. Trajectory colour is the controller mode; orange bands are climb zones handed to the stairs policy.</sub>
 
+<table>
+<tr>
+<td width="52%"><img src="docs/media/field_platform_descent.jpg" alt="Lynx S10 stepping down a gabion retaining wall on the GOAI 2026 course"></td>
+<td><img src="docs/media/driven_vs_planned.png" alt="Driven path against the planned line and the offline map"></td>
+</tr>
+<tr>
+<td><sub><b>The same stack, on the course.</b> Dog 048 dropping off the gabion wall under the platform gait — the step the route planner marks as a jump lane.</sub></td>
+<td><sub><b>And what it looked like in the data.</b> Driven path against the planned line on the offline map, reconstructed from the runner's own telemetry. Orange = the local planner actively replanning.</sub></td>
+</tr>
+</table>
+
 </div>
 
 ---
@@ -30,7 +41,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 - [What we built](#what-we-built)
 - [Hardware](#hardware)
 - [System overview](#system-overview)
-- [From map to robot](#from-map-to-robot)
+- [The loop](#the-loop)
 - [Quick start](#quick-start)
 - [Modules](#modules)
   - [1 · Planning and navigation](#1--planning-and-navigation)
@@ -59,7 +70,7 @@ GOAI 2026 · Track 4 *Embodied Future* · Challenge 2 — S10 Perception Racing
 
 ## What we built
 
-Five pieces of this stack are ours rather than the vendor's. Each exists because something in the way could not be solved by configuration. The full technical reference — chain, planning strategy, parameters, tests, what is unverified, rollback — is [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) (ZH).
+Five pieces of this stack are ours rather than the vendor's. Each exists because something in the way could not be solved by configuration. The full technical reference — chain, planning strategy, parameters, tests, what is unverified, rollback — is [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](robot/ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) (ZH).
 
 **1 · A read-only tap and a byte-exact bridge.** The vendor publishes the lidar only on its own board, and the SLAM we integrate speaks ROS 1. A read-only subscriber on that board forwards the raw frames to our compute, where a one-way bridge republishes them with fields, timestamps and frame ids untouched — 592/592 clouds and 11 845/11 845 IMU messages identical to an independent reference over 60 s. Nothing vendor-side changes, and one command removes every trace.
 
@@ -199,23 +210,75 @@ On the robot today the native-gait path is the live one: joint-level control wou
 | **106** perception | lidar, IMU, vendor SLAM | vendor | one read-only lidar tap in a user directory, removed by `robot_session.sh down` |
 | **Phone** | field UI | — | browser on the robot Wi-Fi |
 
-## From map to robot
+## The loop
+
+Nothing here is a one-way pipeline. The course is taught once, then every stage feeds
+the next **and reports back**: MuJoCo corrects the route before the robot sees it, and
+what the robot measures in the field corrects the route again.
 
 ```mermaid
-flowchart TD
-  REC["Field recording<br/>lidar + IMU, loop closed"] --> MAP["SLAM map<br/>vendor drmap · x_nav"]
-  MAP --> SURVEY["Waypoint survey + taught path<br/>/teach app · 3 s still · ≤2 cm / 1°"]
-  MAP --> TERR["course_terrain.npz<br/>2.5-D height grid"]
-  SURVEY --> ROUTE["route_v2.json<br/>30 waypoints · centreline · gait per segment"]
-  ROUTE --> PREP["rl_nav_prepare"]
-  TERR --> PREP
-  PREP --> ART["route_rl.json · maneuvers.json<br/>map_surface.npz · prepare_report.json"]
-  ART --> SIM["MuJoCo full course<br/>J3100 + 1150, seeds and disturbances"]
-  ART --> BOT["rl_nav on the robot"]
-  SIM -- "smoothness, stops, time vs the first version" --> BOT
+flowchart LR
+  subgraph OFFLINE["1 - Offline teacher"]
+    DEMO["Operator drives the course<br/>3 demonstrations, gait recorded"]
+    MAP["SLAM map - v3 cloud"]
+    DEMO --> LINE["Taught centreline<br/>straightened inside the walked corridor"]
+    MAP --> LINE
+  end
+
+  subgraph MUJOCO["2 - 3D MuJoCo map simulation"]
+    SCENE["Collision scene + 2.5-D height grid<br/>built from the same cloud"]
+    RUN["Full-course run<br/>real ONNX policies, 32+ seeds"]
+    SCENE --> RUN
+  end
+
+  subgraph FIX["3 - Route fix from MuJoCo"]
+    EDIT["Splice, drop, re-gate, re-zone<br/>body-sweep clearance must pass"]
+  end
+
+  subgraph FIELD["4 - On the robot"]
+    OFF["Offline route<br/>route_rl.json + maneuvers.json"]
+    SHORT["Short-term adjustment<br/>modified A* on the live height grid<br/>rolling lane - Stanley return - gait zones"]
+    OFF --> SHORT --> DRIVE["Driven path"]
+  end
+
+  LINE --> RUN
+  RUN --> EDIT
+  EDIT -- "accepted route" --> OFF
+  DRIVE -- "measured deviation, stalls, gait timing" --> EDIT
+  DRIVE -- "where the model was wrong" --> SCENE
+
+  classDef s fill:#e8f0fe,stroke:#1a73e8,color:#10305e
+  classDef f fill:#fef7e0,stroke:#e8710a,color:#5c3c00
+  class OFFLINE,MUJOCO,FIX s
+  class FIELD f
 ```
 
-The current `route_v2.json` came from matching 30 waypoint photos to mapping keyframes ([`tools/wp_match`](tools/wp_match/README_ZH.md)); its uncertainty radius is 1.5–3 m, which is why the [`/teach`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) survey exists. The design behind all of this is in [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) (ZH).
+**1 · Offline teacher.** The operator drives the course a few times. The tool turns those
+demonstrations into an obstacle grid from the SLAM map and a corridor of ground that was
+actually walked, then straightens the line inside that corridor.
+
+**2 · 3D MuJoCo map simulation.** The same point cloud becomes a collision scene and a
+2.5-D height grid. The candidate route runs there with the real ONNX policies over 32+
+seeds — not to prove it works, but to find where it does not.
+
+**3 · Route fix.** What MuJoCo finds goes back into the line: splice in a re-taught
+segment, drop a waypoint, move a gate, re-zone a gait, shorten a jump lane. Every
+candidate must pass an independent body-sweep clearance check before the runner will
+load it.
+
+**4 · On the robot, offline route plus short-term adjustment.** The route is fixed before
+the run. What is *not* fixed is the metre in front of the robot: a modified A* replans
+locally on the live height grid, a rolling lane steers back to the line rather than
+strafing at it, and gait zones are chosen by distance along the route and by what the map
+says is under the wheels. Recovery fires only on a measured deviation.
+
+**And back again.** Every field run writes its along-route distance, lateral deviation,
+follower state and gait per tick. That is what closes the loop — it is how the stairs cap
+was found to be costing 66 % of the run time, and it is what the next route build is
+edited against.
+
+
+The current `route_v2.json` came from matching 30 waypoint photos to mapping keyframes ([`tools/wp_match`](robot/tools/wp_match/README_ZH.md)); its uncertainty radius is 1.5–3 m, which is why the [`/teach`](robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md) survey exists. The design behind all of this is in [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) (ZH).
 
 ## Quick start
 
@@ -228,16 +291,16 @@ git lfs pull            # point clouds, MuJoCo scenes, media
 **Run the kinematic whole-course simulation** (no ROS, no GPU, a few minutes on a laptop):
 
 ```bash
-python -m pip install -r sim_full_course/requirements.txt
-python -m sim_full_course.harness                      # nominal run over route_v2
-python -m sim_full_course.harness --scenario detour_box --s0 160 --s1 185 --obstacle-s 172
+python -m pip install -r sim/sim_full_course/requirements.txt
+PYTHONPATH=sim python -m sim_full_course.harness       # nominal run over route_v2
+PYTHONPATH=sim python -m sim_full_course.harness --scenario detour_box --s0 160 --s1 185 --obstacle-s 172
 ```
 
 **Run the test suites** (no robot needed):
 
 ```bash
-PYTHONPATH=.:src/s10_auto_nav:src/s10_perception \
-  python -m pytest -q src/s10_auto_nav/test sim_full_course/tests tests_real
+PYTHONPATH=.:sim:robot:src/s10_auto_nav:src/s10_perception \
+  python -m pytest -q src/s10_auto_nav/test sim/sim_full_course/tests robot/tests_real
 ```
 
 **Prepare a route for the robot** — turns `route_v2` plus a height grid into what `rl_nav` consumes:
@@ -251,9 +314,9 @@ ros2 run s10_auto_nav rl_nav_prepare \
 **Bring up the sensor path on the robot** — run from a laptop; `up` deploys the 106 tap and starts the gateway, `down` removes every trace:
 
 ```bash
-bash ros1_gateway/scripts/robot_session.sh up
-bash ros1_gateway/scripts/health_check.sh --hz 10
-bash ros1_gateway/scripts/robot_session.sh down --agx
+bash robot/ros1_gateway/scripts/robot_session.sh up
+bash robot/ros1_gateway/scripts/health_check.sh --hz 10
+bash robot/ros1_gateway/scripts/robot_session.sh down --agx
 ```
 
 The competition stack from the August simulation contest runs in its own container — see [History](#history).
@@ -269,8 +332,8 @@ The competition stack from the August simulation contest runs in its own contain
 | [`rl_nav/route_runner.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/route_runner.py) | Mode machine over the taught route; emits body velocity and the joint-owner request | ✅ first autonomous run |
 | [`rl_nav/prepare.py`](src/s10_auto_nav/s10_auto_nav/rl_nav/prepare.py) | Offline route grounding, climb manoeuvres, map surface, report | 🧪 |
 | [`route_v2.py`](src/s10_auto_nav/s10_auto_nav/route_v2.py), [`route_planner.py`](src/s10_auto_nav/s10_auto_nav/route_planner.py) | Centreline following with a Frenet local planner, A\* fallback on the prior map | 🧪 |
-| [`native_transfer/`](native_transfer/README_ZH.md) | Same follower driving the vendor's native gaits (ROS 2 route) | ✅ deployed; observation only, no commands sent |
-| [`ros1_gateway/nav/`](ros1_gateway/docs/HANDOFF_S10_AUTONOMY_STACK.md) | The same runner under ROS 1 on the AGX, plus one-command run scripts | ✅ drives the robot through `s10_ros1_control` |
+| [`native_transfer/`](robot/native_transfer/README_ZH.md) | Same follower driving the vendor's native gaits (ROS 2 route) | ✅ deployed; observation only, no commands sent |
+| [`ros1_gateway/nav/`](robot/ros1_gateway/docs/HANDOFF_S10_AUTONOMY_STACK.md) | The same runner under ROS 1 on the AGX, plus one-command run scripts | ✅ drives the robot through `s10_ros1_control` |
 
 ```mermaid
 stateDiagram-v2
@@ -320,7 +383,7 @@ Details: [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) (ZH).
 
 Two levels, both driven by the same route artefacts.
 
-**Kinematic whole-course harness** — [`sim_full_course/`](sim_full_course/README_ZH.md). Builds a 2.5-D terrain from the v3 point cloud, moves a kinematic robot, injects obstacles by arc length, and shares the perception contract with the real nodes. Fast enough to run on every change.
+**Kinematic whole-course harness** — [`sim_full_course/`](sim/sim_full_course/README_ZH.md). Builds a 2.5-D terrain from the v3 point cloud, moves a kinematic robot, injects obstacles by arc length, and shares the perception contract with the real nodes. Fast enough to run on every change.
 
 **MuJoCo whole course with the real policies** — harness in the [`s10-rl-sprint`](https://github.com/bowenwan6/s10-rl-sprint) repo, scene built from the same map. This run produces the headline result below.
 
@@ -387,7 +450,7 @@ flowchart LR
 
 **Evaluation is statistical, not anecdotal.** MuJoCo on x86 and on ARM disagree, and the outcomes are chaotic: any change to the command stream reshuffles which seeds fail. Completion is judged over **32+ seeds**, never 4. Section runs barely depend on the seed unless `--loc_noise` is on, because sensor noise only matters in follower-driven modes.
 
-Training, evaluation harnesses and the acceptance criteria live in the sprint repo; this repo holds the exported ONNX models, the deployment glue in [`integration/`](integration/), and the August training code in [`training/`](training/).
+Training, evaluation harnesses and the acceptance criteria live in the sprint repo; this repo holds the exported ONNX models, the deployment glue in [`integration/`](robot/integration/), and the August training code in [`training/`](sim/training/).
 
 ### 4 · Mapping and localisation
 
@@ -402,9 +465,9 @@ Training, evaluation harnesses and the acceptance criteria live in the sprint re
 </tr>
 </table>
 
-- **Vendor SLAM on 106** produced the v3 map and the localisation used through August and September. Map, MuJoCo scene and an offline viewer are in [`data/deliverables/`](data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md).
+- **Vendor SLAM on 106** produced the v3 map and the localisation used through August and September. Map, MuJoCo scene and an offline viewer are in [`data/deliverables/`](artifacts/data/deliverables/S10_v3_Map_MuJoCo_20260916/README.md).
 - **New third-party SLAM (x_nav)** runs in a container on our AGX and publishes `/base_link/odom` at 10 Hz. It needs ROS 1 sensor topics, which is what the gateway provides. Indoor maps are built, saved and re-localised into; localisation is initialised by publishing `/initialpose`, which the run script does automatically.
-- **ROS 2 → ROS 1 gateway** — [`ros1_gateway/`](ros1_gateway/README_ZH.md) (ZH). It forwards point cloud fields, timestamps and frame ids byte for byte and invents no TF. The 106 lidar publishes host-locally, so a read-only tap there relays CDR frames over TCP. Checked against an independent ROS 2 reference on the new robot: **592/592 clouds and 11 845/11 845 IMU messages identical over 60 s**.
+- **ROS 2 → ROS 1 gateway** — [`ros1_gateway/`](robot/ros1_gateway/README_ZH.md) (ZH). It forwards point cloud fields, timestamps and frame ids byte for byte and invents no TF. The 106 lidar publishes host-locally, so a read-only tap there relays CDR frames over TCP. Checked against an independent ROS 2 reference on the new robot: **592/592 clouds and 11 845/11 845 IMU messages identical over 60 s**.
 - **Map alignment** to the v3 frame, waypoint re-survey and the route rebuild are planned in [`docs/NAVIGATION_DESIGN_ZH.md`](docs/NAVIGATION_DESIGN_ZH.md) §3 (ZH).
 
 **From a field recording to a pose the follower can use:**
@@ -452,10 +515,10 @@ One command (`robot_session.sh down`) removes the tap and every file it placed o
 
 ### 5 · Field tools on the phone
 
-A small standard-library web server on the AGX serves the field pages over the robot's Wi-Fi ([`tools/s10_mapping_web/`](tools/s10_mapping_web/README.md)):
+A small standard-library web server on the AGX serves the field pages over the robot's Wi-Fi ([`tools/s10_mapping_web/`](robot/tools/s10_mapping_web/README.md)):
 
-- **`/teach` — collection assistant** (current): mapping capture with a loop-closure helper, waypoint survey with a 3 s still test (≤2 cm position and ≤1° heading spread to pass), switch-point pairs for policy hand-off, and taught-path recording. Records only — it never commands motion and never switches maps. Guide: [`TEACH_GUIDE_ZH.md`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH).
-- A teach session becomes a route with [`ros1_gateway/tools/teach_to_route.py`](ros1_gateway/tools/teach_to_route.py): waypoints and the taught centreline turn into `route_v2.json`, and the switch points become the climb manoeuvres the runner consumes.
+- **`/teach` — collection assistant** (current): mapping capture with a loop-closure helper, waypoint survey with a 3 s still test (≤2 cm position and ≤1° heading spread to pass), switch-point pairs for policy hand-off, and taught-path recording. Records only — it never commands motion and never switches maps. Guide: [`TEACH_GUIDE_ZH.md`](robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH).
+- A teach session becomes a route with [`ros1_gateway/tools/teach_to_route.py`](robot/ros1_gateway/tools/teach_to_route.py): waypoints and the taught centreline turn into `route_v2.json`, and the switch points become the climb manoeuvres the runner consumes.
 - Phones reach the page through a user-level forwarder on the vendor board; the app itself stays on our AGX. The forwarder is removed at handover.
 - **`/`, `/localization`, `/heightmap`, `/field`, `/imu-check`, `/native-nav`**: mapping control, live pose, elevation map, field checklists and native-gait tests. They are bound to robot 48; do not open them on the shared robot — the reason is in [`docs/POLICIES_AND_APPS_ZH.md`](docs/POLICIES_AND_APPS_ZH.md) §2.1.
 
@@ -474,12 +537,12 @@ A small standard-library web server on the AGX serves the field pages over the r
 
 ### 6 · Real-robot deployment and safety
 
-- **One joint owner.** [`integration/joint_command_owner.hpp`](integration/joint_command_owner.hpp) guarantees a single source of `/JOINTS_CMD`; switching owners passes through a 0.25 s SafeHold, so a policy hand-off can never overlap.
+- **One joint owner.** [`integration/joint_command_owner.hpp`](robot/integration/joint_command_owner.hpp) guarantees a single source of `/JOINTS_CMD`; switching owners passes through a 0.25 s SafeHold, so a policy hand-off can never overlap.
 - **Diagnostic limits** are the robot's, not ours: 25.76 / 30 rad/s leg and wheel speed, 45 / 12 N·m torque. Crossing them drops the robot into damping — this is what stopped HIM 1500 on the stairs and what 1150 would hit today.
-- **Velocity bridge** [`ros1_gateway/src/s10_ros1_control`](ros1_gateway/README_ZH.md) converts ROS 1 `/cmd_vel` and web commands into native motion commands with clamps, timeouts, a latched stop and an exclusivity fault. It is a **dry run by default**; motion needs `--enable-motion` and a person on site.
+- **Velocity bridge** [`ros1_gateway/src/s10_ros1_control`](robot/ros1_gateway/README_ZH.md) converts ROS 1 `/cmd_vel` and web commands into native motion commands with clamps, timeouts, a latched stop and an exclusivity fault. It is a **dry run by default**; motion needs `--enable-motion` and a person on site.
 - **Sharing the robot.** `robot_session.sh up` deploys what we need; `down` removes every file and process we created on 106 and leaves the vendor services running, and `unkeys` removes our SSH keys. Any change to a vendor board — including the plaintext control ports that `/NAV_CMD` needs — is recorded and restored before handover. Before a motion test we agree with the other team first, because the robot already carries two native publishers on `/NAV_CMD`.
 - **Arming is explicit.** The robot ignores `/NAV_CMD` until it is switched into navigation use mode; our scripts switch it, run, and always switch back to remote-control mode on exit, fault or Ctrl-C. `--shadow` runs the whole stack without sending a single command.
-- **One command per run**, because a field operator should hold the remote, not a keyboard: `robot_session.sh nav --speed <m/s> [--route short|full] [--shadow]` selects the map, sets the initial pose, waits for the robot to stand, arms, runs, prints one status line per second, and restores the mode at the end. Procedure and thresholds: [`ROOM_NAV_RUNBOOK_ZH.md`](ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md) (ZH), field log: [`EXPERIMENT_048_ZH.md`](ros1_gateway/docs/EXPERIMENT_048_ZH.md) (ZH).
+- **One command per run**, because a field operator should hold the remote, not a keyboard: `robot_session.sh nav --speed <m/s> [--route short|full] [--shadow]` selects the map, sets the initial pose, waits for the robot to stand, arms, runs, prints one status line per second, and restores the mode at the end. Procedure and thresholds: [`ROOM_NAV_RUNBOOK_ZH.md`](robot/ros1_gateway/docs/ROOM_NAV_RUNBOOK_ZH.md) (ZH), field log: [`EXPERIMENT_048_ZH.md`](robot/ros1_gateway/docs/EXPERIMENT_048_ZH.md) (ZH).
 
 
 **Who is allowed to move the robot, and what stops it:**
@@ -507,6 +570,13 @@ stateDiagram-v2
 ```
 
 ## Results
+
+<div align="center">
+<img src="docs/media/driven_vs_planned.png" width="900" alt="Driven path vs planned line, 2026-09-21 16:53 run">
+<br>
+<sub><b>Sim-to-real, measured.</b> The route was taught offline, corrected in MuJoCo, then driven. Over 119.5 m the driven path stayed within <b>0.45 m</b> of the planned line (mean 0.133 m) and never approached the 0.80 m recovery threshold — while the local planner was replanning on <b>114 of 152 ticks</b>. Regenerate with <code>robot/tools/run_review/plot_driven_vs_planned.py</code>.</sub>
+</div>
+
 
 **First long run on the course, 2026-09-21** — dog 048, our route runner on ROS 1, native flat and stairs gaits, the morning version of the stack:
 
@@ -550,7 +620,7 @@ Not every seed succeeds: seed 8 failed twice and seed 10 stalled before WP29. Fu
 
 **Many-seed simulation** — on the team GPU server. Full course, 32 seeds per stack: the current runner completes 19/32 (23/32 at the previous commit) against 4/24 for the first version. With 5 cm / 2° localisation noise over seeds 0–11: the B staircase 9/12 (three falls at 60–63° of tilt), the terrace 11/12, the whole course 8/12. Outcomes reshuffle whenever the command stream changes, so we judge over 32+ seeds rather than a handful.
 
-**Sensor gateway, 2026-09-19** — the byte-equality audit above, plus 10 minutes continuous. Full artifacts and caveats: [`evidence/artifacts/ros1-gateway-newdog-20260919/`](evidence/artifacts/ros1-gateway-newdog-20260919/README.md).
+**Sensor gateway, 2026-09-19** — the byte-equality audit above, plus 10 minutes continuous. Full artifacts and caveats: [`evidence/artifacts/ros1-gateway-newdog-20260919/`](artifacts/evidence/runs/ros1-gateway-newdog-20260919/README.md).
 
 | Where | Process | CPU (of one core) | RSS |
 |---|---|---|---|
@@ -574,21 +644,18 @@ That last row is the one that matters: attaching the tap did not measurably load
 
 ## Repository layout
 
-| Path | Contents |
-|---|---|
-| [`src/`](src/) | ROS 2 packages: `s10_auto_nav` (navigation), `s10_perception`, `s10_bringup` |
-| [`integration/`](integration/) | C++ SDK glue: joint owner, policy runners, stand-up state machine |
-| [`ros1_gateway/`](ros1_gateway/) | ROS 2 → ROS 1 gateway, 106 lidar tap, motion bridge, the ROS 1 navigation runtime and run scripts, MCAP converter, x_nav deployment |
-| [`sim_full_course/`](sim_full_course/) | Kinematic whole-course simulator |
-| [`native_transfer/`](native_transfer/), [`real_transfer/`](real_transfer/), [`tests_real/`](tests_real/) | Real-robot transfer, shadow computation, replay and their tests |
-| [`policy/`](policy/), [`policies/`](policies/), [`training/`](training/) | Deployed policy bundles, exported ONNX models, August training code |
-| [`tools/`](tools/) | Phone web app, waypoint matching, capture tools |
-| [`data/`](data/) | Map and MuJoCo bundle, map reviews, course photos, recording notes (Git LFS) |
-| [`docs/`](docs/) | Documentation, media, references |
-| [`evidence/`](evidence/) | Field evidence, sync records, snapshots of deployed software |
-| [`reports/`](reports/) | Reports, posters and their build assets (August–September deliverables) |
-| `upstream/` | Organiser SDK, fetched by [`scripts/setup_upstream.sh`](scripts/setup_upstream.sh) at pinned revision `13dd084b` — not tracked here |
-| `scripts/`, `docker/`, `.github/` | Build and run scripts, dev container, CI |
+Six directories. Each one answers a different question.
+
+| Path | Question it answers | Contents |
+|---|---|---|
+| [`docs/`](docs/) | *how does it work?* | the design documents, diagrams, media and vendor references |
+| [`src/`](src/) | *what runs under ROS 2?* | `s10_auto_nav` (navigation), `s10_perception`, `s10_bringup` |
+| [`robot/`](robot/) | *what touches the robot?* | the ROS 1 gateway and 106 tap, C++ SDK glue, transfer stacks, field web app, run scripts, docker |
+| [`sim/`](sim/) | *how was it checked before the field?* | `sim_full_course` kinematic harness, `training` |
+| [`models/`](models/) | *what does it actually run?* | `deployed/` — the bundles the robot loads; `candidates/` — training sweeps |
+| [`artifacts/`](artifacts/) | *what happened?* | `data/` (maps, routes, photos), `evidence/` (dated field records), `reports/` |
+
+`upstream/` is not tracked: [`robot/scripts/setup_upstream.sh`](robot/scripts/setup_upstream.sh) fetches the organiser SDK at pinned revision `13dd084b`. Generated tool output goes to `out/`, also untracked.
 
 A per-directory description, branch rules and what never enters Git: [`docs/REPO_GUIDE_ZH.md`](docs/REPO_GUIDE_ZH.md) (ZH).
 
@@ -606,11 +673,11 @@ Operational manuals stay with their code:
 
 | Where | What |
 |---|---|
-| [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) (ZH) | **the technical reference for the robot stack**: whole chain, planning strategy, parameters, tests, what is unverified, rollback |
-| [`ros1_gateway/README_ZH.md`](ros1_gateway/README_ZH.md) (ZH) | the ROS 1 gateway and motion bridge: design, evidence, acceptance |
-| [`ros1_gateway/docs/`](ros1_gateway/docs/) | English interface handoff (its planning sections predate the pipeline doc), field runbook, first-run log, test plan, app API |
-| [`tools/s10_mapping_web/TEACH_GUIDE_ZH.md`](tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH) | the field procedure for `/teach` |
-| [`sim_full_course/README_ZH.md`](sim_full_course/README_ZH.md) (ZH) · [`tools/wp_match/README_ZH.md`](tools/wp_match/README_ZH.md) (ZH) | simulator and waypoint matching |
+| [`ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md`](robot/ros1_gateway/docs/PIPELINE_AND_PLANNING_ZH.md) (ZH) | **the technical reference for the robot stack**: whole chain, planning strategy, parameters, tests, what is unverified, rollback |
+| [`ros1_gateway/README_ZH.md`](robot/ros1_gateway/README_ZH.md) (ZH) | the ROS 1 gateway and motion bridge: design, evidence, acceptance |
+| [`ros1_gateway/docs/`](robot/ros1_gateway/docs/) | English interface handoff (its planning sections predate the pipeline doc), field runbook, first-run log, test plan, app API |
+| [`tools/s10_mapping_web/TEACH_GUIDE_ZH.md`](robot/tools/s10_mapping_web/TEACH_GUIDE_ZH.md) (ZH) | the field procedure for `/teach` |
+| [`sim_full_course/README_ZH.md`](sim/sim_full_course/README_ZH.md) (ZH) · [`tools/wp_match/README_ZH.md`](robot/tools/wp_match/README_ZH.md) (ZH) | simulator and waypoint matching |
 
 Documents written before 2026-09-20 — the August contest technical design, submission and third-party records, the older robot setup, mapping, matching and research notes, and the previous README — were folded into the three above or retired. They stay reachable at the `docs-archive-20260920` tag:
 

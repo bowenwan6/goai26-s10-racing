@@ -34,31 +34,32 @@ results/
 # Each included directory excludes its raw recordings and generated caches.
 # Other local snapshots and task outputs remain private/local by default.
 # Generated outputs from the tools (sim terrain, SDK trials, GUI captures).
-/artifacts/
+# NOTE: /out/, not /artifacts/ — artifacts/ is a tracked tree (data, evidence, reports).
+/out/
 
-/evidence/artifacts/*
-!/evidence/artifacts/s10-expert-analysis/
-!/evidence/artifacts/s10-recording-review-20260909/
-!/evidence/artifacts/s10-ledge-match-20260909/
-!/evidence/artifacts/s10-ledge-batch-20260910/
-!/evidence/artifacts/native-control-handoff-20260917/
-!/evidence/artifacts/native-navigation-audit-20260917/
-!/evidence/artifacts/native-start-b-implementation-20260917/
-!/evidence/artifacts/ros1-gateway-20260918/
-!/evidence/artifacts/ros1-gateway-newdog-20260919/
+/artifacts/evidence/runs/*
+!/artifacts/evidence/runs/s10-expert-analysis/
+!/artifacts/evidence/runs/s10-recording-review-20260909/
+!/artifacts/evidence/runs/s10-ledge-match-20260909/
+!/artifacts/evidence/runs/s10-ledge-batch-20260910/
+!/artifacts/evidence/runs/native-control-handoff-20260917/
+!/artifacts/evidence/runs/native-navigation-audit-20260917/
+!/artifacts/evidence/runs/native-start-b-implementation-20260917/
+!/artifacts/evidence/runs/ros1-gateway-20260918/
+!/artifacts/evidence/runs/ros1-gateway-newdog-20260919/
 # ...including its gateway health output, which *.log above would otherwise exclude.
-!/evidence/artifacts/ros1-gateway-newdog-20260919/**/*.log
+!/artifacts/evidence/runs/ros1-gateway-newdog-20260919/**/*.log
 
-# ros1_gateway/nav/s10_auto_nav is generated from src/s10_auto_nav by
-# ros1_gateway/nav/sync_auto_nav.sh at the commit recorded in ros1_gateway/nav/COMMIT.
-/ros1_gateway/nav/s10_auto_nav/
+# robot/ros1_gateway/nav/s10_auto_nav is generated from src/s10_auto_nav by
+# robot/ros1_gateway/nav/sync_auto_nav.sh at the commit recorded in robot/ros1_gateway/nav/COMMIT.
+/robot/ros1_gateway/nav/s10_auto_nav/
 
-# ros1_gateway/vendor/agx_only holds an unmodified upstream snapshot staged for the AGX
+# robot/ros1_gateway/vendor/agx_only holds an unmodified upstream snapshot staged for the AGX
 # (ros1_bridge at ros2/ros1_bridge@611755f); fetch it from upstream instead.
-/ros1_gateway/vendor/agx_only/
+/robot/ros1_gateway/vendor/agx_only/
 
 # Raw investigation dump: quotes a vendor default password in its review text.
-/ros1_gateway/docs/NAV_TEST_PLAN_20260920.raw.json
+/robot/ros1_gateway/docs/NAV_TEST_PLAN_20260920.raw.json
 /tmp/
 /.playwright-cli/
 
@@ -75,17 +76,17 @@ MUJOCO_LOG.TXT
 !deliverables/**/*.mp4
 !real_transfer/results/
 !real_transfer/results/**
-!tools/s10_mapping_web/qa/native-nav-evidence/*.log
+!robot/tools/s10_mapping_web/qa/native-nav-artifacts/evidence/*.log
 
 # Full raw recordings and the multi-GB LiDAR/IMU archive stay in the local workspace.
-/recordings/**/raw_bag/*.mcap
+/artifacts/data/recordings/**/raw_bag/*.mcap
 /deliverables/S10_048_LiDAR_IMU_*.zip
 /academic_assets/*.aux
 
 # Teammate's web adapter: their code, no licence header, handed over for integration only.
 # The repo keeps web_entry/README.md and our patch (navteam_*.patch) against it.
-/ros1_gateway/web_entry/s10_web_navigation.py*
-/ros1_gateway/web_entry/page_103/*.navteam
+/robot/ros1_gateway/web_entry/s10_web_navigation.py*
+/robot/ros1_gateway/web_entry/page_103/*.navteam
 
 # The organiser SDK is fetched by scripts/setup_upstream.sh into upstream/ at a pinned
 # revision; it is never vendored into this repository.

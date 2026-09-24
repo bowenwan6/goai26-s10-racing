@@ -68,7 +68,7 @@ jobs:
         run: |
           python3 - <<'PYEOF'
           import ipaddress, pathlib, re, sys
-          SKIP = {"evidence", "reports", "data", "vendor", "upstream", ".git", ".github"}
+          SKIP = {"artifacts", "vendor", "upstream", ".git", ".github"}
           pat = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
           bad = []
           for f in pathlib.Path(".").rglob("*.md"):
@@ -154,9 +154,9 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/src/s10_auto_nav
       - name: Observation contract
         run: pytest -q tests
-        working-directory: training
+        working-directory: sim/training
         env:
-          PYTHONPATH: ${{ github.workspace }}/training:${{ github.workspace }}/src/s10_auto_nav
+          PYTHONPATH: ${{ github.workspace }}/sim/training:${{ github.workspace }}/src/s10_auto_nav
 
   build:
     name: colcon build

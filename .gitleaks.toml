@@ -21,8 +21,8 @@ id = "generic-api-key"
   path treats `key` as a credential.
   """
   paths = [
-    '''evidence/artifacts/native-control-handoff-\d{8}/.*\.json''',
-    '''tools/s10_mapping_web/qa/native-nav-evidence/.*\.json''',
+    '''artifacts/evidence/runs/native-control-handoff-\d{8}/.*\.json''',
+    '''robot/tools/s10_mapping_web/qa/native-nav-evidence/.*\.json''',
   ]
   regexTarget = "line"
   regexes = ['''"key":\s*"[0-9a-f]{32}"''']
