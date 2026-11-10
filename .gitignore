@@ -37,6 +37,8 @@ results/
 # NOTE: /out/, not /artifacts/ — artifacts/ is a tracked tree (data, evidence, reports).
 /out/
 
+# "runs/" above (training output) also matches this directory; re-include it so the list below applies.
+!/artifacts/evidence/runs/
 /artifacts/evidence/runs/*
 !/artifacts/evidence/runs/s10-expert-analysis/
 !/artifacts/evidence/runs/s10-recording-review-20260909/
@@ -49,6 +51,9 @@ results/
 !/artifacts/evidence/runs/ros1-gateway-newdog-20260919/
 # ...including its gateway health output, which *.log above would otherwise exclude.
 !/artifacts/evidence/runs/ros1-gateway-newdog-20260919/**/*.log
+!/artifacts/evidence/runs/v7o-route-checks-20260921-22/
+# ...including the teaching recorder logs.
+!/artifacts/evidence/runs/v7o-route-checks-20260921-22/**/*.log
 
 # robot/ros1_gateway/nav/s10_auto_nav is generated from src/s10_auto_nav by
 # robot/ros1_gateway/nav/sync_auto_nav.sh at the commit recorded in robot/ros1_gateway/nav/COMMIT.

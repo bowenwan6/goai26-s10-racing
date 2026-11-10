@@ -1,0 +1,6 @@
+route v7_o-s4-full: 380 s, reached 29/29, end DONE, modes ['DONE', 'WALK']
+mean vx 0.71 m/s, mean |wz| 0.073 rad/s, standing still 20 s, gait switches [(18.0, 'stairs', 14.24), (56.1, 'flat', 39.41), (69.3, 'stairs', 49.74), (140.0, 'flat', 97.41), (159.4, 'stairs', 113.84), (167.8, 'platform', 117.23), (175.1, 'flat', 119.24), (296.9, 'stairs', 225.52), (309.9, 'platform', 231.81), (317.6, 'stairs', 233.93), (331.0, 'platform', 238.62), (338.7, 'stairs', 240.73), (359.1, 'flat', 253.72)]
+SIM_FULL_ROUTE_OK
+real 85.37
+user 48.60
+sys 6.40

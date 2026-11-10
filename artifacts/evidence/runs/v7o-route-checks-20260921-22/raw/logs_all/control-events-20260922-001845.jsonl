@@ -1,0 +1,5 @@
+{"wall_ns":1790007526635678571,"event":"start","detail":{"enable_motion":false,"max_vx":0.3,"max_vy":0.1,"max_wz":0.5,"nav_gait":12290,"cmd_sources":"rl_nav=/rl_nav/cmd_vel,x_nav=/cmd_vel","cmd_source":"rl_nav","exclusive_mode":"messages"}}
+{"wall_ns":1790007529641950381,"event":"dry_run","detail":{"nav_cmd_publishers":0,"foreign_nav_cmd_3s":0}}
+{"wall_ns":1790007864126523743,"event":"gait_change","detail":{"from":4097,"to":4099}}
+{"wall_ns":1790007885446390249,"event":"gait_change","detail":{"from":4099,"to":4097}}
+{"wall_ns":1790008058072759595,"event":"gait_change","detail":{"from":4097,"to":4099}}

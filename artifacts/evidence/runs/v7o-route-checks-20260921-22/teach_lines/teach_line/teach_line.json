@@ -1,0 +1,411 @@
+{
+ "session": "../field_data/20260920-v7_o/session",
+ "demos": [
+  "path_20260921_003133",
+  "path_20260921_004546",
+  "path_20260921_005347"
+ ],
+ "gait_demos": [
+  "path_20260921_004546",
+  "path_20260921_005347"
+ ],
+ "before": {
+  "path_20260921_003133": {
+   "length": 293.1,
+   "kinks_over_15deg": 124,
+   "kinks_over_30deg": 58,
+   "straight_fraction": 0.5,
+   "total_turning_deg": 9390
+  },
+  "path_20260921_004546": {
+   "length": 302.2,
+   "kinks_over_15deg": 142,
+   "kinks_over_30deg": 63,
+   "straight_fraction": 0.48,
+   "total_turning_deg": 11077
+  },
+  "path_20260921_005347": {
+   "length": 321.7,
+   "kinks_over_15deg": 214,
+   "kinks_over_30deg": 103,
+   "straight_fraction": 0.35,
+   "total_turning_deg": 14313
+  }
+ },
+ "after": {
+  "length": 276.5,
+  "kinks_over_15deg": 34,
+  "kinks_over_30deg": 12,
+  "straight_fraction": 0.78,
+  "total_turning_deg": 2987
+ },
+ "worst_wp_distance": 0.546,
+ "wp_distance": {
+  "WP01": 0.061,
+  "WP02": 0.025,
+  "WP03": 0.093,
+  "WP04": 0.166,
+  "WP05": 0.176,
+  "WP06": 0.124,
+  "WP07": 0.181,
+  "WP08": 0.101,
+  "WP09": 0.092,
+  "WP10": 0.162,
+  "WP11": 0.023,
+  "WP12": 0.17,
+  "WP13": 0.116,
+  "WP14": 0.129,
+  "WP15": 0.038,
+  "WP16": 0.008,
+  "WP17": 0.399,
+  "WP18": 0.118,
+  "WP19": 0.196,
+  "WP20": 0.197,
+  "WP21": 0.546,
+  "WP22": 0.114,
+  "WP23": 0.05,
+  "WP24": 0.485,
+  "WP25": 0.097,
+  "WP26": 0.07,
+  "WP27": 0.179,
+  "WP28": 0.064,
+  "WP29": 0.052
+ },
+ "zones": [
+  {
+   "s0": 14.9,
+   "s1": 96.9,
+   "xy0": [
+    14.83,
+    0.98
+   ],
+   "xy1": [
+    65.81,
+    10.9
+   ]
+  },
+  {
+   "s0": 114.0,
+   "s1": 121.9,
+   "xy0": [
+    73.13,
+    -4.35
+   ],
+   "xy1": [
+    70.01,
+    -9.28
+   ]
+  },
+  {
+   "s0": 218.8,
+   "s1": 276.5,
+   "xy0": [
+    -22.39,
+    -19.66
+   ],
+   "xy1": [
+    -36.62,
+    8.73
+   ]
+  }
+ ],
+ "legs": [
+  {
+   "leg": "course",
+   "ref": "004546",
+   "vertices": 172,
+   "reference_bent_to": [
+    "WP04:0.64->0.18",
+    "WP06:0.60->0.06",
+    "WP08:0.42->0.13",
+    "WP22:0.45->0.06"
+   ],
+   "length": [
+    290.3,
+    276.5
+   ],
+   "kinks15": [
+    100,
+    34
+   ],
+   "straight": [
+    0.55,
+    0.78
+   ],
+   "turning_deg": [
+    7815,
+    2987
+   ]
+  }
+ ],
+ "params": {
+  "corridor": 0.5,
+  "corridor_stairs": 0.25,
+  "clearance": 0.1,
+  "fillet": 1.2,
+  "reach": 0.45,
+  "touch": 0.2,
+  "free_at": [
+   [
+    "WP06",
+    2.5,
+    1801
+   ]
+  ]
+ },
+ "hairpins": [
+  {
+   "at": [
+    -38.01,
+    -9.25
+   ],
+   "separation": 0.3
+  }
+ ],
+ "body_sweep": {
+  "repaired": [
+   {
+    "s": 53.3,
+    "length": 4.5,
+    "attempt": 0
+   },
+   {
+    "s": 108.5,
+    "length": 5.7,
+    "attempt": 0
+   },
+   {
+    "s": 202.2,
+    "length": 3.3,
+    "attempt": 0
+   },
+   {
+    "s": 255.0,
+    "length": 4.2,
+    "attempt": 0
+   },
+   {
+    "s": 54.5,
+    "length": 5.9,
+    "attempt": 1
+   },
+   {
+    "s": 259.1,
+    "length": 7.0,
+    "attempt": 1
+   },
+   {
+    "s": 262.2,
+    "length": 7.9,
+    "attempt": 2
+   }
+  ],
+  "legs_given_back": [],
+  "points_on_obstacle": 0
+ },
+ "gates": [
+  {
+   "id": "WP01",
+   "offset": 0.061,
+   "body_distance": 0.0,
+   "radius": 0.39,
+   "guaranteed": true
+  },
+  {
+   "id": "WP02",
+   "offset": 0.025,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP03",
+   "offset": 0.093,
+   "body_distance": 0.0,
+   "radius": 0.36,
+   "guaranteed": true
+  },
+  {
+   "id": "WP04",
+   "offset": 0.166,
+   "body_distance": 0.0,
+   "radius": 0.28,
+   "guaranteed": true
+  },
+  {
+   "id": "WP05",
+   "offset": 0.176,
+   "body_distance": 0.0,
+   "radius": 0.27,
+   "guaranteed": true
+  },
+  {
+   "id": "WP06",
+   "offset": 0.124,
+   "body_distance": 0.0,
+   "radius": 0.33,
+   "guaranteed": true
+  },
+  {
+   "id": "WP07",
+   "offset": 0.181,
+   "body_distance": 0.0,
+   "radius": 0.27,
+   "guaranteed": true
+  },
+  {
+   "id": "WP08",
+   "offset": 0.101,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP09",
+   "offset": 0.092,
+   "body_distance": 0.0,
+   "radius": 0.36,
+   "guaranteed": true
+  },
+  {
+   "id": "WP10",
+   "offset": 0.162,
+   "body_distance": 0.0,
+   "radius": 0.29,
+   "guaranteed": true
+  },
+  {
+   "id": "WP11",
+   "offset": 0.023,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP12",
+   "offset": 0.17,
+   "body_distance": 0.0,
+   "radius": 0.28,
+   "guaranteed": true
+  },
+  {
+   "id": "WP13",
+   "offset": 0.116,
+   "body_distance": 0.0,
+   "radius": 0.33,
+   "guaranteed": true
+  },
+  {
+   "id": "WP14",
+   "offset": 0.129,
+   "body_distance": 0.0,
+   "radius": 0.32,
+   "guaranteed": true
+  },
+  {
+   "id": "WP15",
+   "offset": 0.038,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP16",
+   "offset": 0.008,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP17",
+   "offset": 0.399,
+   "body_distance": 0.0,
+   "radius": 0.2,
+   "guaranteed": true
+  },
+  {
+   "id": "WP18",
+   "offset": 0.118,
+   "body_distance": 0.0,
+   "radius": 0.33,
+   "guaranteed": true
+  },
+  {
+   "id": "WP19",
+   "offset": 0.196,
+   "body_distance": 0.0,
+   "radius": 0.25,
+   "guaranteed": true
+  },
+  {
+   "id": "WP20",
+   "offset": 0.197,
+   "body_distance": 0.0,
+   "radius": 0.25,
+   "guaranteed": true
+  },
+  {
+   "id": "WP21",
+   "offset": 0.546,
+   "body_distance": 0.037,
+   "radius": 0.16,
+   "guaranteed": true
+  },
+  {
+   "id": "WP22",
+   "offset": 0.114,
+   "body_distance": 0.0,
+   "radius": 0.34,
+   "guaranteed": true
+  },
+  {
+   "id": "WP23",
+   "offset": 0.05,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP24",
+   "offset": 0.485,
+   "body_distance": 0.0,
+   "radius": 0.2,
+   "guaranteed": true
+  },
+  {
+   "id": "WP25",
+   "offset": 0.097,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP26",
+   "offset": 0.07,
+   "body_distance": 0.0,
+   "radius": 0.38,
+   "guaranteed": true
+  },
+  {
+   "id": "WP27",
+   "offset": 0.179,
+   "body_distance": 0.0,
+   "radius": 0.27,
+   "guaranteed": true
+  },
+  {
+   "id": "WP28",
+   "offset": 0.064,
+   "body_distance": 0.0,
+   "radius": 0.39,
+   "guaranteed": true
+  },
+  {
+   "id": "WP29",
+   "offset": 0.052,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  }
+ ]
+}

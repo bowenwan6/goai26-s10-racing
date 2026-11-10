@@ -1,0 +1,4 @@
+[0m[INFO] [1789960697.511404862]: Subscribing to /IMU[0m
+[0m[INFO] [1789960697.515775873]: Subscribing to /base_link/odom[0m
+[0m[INFO] [1789960697.523061415]: Subscribing to /teach/mark[0m
+[0m[INFO] [1789960697.527213994]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/path_20260921_111817.bag'.[0m

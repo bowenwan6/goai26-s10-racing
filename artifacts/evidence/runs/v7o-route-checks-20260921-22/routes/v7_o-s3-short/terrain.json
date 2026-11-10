@@ -1,0 +1,15 @@
+{
+ "schema": "s10_route_terrain_v1",
+ "steep": [
+  [
+   0.2,
+   3.4
+  ],
+  [
+   10.4,
+   13.6
+  ]
+ ],
+ "gaits": [],
+ "contact": []
+}

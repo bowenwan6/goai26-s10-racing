@@ -1,0 +1,46 @@
+{
+ "hard_violating_cells": 0,
+ "free_at": [],
+ "route": "<s10-real-readiness>/field_data/20260920-v7_o/routes/v7_o-s5-short",
+ "demos": [
+  "path_20260921_002653",
+  "path_20260921_003004",
+  "path_20260921_003133",
+  "path_20260921_003925",
+  "path_20260921_004042",
+  "path_20260921_004546",
+  "path_20260921_005334",
+  "path_20260921_005347",
+  "path_20260921_102232",
+  "path_20260921_111817",
+  "path_20260921_112020",
+  "path_20260921_112444",
+  "path_20260921_112657",
+  "path_20260921_193500",
+  "path_20260921_193630",
+  "path_20260921_194417",
+  "path_20260921_194635",
+  "path_20260921_194927",
+  "path_20260922_000756"
+ ],
+ "body": [
+  0.9,
+  0.5
+ ],
+ "margin": 0.05,
+ "obstacle_cells": 104827,
+ "real_obstacle_cells": 84680,
+ "violations": 0,
+ "violating_cells": 0,
+ "clusters": [],
+ "centre_clearance": {
+  "min": 0.28,
+  "p5": 0.4,
+  "median": 0.57
+ },
+ "demo_clearance": {
+  "min": 0.22,
+  "p5": 0.28
+ },
+ "metres_closer_than_any_demo": 0.0
+}

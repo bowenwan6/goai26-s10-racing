@@ -1,0 +1,6 @@
+route v7_o-teachline: 398 s, reached 29/29, end DONE, modes ['DONE', 'TRACK', 'WALK']
+mean vx 0.67 m/s, mean |wz| 0.093 rad/s, standing still 9 s, gait switches [(21.0, 'stairs', 14.03), (144.1, 'flat', 97.32), (166.7, 'stairs', 113.14), (182.2, 'flat', 122.3), (315.4, 'stairs', 217.9)]
+SIM_FULL_ROUTE_OK
+real 80.92
+user 45.00
+sys 5.91

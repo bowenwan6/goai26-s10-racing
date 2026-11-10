@@ -1,0 +1,53 @@
+{
+ "session": "../field_data/20260920-v7_o/teach_line/derived_session",
+ "marks_total": 35,
+ "marks_live": 35,
+ "skipped": [],
+ "retests": {},
+ "warnings": [
+  "WPs without a passing mark (skipped in the chain): ['WP30']"
+ ],
+ "path_recording": "path_00000000_teachline.trail.csv",
+ "waypoints": 29,
+ "segments": 28,
+ "length_m": 276.3,
+ "stairs_segments": [
+  "WP03-WP04",
+  "WP04-WP05",
+  "WP05-WP06",
+  "WP06-WP07",
+  "WP07-WP08",
+  "WP08-WP09",
+  "WP09-WP10",
+  "WP10-WP11",
+  "WP11-WP12",
+  "WP12-WP13",
+  "WP13-WP14",
+  "WP16-WP17",
+  "WP17-WP18",
+  "WP22-WP23",
+  "WP23-WP24",
+  "WP24-WP25",
+  "WP25-WP26",
+  "WP26-WP27",
+  "WP27-WP28",
+  "WP28-WP29"
+ ],
+ "zones": [
+  {
+   "id": "SW00",
+   "s0": 14.6,
+   "s1": 97.2
+  },
+  {
+   "id": "SW01",
+   "s0": 113.7,
+   "s1": 122.19
+  },
+  {
+   "id": "SW02",
+   "s0": 218.47,
+   "s1": 276.27
+  }
+ ]
+}

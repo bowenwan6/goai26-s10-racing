@@ -1,0 +1,9 @@
+{
+  "id": "20260920-223720-v7_o",
+  "label": "v7_o",
+  "map_name": "",
+  "created": 1789915040.9846394,
+  "pose_topic": "/base_link/odom",
+  "fake": false,
+  "worker": "s10_teach_worker 1.0.0"
+}

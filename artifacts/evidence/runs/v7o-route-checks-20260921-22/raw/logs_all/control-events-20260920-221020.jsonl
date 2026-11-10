@@ -1,0 +1,11 @@
+{"wall_ns":1789913421449370341,"event":"start","detail":{"enable_motion":true,"max_vx":0.7,"max_vy":0.35,"max_wz":1,"nav_gait":12290,"cmd_sources":"rl_nav=/rl_nav/cmd_vel","cmd_source":"rl_nav","exclusive_mode":"messages"}}
+{"wall_ns":1789913424473817468,"event":"armed","detail":{"nav_cmd_publishers_before":0}}
+{"wall_ns":1789913425530217007,"event":"gait_request","detail":{"gait":"flat"}}
+{"wall_ns":1789913425534761264,"event":"sequence","detail":{"step":"gait:wait_still"}}
+{"wall_ns":1789913426537830025,"event":"send","detail":{"topic":"/GAIT","gait":12290}}
+{"wall_ns":1789913426538305097,"event":"sequence","detail":{"step":"gait:wait_confirm"}}
+{"wall_ns":1789913426548760425,"event":"gait_change","detail":{"from":4097,"to":12290}}
+{"wall_ns":1789913426553719401,"event":"gait_switched","detail":{"step":"gait:wait_confirm","detail":"{\"gait\":\"flat\"}"}}
+{"wall_ns":1789913426579248266,"event":"velocity_start","detail":{"source":"rl_nav"}}
+{"wall_ns":1789913451674433125,"event":"velocity_stop","detail":{"reason":"cmd_vel_timeout"}}
+{"wall_ns":1789913452111491070,"event":"stop","detail":{}}

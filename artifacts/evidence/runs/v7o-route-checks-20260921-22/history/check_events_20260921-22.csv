@@ -1,0 +1,83 @@
+time_beijing,check,route,speed_flat_stairs,sim_time_s,reached,end,result,hold_reason,via
+2026-09-21 01:56,kinematic_sim,v7_o-teachline,0.8/0.5,47,3/29,HOLD,FAILED,hold BLOCKED centerline_blocked_detour_forbidden s= 18.04 ['+0.0:blocked at 0.37m'],sim_full_route.py
+2026-09-21 01:57,kinematic_sim,v7_o-teachline,0.8/0.5,47,3/29,HOLD,FAILED,hold BLOCKED centerline_blocked_detour_forbidden s= 18.04 ['+0.0:blocked at 0.37m'],sim_full_route.py
+2026-09-21 01:58,kinematic_sim,v7_o-teachline,0.8/0.5,48,3/29,HOLD,FAILED,hold BLOCKED centerline_blocked_detour_forbidden s= 18.09 ['+0.0:blocked at 0.31m'],sim_full_route.py
+2026-09-21 01:59,kinematic_sim,v7_o-teachline,0.8/0.5,91,5/29,HOLD,FAILED,hold BLOCKED centerline_blocked_detour_forbidden s= 23.69 ['+0.0:blocked at 0.60m'],sim_full_route.py
+2026-09-21 02:03,kinematic_sim,v7_o-line-short,0.8/2,20,3/3,DONE,OK,,sim_full_route.py
+2026-09-21 02:19,kinematic_sim,v7_o-teachline,0.8/0.5,42,3/29,HOLD,FAILED,hold DETOUR  s= 18.23 None,sim_full_route.py
+2026-09-21 02:20,kinematic_sim,v7_o-teachline,0.8/0.5,70,6/29,HOLD,FAILED,hold RUNNING  s= 30.23 None,sim_full_route.py
+2026-09-21 02:21,kinematic_sim,v7_o-teachline,0.8/0.5,487,26/29,HOLD,FAILED,hold DETOUR  s= 258.09 None,sim_full_route.py
+2026-09-21 02:24,kinematic_sim,v7_o-teachline,0.8/0.5,240,17/29,HOLD,FAILED,hold RUNNING  s= 118.83 None,sim_full_route.py
+2026-09-21 02:25,kinematic_sim,v7_o-teachline,0.8/0.5,528,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 02:29,kinematic_sim,v7_o-teachline,0.8/0.5,505,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 08:49,body_clearance,,,,,,VIOLATIONS,,other
+2026-09-21 09:01,body_clearance,,,,,,VIOLATIONS,,sim_full_route.py
+2026-09-21 09:01,body_clearance,,,,,,VIOLATIONS,,sim_full_route.py
+2026-09-21 09:01,kinematic_sim,v7_o-teachline,0.8/0.5,490,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 09:01,body_clearance,,,,,,VIOLATIONS,,other
+2026-09-21 09:01,body_clearance,,,,,,VIOLATIONS,,other
+2026-09-21 09:02,body_clearance,,,,,,VIOLATIONS,,other
+2026-09-21 09:07,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 09:07,body_clearance,,,,,,VIOLATIONS,,sim_full_route.py
+2026-09-21 09:07,kinematic_sim,v7_o-teachline,0.8/0.5,505,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 09:08,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 09:08,body_clearance,,,,,,VIOLATIONS,,sim_full_route.py
+2026-09-21 09:27,body_clearance,,,,,,OK,,other
+2026-09-21 09:28,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 09:28,kinematic_sim,v7_o-teachline,,500,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 10:14,kinematic_sim,full-here,,469,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 10:32,kinematic_sim,full-here,,426,22/22,DONE,OK,,sim_full_route.py
+2026-09-21 12:12,body_clearance,,,,,,OK,,other
+2026-09-21 12:13,kinematic_sim,v7_o-s1-full,1.0/0.7,413,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 12:14,body_clearance,,,,,,OK,,other
+2026-09-21 12:45,kinematic_sim,v7_o-s1-full,1.0/0.7,404,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 13:44,kinematic_sim,v7_o-s1-full,1.0/0.7,411,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 14:21,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 14:21,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 14:21,kinematic_sim,v7_o-s2-full,1.0/0.7,445,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 14:23,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 14:23,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 14:23,kinematic_sim,v7_o-s2-full,,436,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 14:23,kinematic_sim,v7_o-s2-full,,389,28/29,HOLD,FAILED,,sim_full_route.py
+2026-09-21 14:28,kinematic_sim,v7_o-s2-full,,439,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 14:28,kinematic_sim,v7_o-s2-full,,394,28/29,HOLD,FAILED,hold DETOUR  s= 268.01 None,sim_full_route.py
+2026-09-21 14:28,kinematic_sim,v7_o-s2-full,,380,28/29,HOLD,FAILED,hold DETOUR  s= 267.89 None,sim_full_route.py
+2026-09-21 14:31,kinematic_sim,v7_o-s2-full,,443,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 14:31,kinematic_sim,v7_o-s2-full,,405,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 14:31,kinematic_sim,v7_o-s2-full,,393,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 14:31,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 14:31,kinematic_sim,v7_o-s2-short,,15,3/3,DONE,OK,,sim_full_route.py
+2026-09-21 14:37,kinematic_sim,20260921c-v7_o-s2-short,,11,3/3,DONE,OK,,sim_full_route.py
+2026-09-21 14:37,kinematic_sim,20260921c-v7_o-s2-full,,304,24/29,HOLD,FAILED,,sim_full_route.py
+2026-09-21 14:42,kinematic_sim,20260921c-v7_o-s2-full,1.4/0.7,405,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 15:40,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 15:40,body_clearance,,,,,,OK,,sim_full_route.py
+2026-09-21 15:40,kinematic_sim,v7_o-s3-full,,420,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 15:40,kinematic_sim,v7_o-s3-full,,373,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 15:40,kinematic_sim,v7_o-s3-full,,356,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 15:44,kinematic_sim,20260921d-v7_o-s3-short,,12,3/3,DONE,OK,,sim_full_route.py
+2026-09-21 15:44,kinematic_sim,20260921d-v7_o-s3-full,,373,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 15:51,body_clearance,,,,,,OK,,build_route.py
+2026-09-21 15:51,body_clearance,,,,,,OK,,build_route.py
+2026-09-21 15:52,kinematic_sim,v7_o-s3-full,1.0/0.7,420,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 15:57,kinematic_sim,20260921d-v7_o-s3-full,1.0/0.7,420,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 16:07,kinematic_sim,v7_o-s3-full,,424,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 16:07,kinematic_sim,v7_o-s3-full,,363,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 16:27,kinematic_sim,v7_o-s3-full,,297,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 16:27,kinematic_sim,v7_o-s3-full,,355,29/29,DONE,OK,,sim_full_route.py
+2026-09-21 20:41,kinematic_sim,v7_o-s4-full,1.67/1.67,269,24/29,HOLD,FAILED,hold DETOUR  s= 238.73 None,sim_full_route.py
+2026-09-21 20:44,kinematic_sim,v7_o-s4-full,,304,29/29,DONE,OK,,other
+2026-09-21 21:30,body_clearance,,,,,,OK,,build_route.py
+2026-09-21 21:30,kinematic_sim,v7_o-s4-full,,317,29/29,DONE,OK,,build_route.py
+2026-09-21 21:30,body_clearance,,,,,,OK,,build_route.py
+2026-09-21 21:30,kinematic_sim,v7_o-s4-short,,10,3/3,DONE,OK,,build_route.py
+2026-09-22 01:08,body_clearance,,,,,,VIOLATIONS,,build_route.py
+2026-09-22 01:08,build_stopped,,,,,,STOPPED: verify_route_clearance.py exited with 1,,build_route.py
+2026-09-22 01:11,body_clearance,,,,,,VIOLATIONS,,build_route.py
+2026-09-22 01:11,build_stopped,,,,,,STOPPED: verify_route_clearance.py exited with 1,,build_route.py
+2026-09-22 01:13,body_clearance,,,,,,VIOLATIONS,,build_route.py
+2026-09-22 01:13,build_stopped,,,,,,STOPPED: verify_route_clearance.py exited with 1,,build_route.py
+2026-09-22 01:15,body_clearance,,,,,,OK,,build_route.py
+2026-09-22 01:15,kinematic_sim,v7_o-s5-full,,317,29/29,DONE,OK,,build_route.py
+2026-09-22 01:15,body_clearance,,,,,,OK,,build_route.py
+2026-09-22 01:15,kinematic_sim,v7_o-s5-short,,10,3/3,DONE,OK,,build_route.py
