@@ -1,0 +1,147 @@
+{
+ "schema": "s10_rl_maneuvers_v1",
+ "route": "v7_o",
+ "source": "teach_to_route",
+ "maneuvers": [
+  {
+   "id": "SW00",
+   "s0": 14.499888795418764,
+   "s1": 39.59989074202191,
+   "s_first": 14.799888795418765,
+   "s_last": 39.299890742021915,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  },
+  {
+   "id": "SW01",
+   "s0": 49.99983610177224,
+   "s1": 94.59881182525965,
+   "s_first": 50.299836101772236,
+   "s_last": 94.29881182525965,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  },
+  {
+   "id": "SW02",
+   "s0": 113.49841079019897,
+   "s1": 126.19081391712753,
+   "s_first": 113.79841079019897,
+   "s_last": 125.89081391712753,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  },
+  {
+   "id": "SW03",
+   "s0": 225.28763125690423,
+   "s1": 234.47951319687715,
+   "s_first": 225.58763125690425,
+   "s_last": 234.17951319687714,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  },
+  {
+   "id": "SW04",
+   "s0": 244.67567075642958,
+   "s1": 266.75861504747303,
+   "s_first": 244.9756707564296,
+   "s_last": 266.458615047473,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  }
+ ]
+}

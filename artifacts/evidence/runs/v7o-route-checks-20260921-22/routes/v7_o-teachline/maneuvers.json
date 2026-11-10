@@ -1,0 +1,91 @@
+{
+ "schema": "s10_rl_maneuvers_v1",
+ "route": "v7_o",
+ "source": "teach_to_route",
+ "maneuvers": [
+  {
+   "id": "SW00",
+   "s0": 14.600581919536937,
+   "s1": 97.196751292298,
+   "s_first": 14.900581919536938,
+   "s_last": 96.896751292298,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  },
+  {
+   "id": "SW01",
+   "s0": 113.6961768675659,
+   "s1": 122.18664941998613,
+   "s_first": 113.9961768675659,
+   "s_last": 121.88664941998613,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  },
+  {
+   "id": "SW02",
+   "s0": 218.4668303240958,
+   "s1": 276.2699096019875,
+   "s_first": 218.76683032409582,
+   "s_last": 276.2699096019875,
+   "policy": "stairs",
+   "kinds": [
+    "teach:SWIN/SWOUT"
+   ],
+   "max_edge_up": 0.0,
+   "max_edge_down": 0.0,
+   "max_slope_deg": 0.0,
+   "max_cross_deg": 0.0,
+   "turn_deg": 0.0,
+   "rise_m": 0.0,
+   "prior_point": null,
+   "prior_normal_yaw": null,
+   "prior_height": 0.0,
+   "prior_inliers": 0,
+   "deck_z": null,
+   "first_skew_deg": null,
+   "s_edge": null,
+   "skew_limit_deg": 25.0,
+   "warnings": [
+    "no edge prior (from teach marks): handover at s_first"
+   ]
+  }
+ ]
+}

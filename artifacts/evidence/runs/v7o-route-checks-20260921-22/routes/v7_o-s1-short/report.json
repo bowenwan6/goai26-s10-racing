@@ -1,0 +1,21 @@
+{
+ "session": "../field_data/20260920-v7_o/teach_line_s1/derived_session",
+ "marks_total": 39,
+ "marks_live": 39,
+ "skipped": [],
+ "retests": {},
+ "warnings": [
+  "WPs without a passing mark (skipped in the chain): ['WP25']",
+  "switch pair seq 30/31 lies beyond WP03: dropped (--last-wp)",
+  "switch pair seq 32/33 lies beyond WP03: dropped (--last-wp)",
+  "switch pair seq 34/35 lies beyond WP03: dropped (--last-wp)",
+  "switch pair seq 36/37 lies beyond WP03: dropped (--last-wp)",
+  "switch pair seq 38/39 lies beyond WP03: dropped (--last-wp)"
+ ],
+ "path_recording": "path_00000000_teachline.trail.csv",
+ "waypoints": 3,
+ "segments": 2,
+ "length_m": 13.8,
+ "stairs_segments": [],
+ "zones": []
+}

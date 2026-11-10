@@ -1,0 +1,16 @@
+route,speed_flat,speed_stairs,sim_time_s,reached,end,mean_vx,standing_still_s,result
+v7_o-line-short,0.8,0.5,18,3/3,DONE,0.74,0,OK
+v7_o-s1-full,1.0,0.7,371,29/29,DONE,0.74,16,OK
+v7_o-s1-short,1.0,0.7,15,3/3,DONE,0.89,0,OK
+v7_o-s2-full,1.0,0.7,371,29/29,DONE,0.74,18,OK
+v7_o-s2-short,1.0,0.7,15,3/3,DONE,0.89,0,OK
+v7_o-s3-full,1.0,0.7,369,29/29,DONE,0.74,16,OK
+v7_o-s3-full,1.67,1.67,308,29/29,DONE,0.89,16,OK
+v7_o-s3-short,1.67,1.67,10,3/3,DONE,1.34,0,OK
+v7_o-s4-full,1.0,0.7,380,29/29,DONE,0.71,20,OK
+v7_o-s4-full,1.67,1.67,315,29/29,DONE,0.85,20,OK
+v7_o-s4-short,1.67,1.67,10,3/3,DONE,1.34,0,OK
+v7_o-s5-full,1.0,0.7,380,29/29,DONE,0.71,20,OK
+v7_o-s5-full,1.67,1.67,317,29/29,DONE,0.85,20,OK
+v7_o-s5-short,1.67,1.67,10,3/3,DONE,1.30,0,OK
+v7_o-teachline,0.8,0.5,398,29/29,DONE,0.67,9,OK

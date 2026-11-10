@@ -1,0 +1,9 @@
+{"wall_ns":1789957496184138920,"event":"start","detail":{"enable_motion":false,"max_vx":0.3,"max_vy":0.1,"max_wz":0.5,"nav_gait":12290,"cmd_sources":"rl_nav=/rl_nav/cmd_vel,x_nav=/cmd_vel","cmd_source":"rl_nav","exclusive_mode":"messages"}}
+{"wall_ns":1789957499194023206,"event":"dry_run","detail":{"nav_cmd_publishers":0,"foreign_nav_cmd_3s":0}}
+{"wall_ns":1789957690415474890,"event":"state_change","detail":{"from":17,"to":4}}
+{"wall_ns":1789957690415714154,"event":"gait_change","detail":{"from":4099,"to":0}}
+{"wall_ns":1789957694416261826,"event":"state_change","detail":{"from":4,"to":0}}
+{"wall_ns":1789958207789761493,"event":"state_change","detail":{"from":0,"to":1}}
+{"wall_ns":1789958209391237435,"event":"state_change","detail":{"from":1,"to":17}}
+{"wall_ns":1789958209391897340,"event":"gait_change","detail":{"from":0,"to":4097}}
+{"wall_ns":1789958270596078415,"event":"stop","detail":{}}

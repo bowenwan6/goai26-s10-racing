@@ -1,0 +1,17 @@
+{"wall_ns":1790005346832225968,"event":"start","detail":{"enable_motion":false,"max_vx":0.3,"max_vy":0.1,"max_wz":0.5,"nav_gait":12290,"cmd_sources":"rl_nav=/rl_nav/cmd_vel,x_nav=/cmd_vel","cmd_source":"rl_nav","exclusive_mode":"messages"}}
+{"wall_ns":1790005349844094305,"event":"dry_run","detail":{"nav_cmd_publishers":0,"foreign_nav_cmd_3s":0}}
+{"wall_ns":1790005477112264667,"event":"state_change","detail":{"from":17,"to":4}}
+{"wall_ns":1790005477112477084,"event":"gait_change","detail":{"from":4097,"to":0}}
+{"wall_ns":1790005481111696445,"event":"state_change","detail":{"from":4,"to":0}}
+{"wall_ns":1790005567565446244,"event":"state_change","detail":{"from":0,"to":1}}
+{"wall_ns":1790005569166660913,"event":"state_change","detail":{"from":1,"to":17}}
+{"wall_ns":1790005569167401872,"event":"gait_change","detail":{"from":0,"to":4097}}
+{"wall_ns":1790005674577683319,"event":"state_change","detail":{"from":17,"to":4}}
+{"wall_ns":1790005674577863575,"event":"gait_change","detail":{"from":4097,"to":0}}
+{"wall_ns":1790005678577908670,"event":"state_change","detail":{"from":4,"to":0}}
+{"wall_ns":1790005682300352104,"event":"state_change","detail":{"from":0,"to":1}}
+{"wall_ns":1790005683901716392,"event":"state_change","detail":{"from":1,"to":17}}
+{"wall_ns":1790005683902342281,"event":"gait_change","detail":{"from":0,"to":4097}}
+{"wall_ns":1790005722463369790,"event":"gait_change","detail":{"from":4097,"to":4099}}
+{"wall_ns":1790005786803450827,"event":"gait_change","detail":{"from":4099,"to":4097}}
+{"wall_ns":1790005923526315705,"event":"stop","detail":{}}

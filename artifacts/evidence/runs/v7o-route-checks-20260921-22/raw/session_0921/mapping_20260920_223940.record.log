@@ -1,0 +1,29 @@
+[0m[INFO] [1789915181.259409931]: Subscribing to /IMU[0m
+[0m[INFO] [1789915181.262778235]: Subscribing to /LIDAR/POINTS[0m
+[0m[INFO] [1789915181.265237991]: Subscribing to /base_link/odom[0m
+[0m[INFO] [1789915181.267924436]: Subscribing to /teach/mark[0m
+[0m[INFO] [1789915181.271351845]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_0.bag'.[0m
+[0m[INFO] [1789915304.210071273]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_0.bag'.[0m
+[0m[INFO] [1789915304.215884236]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_1.bag'.[0m
+[0m[INFO] [1789915429.209830068]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_1.bag'.[0m
+[0m[INFO] [1789915429.213943989]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_2.bag'.[0m
+[0m[INFO] [1789915553.103839025]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_2.bag'.[0m
+[0m[INFO] [1789915553.108075788]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_3.bag'.[0m
+[0m[INFO] [1789915674.310932049]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_3.bag'.[0m
+[0m[INFO] [1789915674.315733872]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_4.bag'.[0m
+[0m[INFO] [1789915797.200200996]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_4.bag'.[0m
+[0m[INFO] [1789915797.204863735]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_5.bag'.[0m
+[0m[INFO] [1789915912.406439618]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_5.bag'.[0m
+[0m[INFO] [1789915912.409074521]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_6.bag'.[0m
+[0m[INFO] [1789916031.109393354]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_6.bag'.[0m
+[0m[INFO] [1789916031.112156426]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_7.bag'.[0m
+[0m[INFO] [1789916148.915433246]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_7.bag'.[0m
+[0m[INFO] [1789916148.922041213]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_8.bag'.[0m
+[0m[INFO] [1789916267.203498826]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_8.bag'.[0m
+[0m[INFO] [1789916267.206092044]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_9.bag'.[0m
+[0m[INFO] [1789916387.501694267]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_9.bag'.[0m
+[0m[INFO] [1789916387.504443007]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_10.bag'.[0m
+[0m[INFO] [1789916513.211071592]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_10.bag'.[0m
+[0m[INFO] [1789916513.221413562]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_11.bag'.[0m
+[0m[INFO] [1789916632.407447854]: Closing '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_11.bag'.[0m
+[0m[INFO] [1789916632.410403022]: Recording to '/mnt/s10ssd/s10_teach/sessions/20260920-223720-v7_o/mapping_20260920_223940_12.bag'.[0m

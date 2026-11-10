@@ -1,0 +1,550 @@
+{
+ "session": "<s10-real-readiness>/field_data/20260920-v7_o/session_0921",
+ "demos": [
+  "path_20260921_003133",
+  "path_20260921_004546",
+  "path_20260921_005347"
+ ],
+ "gait_demos": [
+  "path_20260921_004546",
+  "path_20260921_005347"
+ ],
+ "before": {
+  "path_20260921_003133": {
+   "length": 293.1,
+   "kinks_over_15deg": 124,
+   "kinks_over_30deg": 58,
+   "straight_fraction": 0.5,
+   "total_turning_deg": 9390
+  },
+  "path_20260921_004546": {
+   "length": 302.2,
+   "kinks_over_15deg": 142,
+   "kinks_over_30deg": 63,
+   "straight_fraction": 0.48,
+   "total_turning_deg": 11077
+  },
+  "path_20260921_005347": {
+   "length": 321.7,
+   "kinks_over_15deg": 214,
+   "kinks_over_30deg": 103,
+   "straight_fraction": 0.35,
+   "total_turning_deg": 14313
+  }
+ },
+ "after": {
+  "length": 270.9,
+  "kinks_over_15deg": 28,
+  "kinks_over_30deg": 3,
+  "straight_fraction": 0.84,
+  "total_turning_deg": 1848
+ },
+ "worst_wp_distance": 0.484,
+ "wp_distance": {
+  "WP01": 0.061,
+  "WP02": 0.018,
+  "WP03": 0.087,
+  "WP04": 0.062,
+  "WP05": 0.004,
+  "WP06": 0.104,
+  "WP07": 0.484,
+  "WP08": 0.044,
+  "WP09": 0.213,
+  "WP10": 0.1,
+  "WP11": 0.023,
+  "WP12": 0.103,
+  "WP13": 0.079,
+  "WP14": 0.135,
+  "WP15": 0.105,
+  "WP16": 0.081,
+  "WP17": 0.197,
+  "WP18": 0.08,
+  "WP19": 0.097,
+  "WP20": 0.101,
+  "WP21": 0.045,
+  "WP22": 0.041,
+  "WP23": 0.082,
+  "WP24": 0.037,
+  "WP26": 0.103,
+  "WP27": 0.248,
+  "WP28": 0.154,
+  "WP29": 0.129,
+  "WP30": 0.137
+ },
+ "zones": [
+  {
+   "s0": 14.9,
+   "s1": 38.7,
+   "xy0": [
+    14.82,
+    0.92
+   ],
+   "xy1": [
+    30.75,
+    14.99
+   ]
+  },
+  {
+   "s0": 49.6,
+   "s1": 96.7,
+   "xy0": [
+    38.12,
+    22.4
+   ],
+   "xy1": [
+    65.66,
+    11.11
+   ]
+  },
+  {
+   "s0": 113.9,
+   "s1": 116.6,
+   "xy0": [
+    73.31,
+    -4.24
+   ],
+   "xy1": [
+    73.91,
+    -6.81
+   ]
+  },
+  {
+   "s0": 219.6,
+   "s1": 230.9,
+   "xy0": [
+    -23.41,
+    -19.49
+   ],
+   "xy1": [
+    -32.36,
+    -13.32
+   ]
+  },
+  {
+   "s0": 232.8,
+   "s1": 237.7,
+   "xy0": [
+    -33.31,
+    -11.67
+   ],
+   "xy1": [
+    -37.39,
+    -10.39
+   ]
+  },
+  {
+   "s0": 239.6,
+   "s1": 252.4,
+   "xy0": [
+    -38.46,
+    -8.81
+   ],
+   "xy1": [
+    -36.59,
+    2.66
+   ]
+  }
+ ],
+ "legs": [
+  {
+   "leg": "course",
+   "ref": "004546",
+   "vertices": 192,
+   "reference_bent_to": [
+    "WP04:0.64->0.18",
+    "WP06:0.38->0.06",
+    "WP15:0.33->0.06"
+   ],
+   "length": [
+    284.1,
+    270.9
+   ],
+   "kinks15": [
+    104,
+    28
+   ],
+   "straight": [
+    0.52,
+    0.84
+   ],
+   "turning_deg": [
+    8025,
+    1848
+   ]
+  }
+ ],
+ "gait_plan": [
+  [
+   14.9,
+   38.7,
+   "stairs"
+  ],
+  [
+   49.6,
+   96.7,
+   "stairs"
+  ],
+  [
+   113.9,
+   116.7,
+   "stairs"
+  ],
+  [
+   116.7,
+   118.7,
+   "platform"
+  ],
+  [
+   219.6,
+   231.0,
+   "stairs"
+  ],
+  [
+   231.0,
+   232.8,
+   "platform"
+  ],
+  [
+   232.8,
+   237.8,
+   "stairs"
+  ],
+  [
+   237.8,
+   239.6,
+   "platform"
+  ],
+  [
+   239.6,
+   252.4,
+   "stairs"
+  ]
+ ],
+ "spliced": [
+  {
+   "recording": "path_20260921_102232",
+   "first": "WP08",
+   "last": "WP10"
+  },
+  {
+   "recording": "path_20260921_193500",
+   "first": "WP14",
+   "last": "WP18"
+  },
+  {
+   "recording": "path_20260922_000756",
+   "first": "WP18",
+   "last": "WP23"
+  },
+  {
+   "recording": "path_20260921_194417",
+   "first": "WP22",
+   "last": "WP30"
+  },
+  {
+   "recording": "path_20260921_111817",
+   "first": "WP29",
+   "last": "WP30"
+  }
+ ],
+ "steep": [
+  [
+   0.2,
+   3.4
+  ],
+  [
+   10.8,
+   22.3
+  ],
+  [
+   23.4,
+   29.3
+  ],
+  [
+   30.3,
+   39.5
+  ],
+  [
+   49.5,
+   56.9
+  ],
+  [
+   57.6,
+   67.2
+  ],
+  [
+   67.5,
+   69.9
+  ],
+  [
+   73.7,
+   77.4
+  ],
+  [
+   82.5,
+   84.9
+  ],
+  [
+   90.6,
+   93.1
+  ],
+  [
+   96.2,
+   98.0
+  ],
+  [
+   113.9,
+   115.8
+  ],
+  [
+   116.3,
+   118.8
+  ],
+  [
+   119.4,
+   122.2
+  ],
+  [
+   149.1,
+   150.9
+  ],
+  [
+   210.2,
+   211.8
+  ],
+  [
+   225.8,
+   232.8
+  ],
+  [
+   237.1,
+   241.5
+  ],
+  [
+   246.1,
+   251.2
+  ]
+ ],
+ "params": {
+  "contact": [],
+  "dropped": "WP25",
+  "corridor": 0.5,
+  "corridor_stairs": 0.25,
+  "clearance": 0.1,
+  "fillet": 1.2,
+  "reach": 0.45,
+  "touch": 0.1,
+  "free_at": []
+ },
+ "hairpins": [],
+ "body_sweep": {
+  "repaired": [],
+  "legs_given_back": [],
+  "points_on_obstacle": 0
+ },
+ "gates": [
+  {
+   "id": "WP01",
+   "offset": 0.061,
+   "body_distance": 0.0,
+   "radius": 0.39,
+   "guaranteed": true
+  },
+  {
+   "id": "WP02",
+   "offset": 0.018,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP03",
+   "offset": 0.087,
+   "body_distance": 0.0,
+   "radius": 0.36,
+   "guaranteed": true
+  },
+  {
+   "id": "WP04",
+   "offset": 0.062,
+   "body_distance": 0.0,
+   "radius": 0.39,
+   "guaranteed": true
+  },
+  {
+   "id": "WP05",
+   "offset": 0.004,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP06",
+   "offset": 0.104,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP07",
+   "offset": 0.484,
+   "body_distance": 0.025,
+   "radius": 0.18,
+   "guaranteed": true
+  },
+  {
+   "id": "WP08",
+   "offset": 0.044,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP09",
+   "offset": 0.213,
+   "body_distance": 0.0,
+   "radius": 0.24,
+   "guaranteed": true
+  },
+  {
+   "id": "WP10",
+   "offset": 0.1,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP11",
+   "offset": 0.023,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP12",
+   "offset": 0.103,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP13",
+   "offset": 0.079,
+   "body_distance": 0.0,
+   "radius": 0.37,
+   "guaranteed": true
+  },
+  {
+   "id": "WP14",
+   "offset": 0.135,
+   "body_distance": 0.0,
+   "radius": 0.31,
+   "guaranteed": true
+  },
+  {
+   "id": "WP15",
+   "offset": 0.105,
+   "body_distance": 0.0,
+   "radius": 0.34,
+   "guaranteed": true
+  },
+  {
+   "id": "WP16",
+   "offset": 0.081,
+   "body_distance": 0.0,
+   "radius": 0.37,
+   "guaranteed": true
+  },
+  {
+   "id": "WP17",
+   "offset": 0.197,
+   "body_distance": 0.0,
+   "radius": 0.25,
+   "guaranteed": true
+  },
+  {
+   "id": "WP18",
+   "offset": 0.08,
+   "body_distance": 0.0,
+   "radius": 0.37,
+   "guaranteed": true
+  },
+  {
+   "id": "WP19",
+   "offset": 0.097,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP20",
+   "offset": 0.101,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP21",
+   "offset": 0.045,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP22",
+   "offset": 0.041,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP23",
+   "offset": 0.082,
+   "body_distance": 0.0,
+   "radius": 0.37,
+   "guaranteed": true
+  },
+  {
+   "id": "WP24",
+   "offset": 0.037,
+   "body_distance": 0.0,
+   "radius": 0.4,
+   "guaranteed": true
+  },
+  {
+   "id": "WP26",
+   "offset": 0.103,
+   "body_distance": 0.0,
+   "radius": 0.35,
+   "guaranteed": true
+  },
+  {
+   "id": "WP27",
+   "offset": 0.248,
+   "body_distance": 0.0,
+   "radius": 0.2,
+   "guaranteed": true
+  },
+  {
+   "id": "WP28",
+   "offset": 0.154,
+   "body_distance": 0.0,
+   "radius": 0.3,
+   "guaranteed": true
+  },
+  {
+   "id": "WP29",
+   "offset": 0.129,
+   "body_distance": 0.0,
+   "radius": 0.32,
+   "guaranteed": true
+  },
+  {
+   "id": "WP30",
+   "offset": 0.137,
+   "body_distance": 0.0,
+   "radius": 0.31,
+   "guaranteed": true
+  }
+ ]
+}

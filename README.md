@@ -263,7 +263,7 @@ It also handles something we learned the hard way: the robot ignores navigation 
 
 ### A taught line in place of a drawn route
 
-The operator drives the course a few times. The tool turns those drives into an obstacle grid and a corridor of driven ground, then straightens the line inside the corridor and rounds off the corners. Waypoints become discs the robot has to touch. Gates are placed on ground that was actually driven, dead ends turn into keep-right hairpins, and a stretch only gets the stairs gait if the operator used it there and the map shows a step or a slope. No candidate line reaches the runner without passing a separate body-sweep clearance check.
+The operator drives the course a few times. The tool turns those drives into an obstacle grid and a corridor of driven ground, then straightens the line inside the corridor and rounds off the corners. Waypoints become discs the robot has to touch. Gates are placed on ground that was actually driven, dead ends turn into keep-right hairpins, and a stretch only gets the stairs gait if the operator used it there and the map shows a step or a slope. No candidate line reaches the runner without passing a separate body-sweep clearance check. The checks for every v7_o route version from 21 and 22 September, including the ones that failed, are in [`artifacts/evidence/runs/v7o-route-checks-20260921-22/`](artifacts/evidence/runs/v7o-route-checks-20260921-22/README.md).
 
 <table>
 <tr>

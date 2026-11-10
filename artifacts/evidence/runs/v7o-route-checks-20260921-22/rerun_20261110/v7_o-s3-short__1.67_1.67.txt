@@ -1,0 +1,6 @@
+route v7_o-s3-short: 10 s, reached 3/3, end DONE, modes ['DONE', 'WALK']
+mean vx 1.34 m/s, mean |wz| 0.109 rad/s, standing still 0 s, gait switches []
+SIM_FULL_ROUTE_OK
+real 7.58
+user 2.51
+sys 0.36
